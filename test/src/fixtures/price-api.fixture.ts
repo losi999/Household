@@ -13,11 +13,11 @@ type PriceApiFixture = {
 };
 
 export const test = baseTest.extend<PriceApiFixture>({
-  requestCreatePrice: async ({ authenticate, request, userType }, use) => {
+  requestCreatePrice: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreatePrice = async (price: Price.Request) => {
-      return request.post(`${process.env.BASE_URL}/price/v1/prices`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/price/v1/prices`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -28,11 +28,11 @@ export const test = baseTest.extend<PriceApiFixture>({
 
     await use(requestCreatePrice);
   },
-  requestUpdatePrice: async ({ authenticate, request, userType }, use) => {
+  requestUpdatePrice: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdatePrice = async (priceId: Price.Id, price: Price.Request) => {
-      return request.put(`${process.env.BASE_URL}/price/v1/prices/${priceId}`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/price/v1/prices/${priceId}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -43,11 +43,11 @@ export const test = baseTest.extend<PriceApiFixture>({
 
     await use(requestUpdatePrice);
   },
-  requestDeletePrice: async ({ authenticate, request, userType }, use) => {
+  requestDeletePrice: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeletePrice = async (priceId: Price.Id) => {
-      return request.delete(`${process.env.BASE_URL}/price/v1/prices/${priceId}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/price/v1/prices/${priceId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -56,11 +56,11 @@ export const test = baseTest.extend<PriceApiFixture>({
 
     await use(requestDeletePrice);
   },
-  requestListPrices: async ({ authenticate, request, userType }, use) => {
+  requestListPrices: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListPrices = async () => {
-      return request.get(`${process.env.BASE_URL}/price/v1/prices`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/price/v1/prices`, {
         headers: {
           Authorization: authToken,
         },

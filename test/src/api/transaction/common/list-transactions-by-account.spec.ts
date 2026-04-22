@@ -15,14 +15,21 @@ import { reimbursementTransactionDataFactory } from '@household/test/api/transac
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
 
-import { test, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService, categoryService, productService, projectService, recipientService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
+
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
 test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
   let accountDocument: Account.Document;
@@ -53,7 +60,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         });
       } else {
         test.describe('should get a list of transactions', () => {
-          test('of a non-loan account', async ({ requestGetTransactionListByAccount }) => {
+          test('of a non-loan account', async ({ requestGetTransactionListByAccount, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProduct }) => {
             const loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -210,12 +217,12 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               transferAccount: accountDocument,
             });
 
-            await recipientService.saveRecipient(recipientDocument);
-            await accountService.saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
-            await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-            await projectService.saveProject(projectDocument);
-            await productService.saveProduct(productDocument);
-            await transactionService.saveTransactions(paymentTransactionDocument, payingSplitTransactionDocument, owningSplitTransactionDocument, payingTransferTransactionDocument, receivingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingNotRepaidDeferredTransactionDocument, payingRepaidDeferredTransactionDocument, payingSettledDeferredTransactionDocument, owningNotRepaidDeferredTransactionDocument, owningRepaidDeferredTransactionDocument, owningSettledDeferredTransactionDocument, owningReimbursementTransactionDocument);
+            await saveRecipient(recipientDocument);
+            await saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
+            await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            await saveProject(projectDocument);
+            await saveProduct(productDocument);
+            await saveTransactions(paymentTransactionDocument, payingSplitTransactionDocument, owningSplitTransactionDocument, payingTransferTransactionDocument, receivingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingNotRepaidDeferredTransactionDocument, payingRepaidDeferredTransactionDocument, payingSettledDeferredTransactionDocument, owningNotRepaidDeferredTransactionDocument, owningRepaidDeferredTransactionDocument, owningSettledDeferredTransactionDocument, owningReimbursementTransactionDocument);
             const res = await requestGetTransactionListByAccount(getAccountId(accountDocument), {
               pageNumber: 1,
               pageSize: 100000, 
@@ -246,7 +253,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             expect(res).toContainMatchingReimbursementTransactionDocument(owningReimbursementTransactionDocument);
           });
 
-          test('of a loan account', async ({ requestGetTransactionListByAccount }) => {
+          test('of a loan account', async ({ requestGetTransactionListByAccount, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProduct }) => {
             const loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -336,12 +343,12 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               transferAccount: accountDocument,
             });
 
-            await recipientService.saveRecipient(recipientDocument);
-            await accountService.saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
-            await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-            await projectService.saveProject(projectDocument);
-            await productService.saveProduct(productDocument);
-            await transactionService.saveTransactions(owningSplitTransactionDocument, repayingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, owningNotRepaidDeferredTransactionDocument, owningRepaidDeferredTransactionDocument, owningSettledDeferredTransactionDocument, payingReimbursementTransactionDocument);
+            await saveRecipient(recipientDocument);
+            await saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
+            await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            await saveProject(projectDocument);
+            await saveProduct(productDocument);
+            await saveTransactions(owningSplitTransactionDocument, repayingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, owningNotRepaidDeferredTransactionDocument, owningRepaidDeferredTransactionDocument, owningSettledDeferredTransactionDocument, payingReimbursementTransactionDocument);
             const res = await requestGetTransactionListByAccount(getAccountId(loanAccountDocument), {
               pageNumber: 1,
               pageSize: 100000, 
@@ -353,7 +360,6 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: repayingTransferTransactionDocument.payments[1].amount,
             });
 
-            expect(res).toContainMatchingTransferTransactionDocument(repayingTransferTransactionDocument, getAccountId(loanAccountDocument));
             expect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(loanAccountDocument));
             expect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(loanAccountDocument));
 

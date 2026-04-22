@@ -7,14 +7,18 @@ import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { default as schema } from '@household/test/schemas/calendar-entry-response';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { test as calendarApiTest, expect as domainExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { calendarEntryService, customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(domainExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(calendarApiTest, priceDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
   let calendarPersonalEntryDocument: Calendar.Entry.Document;
@@ -86,8 +90,8 @@ test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
         });
       } else {
         test.describe('should return calendar', () => {
-          test('personal entry', async ({ requestGetCalendarEntry }) => {
-            await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+          test('personal entry', async ({ requestGetCalendarEntry, saveCalendarEntry }) => {
+            await saveCalendarEntry(calendarPersonalEntryDocument);
             const res = await requestGetCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument));
             expect(res).toBeOkResponse();
             expect(res).toMatchSchema(schema);
@@ -95,8 +99,8 @@ test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
             expect(res).toMatchCalendarEntryDocument(calendarPersonalEntryDocument);
           });
 
-          test('issue entry', async ({ requestGetCalendarEntry }) => {                        
-            await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+          test('issue entry', async ({ requestGetCalendarEntry, saveCalendarEntry }) => {                        
+            await saveCalendarEntry(calendarIssueEntryDocument);
             const res = await requestGetCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument));
             expect(res).toBeOkResponse();
             expect(res).toMatchSchema(schema);
@@ -104,10 +108,10 @@ test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
             expect(res).toMatchCalendarEntryDocument(calendarIssueEntryDocument);
           });
 
-          test('work entry', async ({ requestGetCalendarEntry }) => {          
-            await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
-            await customerService.saveCustomers(customerDocument, blacklistedCustomerDocument);
-            await priceService.savePrice(priceDocument);
+          test('work entry', async ({ requestGetCalendarEntry, savePrice, saveCalendarEntry, saveCustomers }) => {          
+            await saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCustomers(customerDocument, blacklistedCustomerDocument);
+            await savePrice(priceDocument);
             const res = await requestGetCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument));
             expect(res).toBeOkResponse();
             expect(res).toMatchSchema(schema);

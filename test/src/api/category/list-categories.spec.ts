@@ -1,17 +1,19 @@
 import { default as schema } from '@household/test/schemas/category-response-list';
 import { entries } from '@household/shared/common/utils';
 import { forbidUsers } from '@household/test/utils';
-import { test, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
+import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { CategoryType } from '@household/shared/enums';
 import { Category } from '@household/shared/types/types';
-import { mergeExpects } from '@playwright/test';
-import { categoryService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
 const permissionMap = forbidUsers();
 
 const expect = mergeExpects(categoryApiExpect, apiExpect);
+
+const test = mergeTests(categoryApiTest, categoryDbTest);
 
 test.describe('GET /category/v1/categories', () => {
   let parentCategoryDocument: Category.Document;
@@ -51,8 +53,8 @@ test.describe('GET /category/v1/categories', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of categories', async ({ requestListCategories }) => {
-          await categoryService.saveCategories(parentCategoryDocument, childCategoryDocument);
+        test('should get a list of categories', async ({ requestListCategories, saveCategories }) => {
+          await saveCategories(parentCategoryDocument, childCategoryDocument);
 
           const res = await requestListCategories();
           expect(res).toBeOkResponse();

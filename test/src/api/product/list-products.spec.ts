@@ -6,14 +6,17 @@ import { CategoryType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
 import { entries, getCategoryId } from '@household/shared/common/utils';
 
-import { test, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { categoryService, productService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const expect = mergeExpects(productApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
+
+const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
 
 test.describe('GET /product/v1/products', () => {
   let productDocument1: Product.Document;
@@ -62,9 +65,9 @@ test.describe('GET /product/v1/products', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of products', async ({ requestListProducts }) => {
-          await productService.saveProducts(productDocument1, productDocument2);
-          await categoryService.saveCategories(categoryDocument1, categoryDocument2);
+        test('should get a list of products', async ({ requestListProducts, saveCategories, saveProducts }) => {
+          await saveProducts(productDocument1, productDocument2);
+          await saveCategories(categoryDocument1, categoryDocument2);
           const res = await requestListProducts();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);

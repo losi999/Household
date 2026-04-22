@@ -14,11 +14,11 @@ type AccountApiFixture = {
 };
 
 export const test = baseTest.extend<AccountApiFixture>({
-  requestGetAccount: async ({ authenticate, request, userType }, use) => {
+  requestGetAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestGetAccount = async (accountId: Account.Id) => {
-      return request.get(`${process.env.BASE_URL}/account/v1/accounts/${accountId}`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/account/v1/accounts/${accountId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -27,11 +27,11 @@ export const test = baseTest.extend<AccountApiFixture>({
 
     await use(requestGetAccount);
   },
-  requestListAccounts: async ({ authenticate, request, userType }, use) => {
+  requestListAccounts: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListAccounts = async () => {
-      return request.get(`${process.env.BASE_URL}/account/v1/accounts`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/account/v1/accounts`, {
         headers: {
           Authorization: authToken,
         },
@@ -40,11 +40,11 @@ export const test = baseTest.extend<AccountApiFixture>({
 
     await use(requestListAccounts);
   },
-  requestCreateAccount: async ({ authenticate, request, userType }, use) => {
+  requestCreateAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-
+    
     const requestCreateAccount = async (account: Account.Request) => {
-      return request.post(`${process.env.BASE_URL}/account/v1/accounts`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/account/v1/accounts`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -55,11 +55,11 @@ export const test = baseTest.extend<AccountApiFixture>({
 
     await use(requestCreateAccount);
   },
-  requestUpdateAccount: async ({ authenticate, request, userType }, use) => {
+  requestUpdateAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateAccount = async (accountId: Account.Id, account: Account.Request) => {
-      return request.put(`${process.env.BASE_URL}/account/v1/accounts/${accountId}`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/account/v1/accounts/${accountId}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -70,11 +70,11 @@ export const test = baseTest.extend<AccountApiFixture>({
 
     await use(requestUpdateAccount);
   },
-  requestDeleteAccount: async ({ authenticate, request, userType }, use) => {
+  requestDeleteAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteAccount = async (accountId: Account.Id) => {
-      return request.delete(`${process.env.BASE_URL}/account/v1/accounts/${accountId}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/account/v1/accounts/${accountId}`, {
         headers: {
           Authorization: authToken,
         },

@@ -4,14 +4,17 @@ import { allowUsers } from '@household/test/utils';
 import { entries, getCustomerId } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
+import { test as customerApiTest, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(domainExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(customerApiTest, priceDbTest, customerDbTest);
 
 test.describe('PUT customer/v1/customers/blacklist', () => {
   let customerDocumentA: Customer.Document;
@@ -70,32 +73,32 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should add customer to blacklist', async ({ requestAddCustomerToBlacklist }) => {
-          await customerService.saveCustomers(customerDocumentA, customerDocumentB, alreadyBlacklistedCustomer);
-          await priceService.savePrice(priceDocument);
+        test('should add customer to blacklist', async ({ requestAddCustomerToBlacklist, savePrice, saveCustomers, getCustomerById }) => {
+          await saveCustomers(customerDocumentA, customerDocumentB, alreadyBlacklistedCustomer);
+          await savePrice(priceDocument);
           const res = await requestAddCustomerToBlacklist([
             getCustomerId(customerDocumentA),
             getCustomerId(customerDocumentB), 
           ]);
           expect(res).toBeNoContentResponse();
-          expect(customerDocumentA).toHaveBeenAddedToBlacklist(customerDocumentB, await customerService.getCustomerById(getCustomerId(customerDocumentB)));
-          expect(customerDocumentB).toHaveBeenAddedToBlacklist(customerDocumentA, await customerService.getCustomerById(getCustomerId(customerDocumentA)));
+          expect(customerDocumentA).toHaveBeenAddedToBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
+          expect(customerDocumentB).toHaveBeenAddedToBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
         });
 
-        test('should handle if customers are already added to blacklist', async ({ requestAddCustomerToBlacklist }) => {
+        test('should handle if customers are already added to blacklist', async ({ requestAddCustomerToBlacklist, savePrice, saveCustomers, getCustomerById }) => {
           customerDocumentA = customerDataFactory.document({
             blacklistedCustomers: [customerDocumentB],
           });
 
-          await customerService.saveCustomers(customerDocumentA, customerDocumentB);
-          await priceService.savePrice(priceDocument);
+          await saveCustomers(customerDocumentA, customerDocumentB);
+          await savePrice(priceDocument);
           const res = await requestAddCustomerToBlacklist([
             getCustomerId(customerDocumentA),
             getCustomerId(customerDocumentB), 
           ]);
           expect(res).toBeNoContentResponse();
-          expect(customerDocumentA).toHaveBeenAddedToBlacklist(customerDocumentB, await customerService.getCustomerById(getCustomerId(customerDocumentB)));
-          expect(customerDocumentB).toHaveBeenAddedToBlacklist(customerDocumentA, await customerService.getCustomerById(getCustomerId(customerDocumentA)));
+          expect(customerDocumentA).toHaveBeenAddedToBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
+          expect(customerDocumentB).toHaveBeenAddedToBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
         });
 
         test.describe('should return error', () => {
@@ -142,9 +145,9 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
               expect(res).toHavePatternValidationError('body', 'data/0');
             });
 
-            test('does not belong to any customer', async ({ requestAddCustomerToBlacklist }) => {
-              await customerService.saveCustomer(customerDocumentB);
-              await priceService.savePrice(priceDocument);
+            test('does not belong to any customer', async ({ requestAddCustomerToBlacklist, savePrice, saveCustomer }) => {
+              await saveCustomer(customerDocumentB);
+              await savePrice(priceDocument);
               const res = await requestAddCustomerToBlacklist([
                 getCustomerId(customerDocumentA),
                 getCustomerId(customerDocumentB), 
@@ -164,8 +167,8 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
               expect(res).toHavePatternValidationError('body', 'data/1');
             });
 
-            test('does not belong to any customer', async ({ requestAddCustomerToBlacklist }) => {
-              await customerService.saveCustomers(customerDocumentA, alreadyBlacklistedCustomer);
+            test('does not belong to any customer', async ({ requestAddCustomerToBlacklist, saveCustomers }) => {
+              await saveCustomers(customerDocumentA, alreadyBlacklistedCustomer);
               const res = await requestAddCustomerToBlacklist([
                 getCustomerId(customerDocumentA),
                 getCustomerId(customerDocumentB), 

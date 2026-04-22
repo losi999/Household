@@ -1,12 +1,15 @@
 import { entries } from '@household/shared/common/utils';
 import { forbidUsers } from '@household/test/utils';
-import { test, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { default as schema } from '@household/test/schemas/recipient-response-list';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { recipientService } from '@household/test/dependencies';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { mergeTests } from '@playwright/test';
 
 const permissionMap = forbidUsers();
+
+const test = mergeTests(recipientApiTest, recipientDbTest);
 
 test.describe('GET /recipient/v1/recipients', () => {
   test.describe('called as anyonymous', () => {
@@ -31,11 +34,11 @@ test.describe('GET /recipient/v1/recipients', () => {
           apiExpect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of recipients', async ({ requestListRecipients }) => {
+        test('should get a list of recipients', async ({ requestListRecipients, saveRecipients }) => {
           const recipientDocument1 = recipientDataFactory.document();
           const recipientDocument2 = recipientDataFactory.document();
 
-          await recipientService.saveRecipients(recipientDocument1, recipientDocument2);
+          await saveRecipients(recipientDocument1, recipientDocument2);
 
           const res = await requestListRecipients();
           apiExpect(res).toBeOkResponse();

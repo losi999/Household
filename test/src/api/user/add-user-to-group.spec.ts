@@ -3,13 +3,13 @@ import { userDataFactory } from '@household/test/api/user/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
-
-import { test, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { test as identityTest } from '@household/test/fixtures/identity.fixture';
+import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { identityService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
 
 const expect = mergeExpects(userApiExpect, apiExpect);
+const test = mergeTests(identityTest, userApiTest);
 
 const permissionMap = allowUsers('editor') ;
 
@@ -20,8 +20,8 @@ test.describe('POST /user/v1/users/{email}/groups/{group}', () => {
     viewerUser = userDataFactory.confirmedUser();
   });
 
-  test.afterEach(async () => {
-    await identityService.deleteUser(viewerUser);
+  test.afterEach(async ({ deleteUser }) => {
+    await deleteUser(viewerUser);
   });
 
   test.describe('called as anonymous', () => {
@@ -45,12 +45,12 @@ test.describe('POST /user/v1/users/{email}/groups/{group}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should add user to group', async ({ requestAddUserToGroup }) => {
-          await identityService.createUser(viewerUser, undefined, true);
+        test('should add user to group', async ({ requestAddUserToGroup, createUser, listGroupsByUser }) => {
+          await createUser(viewerUser, undefined, true);
           const res = await requestAddUserToGroup(viewerUser.email, UserType.Editor);
           expect(res).toBeNoContentResponse();
 
-          expect(await identityService.listGroupsByUser(viewerUser.email)).toHaveBeenAddedToGroup(UserType.Editor);
+          expect(await listGroupsByUser(viewerUser.email)).toHaveBeenAddedToGroup(UserType.Editor);
         });
 
         test.describe('should return error', () => {

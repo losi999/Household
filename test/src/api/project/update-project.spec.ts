@@ -1,12 +1,15 @@
 import { entries, getProjectId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
+import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { Project } from '@household/shared/types/types';
-import { projectService } from '@household/test/dependencies';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { mergeTests } from '@playwright/test';
 
 const permissionMap = allowUsers('editor');
+
+const test = mergeTests(projectApiTest, projectDbTest);
 
 test.describe('PUT /project/v1/projects/{projectId}', () => {
   let req: Project.Request;
@@ -41,19 +44,19 @@ test.describe('PUT /project/v1/projects/{projectId}', () => {
         });
       } else {
         test.describe('should update project', () => {
-          test('with complete body', async ({ requestUpdateProject }) => {
-            await projectService.saveProject(projectDocument);
+          test('with complete body', async ({ requestUpdateProject, saveProject, findProjectById }) => {
+            await saveProject(projectDocument);
 
             const res = await requestUpdateProject(getProjectId(projectDocument), req);
             apiExpect(res).toBeCreatedResponse();
 
             const { projectId } = (await res.json()) as Project.ProjectId;
-            projectApiExpect(req).toHaveBeenSavedAsProjectDocument(await projectService.findProjectById(projectId));
+            projectApiExpect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
           });
 
           test.describe('without optional property in body', () => {
-            test('description', async ({ requestUpdateProject }) => {
-              await projectService.saveProject(projectDocument);
+            test('description', async ({ requestUpdateProject, saveProject, findProjectById }) => {
+              await saveProject(projectDocument);
 
               req = projectDataFactory.request({
                 description: undefined,
@@ -63,7 +66,7 @@ test.describe('PUT /project/v1/projects/{projectId}', () => {
               apiExpect(res).toBeCreatedResponse();
               
               const { projectId } = (await res.json()) as Project.ProjectId;
-              projectApiExpect(req).toHaveBeenSavedAsProjectDocument(await projectService.findProjectById(projectId));
+              projectApiExpect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
             });
           });
         });
@@ -108,10 +111,10 @@ test.describe('PUT /project/v1/projects/{projectId}', () => {
               apiExpect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different project', async ({ requestUpdateProject }) => {
+            test('is already in use by a different project', async ({ requestUpdateProject, saveProjects }) => {
               const duplicateProjectDocument = projectDataFactory.document(req);
 
-              await projectService.saveProjects(projectDocument, duplicateProjectDocument);
+              await saveProjects(projectDocument, duplicateProjectDocument);
 
               const res = await requestUpdateProject(getProjectId(projectDocument), projectDataFactory.request({
                 name: duplicateProjectDocument.name,

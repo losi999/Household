@@ -9,15 +9,20 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { allowUsers } from '@household/test/utils';
-import { test, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService, categoryService, productService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const expect = mergeExpects(productApiExpect, transactionApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(productApiTest, accountDbTest, transactionDbTest, categoryDbTest, productDbTest);
 
 test.describe('POST product/v1/products/{productId}/merge', () => {
   let accountDocument: Account.Document;
@@ -144,53 +149,53 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should merge products', async ({ requestMergeProducts }) => {
-          await accountService.saveAccounts(accountDocument, loanAccountDocument);
-          await categoryService.saveCategory(categoryDocument);
-          await productService.saveProducts(sourceProductDocument, targetProductDocument, unrelatedProductDocument);
-          await transactionService.saveTransactions(paymentTransactionDocument, splitTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument);
+        test('should merge products', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+          await saveAccounts(accountDocument, loanAccountDocument);
+          await saveCategory(categoryDocument);
+          await saveProducts(sourceProductDocument, targetProductDocument, unrelatedProductDocument);
+          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument);
 
           const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
           expect(res).toBeCreatedResponse();
 
-          expect(await productService.findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
-          expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
+          expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+          expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
             product: {
               from: getProductId(sourceProductDocument),
               to: getProductId(targetProductDocument),
             },
           });
-          expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
+          expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
             product: {
               from: getProductId(sourceProductDocument),
               to: getProductId(targetProductDocument),
             },
           });
-          expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(deferredTransactionDocument)), {
+          expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
             product: {
               from: getProductId(sourceProductDocument),
               to: getProductId(targetProductDocument),
             },
           });
-          expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
+          expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
             product: {
               from: getProductId(sourceProductDocument),
               to: getProductId(targetProductDocument),
             },
           });
-          expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+          expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
             product: {
               from: getProductId(sourceProductDocument),
               to: getProductId(targetProductDocument),
             },
           });
-          expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
+          expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
             product: {
               from: getProductId(sourceProductDocument),
               to: getProductId(targetProductDocument),
             },
           });
-          expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(splitTransactionDocument)), {
+          expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
             product: {
               from: getProductId(sourceProductDocument),
               to: getProductId(targetProductDocument),
@@ -199,7 +204,7 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
         });
 
         test.describe('should return error', () => {
-          test('if products do not belong to the same category', async ({ requestMergeProducts }) => {
+          test('if products do not belong to the same category', async ({ requestMergeProducts, saveCategory, saveProduct }) => {
             const otherCategory = categoryDataFactory.document({
               body: {
                 categoryType: CategoryType.Inventory,
@@ -210,19 +215,19 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
               category: otherCategory,
             });
 
-            await categoryService.saveCategory(categoryDocument);
-            await categoryService.saveCategory(otherCategory);
-            await productService.saveProduct(targetProductDocument);
-            await productService.saveProduct(sourceProductDocument);
+            await saveCategory(categoryDocument);
+            await saveCategory(otherCategory);
+            await saveProduct(targetProductDocument);
+            await saveProduct(sourceProductDocument);
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
             expect(res).toBeBadRequestResponse();
             expect(res).toHaveMessage('Not all products belong to the same category');
           });
 
-          test('if a source product does not exist', async ({ requestMergeProducts }) => {
-            await categoryService.saveCategory(categoryDocument);
-            await productService.saveProduct(targetProductDocument);
-            await productService.saveProduct(sourceProductDocument);
+          test('if a source product does not exist', async ({ requestMergeProducts, saveCategory, saveProduct }) => {
+            await saveCategory(categoryDocument);
+            await saveProduct(targetProductDocument);
+            await saveProduct(sourceProductDocument);
             const res = await requestMergeProducts(getProductId(targetProductDocument), [
               getProductId(sourceProductDocument),
               productDataFactory.id(), 

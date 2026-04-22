@@ -7,14 +7,17 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { allowUsers } from '@household/test/utils';
 
-import { test, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest);
 
 test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfer)', () => {
   let request: Transaction.TransferRequest;
@@ -63,16 +66,16 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
         });
       } else {
         test.describe('should update transaction', () => {
-          test('between non-loan accounts', async ({ requestUpdateToTransferTransaction }) => {
-            await transactionService.saveTransaction(originalDocument);
-            await accountService.saveAccounts(accountDocument, transferAccountDocument);
+          test('between non-loan accounts', async ({ requestUpdateToTransferTransaction, saveAccounts, saveTransaction, getTransactionById }) => {
+            await saveTransaction(originalDocument);
+            await saveAccounts(accountDocument, transferAccountDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
             expect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId));
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
           });
 
-          test('between a non-loan and a loan account', async ({ requestUpdateToTransferTransaction }) => {
+          test('between a non-loan and a loan account', async ({ requestUpdateToTransferTransaction, saveAccounts, saveTransaction, getTransactionById }) => {
             const loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -82,15 +85,15 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               transferAccountId: getAccountId(loanAccountDocument),
             });
 
-            await transactionService.saveTransaction(originalDocument);
-            await accountService.saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransaction(originalDocument);
+            await saveAccounts(accountDocument, loanAccountDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
             expect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId));
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
           });
 
-          test('between two loan accounts', async ({ requestUpdateToTransferTransaction }) => {
+          test('between two loan accounts', async ({ requestUpdateToTransferTransaction, saveAccounts, saveTransaction, getTransactionById }) => {
             accountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -104,15 +107,15 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               transferAccountId: getAccountId(transferAccountDocument),
             });
 
-            await transactionService.saveTransaction(originalDocument);
-            await accountService.saveAccounts(accountDocument, transferAccountDocument);
+            await saveTransaction(originalDocument);
+            await saveAccounts(accountDocument, transferAccountDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
             expect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId));
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
           });
 
-          test('with payments between non-loan accounts', async ({ requestUpdateToTransferTransaction }) => {
+          test('with payments between non-loan accounts', async ({ requestUpdateToTransferTransaction, saveAccounts, saveTransactions, getTransactionById }) => {
             const deferredTransactionDocument = deferredTransactionDataFactory.document({
               body: {
                 amount: -5000,
@@ -133,15 +136,15 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               ],
             });
 
-            await accountService.saveAccounts(accountDocument, transferAccountDocument);
-            await transactionService.saveTransactions(originalDocument, deferredTransactionDocument);
+            await saveAccounts(accountDocument, transferAccountDocument);
+            await saveTransactions(originalDocument, deferredTransactionDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
             expect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId));
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
           });
 
-          test('with payments between a non-loan and a loan account', async ({ requestUpdateToTransferTransaction }) => {
+          test('with payments between a non-loan and a loan account', async ({ requestUpdateToTransferTransaction, saveAccounts, saveTransactions, getTransactionById }) => {
             const loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -166,15 +169,15 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               ],
             });
 
-            await accountService.saveAccounts(accountDocument, loanAccountDocument);
-            await transactionService.saveTransactions(originalDocument, deferredTransactionDocument);
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransactions(originalDocument, deferredTransactionDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
             expect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId));
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
           });
 
-          test('with payment amount max out by deferred transaction amount', async ({ requestUpdateToTransferTransaction }) => {
+          test('with payment amount max out by deferred transaction amount', async ({ requestUpdateToTransferTransaction, saveAccounts, saveTransactions, getTransactionById }) => {
             const deferredTransactionDocument = deferredTransactionDataFactory.document({
               body: {
                 amount: -500,
@@ -195,41 +198,41 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               ],
             });
 
-            await accountService.saveAccounts(accountDocument, transferAccountDocument);
-            await transactionService.saveTransactions(originalDocument, deferredTransactionDocument);
+            await saveAccounts(accountDocument, transferAccountDocument);
+            await saveTransactions(originalDocument, deferredTransactionDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
             expect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId), [Math.abs(deferredTransactionDocument.amount)]);
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId), [Math.abs(deferredTransactionDocument.amount)]);
           });
 
           test.describe('without optional properties', () => {
-            test('description', async ({ requestUpdateToTransferTransaction }) => {
+            test('description', async ({ requestUpdateToTransferTransaction, saveAccount, saveTransaction, getTransactionById }) => {
               request = transferTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               });
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(transferAccountDocument);
+              await saveTransaction(originalDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('transferAmount', async ({ requestUpdateToTransferTransaction }) => {
+            test('transferAmount', async ({ requestUpdateToTransferTransaction, saveAccount, saveTransaction, getTransactionById }) => {
               request = transferTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 transferAmount: undefined,
               });
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(transferAccountDocument);
+              await saveTransaction(originalDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
             });
           });
 
@@ -246,18 +249,18 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               });
             });
 
-            test('description', async ({ requestUpdateToTransferTransaction }) => {
+            test('description', async ({ requestUpdateToTransferTransaction, saveAccount, saveTransaction, getTransactionById }) => {
               request = transferTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               });
-              await transactionService.saveTransaction(transferDocument);
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(transferAccountDocument);
+              await saveTransaction(transferDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(transferDocument), request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
             });
           });
         });
@@ -349,9 +352,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
           });
 
           test.describe('if accountId', () => {
-            test('does not belong to any account', async ({ requestUpdateToTransferTransaction }) => {
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccount(transferAccountDocument);
+            test('does not belong to any account', async ({ requestUpdateToTransferTransaction, saveAccount, saveTransaction }) => {
+              await saveTransaction(originalDocument);
+              await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 accountId: accountDataFactory.id(), 
@@ -394,9 +397,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               expect(res).toHaveMessage('Cannot transfer to same account');
             });
 
-            test('does not belong to any account', async ({ requestUpdateToTransferTransaction }) => {
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccount(accountDocument);
+            test('does not belong to any account', async ({ requestUpdateToTransferTransaction, saveAccount, saveTransaction }) => {
+              await saveTransaction(originalDocument);
+              await saveAccount(accountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 transferAccountId: accountDataFactory.id(), 

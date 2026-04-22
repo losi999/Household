@@ -2,12 +2,13 @@ import { Auth, User } from '@household/shared/types/types';
 import { userDataFactory } from '@household/test/api/user/data-factory';
 import { UserType } from '@household/shared/enums';
 
-import { test, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { test as identityTest } from '@household/test/fixtures/identity.fixture';
+import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { identityService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
 
 const expect = mergeExpects(userApiExpect, apiExpect);
+const test = mergeTests(identityTest, userApiTest);
 
 test.describe('POST user/v1/users/{email}/confirm', () => {
   let pendingUser: User.Request & Auth.TemporaryPassword;
@@ -20,18 +21,18 @@ test.describe('POST user/v1/users/{email}/confirm', () => {
     });
   });
 
-  test.afterEach(async () => {
-    await identityService.deleteUser(pendingUser);
+  test.afterEach(async ({ deleteUser }) => {
+    await deleteUser(pendingUser);
   });
 
   test.describe('called as anonymous', () => {
     test.describe('should confirm user', () => {
-      test('with complete body', async ({ requestConfirmUser }) => {
-        await identityService.createUser(pendingUser, UserType.Editor, true);
+      test('with complete body', async ({ requestConfirmUser, createUser, getUser }) => {
+        await createUser(pendingUser, UserType.Editor, true);
         const res = await requestConfirmUser(pendingUser.email, request);
         expect(res).toBeOkResponse();
 
-        expect(await identityService.getUser(pendingUser)).toHaveBeenConfirmed();
+        expect(await getUser(pendingUser)).toHaveBeenConfirmed();
       });
     });
 

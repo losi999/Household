@@ -4,14 +4,16 @@ import { settingDataFactory } from '@household/test/api/setting/data-factory';
 import { forbidUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { SettingKey } from '@household/shared/enums';
-import { test, expect as settingApiExpect } from '@household/test/fixtures/setting-api.fixture';
+import { test as settingApiTest, expect as settingApiExpect } from '@household/test/fixtures/setting-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { settingService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as settingDbTest } from '@household/test/fixtures/setting-db.fixture';
 
 const expect = mergeExpects(settingApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
+
+const test = mergeTests(settingApiTest, settingDbTest);
 
 test.describe('GET /setting/v1/settings', () => {
   let settingKey1: SettingKey;
@@ -47,9 +49,9 @@ test.describe('GET /setting/v1/settings', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of settings', async ({ requestListSettings }) => {
-          await settingService.updateSetting(settingKey1, settingDataFactory.update(settingRequest1));
-          await settingService.updateSetting(settingKey2, settingDataFactory.update(settingRequest2));
+        test('should get a list of settings', async ({ requestListSettings, updateSetting }) => {
+          await updateSetting(settingKey1, settingDataFactory.update(settingRequest1));
+          await updateSetting(settingKey2, settingDataFactory.update(settingRequest2));
           const res = await requestListSettings();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);

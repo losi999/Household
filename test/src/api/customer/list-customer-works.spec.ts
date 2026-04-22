@@ -4,15 +4,18 @@ import { entries, getCustomerId } from '@household/shared/common/utils';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
-import { test, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
 import { expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { calendarEntryService, customerService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(customerApiExpect, calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(customerApiTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('GET /customer/v1/customers/{customerId}/works', () => {
   let customerDocument: Customer.Document;
@@ -47,9 +50,9 @@ test.describe('GET /customer/v1/customers/{customerId}/works', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get customer works', async ({ requestListCustomerWorks }) => {
-          await customerService.saveCustomer(customerDocument);
-          await calendarEntryService.saveCalendarEntry(workEntryDocument);
+        test('should get customer works', async ({ requestListCustomerWorks, saveCalendarEntry, saveCustomer }) => {
+          await saveCustomer(customerDocument);
+          await saveCalendarEntry(workEntryDocument);
           const res = await requestListCustomerWorks(getCustomerId(customerDocument));
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);

@@ -16,11 +16,11 @@ type UserApiFixture = {
 };
 
 export const test = baseTest.extend<UserApiFixture>({
-  requestCreateUser: async ({ authenticate, request, userType }, use) => {
+  requestCreateUser: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreateUser = async (user: User.Request) => {
-      return request.post(`${process.env.BASE_URL}/user/v1/users`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/user/v1/users`, {
         headers: {
           Authorization: authToken,
           [headerSuppressEmail]: 'true',
@@ -31,20 +31,20 @@ export const test = baseTest.extend<UserApiFixture>({
 
     await use(requestCreateUser);
   },
-  requestConfirmUser: async ({ request }, use) => {
+  requestConfirmUser: async ({ loggedRequest }, use) => {
     const requestConfirmUser = async (email: User.Email['email'], requestBody: Auth.ConfirmUser.Request) => {
-      return request.post(`${process.env.BASE_URL}/user/v1/users/${email}/confirm`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/user/v1/users/${email}/confirm`, {
         data: requestBody,
       });
     };
 
     await use(requestConfirmUser);
   },
-  requestDeleteUser: async ({ authenticate, request, userType }, use) => {
+  requestDeleteUser: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteUser = async (email: User.Email['email']) => {
-      return request.delete(`${process.env.BASE_URL}/user/v1/users/${email}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/user/v1/users/${email}`, {
         headers: {
           Authorization: authToken,
         },
@@ -53,11 +53,11 @@ export const test = baseTest.extend<UserApiFixture>({
 
     await use(requestDeleteUser);
   },
-  requestListUsers: async ({ authenticate, request, userType }, use) => {
+  requestListUsers: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListUsers = async () => {
-      return request.get(`${process.env.BASE_URL}/user/v1/users`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/user/v1/users`, {
         headers: {
           Authorization: authToken,
         },
@@ -66,11 +66,11 @@ export const test = baseTest.extend<UserApiFixture>({
 
     await use(requestListUsers);
   },
-  requestAddUserToGroup: async ({ authenticate, request, userType }, use) => {
+  requestAddUserToGroup: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestAddUserToGroup = async (email: string, group: UserType) => {
-      return request.post(`${process.env.BASE_URL}/user/v1/users/${email}/groups/${group}`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/user/v1/users/${email}/groups/${group}`, {
         headers: {
           Authorization: authToken,
         },
@@ -79,11 +79,11 @@ export const test = baseTest.extend<UserApiFixture>({
 
     await use(requestAddUserToGroup);
   },
-  requestRemoveUserFromGroup: async ({ authenticate, request, userType }, use) => {
+  requestRemoveUserFromGroup: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestRemoveUserFromGroup = async (email: string, group: UserType) => {
-      return request.delete(`${process.env.BASE_URL}/user/v1/users/${email}/groups/${group}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/user/v1/users/${email}/groups/${group}`, {
         headers: {
           Authorization: authToken,
         },

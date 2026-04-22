@@ -1,12 +1,15 @@
 import { entries } from '@household/shared/common/utils';
 import { forbidUsers } from '@household/test/utils';
-import { test, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
+import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { default as schema } from '@household/test/schemas/project-response-list';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
-import { projectService } from '@household/test/dependencies';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { mergeTests } from '@playwright/test';
 
 const permissionMap = forbidUsers();
+
+const test = mergeTests(projectApiTest, projectDbTest);
 
 test.describe('GET /project/v1/projects', () => {
   test.describe('called as anyonymous', () => {
@@ -31,11 +34,11 @@ test.describe('GET /project/v1/projects', () => {
           apiExpect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of projects', async ({ requestListProjects }) => {
+        test('should get a list of projects', async ({ requestListProjects, saveProjects }) => {
           const projectDocument1 = projectDataFactory.document();
           const projectDocument2 = projectDataFactory.document();
 
-          await projectService.saveProjects(projectDocument1, projectDocument2);
+          await saveProjects(projectDocument1, projectDocument2);
 
           const res = await requestListProjects();
           apiExpect(res).toBeOkResponse();

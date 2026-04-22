@@ -22,11 +22,11 @@ export const validateRecipientResponse = (response: Recipient.Response, document
 };
 
 export const test = baseTest.extend<RecipientApiFixture>({
-  requestGetRecipient: async ({ authenticate, request, userType }, use) => {
+  requestGetRecipient: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestGetRecipient = async (recipientId: Recipient.Id) => {
-      return request.get(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -35,11 +35,11 @@ export const test = baseTest.extend<RecipientApiFixture>({
 
     await use(requestGetRecipient);
   },
-  requestListRecipients: async ({ authenticate, request, userType }, use) => {
+  requestListRecipients: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListRecipients = async () => {
-      return request.get(`${process.env.BASE_URL}/recipient/v1/recipients`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/recipient/v1/recipients`, {
         headers: {
           Authorization: authToken,
         },
@@ -48,11 +48,11 @@ export const test = baseTest.extend<RecipientApiFixture>({
 
     await use(requestListRecipients);
   },
-  requestCreateRecipient: async ({ authenticate, request, userType }, use) => {
+  requestCreateRecipient: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreateRecipient = async (recipient: Recipient.Request) => {
-      return request.post(`${process.env.BASE_URL}/recipient/v1/recipients`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/recipient/v1/recipients`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -63,11 +63,11 @@ export const test = baseTest.extend<RecipientApiFixture>({
 
     await use(requestCreateRecipient);
   },
-  requestUpdateRecipient: async ({ authenticate, request, userType }, use) => {
+  requestUpdateRecipient: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateRecipient = async (recipientId: Recipient.Id, recipient: Recipient.Request) => {
-      return request.put(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -78,11 +78,11 @@ export const test = baseTest.extend<RecipientApiFixture>({
 
     await use(requestUpdateRecipient);
   },
-  requestDeleteRecipient: async ({ authenticate, request, userType }, use) => {
+  requestDeleteRecipient: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteRecipient = async (recipientId: Recipient.Id) => {
-      return request.delete(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -91,11 +91,11 @@ export const test = baseTest.extend<RecipientApiFixture>({
 
     await use(requestDeleteRecipient);
   },
-  requestMergeRecipients: async ({ authenticate, request, userType }, use) => {
+  requestMergeRecipients: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestMergeRecipients = async (recipientId: Recipient.Id, sourceRecipientIds: Recipient.Id[]) => {
-      return request.post(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}/merge`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}/merge`, {
         headers: {
           Authorization: authToken,
         },

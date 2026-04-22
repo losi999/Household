@@ -4,14 +4,17 @@ import { allowUsers } from '@household/test/utils';
 import { entries, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
+import { test as customerApiTest, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(domainExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(customerApiTest, priceDbTest, customerDbTest);
 
 test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
   let request: Customer.Job.Request;
@@ -81,12 +84,12 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should update customer job', async ({ requestUpdateCustomerJob }) => {
-          await customerService.saveCustomers(customerDocument, blacklistedCustomer);
-          await priceService.savePrice(priceDocument);
+        test('should update customer job', async ({ requestUpdateCustomerJob, savePrice, saveCustomers, getCustomerById }) => {
+          await saveCustomers(customerDocument, blacklistedCustomer);
+          await savePrice(priceDocument);
           const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), jobName, request);
           expect(res).toBeNoContentResponse();
-          expect(request).toHaveBeenUpdatedInCustomerJobs(jobName, customerDocument, await customerService.getCustomerById(getCustomerId(customerDocument)));
+          expect(request).toHaveBeenUpdatedInCustomerJobs(jobName, customerDocument, await getCustomerById(getCustomerId(customerDocument)));
         });
 
         test.describe('should return error', () => {        
@@ -132,7 +135,7 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different job on the same customer', async ({ requestUpdateCustomerJob }) => {
+            test('is already in use by a different job on the same customer', async ({ requestUpdateCustomerJob, saveCustomer }) => {
               const existingJobName = 'job name already used';
               const customerDocument = customerDataFactory.document({
                 jobs: [
@@ -153,7 +156,7 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
                 },
               });
 
-              await customerService.saveCustomer(customerDocument);
+              await saveCustomer(customerDocument);
               const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), jobName, request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate customer job name');
@@ -311,9 +314,9 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
               expect(res).toHavePatternValidationError('body', 'priceId');
             });
 
-            test('does not belong to any price', async ({ requestUpdateCustomerJob }) => {
-              await customerService.saveCustomer(customerDocument);
-              await priceService.savePrice(priceDocument);
+            test('does not belong to any price', async ({ requestUpdateCustomerJob, savePrice, saveCustomer }) => {
+              await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
               const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), jobName, customerDataFactory.jobRequest({
                 prices: {
                   listed: [
@@ -461,9 +464,9 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
           });
 
           test.describe('if jobName', () => {
-            test('does not belong to any customer job', async ({ requestUpdateCustomerJob }) => {
-              await customerService.saveCustomers(customerDocument, blacklistedCustomer);
-              await priceService.savePrice(priceDocument);
+            test('does not belong to any customer job', async ({ requestUpdateCustomerJob, savePrice, saveCustomers }) => {
+              await saveCustomers(customerDocument, blacklistedCustomer);
+              await savePrice(priceDocument);
               const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), 'not-existing-job-name', request);
               expect(res).toBeNotFoundResponse();
               expect(res).toHaveMessage('No customer job found');

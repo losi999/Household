@@ -11,11 +11,11 @@ type SettingApiFixture = {
 };
 
 export const test = baseTest.extend<SettingApiFixture>({
-  requestUpdateSetting: async ({ authenticate, request, userType }, use) => {
+  requestUpdateSetting: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateSetting = async (settingKey: SettingKey, setting: Setting.Request) => {
-      return request.post(`${process.env.BASE_URL}/setting/v1/settings/${settingKey}`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/setting/v1/settings/${settingKey}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -26,11 +26,11 @@ export const test = baseTest.extend<SettingApiFixture>({
 
     await use(requestUpdateSetting);
   },
-  requestListSettings: async ({ authenticate, request, userType }, use) => {
+  requestListSettings: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListSettings = async () => {
-      return request.get(`${process.env.BASE_URL}/setting/v1/settings`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/setting/v1/settings`, {
         headers: {
           Authorization: authToken,
         },

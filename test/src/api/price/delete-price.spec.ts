@@ -4,14 +4,17 @@ import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 
-import { test, expect as priceApiExpect } from '@household/test/fixtures/price-api.fixture';
+import { test as priceApiTest, expect as priceApiExpect } from '@household/test/fixtures/price-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(priceApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser') ;
+
+const test = mergeTests(priceApiTest, priceDbTest, customerDbTest);
 
 test.describe('DELETE /price/v1/prices/{priceId}', () => {
   let priceDocument: Price.Document;
@@ -41,16 +44,16 @@ test.describe('DELETE /price/v1/prices/{priceId}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should delete price', async ({ requestDeletePrice }) => {
-          await priceService.savePrice(priceDocument);
+        test('should delete price', async ({ requestDeletePrice, savePrice, findPriceById }) => {
+          await savePrice(priceDocument);
           const res = await requestDeletePrice(getPriceId(priceDocument));
           expect(res).toBeNoContentResponse();
 
-          expect(await priceService.findPriceById(getPriceId(priceDocument))).toHaveBeenDeletedFromDatabase();
+          expect(await findPriceById(getPriceId(priceDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('should archive price', () => {
-          test('if there is a customer job', async ({ requestDeletePrice }) => {
+          test('if there is a customer job', async ({ requestDeletePrice, savePrice, findPriceById, saveCustomer }) => {
             const customerDocument = customerDataFactory.document({
               jobs: [
                 {
@@ -64,12 +67,12 @@ test.describe('DELETE /price/v1/prices/{priceId}', () => {
                 },
               ],
             });
-            await priceService.savePrice(priceDocument);
-            await customerService.saveCustomer(customerDocument);
+            await savePrice(priceDocument);
+            await saveCustomer(customerDocument);
             const res = await requestDeletePrice(getPriceId(priceDocument));
             expect(res).toBeNoContentResponse();
 
-            expect(priceDocument).toHaveBeenArchivedInDatabase(await priceService.findPriceById(getPriceId(priceDocument)));
+            expect(priceDocument).toHaveBeenArchivedInDatabase(await findPriceById(getPriceId(priceDocument)));
           });
 
           // test('if there is a calendar entry', async ({ requestDeletePrice }) => {

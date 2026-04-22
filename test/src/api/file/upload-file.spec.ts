@@ -4,14 +4,17 @@ import { default as schema } from '@household/test/schemas/file-url-response';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/file-api.fixture';
+import { test as fileApiTest, expect as domainExpect } from '@household/test/fixtures/file-api.fixture';
+import { test as storageTest } from '@household/test/fixtures/storage.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { fileService, storageService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as fileDbTest } from '@household/test/fixtures/file-db.fixture';
 
 const expect = mergeExpects(domainExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(fileApiTest, fileDbTest, storageTest);
 
 test.describe('POST /file/v1/files', () => {
   let request: File.Request;
@@ -42,16 +45,16 @@ test.describe('POST /file/v1/files', () => {
         });
       } else {
         test.describe('should upload file', () => {
-          test('with complete body', async ({ requestCreateUploadUrl, requestUploadFile }) => {
+          test('with complete body', async ({ requestCreateUploadUrl, requestUploadFile, findFileById, checkFile }) => {
             const urlRes = await requestCreateUploadUrl(request);
             expect(urlRes).toBeOkResponse();
             expect(urlRes).toMatchSchema(schema);
 
             const { fileId, url } = (await urlRes.json()) as File.FileId & File.Url;
-            expect(request).toHaveBeenSavedAsFileDocument(await fileService.findFileById(fileId));
+            expect(request).toHaveBeenSavedAsFileDocument(await findFileById(fileId));
             
             await requestUploadFile(url);
-            const file = await storageService.checkFile(fileId);
+            const file = await checkFile(fileId);
             expect(file).toHaveBeenStoredInS3();
           });
         });

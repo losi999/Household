@@ -8,15 +8,18 @@ import { reimbursementTransactionDataFactory } from '@household/test/api/transac
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { allowUsers } from '@household/test/utils';
-import { test, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 
 const expect = mergeExpects(accountApiExpect, transactionApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(accountApiTest, accountDbTest, transactionDbTest);
 
 test.describe('DELETE /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
@@ -46,12 +49,12 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should delete account', async ({ requestDeleteAccount }) => {
-          await accountService.saveAccount(accountDocument);
+        test('should delete account', async ({ requestDeleteAccount, saveAccount, findAccountById }) => {
+          await saveAccount(accountDocument);
           const res = await requestDeleteAccount(getAccountId(accountDocument));
           expect(res).toBeNoContentResponse();
 
-          expect(await accountService.findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+          expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('related transactions', () => {
@@ -150,25 +153,25 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             });
 
           });
-          test('should be deleted if account is deleted', async ({ requestDeleteAccount }) => {
-            await accountService.saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
-            await transactionService.saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument, repayingTransferTransactionDocument, invertedRepayingTransferTransactionDocument);
+          test('should be deleted if account is deleted', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
+            await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
+            await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument, repayingTransferTransactionDocument, invertedRepayingTransferTransactionDocument);
             const res = await requestDeleteAccount(getAccountId(accountDocument));
             expect(res).toBeNoContentResponse();
             
-            expect(await accountService.findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await transactionService.findTransactionById(getTransactionId(splitTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await transactionService.findTransactionById(getTransactionId(transferTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await transactionService.findTransactionById(getTransactionId(invertedTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await transactionService.findTransactionById(getTransactionId(loanTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await transactionService.findTransactionById(getTransactionId(invertedLoanTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await transactionService.findTransactionById(getTransactionId(payingDeferredTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await transactionService.findTransactionById(getTransactionId(payingDeferredToLoanTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await transactionService.findTransactionById(getTransactionId(owningReimbursementTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await transactionService.findTransactionById(getTransactionId(repayingTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(owningDeferredTransactionDocument).toBeConvertedToPaymentTransaction(await transactionService.findTransactionById(getTransactionId(owningDeferredTransactionDocument)));
-            expect(deferredSplitTransactionDocument).toHaveBeenConvertedToRegularSplitItems(await transactionService.findTransactionById(getTransactionId(deferredSplitTransactionDocument)), getAccountId(accountDocument));
+            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findTransactionById(getTransactionId(paymentTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findTransactionById(getTransactionId(splitTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findTransactionById(getTransactionId(transferTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findTransactionById(getTransactionId(invertedTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findTransactionById(getTransactionId(loanTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findTransactionById(getTransactionId(invertedLoanTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findTransactionById(getTransactionId(payingDeferredTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findTransactionById(getTransactionId(payingDeferredToLoanTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findTransactionById(getTransactionId(owningReimbursementTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findTransactionById(getTransactionId(repayingTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(owningDeferredTransactionDocument).toBeConvertedToPaymentTransaction(await findTransactionById(getTransactionId(owningDeferredTransactionDocument)));
+            expect(deferredSplitTransactionDocument).toHaveBeenConvertedToRegularSplitItems(await findTransactionById(getTransactionId(deferredSplitTransactionDocument)), getAccountId(accountDocument));
           });
         });
 

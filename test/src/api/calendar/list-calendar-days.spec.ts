@@ -7,14 +7,19 @@ import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { default as schema } from '@household/test/schemas/calendar-day-response-list';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { test as calendarApiTest, expect as domainExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { calendarDayService, calendarEntryService, customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(domainExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(calendarApiTest, priceDbTest, calendarDayDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('GET /calendar/v1/days', () => {
   let customerDocument: Customer.Document;
@@ -112,10 +117,10 @@ test.describe('GET /calendar/v1/days', () => {
             });
 
             test.describe('without custom limits', () => {
-              test('with a personal entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with a personal entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarEntry }) => {
+                await clearCalendarDay(day);
 
-                await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+                await saveCalendarEntry(calendarPersonalEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -125,10 +130,10 @@ test.describe('GET /calendar/v1/days', () => {
                 expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument);
               });
 
-              test('with an issue entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarEntry }) => {
+                await clearCalendarDay(day);
 
-                await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+                await saveCalendarEntry(calendarIssueEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -138,12 +143,12 @@ test.describe('GET /calendar/v1/days', () => {
                 expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument);
               });
 
-              test('with a work entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarEntry, saveCustomers }) => {
+                await clearCalendarDay(day);
 
-                await customerService.saveCustomers(customerDocument, blacklistedCustomerDocument);
-                await priceService.savePrice(priceDocument);
-                await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+                await saveCustomers(customerDocument, blacklistedCustomerDocument);
+                await savePrice(priceDocument);
+                await saveCalendarEntry(calendarWorkEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -161,11 +166,11 @@ test.describe('GET /calendar/v1/days', () => {
                 });
               });
 
-              test('with a personal entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with a personal entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
+                await clearCalendarDay(day);
 
-                await calendarDayService.saveCalendarDay(calendarDayDocument);
-                await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+                await saveCalendarDay(calendarDayDocument);
+                await saveCalendarEntry(calendarPersonalEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -175,11 +180,11 @@ test.describe('GET /calendar/v1/days', () => {
                 expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
               });
 
-              test('with an issue entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
+                await clearCalendarDay(day);
 
-                await calendarDayService.saveCalendarDay(calendarDayDocument);
-                await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+                await saveCalendarDay(calendarDayDocument);
+                await saveCalendarEntry(calendarIssueEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -189,13 +194,13 @@ test.describe('GET /calendar/v1/days', () => {
                 expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
               });
 
-              test('with a work entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarDay, saveCalendarEntry, saveCustomers }) => {
+                await clearCalendarDay(day);
 
-                await customerService.saveCustomers(customerDocument, blacklistedCustomerDocument);
-                await priceService.savePrice(priceDocument);
-                await calendarDayService.saveCalendarDay(calendarDayDocument);
-                await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+                await saveCustomers(customerDocument, blacklistedCustomerDocument);
+                await savePrice(priceDocument);
+                await saveCalendarDay(calendarDayDocument);
+                await saveCalendarEntry(calendarWorkEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -215,10 +220,10 @@ test.describe('GET /calendar/v1/days', () => {
             });
 
             test.describe('without custom limits', () => {
-              test('with a personal entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with a personal entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarEntry }) => {
+                await clearCalendarDay(day);
                 
-                await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+                await saveCalendarEntry(calendarPersonalEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -228,10 +233,10 @@ test.describe('GET /calendar/v1/days', () => {
                 expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument);
               });
 
-              test('with an issue entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarEntry }) => {
+                await clearCalendarDay(day);
                 
-                await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+                await saveCalendarEntry(calendarIssueEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -241,12 +246,12 @@ test.describe('GET /calendar/v1/days', () => {
                 expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument);
               });
 
-              test('with a work entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarEntry, saveCustomers }) => {
+                await clearCalendarDay(day);
                 
-                await customerService.saveCustomers(customerDocument, blacklistedCustomerDocument);
-                await priceService.savePrice(priceDocument);
-                await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+                await saveCustomers(customerDocument, blacklistedCustomerDocument);
+                await savePrice(priceDocument);
+                await saveCalendarEntry(calendarWorkEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -264,11 +269,11 @@ test.describe('GET /calendar/v1/days', () => {
                 });
               });
 
-              test('with a personal entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with a personal entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
+                await clearCalendarDay(day);
                 
-                await calendarDayService.saveCalendarDay(calendarDayDocument);
-                await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+                await saveCalendarDay(calendarDayDocument);
+                await saveCalendarEntry(calendarPersonalEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -278,11 +283,11 @@ test.describe('GET /calendar/v1/days', () => {
                 expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
               });
 
-              test('with an issue entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
+                await clearCalendarDay(day);
                 
-                await calendarDayService.saveCalendarDay(calendarDayDocument);
-                await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+                await saveCalendarDay(calendarDayDocument);
+                await saveCalendarEntry(calendarIssueEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -292,13 +297,13 @@ test.describe('GET /calendar/v1/days', () => {
                 expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
               });
 
-              test('with a work entry', async ({ requestListCalendarDays }) => {
-                await calendarDayService.clearCalendarDay(day);
+              test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarDay, saveCalendarEntry, saveCustomers }) => {
+                await clearCalendarDay(day);
                 
-                await customerService.saveCustomers(customerDocument, blacklistedCustomerDocument);
-                await priceService.savePrice(priceDocument);
-                await calendarDayService.saveCalendarDay(calendarDayDocument);
-                await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+                await saveCustomers(customerDocument, blacklistedCustomerDocument);
+                await savePrice(priceDocument);
+                await saveCalendarDay(calendarDayDocument);
+                await saveCalendarEntry(calendarWorkEntryDocument);
                 const res = await requestListCalendarDays({
                   dateFrom: day,
                   dateTo: day, 
@@ -318,11 +323,11 @@ test.describe('GET /calendar/v1/days', () => {
 
               createEntries();
             });
-            test('with a personal entry', async ({ requestListCalendarDays }) => {
-              await calendarDayService.clearCalendarDay(day);
+            test('with a personal entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
+              await clearCalendarDay(day);
                 
-              await calendarDayService.saveCalendarDay(calendarDayDocument);
-              await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+              await saveCalendarDay(calendarDayDocument);
+              await saveCalendarEntry(calendarPersonalEntryDocument);
               const res = await requestListCalendarDays({
                 dateFrom: day,
                 dateTo: day, 
@@ -332,11 +337,11 @@ test.describe('GET /calendar/v1/days', () => {
               expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
             });
 
-            test('with an issue entry', async ({ requestListCalendarDays }) => {
-              await calendarDayService.clearCalendarDay(day);
+            test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
+              await clearCalendarDay(day);
                 
-              await calendarDayService.saveCalendarDay(calendarDayDocument);
-              await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+              await saveCalendarDay(calendarDayDocument);
+              await saveCalendarEntry(calendarIssueEntryDocument);
               const res = await requestListCalendarDays({
                 dateFrom: day,
                 dateTo: day, 
@@ -346,13 +351,13 @@ test.describe('GET /calendar/v1/days', () => {
               expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
             });
 
-            test('with a work entry', async ({ requestListCalendarDays }) => {
-              await calendarDayService.clearCalendarDay(day);
+            test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarDay, saveCalendarEntry, saveCustomers }) => {
+              await clearCalendarDay(day);
                 
-              await customerService.saveCustomers(customerDocument, blacklistedCustomerDocument);
-              await priceService.savePrice(priceDocument);
-              await calendarDayService.saveCalendarDay(calendarDayDocument);
-              await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+              await saveCustomers(customerDocument, blacklistedCustomerDocument);
+              await savePrice(priceDocument);
+              await saveCalendarDay(calendarDayDocument);
+              await saveCalendarEntry(calendarWorkEntryDocument);
               const res = await requestListCalendarDays({
                 dateFrom: day,
                 dateTo: day, 
@@ -372,11 +377,11 @@ test.describe('GET /calendar/v1/days', () => {
               createEntries();
             });
 
-            test('with a personal entry', async ({ requestListCalendarDays }) => {
-              await calendarDayService.clearCalendarDay(day);
+            test('with a personal entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
+              await clearCalendarDay(day);
                 
-              await calendarDayService.saveCalendarDay(calendarDayDocument);
-              await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+              await saveCalendarDay(calendarDayDocument);
+              await saveCalendarEntry(calendarPersonalEntryDocument);
               const res = await requestListCalendarDays({
                 dateFrom: day,
                 dateTo: day, 
@@ -386,11 +391,11 @@ test.describe('GET /calendar/v1/days', () => {
               expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
             });
 
-            test('with an issue entry', async ({ requestListCalendarDays }) => {
-              await calendarDayService.clearCalendarDay(day);
+            test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
+              await clearCalendarDay(day);
                 
-              await calendarDayService.saveCalendarDay(calendarDayDocument);
-              await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+              await saveCalendarDay(calendarDayDocument);
+              await saveCalendarEntry(calendarIssueEntryDocument);
               const res = await requestListCalendarDays({
                 dateFrom: day,
                 dateTo: day, 
@@ -400,13 +405,13 @@ test.describe('GET /calendar/v1/days', () => {
               expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
             });
 
-            test('with a work entry', async ({ requestListCalendarDays }) => {
-              await calendarDayService.clearCalendarDay(day);
+            test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarDay, saveCalendarEntry, saveCustomers }) => {
+              await clearCalendarDay(day);
                 
-              await customerService.saveCustomers(customerDocument, blacklistedCustomerDocument);
-              await priceService.savePrice(priceDocument);
-              await calendarDayService.saveCalendarDay(calendarDayDocument);
-              await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+              await saveCustomers(customerDocument, blacklistedCustomerDocument);
+              await savePrice(priceDocument);
+              await saveCalendarDay(calendarDayDocument);
+              await saveCalendarEntry(calendarWorkEntryDocument);
               const res = await requestListCalendarDays({
                 dateFrom: day,
                 dateTo: day, 

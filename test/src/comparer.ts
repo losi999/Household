@@ -4,21 +4,21 @@ import { Internal } from '@household/shared/types/types';
 
 type Expected<T> = {
   [P in keyof T]?: 
-  T[P] extends Internal.Id[] ? (Branding<string, any> | Comparer<T[P][number]>)[] :
-    T[P] extends object[] ? Comparer<T[P][number]>[] :
+  T[P] extends Internal.Id[] ? (Branding<string, any> | IComparer)[] :
+    T[P] extends object[] ? IComparer[] :
       T[P] extends (infer U)[] ? U[] :
         T[P] extends Branding<string, infer U> ? Branding<string, U> :
           T[P] extends Internal.Id ? Branding<string, any> : 
             T[P] extends Date ? string :
-              T[P] extends object ? Comparer<T[P]> :
+              T[P] extends object ? IComparer :
                 T[P];
 };
 
-const isComparer = (value: any): value is Comparer<any> => {
-  return value?.validate instanceof Function;
+type IComparer = {
+  validate(prefix?: string): string[];
 };
 
-export class Comparer<D extends object> {
+export class Comparer<D extends object> implements IComparer {
   private actual: D;
   private expected: Expected<D>;
   private internalProperties: (keyof D)[];
@@ -64,7 +64,7 @@ export class Comparer<D extends object> {
           ...value.flatMap((act, index) => {
             const expectedItem = expectedValue[index];
 
-            if (isComparer(expectedItem)) {
+            if (expectedItem instanceof Comparer) {
               return expectedItem.validate(`${key}[${index}].`);
             }
 
@@ -82,7 +82,7 @@ export class Comparer<D extends object> {
         ];
       }
 
-      if (isComparer(expectedValue)) {
+      if (expectedValue instanceof Comparer) {
         return [
           ...accumulator,
           ...expectedValue.validate(`${key}.`),

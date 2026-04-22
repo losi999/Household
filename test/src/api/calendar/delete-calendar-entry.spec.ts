@@ -5,14 +5,17 @@ import { calendarEntryDataFactory } from '@household/test/api/calendar/data-fact
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
-import { test, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { calendarEntryService, customerService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(calendarApiTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('DELETE /calendar/v1/entries/{calendarEntryId}', () => {
   let calendarPersonalEntryDocument: Calendar.Entry.Document;
@@ -55,41 +58,41 @@ test.describe('DELETE /calendar/v1/entries/{calendarEntryId}', () => {
         });
       } else {
         test.describe('should delete calendar', () => {
-          test('personal entry', async ({ requestDeleteCalendarEntry }) => {
-            await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+          test('personal entry', async ({ requestDeleteCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
+            await saveCalendarEntry(calendarPersonalEntryDocument);
             const res = await requestDeleteCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument));
             expect(res).toBeNoContentResponse();
 
-            expect(await calendarEntryService.getCalendarEntryById(getCalendarEntryId(calendarPersonalEntryDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await getCalendarEntryById(getCalendarEntryId(calendarPersonalEntryDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          test('issue entry', async ({ requestDeleteCalendarEntry }) => {                        
-            await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+          test('issue entry', async ({ requestDeleteCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {                        
+            await saveCalendarEntry(calendarIssueEntryDocument);
             const res = await requestDeleteCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument));
             expect(res).toBeNoContentResponse();
 
-            expect(await calendarEntryService.getCalendarEntryById(getCalendarEntryId(calendarIssueEntryDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await getCalendarEntryById(getCalendarEntryId(calendarIssueEntryDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          test('work entry', async ({ requestDeleteCalendarEntry }) => {          
-            await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
-            await customerService.saveCustomer(customerDocument);
+          test('work entry', async ({ requestDeleteCalendarEntry, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {          
+            await saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCustomer(customerDocument);
             const res = await requestDeleteCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument));
             expect(res).toBeNoContentResponse();
 
-            expect(await calendarEntryService.getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument))).toHaveBeenDeletedFromDatabase();
           });
         });
 
         test.describe('should return error', () => {    
-          test('if work entry is already resolved', async ({ requestDeleteCalendarEntry }) => {      
+          test('if work entry is already resolved', async ({ requestDeleteCalendarEntry, saveCalendarEntry }) => {      
             calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
               customer: customerDocument,
               resolution: {
                 status: CalendarEntryResolutionStatus.Paid,
               },
             });       
-            await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestDeleteCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument));
             expect(res).toBeBadRequestResponse();
             expect(res).toHaveMessage('Calendar entry is already resolved');

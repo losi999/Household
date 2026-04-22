@@ -9,14 +9,21 @@ import { recipientDataFactory } from '@household/test/api/recipient/data-factory
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { forbidUsers } from '@household/test/utils';
 
-import { test, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService, categoryService, productService, projectService, recipientService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = forbidUsers('viewer') ;
+
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
 test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
   let request: Transaction.PaymentRequest;
@@ -94,67 +101,67 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
       } else {
         test.describe('should create transaction', () => {
           test.describe('with complete body', () => {
-            test('using regular category', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('using regular category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('using invoice category', async ({ requestCreatePaymentTransaction }) => {
+            test('using invoice category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
               });
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
-            test('using inventory category', async ({ requestCreatePaymentTransaction }) => {
+            test('using inventory category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
               request = reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument),
               });
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
           });
 
           test.describe('without optional properties', () => {
-            test('description', async ({ requestCreatePaymentTransaction }) => {
+            test('description', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               });
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
-            test(CategoryType.Inventory, async ({ requestCreatePaymentTransaction }) => {
+            test(CategoryType.Inventory, async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 productId: undefined,
@@ -162,17 +169,17 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
                 categoryId: getCategoryId(inventoryCategoryDocument),
               });
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test(CategoryType.Invoice, async ({ requestCreatePaymentTransaction }) => {
+            test(CategoryType.Invoice, async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
@@ -181,76 +188,76 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
                 billingStartDate: undefined,
               });
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('invoice.invoiceNumber', async ({ requestCreatePaymentTransaction }) => {
+            test('invoice.invoiceNumber', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
                 invoiceNumber: undefined,
               });
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('categoryId', async ({ requestCreatePaymentTransaction }) => {
+            test('categoryId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveProject, saveRecipient }) => {
               request = reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: undefined,
               });
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('recipientId', async ({ requestCreatePaymentTransaction }) => {
+            test('recipientId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject }) => {
               request = reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: undefined,
               });
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('projectId', async ({ requestCreatePaymentTransaction }) => {
+            test('projectId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveRecipient }) => {
               request = reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: undefined,
               });
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
           });
         });
@@ -365,11 +372,11 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
               expect(res).toHavePatternValidationError('body', 'productId');
             });
 
-            test('does not belong to any product', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any product', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject, saveRecipient }) => {
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument), 
@@ -493,10 +500,10 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
           });
 
           test.describe('if accountId', () => {
-            test('does not belong to any account', async ({ requestCreatePaymentTransaction }) => {
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any account', async ({ requestCreatePaymentTransaction, saveCategory, saveProject, saveRecipient }) => {
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 accountId: accountDataFactory.id(), 
@@ -531,14 +538,14 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
           });
 
           test.describe('if loanAccountId', () => {
-            test('belongs to a loan type account', async ({ requestCreatePaymentTransaction }) => {
+            test('belongs to a loan type account', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject, saveRecipient }) => {
               const loanAccountDocument = accountDataFactory.document({
                 accountType: AccountType.Loan,
               });
-              await accountService.saveAccounts(loanAccountDocument, accountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 loanAccountId: getAccountId(loanAccountDocument), 
@@ -547,11 +554,11 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
               expect(res).toHaveMessage('Account type cannot be loan');
             });
 
-            test('does not belong to any account', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any account', async ({ requestCreatePaymentTransaction, saveAccount, saveCategory, saveProject, saveRecipient }) => {
+              await saveAccount(accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 loanAccountId: accountDataFactory.id(), 
@@ -578,10 +585,10 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
           });
 
           test.describe('if categoryId', () => {
-            test('does not belong to any category', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any category', async ({ requestCreatePaymentTransaction, saveAccounts, saveProject, saveRecipient }) => {
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: categoryDataFactory.id(), 
@@ -608,10 +615,10 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
           });
 
           test.describe('if recipientId', () => {
-            test('does not belong to any recipient', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
+            test('does not belong to any recipient', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject }) => {
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
               const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: recipientDataFactory.id(), 
@@ -638,10 +645,10 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
           });
 
           test.describe('if projectId', () => {
-            test('does not belong to any project', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any project', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveRecipient }) => {
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: projectDataFactory.id(), 

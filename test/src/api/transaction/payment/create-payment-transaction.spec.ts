@@ -9,14 +9,21 @@ import { recipientDataFactory } from '@household/test/api/recipient/data-factory
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { forbidUsers } from '@household/test/utils';
 
-import { test, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService, categoryService, productService, projectService, recipientService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = forbidUsers('viewer') ;
+
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
 test.describe('POST transaction/v1/transactions/payment (payment)', () => {
   let request: Transaction.PaymentRequest;
@@ -90,71 +97,71 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
 
         test.describe('should create transaction', () => {
           test.describe('with complete body', () => {
-            test('using regular category', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('using regular category', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
+              await saveAccount(accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('using invoice category', async ({ requestCreatePaymentTransaction }) => {
+            test('using invoice category', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
               });
 
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccount(accountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
-            test('using inventory category', async ({ requestCreatePaymentTransaction }) => {
+            test('using inventory category', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
               request = paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument),
               });
 
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccount(accountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
           });
 
           test.describe('without optional properties', () => {
-            test('description', async ({ requestCreatePaymentTransaction }) => {
+            test('description', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               });
 
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccount(accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
-            test(CategoryType.Inventory, async ({ requestCreatePaymentTransaction }) => {
+            test(CategoryType.Inventory, async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 productId: undefined,
@@ -162,18 +169,18 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 categoryId: getCategoryId(inventoryCategoryDocument),
               });
 
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccount(accountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test(CategoryType.Invoice, async ({ requestCreatePaymentTransaction }) => {
+            test(CategoryType.Invoice, async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
@@ -182,81 +189,81 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 billingStartDate: undefined,
               });
 
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccount(accountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('invoice.invoiceNumber', async ({ requestCreatePaymentTransaction }) => {
+            test('invoice.invoiceNumber', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
                 invoiceNumber: undefined,
               });
 
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccount(accountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('categoryId', async ({ requestCreatePaymentTransaction }) => {
+            test('categoryId', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveProject, saveRecipient }) => {
               request = paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: undefined,
               });
 
-              await accountService.saveAccount(accountDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccount(accountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('recipientId', async ({ requestCreatePaymentTransaction }) => {
+            test('recipientId', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject }) => {
               request = paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: undefined,
               });
 
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
+              await saveAccount(accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('projectId', async ({ requestCreatePaymentTransaction }) => {
+            test('projectId', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveRecipient }) => {
               request = paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: undefined,
               });
 
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccount(accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
           });
         });
@@ -361,11 +368,11 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               expect(res).toHavePatternValidationError('body', 'productId');
             });
 
-            test('does not belong to any product', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any product', async ({ requestCreatePaymentTransaction, saveAccount, saveCategory, saveProject, saveRecipient }) => {
+              await saveAccount(accountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument), 
@@ -489,14 +496,14 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
           });
 
           test.describe('if accountId', () => {
-            test('belongs to a loan type account', async ({ requestCreatePaymentTransaction }) => {
+            test('belongs to a loan type account', async ({ requestCreatePaymentTransaction, saveAccount, saveCategory, saveProject, saveRecipient }) => {
               const loanAccountDocument = accountDataFactory.document({
                 accountType: AccountType.Loan,
               });
-              await accountService.saveAccount(loanAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccount(loanAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 accountId: getAccountId(loanAccountDocument), 
@@ -505,10 +512,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               expect(res).toHaveMessage('Account type cannot be loan');
             });
 
-            test('does not belong to any account', async ({ requestCreatePaymentTransaction }) => {
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any account', async ({ requestCreatePaymentTransaction, saveCategory, saveProject, saveRecipient }) => {
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 accountId: accountDataFactory.id(), 
@@ -543,10 +550,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
           });
 
           test.describe('if categoryId', () => {
-            test('does not belong to any category', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccount(accountDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any category', async ({ requestCreatePaymentTransaction, saveAccount, saveProject, saveRecipient }) => {
+              await saveAccount(accountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: categoryDataFactory.id(), 
@@ -573,10 +580,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
           });
 
           test.describe('if recipientId', () => {
-            test('does not belong to any recipient', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
+            test('does not belong to any recipient', async ({ requestCreatePaymentTransaction, saveAccount, saveCategory, saveProject }) => {
+              await saveAccount(accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: recipientDataFactory.id(), 
@@ -603,10 +610,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
           });
 
           test.describe('if projectId', () => {
-            test('does not belong to any project', async ({ requestCreatePaymentTransaction }) => {
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any project', async ({ requestCreatePaymentTransaction, saveAccount, saveCategory, saveRecipient }) => {
+              await saveAccount(accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: projectDataFactory.id(), 

@@ -15,11 +15,11 @@ type ProjectApiFixture ={
 };
 
 export const test = baseTest.extend<ProjectApiFixture>({
-  requestGetProject: async ({ authenticate, request, userType }, use) => {
+  requestGetProject: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestGetProject = async (projectId: Project.Id) => {
-      return request.get(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -28,11 +28,11 @@ export const test = baseTest.extend<ProjectApiFixture>({
 
     await use(requestGetProject);
   },
-  requestListProjects: async ({ authenticate, request, userType }, use) => {
+  requestListProjects: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListProjects = async () => {
-      return request.get(`${process.env.BASE_URL}/project/v1/projects`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/project/v1/projects`, {
         headers: {
           Authorization: authToken,
         },
@@ -41,11 +41,11 @@ export const test = baseTest.extend<ProjectApiFixture>({
 
     await use(requestListProjects);
   },
-  requestCreateProject: async ({ authenticate, request, userType }, use) => {
+  requestCreateProject: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreateProject = async (project: Project.Request) => {
-      return request.post(`${process.env.BASE_URL}/project/v1/projects`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/project/v1/projects`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -56,11 +56,11 @@ export const test = baseTest.extend<ProjectApiFixture>({
 
     await use(requestCreateProject);
   },
-  requestUpdateProject: async ({ authenticate, request, userType }, use) => {
+  requestUpdateProject: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateProject = async (projectId: Project.Id, project: Project.Request) => {
-      return request.put(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -71,11 +71,11 @@ export const test = baseTest.extend<ProjectApiFixture>({
 
     await use(requestUpdateProject);
   },
-  requestDeleteProject: async ({ authenticate, request, userType }, use) => {
+  requestDeleteProject: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteProject = async (projectId: Project.Id) => {
-      return request.delete(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -84,11 +84,11 @@ export const test = baseTest.extend<ProjectApiFixture>({
 
     await use(requestDeleteProject);
   },
-  requestMergeProjects: async ({ authenticate, request, userType }, use) => {
+  requestMergeProjects: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestMergeProjects = async (projectId: Project.Id, sourceProjectIds: Project.Id[]) => {
-      return request.post(`${process.env.BASE_URL}/project/v1/projects/${projectId}/merge`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/project/v1/projects/${projectId}/merge`, {
         headers: {
           Authorization: authToken,
         },

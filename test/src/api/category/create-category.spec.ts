@@ -1,15 +1,17 @@
 import { entries, getCategoryId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
+import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { Category } from '@household/shared/types/types';
-import { mergeExpects } from '@playwright/test';
-import { categoryService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
 const permissionMap = allowUsers('editor');
 
 const expect = mergeExpects(categoryApiExpect, apiExpect);
+
+const test = mergeTests(categoryApiTest, categoryDbTest);
 
 test.describe('POST /category/v1/categories', () => {
   let req: Category.Request;
@@ -47,7 +49,7 @@ test.describe('POST /category/v1/categories', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should create category', async ({ requestCreateCategory }) => {
+        test('should create category', async ({ requestCreateCategory, findCategoryById }) => {
           test.step('logging 1', () => {
             
           });
@@ -55,21 +57,21 @@ test.describe('POST /category/v1/categories', () => {
           expect(res).toBeCreatedResponse();
 
           const { categoryId } = (await res.json()) as Category.CategoryId;
-          expect(req).toHaveBeenSavedAsCategoryDocument(await categoryService.findCategoryById(categoryId));
+          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId));
         });
 
-        test('should create category with parent category', async ({ requestCreateCategory }) => {
+        test('should create category with parent category', async ({ requestCreateCategory, saveCategories, findCategoryById }) => {
           req = categoryDataFactory.request({
             parentCategoryId: getCategoryId(parentCategoryDocument),
           });
 
-          await categoryService.saveCategories(grandparentCategoryDocument, parentCategoryDocument);
+          await saveCategories(grandparentCategoryDocument, parentCategoryDocument);
 
           const res = await requestCreateCategory(req);
           expect(res).toBeCreatedResponse();
 
           const { categoryId } = (await res.json()) as Category.CategoryId;
-          expect(req).toHaveBeenSavedAsCategoryDocument(await categoryService.findCategoryById(categoryId), grandparentCategoryDocument, parentCategoryDocument);
+          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId), grandparentCategoryDocument, parentCategoryDocument);
         });
 
         test.describe('should return error', () => {
@@ -111,12 +113,12 @@ test.describe('POST /category/v1/categories', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different category', async ({ requestCreateCategory }) => {
+            test('is already in use by a different category', async ({ requestCreateCategory, saveCategory }) => {
               const categoryDocument = categoryDataFactory.document({
                 body: req,
               });
 
-              await categoryService.saveCategory(categoryDocument);
+              await saveCategory(categoryDocument);
 
               const res = await requestCreateCategory(req);
               expect(res).toBeBadRequestResponse();

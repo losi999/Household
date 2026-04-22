@@ -14,11 +14,11 @@ type FileApiFixture = {
 };
 
 export const test = baseTest.extend<FileApiFixture>({
-  requestCreateUploadUrl: async ({ authenticate, request, userType }, use) => {
+  requestCreateUploadUrl: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreateUploadUrl = async (file: File.Request) => {
-      return request.post(`${process.env.BASE_URL}/file/v1/files`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/file/v1/files`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -29,18 +29,18 @@ export const test = baseTest.extend<FileApiFixture>({
 
     await use(requestCreateUploadUrl);
   },
-  requestUploadFile: async ({ request }, use) => {
+  requestUploadFile: async ({ loggedRequest }, use) => {
     const requestUploadFile = async (url: File.Url['url']) => {
-      return request.put(url);
+      return loggedRequest.put(url);
     };
 
     await use(requestUploadFile);
   },
-  requestListFiles: async ({ authenticate, request, userType }, use) => {
+  requestListFiles: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListFiles = async () => {
-      return request.get(`${process.env.BASE_URL}/file/v1/files`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/file/v1/files`, {
         headers: {
           Authorization: authToken,
         },
@@ -49,11 +49,11 @@ export const test = baseTest.extend<FileApiFixture>({
 
     await use(requestListFiles);
   },
-  requestDeleteFile: async ({ authenticate, request, userType }, use) => {
+  requestDeleteFile: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteFile = async (fileId: File.Id) => {
-      return request.delete(`${process.env.BASE_URL}/file/v1/files/${fileId}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/file/v1/files/${fileId}`, {
         headers: {
           Authorization: authToken,
         },

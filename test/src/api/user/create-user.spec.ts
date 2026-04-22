@@ -4,12 +4,13 @@ import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
-import { test, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { test as identityTest } from '@household/test/fixtures/identity.fixture';
+import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { identityService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
 
 const expect = mergeExpects(userApiExpect, apiExpect);
+const test = mergeTests(identityTest, userApiTest);
 
 const permissionMap = allowUsers('editor') ;
 
@@ -42,10 +43,10 @@ test.describe('POST user/v1/users', () => {
         });
       } else {
         test.describe('should create user', () => {
-          test('with complete body', async ({ requestCreateUser }) => {
+          test('with complete body', async ({ requestCreateUser, getUser }) => {
             const res = await requestCreateUser(request);
             expect(res).toBeCreatedResponse();
-            expect(await identityService.getUser(request)).toHaveBeenCreated();      
+            expect(await getUser(request)).toHaveBeenCreated();
           });
         });
 
@@ -87,8 +88,8 @@ test.describe('POST user/v1/users', () => {
               expect(res).toHaveWrongFormatValidationError('body', 'email', 'email');
             });
 
-            test('is already in use by a different user', async ({ requestCreateUser }) => {
-              await identityService.createUser(request, UserType.Editor, true);
+            test('is already in use by a different user', async ({ requestCreateUser, createUser }) => {
+              await createUser(request, UserType.Editor, true);
               const res = await requestCreateUser(request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate user email');
@@ -99,7 +100,7 @@ test.describe('POST user/v1/users', () => {
     });
   });
 
-  test.afterEach(async () => {
-    await identityService.deleteUser(request);
+  test.afterEach(async ({ deleteUser }) => {
+    await deleteUser(request);
   });
 });

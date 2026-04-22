@@ -20,11 +20,11 @@ type CalendarApiFixture = {
 };
 
 export const test = baseTest.extend<CalendarApiFixture>({
-  requestCreateCalendarEntry: async ({ authenticate, request, userType }, use) => {
+  requestCreateCalendarEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreateCalendarEntry = async (calendarEntry: Calendar.Entry.Request) => {
-      return request.post(`${process.env.BASE_URL}/calendar/v1/entries`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/calendar/v1/entries`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -35,11 +35,11 @@ export const test = baseTest.extend<CalendarApiFixture>({
 
     await use(requestCreateCalendarEntry);
   },
-  requestGetCalendarEntry: async ({ authenticate, request, userType }, use) => {
+  requestGetCalendarEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestGetCalendarEntry = async (calendarEntryId: Calendar.Entry.Id) => {
-      return request.get(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -49,11 +49,11 @@ export const test = baseTest.extend<CalendarApiFixture>({
 
     await use(requestGetCalendarEntry);
   },
-  requestUpdateCalendarEntry: async ({ authenticate, request, userType }, use) => {
+  requestUpdateCalendarEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateCalendarEntry = async (calendarEntryId: Calendar.Entry.Id, requestBody: Calendar.Entry.Request) => {
-      return request.put(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -63,11 +63,11 @@ export const test = baseTest.extend<CalendarApiFixture>({
 
     await use(requestUpdateCalendarEntry);
   },
-  requestDeleteCalendarEntry: async ({ authenticate, request, userType }, use) => {
+  requestDeleteCalendarEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteCalendarEntry = async (calendarEntryId: Calendar.Entry.Id) => {
-      return request.delete(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -76,11 +76,11 @@ export const test = baseTest.extend<CalendarApiFixture>({
 
     await use(requestDeleteCalendarEntry);
   },
-  requestUpdateCalendarDay: async ({ authenticate, request, userType }, use) => {
+  requestUpdateCalendarDay: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateCalendarDay = async (day: Calendar.DayProp['day'], dayRequest: Calendar.Day.Request) => {
-      return request.put(`${process.env.BASE_URL}/calendar/v1/days/${day}`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/calendar/v1/days/${day}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -91,11 +91,11 @@ export const test = baseTest.extend<CalendarApiFixture>({
 
     await use(requestUpdateCalendarDay);
   },
-  requestDeleteCalendarDay: async ({ authenticate, request, userType }, use) => {
+  requestDeleteCalendarDay: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteCalendarDay = async (day: Calendar.DayProp['day']) => {
-      return request.delete(`${process.env.BASE_URL}/calendar/v1/days/${day}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/calendar/v1/days/${day}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -105,11 +105,11 @@ export const test = baseTest.extend<CalendarApiFixture>({
 
     await use(requestDeleteCalendarDay);
   },
-  requestListCalendarDays: async ({ authenticate, request, userType }, use) => {
+  requestListCalendarDays: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListCalendarDays = async (dateRange: Calendar.DateRange) => {
-      return request.get(`${process.env.BASE_URL}/calendar/v1/days`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/calendar/v1/days`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -120,11 +120,11 @@ export const test = baseTest.extend<CalendarApiFixture>({
 
     await use(requestListCalendarDays);
   },
-  requestResolveCalendarWorkEntry: async ({ authenticate, request, userType }, use) => {
+  requestResolveCalendarWorkEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestResolveCalendarWorkEntry = async (calendarEntryId: Calendar.Entry.Id, body: Calendar.Entry.ResolutionRequest) => {
-      return request.post(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}/resolution`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}/resolution`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,

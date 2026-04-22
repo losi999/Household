@@ -1,10 +1,9 @@
 import { entries, getProjectId, getTransactionId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
+import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
-import { projectService } from '@household/test/dependencies';
 import { Account, Project, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
@@ -12,13 +11,16 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { transactionService } from '@household/test/dependencies';
-import { accountService } from '@household/test/dependencies';
-import { mergeExpects } from '@playwright/test';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
 
 const expect = mergeExpects(apiExpect, projectApiExpect, transactionApiExpect);
 
 const permissionMap = allowUsers('editor');
+
+const test = mergeTests(projectApiTest, accountDbTest, transactionDbTest, projectDbTest);
 
 test.describe('DELETE /project/v1/projects/{projectId}', () => {
 
@@ -50,13 +52,13 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should delete project', async ({ requestDeleteProject }) => {
-          await projectService.saveProject(projectDocument);
+        test('should delete project', async ({ requestDeleteProject, saveProject, findProjectById }) => {
+          await saveProject(projectDocument);
 
           const res = await requestDeleteProject(getProjectId(projectDocument));
           expect(res).toBeNoContentResponse();
           
-          expect(await projectService.findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
+          expect(await findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('in related transactions project', () => {
@@ -136,9 +138,9 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
             });
           });
           
-          test('should be unset if project is deleted', async ({ requestDeleteProject }) => {
-            await accountService.saveAccounts(accountDocument, loanAccountDocument);
-            await transactionService.saveTransactions(
+          test('should be unset if project is deleted', async ({ requestDeleteProject, saveAccounts, saveTransactions, findTransactionById, saveProjects, findProjectById }) => {
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransactions(
               paymentTransactionDocument,
               deferredTransactionDocument,
               reimbursementTransactionDocument,
@@ -147,44 +149,44 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
               unrelatedReimbursementTransactionDocument,
               splitTransactionDocument,
             );
-            await projectService.saveProjects(projectDocument, unrelatedProjectDocument);
+            await saveProjects(projectDocument, unrelatedProjectDocument);
 
             const res = await requestDeleteProject(getProjectId(projectDocument));
             expect(res).toBeNoContentResponse();
           
-            expect(await projectService.findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
+            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
               project: {
                 from: getProjectId(projectDocument),
               },
             });
-            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(deferredTransactionDocument)), {
+            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
               project: {
                 from: getProjectId(projectDocument),
               },
             });
-            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
               project: {
                 from: getProjectId(projectDocument),
               },
             });
-            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
+            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
               project: {
                 from: getProjectId(projectDocument),
               },
             });
-            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
+            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
               project: {
                 from: getProjectId(projectDocument),
               },
             });
-            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
+            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
               project: {
                 from: getProjectId(projectDocument),
               },
             });
-            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(splitTransactionDocument)), {
+            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
               project: {
                 from: getProjectId(projectDocument),
               },

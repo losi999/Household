@@ -9,15 +9,22 @@ import { recipientDataFactory } from '@household/test/api/recipient/data-factory
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { allowUsers } from '@household/test/utils';
-import { accountService, categoryService, productService, projectService, recipientService, transactionService } from '@household/test/dependencies';
 
-import { test, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
 test.describe('POST transaction/v1/transactions/split (split)', () => {
   let request: Transaction.SplitRequest;
@@ -127,94 +134,94 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
         });
       } else {
         test.describe('should create transaction', () => {
-          test('with complete body', async ({ requestCreateSplitTransaction }) => {
-            await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-            await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-            await projectService.saveProject(projectDocument);
-            await recipientService.saveRecipient(recipientDocument);
-            await productService.saveProduct(productDocument);
+          test('with complete body', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
+            await saveAccounts(accountDocument, secondaryAccountDocument);
+            await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            await saveProject(projectDocument);
+            await saveRecipient(recipientDocument);
+            await saveProduct(productDocument);
             const res = await requestCreateSplitTransaction(request);
             expect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+            expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
           });
           test.describe('without optional properties', () => {
-            test('description', async ({ requestCreateSplitTransaction }) => {
+            test('description', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               }, request.splits, request.loans);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('recipientId', async ({ requestCreateSplitTransaction }) => {
+            test('recipientId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveProduct }) => {
               request = splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: undefined,
               }, request.splits, request.loans);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('splits', async ({ requestCreateSplitTransaction }) => {
+            test('splits', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [], request.loans);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('loans', async ({ requestCreateSplitTransaction }) => {
+            test('loans', async ({ requestCreateSplitTransaction, saveAccount, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, []);
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccount(accountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('splits.description', async ({ requestCreateSplitTransaction }) => {
+            test('splits.description', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
                   description: undefined,
                 },
               ], request.loans);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('splits.inventory', async ({ requestCreateSplitTransaction }) => {
+            test('splits.inventory', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
@@ -223,18 +230,18 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   quantity: undefined,
                 },
               ], request.loans);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('splits.invoice', async ({ requestCreateSplitTransaction }) => {
+            test('splits.invoice', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
@@ -244,18 +251,18 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   billingStartDate: undefined,
                 },
               ], request.loans);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('splits.invoice.invoiceNumber', async ({ requestCreateSplitTransaction }) => {
+            test('splits.invoice.invoiceNumber', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
@@ -263,36 +270,36 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   invoiceNumber: undefined,
                 },
               ], request.loans);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('splits.categoryId', async ({ requestCreateSplitTransaction }) => {
+            test('splits.categoryId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
                   categoryId: undefined,
                 },
               ], request.loans);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('splits.projectId', async ({ requestCreateSplitTransaction }) => {
+            test('splits.projectId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
@@ -300,18 +307,18 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 },
               ], request.loans);
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('loans.description', async ({ requestCreateSplitTransaction }) => {
+            test('loans.description', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -319,18 +326,18 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   description: undefined,
                 },
               ]);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('loans.inventory', async ({ requestCreateSplitTransaction }) => {
+            test('loans.inventory', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -340,18 +347,18 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   quantity: undefined,
                 },
               ]);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('loans.invoice', async ({ requestCreateSplitTransaction }) => {
+            test('loans.invoice', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -363,18 +370,18 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 },
               ]);
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('loans.invoice.invoiceNumber', async ({ requestCreateSplitTransaction }) => {
+            test('loans.invoice.invoiceNumber', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -384,18 +391,18 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 },
               ]);
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('loans.categoryId', async ({ requestCreateSplitTransaction }) => {
+            test('loans.categoryId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -403,18 +410,18 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   categoryId: undefined,
                 },
               ]);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('loans.projectId', async ({ requestCreateSplitTransaction }) => {
+            test('loans.projectId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -423,15 +430,15 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 },
               ]);
 
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
           });
         });
@@ -525,14 +532,14 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
           });
 
           test.describe('if accountId', () => {
-            test('belongs to a loan type account', async ({ requestCreateSplitTransaction }) => {
+            test('belongs to a loan type account', async ({ requestCreateSplitTransaction, saveAccounts, saveCategories, saveProject, saveRecipient }) => {
               const loanAccountDocument = accountDataFactory.document({
                 accountType: AccountType.Loan,
               });
-              await accountService.saveAccounts(loanAccountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveAccounts(loanAccountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 accountId: getAccountId(loanAccountDocument), 
@@ -541,10 +548,10 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               expect(res).toHaveMessage('Account type cannot be loan');
             });
 
-            test('does not belong to any account', async ({ requestCreateSplitTransaction }) => {
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any account', async ({ requestCreateSplitTransaction, saveCategories, saveProject, saveRecipient }) => {
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 accountId: accountDataFactory.id(), 
@@ -579,10 +586,10 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
           });
 
           test.describe('if recipientId', () => {
-            test('does not belong to any recipient', async ({ requestCreateSplitTransaction }) => {
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
+            test('does not belong to any recipient', async ({ requestCreateSplitTransaction, saveAccount, saveCategories, saveProject }) => {
+              await saveAccount(accountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: recipientDataFactory.id(), 
@@ -751,11 +758,11 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               expect(res).toHavePatternValidationError('body', 'productId');
             });
 
-            test('does not belong to any product', async ({ requestCreateSplitTransaction }) => {
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any product', async ({ requestCreateSplitTransaction, saveAccount, saveCategory, saveProject, saveRecipient }) => {
+              await saveAccount(accountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
@@ -877,10 +884,10 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
           });
 
           test.describe('if splits.categoryId', () => {
-            test('does not belong to any category', async ({ requestCreateSplitTransaction }) => {
-              await accountService.saveAccount(accountDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any category', async ({ requestCreateSplitTransaction, saveAccount, saveProject, saveRecipient }) => {
+              await saveAccount(accountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
@@ -913,10 +920,10 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
           });
 
           test.describe('if splits.projectId', () => {
-            test('does not belong to any project', async ({ requestCreateSplitTransaction }) => {
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any project', async ({ requestCreateSplitTransaction, saveAccount, saveCategories, saveRecipient }) => {
+              await saveAccount(accountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
@@ -1091,11 +1098,11 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               expect(res).toHavePatternValidationError('body', 'productId');
             });
 
-            test('does not belong to any product', async ({ requestCreateSplitTransaction }) => {
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any product', async ({ requestCreateSplitTransaction, saveAccounts, saveCategory, saveProject, saveRecipient }) => {
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
                 {
                   ...relatedDocumentItemIds,
@@ -1218,10 +1225,10 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
           });
 
           test.describe('if loans.categoryId', () => {
-            test('does not belong to any category', async ({ requestCreateSplitTransaction }) => {
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any category', async ({ requestCreateSplitTransaction, saveAccounts, saveProject, saveRecipient }) => {
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
                 {
                   ...relatedDocumentItemIds,
@@ -1255,10 +1262,10 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
           });
 
           test.describe('if loans.projectId', () => {
-            test('does not belong to any project', async ({ requestCreateSplitTransaction }) => {
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any project', async ({ requestCreateSplitTransaction, saveAccounts, saveCategories, saveRecipient }) => {
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
                 {
                   ...relatedDocumentItemIds,
@@ -1292,10 +1299,10 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
           });
 
           test.describe('if loans.loanAccountId', () => {
-            test('does not belong to any account', async ({ requestCreateSplitTransaction }) => {
-              await accountService.saveAccounts(accountDocument);
-              await categoryService.saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any account', async ({ requestCreateSplitTransaction, saveAccounts, saveCategories, saveRecipient }) => {
+              await saveAccounts(accountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, []));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Some of the accounts are not found');

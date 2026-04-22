@@ -10,14 +10,17 @@ import { AccountType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/account-api.fixture';
+import { test as accountApiTest, expect as domainExpect } from '@household/test/fixtures/account-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 
 const expect = mergeExpects(domainExpect, apiExpect);
 
 const permissionMap = forbidUsers();
+
+const test = mergeTests(accountApiTest, accountDbTest, transactionDbTest);
 
 test.describe('GET /account/v1/accounts', () => {
   let accountDocument: Account.Document;
@@ -138,13 +141,13 @@ test.describe('GET /account/v1/accounts', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of accounts', async ({ requestListAccounts }) => {
+        test('should get a list of accounts', async ({ requestListAccounts, saveAccounts, saveTransactions }) => {
           const expectedBalance1 = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
 
           const expectedBalance2 = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
 
-          await accountService.saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
-          await transactionService.saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument, repayingTransferTransactionDocument, invertedRepayingTransferTransactionDocument);
+          await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
+          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument, repayingTransferTransactionDocument, invertedRepayingTransferTransactionDocument);
           const res = await requestListAccounts();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);

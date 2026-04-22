@@ -1,17 +1,52 @@
 import { validatorService } from '@household/shared/dependencies/services/validator-service';
 import { User } from '@household/test/types';
-import { test as baseTest, expect as baseExpect, APIResponse } from '@playwright/test';
+import { expect as baseExpect, APIResponse, APIRequestContext } from '@playwright/test';
+import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 import { JSONSchema7 } from 'json-schema';
 
 export type ApiFixture = {
   userType: User;
   authenticate(userType: User): Promise<string>;
+  loggedRequest: Pick<APIRequestContext, 'get' | 'post' | 'put' | 'delete'>;
 };
 
 type RequestPart = 'body' | 'queryStringParameters' | 'pathParameters' | 'multiValueQueryStringParameters';
 
 export const test = baseTest.extend<ApiFixture>({
   userType: undefined,
+  loggedRequest: async ({ request, logApiCall }, use) => {
+    const loggedRequest: Pick<APIRequestContext, 'get' | 'post' | 'put' | 'delete'> = {
+      async get(url, options) {
+        const response = await request.get(url, options);
+
+        await logApiCall('get', url, response, options);
+
+        return response;
+      },
+      async post(url, options) {
+        const response = await request.post(url, options);
+
+        await logApiCall('post', url, response, options);
+
+        return response;
+      },
+      async put(url, options) {
+        const response = await request.put(url, options);
+
+        await logApiCall('put', url, response, options);
+
+        return response;
+      },
+      async delete(url, options) {
+        const response = await request.delete(url, options);
+
+        await logApiCall('delete', url, response, options);
+
+        return response;
+      },
+    };
+    await use(loggedRequest);
+  },  
   authenticate: async ({ request }, use) => {
     const authenticate = async (userType: User) => {
       const authRes = await request.post(`${process.env.BASE_URL}/user/v1/login`, {

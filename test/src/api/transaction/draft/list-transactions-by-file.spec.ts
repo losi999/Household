@@ -14,13 +14,17 @@ import { transferTransactionDataFactory } from '@household/test/api/transaction/
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { test as transactionApiTest, expect as domainExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 
 const expect = mergeExpects(domainExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest);
 
 test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
   let fileDocument: File.Document;
@@ -126,9 +130,9 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of draft transactions', async ({ requestGetTransactionListByFile }) => {
-          await transactionService.saveTransactions(draftDocument, duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateDeferredDocument, duplicateReimbursementDocument);
-          await accountService.saveAccounts(accountDocument, loanAccountDocument);
+        test('should get a list of draft transactions', async ({ requestGetTransactionListByFile, saveAccounts, saveTransactions }) => {
+          await saveTransactions(draftDocument, duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateDeferredDocument, duplicateReimbursementDocument);
+          await saveAccounts(accountDocument, loanAccountDocument);
           const res = await requestGetTransactionListByFile(getFileId(fileDocument));
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);

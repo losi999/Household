@@ -3,14 +3,16 @@ import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { customerService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(customerApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(customerApiTest, customerDbTest);
 
 test.describe('POST customer/v1/customers', () => {
   let request: Customer.Request;
@@ -40,12 +42,12 @@ test.describe('POST customer/v1/customers', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should create customer', async ({ requestCreateCustomer }) => {
+        test('should create customer', async ({ requestCreateCustomer, findCustomerById }) => {
           const res = await requestCreateCustomer(request);
           expect(res).toBeCreatedResponse();
 
           const { customerId } = (await res.json()) as Customer.CustomerId;
-          expect(request).toHaveBeenSavedAsCustomerDocument(await customerService.findCustomerById(customerId));
+          expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId));
         });
 
         test.describe('should return error', () => {
@@ -86,12 +88,12 @@ test.describe('POST customer/v1/customers', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different customer', async ({ requestCreateCustomer }) => {
+            test('is already in use by a different customer', async ({ requestCreateCustomer, saveCustomer }) => {
               const customerDocument = customerDataFactory.document({
                 body: request,
               });
 
-              await customerService.saveCustomer(customerDocument);
+              await saveCustomer(customerDocument);
               const res = await requestCreateCustomer(request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate customer name');

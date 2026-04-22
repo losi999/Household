@@ -15,11 +15,11 @@ type CategoryApiFixture = {
 };
 
 export const test = baseTest.extend<CategoryApiFixture>({
-  requestGetCategory: async ({ authenticate, request, userType }, use) => {
+  requestGetCategory: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestGetCategory = async (categoryId: Category.Id) => {
-      return request.get(`${process.env.BASE_URL}/category/v1/categories/${categoryId}`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/category/v1/categories/${categoryId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -28,11 +28,11 @@ export const test = baseTest.extend<CategoryApiFixture>({
 
     await use(requestGetCategory);
   },
-  requestListCategories: async ({ authenticate, request, userType }, use) => {
+  requestListCategories: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListCategories = async () => {
-      return request.get(`${process.env.BASE_URL}/category/v1/categories`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/category/v1/categories`, {
         headers: {
           Authorization: authToken,
         },
@@ -41,11 +41,11 @@ export const test = baseTest.extend<CategoryApiFixture>({
 
     await use(requestListCategories);
   },
-  requestCreateCategory: async ({ authenticate, request, userType }, use) => {
+  requestCreateCategory: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreateCategory = async (category: Category.Request) => {
-      return request.post(`${process.env.BASE_URL}/category/v1/categories`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/category/v1/categories`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -56,11 +56,11 @@ export const test = baseTest.extend<CategoryApiFixture>({
 
     await use(requestCreateCategory);
   },
-  requestUpdateCategory: async ({ authenticate, request, userType }, use) => {
+  requestUpdateCategory: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateCategory = async (categoryId: Category.Id, category: Category.Request) => {
-      return request.put(`${process.env.BASE_URL}/category/v1/categories/${categoryId}`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/category/v1/categories/${categoryId}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -71,11 +71,11 @@ export const test = baseTest.extend<CategoryApiFixture>({
 
     await use(requestUpdateCategory);
   },
-  requestDeleteCategory: async ({ authenticate, request, userType }, use) => {
+  requestDeleteCategory: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteCategory = async (categoryId: Category.Id) => {
-      return request.delete(`${process.env.BASE_URL}/category/v1/categories/${categoryId}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/category/v1/categories/${categoryId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -84,11 +84,11 @@ export const test = baseTest.extend<CategoryApiFixture>({
 
     await use(requestDeleteCategory);
   },
-  requestMergeCategories: async ({ authenticate, request, userType }, use) => {
+  requestMergeCategories: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestMergeCategories = async (categoryId: Category.Id, sourceCategoryIds: Category.Id[]) => {
-      return request.post(`${process.env.BASE_URL}/category/v1/categories/${categoryId}/merge`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/category/v1/categories/${categoryId}/merge`, {
         headers: {
           Authorization: authToken,
         },

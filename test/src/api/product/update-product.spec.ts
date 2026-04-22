@@ -4,14 +4,17 @@ import { Category, Product } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { allowUsers } from '@household/test/utils';
-import { test, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { categoryService, productService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const expect = mergeExpects(productApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
 
 test.describe('PUT /product/v1/products/{productId}', () => {
   let request: Product.Request;
@@ -54,14 +57,14 @@ test.describe('PUT /product/v1/products/{productId}', () => {
         });
       } else {
         test.describe('should update product', () => {
-          test('with complete body', async ({ requestUpdateProduct }) => {
-            await categoryService.saveCategory(categoryDocument);
-            await productService.saveProduct(productDocument);
+          test('with complete body', async ({ requestUpdateProduct, saveCategory, saveProduct, findProductById }) => {
+            await saveCategory(categoryDocument);
+            await saveProduct(productDocument);
             const res = await requestUpdateProduct(getProductId(productDocument), request);
             expect(res).toBeCreatedResponse();
 
             const { productId } = (await res.json()) as Product.ProductId;
-            expect(request).toHaveBeenSavedAsProductDocument(await productService.findProductById(productId), getCategoryId(categoryDocument));
+            expect(request).toHaveBeenSavedAsProductDocument(await findProductById(productId), getCategoryId(categoryDocument));
           });
         });
 
@@ -103,14 +106,14 @@ test.describe('PUT /product/v1/products/{productId}', () => {
               expect(res).toHaveTooShortValidationError('body', 'brand', 1);
             });
 
-            test('is already in use by a different product', async ({ requestUpdateProduct }) => {
+            test('is already in use by a different product', async ({ requestUpdateProduct, saveProduct }) => {
               const duplicateProductDocument = productDataFactory.document({
                 body: request,
                 category: categoryDocument,
               });
 
-              await productService.saveProduct(productDocument);
-              await productService.saveProduct(duplicateProductDocument);
+              await saveProduct(productDocument);
+              await saveProduct(duplicateProductDocument);
               const res = await requestUpdateProduct(getProductId(productDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate product name');

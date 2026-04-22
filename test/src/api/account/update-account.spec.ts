@@ -2,14 +2,16 @@ import { entries, getAccountId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
 import { Account } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
-import { test, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
 
 const expect = mergeExpects(accountApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(accountApiTest, accountDbTest);
 
 test.describe('PUT /account/v1/accounts/{accountId}', () => {
   let request: Account.Request;
@@ -42,27 +44,27 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should update account', async ({ requestUpdateAccount }) => {
-          await accountService.saveAccount(accountDocument);
+        test('should update account', async ({ requestUpdateAccount, saveAccount, findAccountById }) => {
+          await saveAccount(accountDocument);
           const res = await requestUpdateAccount(getAccountId(accountDocument), request);
           expect(res).toBeCreatedResponse();
           
           const { accountId } = (await res.json()) as Account.AccountId;
-          expect(request).toHaveBeenSavedAsAccountDocument(await accountService.findAccountById(accountId));
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
 
-        test('should update account with an existing name for a different owner', async ({ requestUpdateAccount }) => {
+        test('should update account with an existing name for a different owner', async ({ requestUpdateAccount, saveAccounts, findAccountById }) => {
           const sameNameAccountDocument = accountDataFactory.document({
             ...request,
             owner: 'different owner',
           });
 
-          await accountService.saveAccounts(accountDocument, sameNameAccountDocument);
+          await saveAccounts(accountDocument, sameNameAccountDocument);
           const res = await requestUpdateAccount(getAccountId(accountDocument), request);
           expect(res).toBeCreatedResponse();
 
           const { accountId } = (await res.json()) as Account.AccountId;
-          expect(request).toHaveBeenSavedAsAccountDocument(await accountService.findAccountById(accountId));
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
         test.describe('should return error', () => {
           test.describe('if body', () => {
@@ -101,11 +103,11 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different account of the same owner', async ({ requestUpdateAccount }) => {
+            test('is already in use by a different account of the same owner', async ({ requestUpdateAccount, saveAccount }) => {
               const duplicateAccountDocument = accountDataFactory.document(request);
 
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(duplicateAccountDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(duplicateAccountDocument);
               const res = await requestUpdateAccount(getAccountId(accountDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate account name');

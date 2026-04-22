@@ -1,15 +1,17 @@
 import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { Recipient } from '@household/shared/types/types';
-import { mergeExpects } from '@playwright/test';
-import { recipientService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 
 const permissionMap = allowUsers('editor');
 
 const expect = mergeExpects(recipientApiExpect, apiExpect);
+
+const test = mergeTests(recipientApiTest, recipientDbTest);
 
 test.describe('POST /recipient/v1/recipients', () => {
   let req: Recipient.Request;
@@ -40,12 +42,12 @@ test.describe('POST /recipient/v1/recipients', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should create recipient', async ({ requestCreateRecipient }) => {
+        test('should create recipient', async ({ requestCreateRecipient, findRecipientById }) => {
           const res = await requestCreateRecipient(req);
           expect(res).toBeCreatedResponse();
 
           const { recipientId } = (await res.json()) as Recipient.RecipientId;
-          expect(req).toHaveBeenSavedAsRecipientDocument(await recipientService.findRecipientById(recipientId));
+          expect(req).toHaveBeenSavedAsRecipientDocument(await findRecipientById(recipientId));
         });
 
         test.describe('should return error', () => {
@@ -87,10 +89,10 @@ test.describe('POST /recipient/v1/recipients', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different recipient', async ({ requestCreateRecipient }) => {
+            test('is already in use by a different recipient', async ({ requestCreateRecipient, saveRecipient }) => {
               const recipientDocument = recipientDataFactory.document(req);
 
-              await recipientService.saveRecipient(recipientDocument);
+              await saveRecipient(recipientDocument);
 
               const res = await requestCreateRecipient(req);
               expect(res).toBeBadRequestResponse();

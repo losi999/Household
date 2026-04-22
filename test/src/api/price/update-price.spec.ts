@@ -3,14 +3,16 @@ import { Price } from '@household/shared/types/types';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { allowUsers } from '@household/test/utils';
 
-import { test, expect as priceApiExpect } from '@household/test/fixtures/price-api.fixture';
+import { test as priceApiTest, expect as priceApiExpect } from '@household/test/fixtures/price-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 
 const expect = mergeExpects(priceApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser') ;
+
+const test = mergeTests(priceApiTest, priceDbTest);
 
 test.describe('PUT /price/v1/prices/{priceId}', () => {
   let request: Price.Request;
@@ -44,19 +46,19 @@ test.describe('PUT /price/v1/prices/{priceId}', () => {
         });
       } else {
         test.describe('should update price', () => {
-          test('with complete body', async ({ requestUpdatePrice }) => {
-            await priceService.savePrice(priceDocument);
+          test('with complete body', async ({ requestUpdatePrice, savePrice, findPriceById }) => {
+            await savePrice(priceDocument);
             const res = await requestUpdatePrice(getPriceId(priceDocument), request);
             expect(res).toBeCreatedResponse();
 
             const { priceId } = await res.json() as Price.PriceId;
-            expect(request).toHaveBeenSavedAsPriceDocument(await priceService.findPriceById(priceId));
+            expect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(priceId));
           });
         });
 
         test.describe('should return error', () => {
-          test('if price is archived', async ({ requestUpdatePrice }) => {
-            await priceService.savePrice({
+          test('if price is archived', async ({ requestUpdatePrice, savePrice }) => {
+            await savePrice({
               ...priceDocument,
               isArchived: true, 
             });
@@ -102,11 +104,11 @@ test.describe('PUT /price/v1/prices/{priceId}', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different price', async ({ requestUpdatePrice }) => {
+            test('is already in use by a different price', async ({ requestUpdatePrice, savePrice }) => {
               const duplicatePriceDocument = priceDataFactory.document(request);
 
-              await priceService.savePrice(priceDocument);
-              await priceService.savePrice(duplicatePriceDocument);
+              await savePrice(priceDocument);
+              await savePrice(duplicatePriceDocument);
               const res = await requestUpdatePrice(getPriceId(priceDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate price name');

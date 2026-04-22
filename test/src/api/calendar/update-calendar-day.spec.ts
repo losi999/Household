@@ -3,10 +3,12 @@ import { allowUsers } from '@household/test/utils';
 import { Calendar } from '@household/shared/types/types';
 import { calendarDayDataFactory } from '@household/test/api/calendar/data-factory';
 
-import { test, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { calendarDayService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
+
+const test = mergeTests(calendarApiTest, calendarDayDbTest);
 
 const expect = mergeExpects(calendarApiExpect, apiExpect);
 
@@ -44,65 +46,65 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
         });
       } else {
         test.describe('should save previously unset day to', () => {
-          test('workday', async ({ requestUpdateCalendarDay }) => {
-            await calendarDayService.clearCalendarDay(day);
+          test('workday', async ({ requestUpdateCalendarDay, clearCalendarDay, findCalendarDayByDay }) => {
+            await clearCalendarDay(day);
 
             const res = await requestUpdateCalendarDay(day, request);
             expect(res).toBeNoContentResponse();
 
-            expect(request).toHaveBeenSavedAsCalendarDayDocument(await calendarDayService.findCalendarDayByDay(day));
+            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
           
-          test('vacation', async ({ requestUpdateCalendarDay }) => {
+          test('vacation', async ({ requestUpdateCalendarDay, clearCalendarDay, findCalendarDayByDay }) => {
             request = calendarDayDataFactory.request.vacation();
-            await calendarDayService.clearCalendarDay(day);
+            await clearCalendarDay(day);
             
             const res = await requestUpdateCalendarDay(day, request);
             expect(res).toBeNoContentResponse();
 
-            expect(request).toHaveBeenSavedAsCalendarDayDocument(await calendarDayService.findCalendarDayByDay(day));
+            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
         });
 
         test.describe('should update', () => {  
-          test('workday to vacation', async ({ requestUpdateCalendarDay }) => {
+          test('workday to vacation', async ({ requestUpdateCalendarDay, findCalendarDayByDay, saveCalendarDay }) => {
             calendarDayDocument = calendarDayDataFactory.document.work({
               day,
             });
 
             request = calendarDayDataFactory.request.vacation();
 
-            await calendarDayService.saveCalendarDay(calendarDayDocument);
+            await saveCalendarDay(calendarDayDocument);
             const res = await requestUpdateCalendarDay(day, request);
             expect(res).toBeNoContentResponse();
 
-            expect(request).toHaveBeenSavedAsCalendarDayDocument(await calendarDayService.findCalendarDayByDay(day));
+            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
           
-          test('vacation to workday', async ({ requestUpdateCalendarDay }) => {
+          test('vacation to workday', async ({ requestUpdateCalendarDay, findCalendarDayByDay, saveCalendarDay }) => {
             calendarDayDocument = calendarDayDataFactory.document.vacation({
               day,
             });
 
             request = calendarDayDataFactory.request.workday();
 
-            await calendarDayService.saveCalendarDay(calendarDayDocument);
+            await saveCalendarDay(calendarDayDocument);
             const res = await requestUpdateCalendarDay(day, request);
             expect(res).toBeNoContentResponse();
 
-            expect(request).toHaveBeenSavedAsCalendarDayDocument(await calendarDayService.findCalendarDayByDay(day));
+            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
         });
 
         test.describe('should return error', () => {
-          test('if holiday is to be updated', async ({ requestUpdateCalendarDay }) => {
+          test('if holiday is to be updated', async ({ requestUpdateCalendarDay, saveCalendarDay }) => {
             calendarDayDocument = calendarDayDataFactory.document.holiday({
               day,
             });
 
             request = calendarDayDataFactory.request.workday();
 
-            await calendarDayService.saveCalendarDay(calendarDayDocument);
+            await saveCalendarDay(calendarDayDocument);
             const res = await requestUpdateCalendarDay(day, request);
             expect(res).toBeBadRequestResponse();
             expect(res).toHaveMessage('Selected calendar day is a national holiday');

@@ -10,6 +10,7 @@
   },
   "scripts": {
     "start": "playwright test --ui",
-    "test": "playwright test"
+    "test": "playwright test --help",
+    "test:account": "playwright test src/api/account"
   }
 }

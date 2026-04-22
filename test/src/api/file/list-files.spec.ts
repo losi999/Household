@@ -5,14 +5,17 @@ import { draftTransactionDataFactory } from '@household/test/api/transaction/dra
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test, expect as fileApiExpect } from '@household/test/fixtures/file-api.fixture';
+import { test as fileApiTest, expect as fileApiExpect } from '@household/test/fixtures/file-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { fileService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as fileDbTest } from '@household/test/fixtures/file-db.fixture';
 
 const expect = mergeExpects(fileApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(fileApiTest, transactionDbTest, fileDbTest);
 
 test.describe('GET /file/v1/files', () => {
   let fileDocument: File.Document;
@@ -46,9 +49,9 @@ test.describe('GET /file/v1/files', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of files', async ({ requestListFiles }) => {
-          await fileService.saveFile(fileDocument);
-          await transactionService.saveTransaction(draftDocument);
+        test('should get a list of files', async ({ requestListFiles, saveTransaction, saveFile }) => {
+          await saveFile(fileDocument);
+          await saveTransaction(draftDocument);
           const res = await requestListFiles();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);

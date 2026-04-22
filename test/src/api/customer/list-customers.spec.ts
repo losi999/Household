@@ -5,14 +5,17 @@ import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
+import { test as customerApiTest, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(domainExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(customerApiTest, priceDbTest, customerDbTest);
 
 test.describe('GET /customer/v1/customers', () => {
   let customerDocument1: Customer.Document;
@@ -77,9 +80,9 @@ test.describe('GET /customer/v1/customers', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of customers', async ({ requestListCustomers }) => {
-          await customerService.saveCustomers(customerDocument1, customerDocument2, blacklistedCustomer);
-          await priceService.savePrice(priceDocument);
+        test('should get a list of customers', async ({ requestListCustomers, savePrice, saveCustomers }) => {
+          await saveCustomers(customerDocument1, customerDocument2, blacklistedCustomer);
+          await savePrice(priceDocument);
           const res = await requestListCustomers();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);

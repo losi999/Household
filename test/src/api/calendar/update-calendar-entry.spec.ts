@@ -5,14 +5,18 @@ import { calendarEntryDataFactory } from '@household/test/api/calendar/data-fact
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
-import { test, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { calendarEntryService, customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(calendarApiTest, priceDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
   let request: Calendar.Entry.Request;
@@ -59,45 +63,45 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
         });
       } else {
         test.describe('should update calendar', () => {
-          test('personal entry', async ({ requestUpdateCalendarEntry }) => {
+          test('personal entry', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
             request = calendarEntryDataFactory.request.personal();
 
-            await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+            await saveCalendarEntry(calendarPersonalEntryDocument);
             const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
             expect(res).toBeCreatedResponse();
 
             const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await calendarEntryService.getCalendarEntryById(calendarEntryId));
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
 
-          test('issue entry', async ({ requestUpdateCalendarEntry }) => {            
+          test('issue entry', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {            
             request = calendarEntryDataFactory.request.issue();
             
-            await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+            await saveCalendarEntry(calendarIssueEntryDocument);
             const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
             expect(res).toBeCreatedResponse();
 
             const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await calendarEntryService.getCalendarEntryById(calendarEntryId));
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
 
-          test('work entry without prices', async ({ requestUpdateCalendarEntry }) => {          
+          test('work entry without prices', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {          
             request = calendarEntryDataFactory.request.work({
               body: {
                 customerId: getCustomerId(customerDocument),
               },
             });
             
-            await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
-            await customerService.saveCustomer(customerDocument);
+            await saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCustomer(customerDocument);
             const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
             expect(res).toBeCreatedResponse();
 
             const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId; 
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await calendarEntryService.getCalendarEntryById(calendarEntryId));
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
 
-          test('work entry with prices', async ({ requestUpdateCalendarEntry }) => {     
+          test('work entry with prices', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {     
             request = calendarEntryDataFactory.request.work({
               body: {
                 customerId: getCustomerId(customerDocument),
@@ -112,83 +116,83 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               },
             });
             
-            await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
-            await customerService.saveCustomer(customerDocument);
-            await priceService.savePrice(priceDocument);
+            await saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCustomer(customerDocument);
+            await savePrice(priceDocument);
             const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
             expect(res).toBeCreatedResponse();
 
             const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId; 
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await calendarEntryService.getCalendarEntryById(calendarEntryId));
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
         });
 
         test.describe('should return error', () => {    
           test.describe('if trying to update entry type', () => {
-            test('from issue to personal', async ({ requestUpdateCalendarEntry }) => {
+            test('from issue to personal', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
               request = calendarEntryDataFactory.request.personal();
               
-              await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+              await saveCalendarEntry(calendarIssueEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Entry type cannot be changed');
             });
 
-            test('from issue to work', async ({ requestUpdateCalendarEntry }) => {
+            test('from issue to work', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
               request = calendarEntryDataFactory.request.work({
                 body: {
                   customerId: getCustomerId(customerDocument),
                 },
               });
               
-              await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+              await saveCalendarEntry(calendarIssueEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Entry type cannot be changed');
             });
 
-            test('from personal to issue', async ({ requestUpdateCalendarEntry }) => {
+            test('from personal to issue', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
               request = calendarEntryDataFactory.request.issue();
               
-              await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+              await saveCalendarEntry(calendarPersonalEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Entry type cannot be changed');
             });
 
-            test('from personal to work', async ({ requestUpdateCalendarEntry }) => {
+            test('from personal to work', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
               request = calendarEntryDataFactory.request.work({
                 body: {
                   customerId: getCustomerId(customerDocument),
                 },
               });
               
-              await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+              await saveCalendarEntry(calendarPersonalEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Entry type cannot be changed');
             });
 
-            test('from work to issue', async ({ requestUpdateCalendarEntry }) => {
+            test('from work to issue', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
               request = calendarEntryDataFactory.request.issue();
               
-              await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+              await saveCalendarEntry(calendarWorkEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Entry type cannot be changed');
             });
 
-            test('from work to personal', async ({ requestUpdateCalendarEntry }) => {
+            test('from work to personal', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
               request = calendarEntryDataFactory.request.personal();
               
-              await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+              await saveCalendarEntry(calendarWorkEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Entry type cannot be changed');
             });
           });
 
-          test('if work entry is already resolved', async ({ requestUpdateCalendarEntry }) => {
+          test('if work entry is already resolved', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
             calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
               customer: customerDocument,
               resolution: {
@@ -201,7 +205,7 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               },
             });
               
-            await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
             expect(res).toBeBadRequestResponse();
             expect(res).toHaveMessage('Calendar entry is already resolved');
@@ -441,8 +445,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               expect(res).toHavePatternValidationError('body', 'customerId');
             });
 
-            test('does not belong to any customer', async ({ requestUpdateCalendarEntry }) => {
-              await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+            test('does not belong to any customer', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
+              await saveCalendarEntry(calendarWorkEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                 body: {
                   customerId: customerDataFactory.id(), 
@@ -540,10 +544,10 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               expect(res).toHavePatternValidationError('body', 'priceId');
             });
 
-            test('does not belong to any price', async ({ requestUpdateCalendarEntry }) => {
-              await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
-              await customerService.saveCustomer(customerDocument);
-              await priceService.savePrice(priceDocument);
+            test('does not belong to any price', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, saveCustomer }) => {
+              await saveCalendarEntry(calendarWorkEntryDocument);
+              await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
                 body: {
                   customerId: getCustomerId(customerDocument), 

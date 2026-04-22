@@ -5,14 +5,17 @@ import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { allowUsers } from '@household/test/utils';
 
-import { test, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { categoryService, productService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const expect = mergeExpects(productApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
 
 test.describe('POST product/v1/products', () => {
   let request: Product.Request;
@@ -50,13 +53,13 @@ test.describe('POST product/v1/products', () => {
         });
       } else {
         test.describe('should create product', () => {
-          test('with complete body', async ({ requestCreateProduct }) => {
-            await categoryService.saveCategory(categoryDocument);
+          test('with complete body', async ({ requestCreateProduct, saveCategory, findProductById }) => {
+            await saveCategory(categoryDocument);
             const res = await requestCreateProduct(request, getCategoryId(categoryDocument));
             expect(res).toBeCreatedResponse();
 
             const { productId } = (await res.json()) as Product.ProductId;
-            expect(request).toHaveBeenSavedAsProductDocument(await productService.findProductById(productId), getCategoryId(categoryDocument));
+            expect(request).toHaveBeenSavedAsProductDocument(await findProductById(productId), getCategoryId(categoryDocument));
           });
         });
 
@@ -98,14 +101,14 @@ test.describe('POST product/v1/products', () => {
               expect(res).toHaveTooShortValidationError('body', 'brand', 1);
             });
 
-            test('is already in use by a different product', async ({ requestCreateProduct }) => {
+            test('is already in use by a different product', async ({ requestCreateProduct, saveCategory, saveProduct }) => {
               const productDocument = productDataFactory.document({
                 body: request,
                 category: categoryDocument,
               });
 
-              await productService.saveProduct(productDocument);
-              await categoryService.saveCategory(categoryDocument);
+              await saveProduct(productDocument);
+              await saveCategory(categoryDocument);
               const res = await requestCreateProduct(request, getCategoryId(categoryDocument));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate product name');

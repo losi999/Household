@@ -4,12 +4,13 @@ import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
-import { test, expect as useApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { test as identityTest } from '@household/test/fixtures/identity.fixture';
+import { test as userApiTest, expect as useApiExpect } from '@household/test/fixtures/user-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { identityService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
 
 const expect = mergeExpects(useApiExpect, apiExpect);
+const test = mergeTests(identityTest, userApiTest);
 
 const permissionMap = allowUsers('editor') ;
 
@@ -22,8 +23,8 @@ test.describe('DELETE /user/v1/users/{email}/groups/{group}', () => {
     });
   });
 
-  test.afterEach(async () => {
-    await identityService.deleteUser(editorUser);
+  test.afterEach(async ({ deleteUser }) => {
+    await deleteUser(editorUser);
   });
 
   test.describe('called as anonymous', () => {
@@ -47,12 +48,12 @@ test.describe('DELETE /user/v1/users/{email}/groups/{group}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should remove user from group', async ({ requestRemoveUserFromGroup }) => {
-          await identityService.createUser(editorUser, undefined, true);
+        test('should remove user from group', async ({ requestRemoveUserFromGroup, createUser, listGroupsByUser }) => {
+          await createUser(editorUser, undefined, true);
           const res = await requestRemoveUserFromGroup(editorUser.email, UserType.Editor);
           expect(res).toBeNoContentResponse();
           
-          expect(await identityService.listGroupsByUser(editorUser.email)).toHaveBeenRemovedFromGroup(UserType.Editor);
+          expect(await listGroupsByUser(editorUser.email)).toHaveBeenRemovedFromGroup(UserType.Editor);
         });
 
         test.describe('should return error', () => {

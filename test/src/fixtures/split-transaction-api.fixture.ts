@@ -141,6 +141,7 @@ export const expect = baseExpect.extend({
         let expectedBillingStartDate: string;
         let expectedBillingEndDate: string;
         let expectedProduct: Product.Id;
+        let expectedCategory: Category.Id;
 
         if (reassignments.category && getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from)) {
           expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.invoiceNumber : undefined;
@@ -148,19 +149,21 @@ export const expect = baseExpect.extend({
           expectedBillingEndDate = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.billingEndDate?.toISOString() : undefined;
           expectedQuantity = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.quantity : undefined;
           expectedProduct = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? getProductId(originalSplit.product) : undefined;
+          expectedCategory = getCategoryId(reassignments.category.to);
         } else {
           expectedInvoiceNumber = originalSplit.invoiceNumber;
           expectedBillingStartDate = originalSplit.billingStartDate?.toISOString();
           expectedBillingEndDate = originalSplit.billingEndDate?.toISOString();
           expectedQuantity = getProductId(originalSplit.product) === reassignments.product?.from && !reassignments.product?.to ? undefined : originalSplit.quantity;
           expectedProduct = getProductId(originalSplit.product) === reassignments.product?.from ? reassignments.product?.to : getProductId(originalSplit.product);
+          expectedCategory = getCategoryId(originalSplit.category);
         }
 
         return new Comparer(splitDocument, {
           amount: originalSplit.amount,
           description: originalSplit.description,
           project: reassignments.project?.from === getProjectId(originalSplit.project) ? reassignments.project?.to : getProjectId(originalSplit.project),
-          category: getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from) ? getCategoryId(reassignments.category.to) : getCategoryId(originalSplit.category),
+          category: expectedCategory,
           product: expectedProduct,
           quantity: expectedQuantity,
           billingStartDate: expectedBillingStartDate,
@@ -175,6 +178,7 @@ export const expect = baseExpect.extend({
         let expectedBillingStartDate: string;
         let expectedBillingEndDate: string;
         let expectedProduct: Product.Id;
+        let expectedCategory: Category.Id;
 
         if (reassignments.category && getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from)) {
           expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.invoiceNumber : undefined;
@@ -188,6 +192,7 @@ export const expect = baseExpect.extend({
           expectedBillingEndDate = originalSplit.billingEndDate?.toISOString();
           expectedQuantity = getProductId(originalSplit.product) === reassignments.product?.from && !reassignments.product?.to ? undefined : originalSplit.quantity;
           expectedProduct = getProductId(originalSplit.product) === reassignments.product?.from ? reassignments.product?.to : getProductId(originalSplit.product);
+          expectedCategory = getCategoryId(originalSplit.category);
         }
 
         return new Comparer(splitDocument, {
@@ -198,7 +203,7 @@ export const expect = baseExpect.extend({
           ownerAccount: getAccountId(originalSplit.ownerAccount),
           description: originalSplit.description,
           project: reassignments.project?.from === getProjectId(originalSplit.project) ? reassignments.project?.to : getProjectId(originalSplit.project),
-          category: getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from) ? getCategoryId(reassignments.category.to) : getCategoryId(originalSplit.category),
+          category: expectedCategory,
           product: expectedProduct,
           quantity: expectedQuantity,
           billingStartDate: expectedBillingStartDate,

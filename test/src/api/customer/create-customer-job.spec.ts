@@ -4,14 +4,17 @@ import { allowUsers } from '@household/test/utils';
 import { entries, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
+import { test as customerApiTest, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(domainExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(customerApiTest, priceDbTest, customerDbTest);
 
 test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
   let request: Customer.Job.Request;
@@ -72,12 +75,12 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should add customer job', async ({ requestCreateCustomerJob }) => {
-          await customerService.saveCustomer(customerDocument);
-          await priceService.savePrice(priceDocument);
+        test('should add customer job', async ({ requestCreateCustomerJob, savePrice, saveCustomer, getCustomerById }) => {
+          await saveCustomer(customerDocument);
+          await savePrice(priceDocument);
           const res = await requestCreateCustomerJob(getCustomerId(customerDocument), request);
           expect(res).toBeCreatedResponse();
-          expect(request).toHaveBeenAddedToCustomerJobs(customerDocument, await customerService.getCustomerById(getCustomerId(customerDocument)));
+          expect(request).toHaveBeenAddedToCustomerJobs(customerDocument, await getCustomerById(getCustomerId(customerDocument)));
         });
 
         test.describe('should return error', () => {
@@ -124,7 +127,7 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different job on the same customer', async ({ requestCreateCustomerJob }) => {
+            test('is already in use by a different job on the same customer', async ({ requestCreateCustomerJob, saveCustomer }) => {
               const customerDocument = customerDataFactory.document({
                 jobs: [
                   {
@@ -135,7 +138,7 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
                 ],
               });
 
-              await customerService.saveCustomer(customerDocument);
+              await saveCustomer(customerDocument);
               const res = await requestCreateCustomerJob(getCustomerId(customerDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate customer job name');
@@ -293,9 +296,9 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
               expect(res).toHavePatternValidationError('body', 'priceId');
             });
 
-            test('does not belong to any price', async ({ requestCreateCustomerJob }) => {
-              await customerService.saveCustomer(customerDocument);
-              await priceService.savePrice(priceDocument);
+            test('does not belong to any price', async ({ requestCreateCustomerJob, savePrice, saveCustomer }) => {
+              await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
               const res = await requestCreateCustomerJob(getCustomerId(customerDocument), customerDataFactory.jobRequest({
                 prices: {
                   listed: [

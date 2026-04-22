@@ -4,14 +4,16 @@ import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { SettingKey } from '@household/shared/enums';
 
-import { test, expect as settingApiExpect } from '@household/test/fixtures/setting-api.fixture';
+import { test as settingApiTest, expect as settingApiExpect } from '@household/test/fixtures/setting-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { settingService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as settingDbTest } from '@household/test/fixtures/setting-db.fixture';
 
 const expect = mergeExpects(settingApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(settingApiTest, settingDbTest);
 
 test.describe('POST /setting/v1/settings/{settingKey}', () => {
   let request: Setting.Request;
@@ -44,11 +46,11 @@ test.describe('POST /setting/v1/settings/{settingKey}', () => {
         });
       } else {
         test.describe('should update setting', () => {
-          test('with complete body', async ({ requestUpdateSetting }) => {
+          test('with complete body', async ({ requestUpdateSetting, getSettingByKey }) => {
             const res = await requestUpdateSetting(settingKey, request);
             expect(res).toBeNoContentResponse();
 
-            expect(request).toHaveBeenSavedAsSettingDocument(settingKey, await settingService.getSettingByKey(settingKey));
+            expect(request).toHaveBeenSavedAsSettingDocument(settingKey, await getSettingByKey(settingKey));
           });
         });
 

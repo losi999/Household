@@ -10,14 +10,21 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { forbidUsers } from '@household/test/utils';
 
-import { test, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService, categoryService, productService, projectService, recipientService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = forbidUsers('viewer') ;
+
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
 test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred)', () => {
   let request: Transaction.PaymentRequest;
@@ -102,74 +109,74 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
       } else {
         test.describe('should update transaction', () => {
           test.describe('with complete body', () => {
-            test('using regular category', async ({ requestUpdateToPaymentTransaction }) => {
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('using regular category', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
                             
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('using invoice category', async ({ requestUpdateToPaymentTransaction }) => {
+            test('using invoice category', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
               });
 
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
-            test('using inventory category', async ({ requestUpdateToPaymentTransaction }) => {
+            test('using inventory category', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument),
               });
 
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
-              await productService.saveProduct(productDocument);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
           });
 
           test.describe('without optional properties', () => {
-            test('description', async ({ requestUpdateToPaymentTransaction }) => {
+            test('description', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               });
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
-            test(CategoryType.Inventory, async ({ requestUpdateToPaymentTransaction }) => {
+            test(CategoryType.Inventory, async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 productId: undefined,
@@ -177,19 +184,19 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
                 categoryId: getCategoryId(inventoryCategoryDocument),
               });
 
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test(CategoryType.Invoice, async ({ requestUpdateToPaymentTransaction }) => {
+            test(CategoryType.Invoice, async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
@@ -198,86 +205,86 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
                 billingStartDate: undefined,
               });
 
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('invoice.invoiceNumber', async ({ requestUpdateToPaymentTransaction }) => {
+            test('invoice.invoiceNumber', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
                 invoiceNumber: undefined,
               });
 
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('categoryId', async ({ requestUpdateToPaymentTransaction }) => {
+            test('categoryId', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveProject, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: undefined,
               });
 
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('recipientId', async ({ requestUpdateToPaymentTransaction }) => {
+            test('recipientId', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: undefined,
               });
 
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('projectId', async ({ requestUpdateToPaymentTransaction }) => {
+            test('projectId', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: undefined,
               });
 
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
           });
 
@@ -298,27 +305,27 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               });
             });
 
-            test('description', async ({ requestUpdateToPaymentTransaction }) => {
+            test('description', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument),
                 description: undefined,
               });
-              await transactionService.saveTransaction(deferredDocument);
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(secondaryAccountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await productService.saveProduct(productDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(deferredDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(secondaryAccountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProduct(productDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test(CategoryType.Inventory, async ({ requestUpdateToPaymentTransaction }) => {
+            test(CategoryType.Inventory, async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 productId: undefined,
@@ -326,20 +333,20 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
                 categoryId: getCategoryId(inventoryCategoryDocument),
               });
 
-              await transactionService.saveTransaction(deferredDocument);
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(secondaryAccountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(deferredDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(secondaryAccountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test(CategoryType.Invoice, async ({ requestUpdateToPaymentTransaction }) => {
+            test(CategoryType.Invoice, async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
@@ -348,20 +355,20 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
                 billingStartDate: undefined,
               });
 
-              await transactionService.saveTransaction(deferredDocument);
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(secondaryAccountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(deferredDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(secondaryAccountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('invoice.invoiceNumber', async ({ requestUpdateToPaymentTransaction }) => {
+            test('invoice.invoiceNumber', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               deferredDocument = deferredTransactionDataFactory.document({
                 account: accountDocument,
                 loanAccount: secondaryAccountDocument,
@@ -379,71 +386,71 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
                 invoiceNumber: undefined,
               });
 
-              await transactionService.saveTransaction(deferredDocument);
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(secondaryAccountDocument);
-              await categoryService.saveCategory(invoiceCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(deferredDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(secondaryAccountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('categoryId', async ({ requestUpdateToPaymentTransaction }) => {
+            test('categoryId', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveProject, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: undefined,
               });
 
-              await transactionService.saveTransaction(deferredDocument);
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(secondaryAccountDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(deferredDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(secondaryAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('recipientId', async ({ requestUpdateToPaymentTransaction }) => {
+            test('recipientId', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: undefined,
               });
 
-              await transactionService.saveTransaction(deferredDocument);
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
+              await saveTransaction(deferredDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
-            test('projectId', async ({ requestUpdateToPaymentTransaction }) => {
+            test('projectId', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveRecipient }) => {
               request = deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: undefined,
               });
 
-              await transactionService.saveTransaction(deferredDocument);
-              await accountService.saveAccount(accountDocument);
-              await accountService.saveAccount(secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await recipientService.saveRecipient(recipientDocument);
+              await saveTransaction(deferredDocument);
+              await saveAccount(accountDocument);
+              await saveAccount(secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await transactionService.getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
           });
         });
@@ -570,12 +577,12 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               expect(res).toHavePatternValidationError('body', 'productId');
             });
 
-            test('does not belong to any product', async ({ requestUpdateToPaymentTransaction }) => {
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(inventoryCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any product', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument), 
@@ -700,11 +707,11 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
           });
 
           test.describe('if accountId', () => {
-            test('does not belong to any account', async ({ requestUpdateToPaymentTransaction }) => {
-              await transactionService.saveTransaction(originalDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any account', async ({ requestUpdateToPaymentTransaction, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 accountId: accountDataFactory.id(), 
@@ -739,12 +746,12 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
           });
 
           test.describe('if loanAccountId', () => {
-            test('does not belong to any account', async ({ requestUpdateToPaymentTransaction }) => {
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccount(accountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any account', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccount(accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 loanAccountId: accountDataFactory.id(), 
@@ -771,11 +778,11 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
           });
 
           test.describe('if categoryId', () => {
-            test('does not belong to any category', async ({ requestUpdateToPaymentTransaction }) => {
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await projectService.saveProject(projectDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any category', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, saveProject, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: categoryDataFactory.id(), 
@@ -802,11 +809,11 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
           });
 
           test.describe('if recipientId', () => {
-            test('does not belong to any recipient', async ({ requestUpdateToPaymentTransaction }) => {
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await projectService.saveProject(projectDocument);
+            test('does not belong to any recipient', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, saveCategory, saveProject }) => {
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: recipientDataFactory.id(), 
@@ -833,11 +840,11 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
           });
 
           test.describe('if projectId', () => {
-            test('does not belong to any project', async ({ requestUpdateToPaymentTransaction }) => {
-              await transactionService.saveTransaction(originalDocument);
-              await accountService.saveAccounts(accountDocument, secondaryAccountDocument);
-              await categoryService.saveCategory(regularCategoryDocument);
-              await recipientService.saveRecipient(recipientDocument);
+            test('does not belong to any project', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, saveCategory, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: projectDataFactory.id(), 

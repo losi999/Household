@@ -4,14 +4,16 @@ import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test, expect as priceApiExpect } from '@household/test/fixtures/price-api.fixture';
+import { test as priceApiTest, expect as priceApiExpect } from '@household/test/fixtures/price-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 
 const expect = mergeExpects(priceApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(priceApiTest, priceDbTest);
 
 test.describe('GET /price/v1/prices', () => {
   let priceDocument1: Price.Document;
@@ -48,8 +50,8 @@ test.describe('GET /price/v1/prices', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of prices', async ({ requestListPrices }) => {
-          await priceService.savePrices(priceDocument1, priceDocument2, archivedPriceDocument);
+        test('should get a list of prices', async ({ requestListPrices, savePrices }) => {
+          await savePrices(priceDocument1, priceDocument2, archivedPriceDocument);
           const res = await requestListPrices();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);

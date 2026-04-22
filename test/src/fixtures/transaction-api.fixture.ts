@@ -25,10 +25,10 @@ type TransactionApiFixture = {
 };
 
 export const test = baseTest.extend<TransactionApiFixture>({
-  requestCreatePaymentTransaction: async ({ authenticate, request, userType }, use) => {
+  requestCreatePaymentTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (transaction: Transaction.PaymentRequest) => {
-      return request.post(`${process.env.BASE_URL}/transaction/v1/transactions/payment`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/transaction/v1/transactions/payment`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN, 
@@ -38,10 +38,10 @@ export const test = baseTest.extend<TransactionApiFixture>({
     };
     await use(fn);
   },
-  requestUpdateToPaymentTransaction: async ({ authenticate, request, userType }, use) => {
+  requestUpdateToPaymentTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (transactionId: Transaction.Id, transaction: Transaction.PaymentRequest) => {
-      return request.put(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}/payment`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}/payment`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN, 
@@ -51,10 +51,10 @@ export const test = baseTest.extend<TransactionApiFixture>({
     };
     await use(fn);
   },
-  requestCreateSplitTransaction: async ({ authenticate, request, userType }, use) => {
+  requestCreateSplitTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (transaction: Transaction.SplitRequest) => {
-      return request.post(`${process.env.BASE_URL}/transaction/v1/transactions/split`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/transaction/v1/transactions/split`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN, 
@@ -64,10 +64,10 @@ export const test = baseTest.extend<TransactionApiFixture>({
     };
     await use(fn);
   },
-  requestUpdateToSplitTransaction: async ({ authenticate, request, userType }, use) => {
+  requestUpdateToSplitTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (transactionId: Transaction.Id, transaction: Transaction.SplitRequest) => {
-      return request.put(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}/split`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}/split`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN, 
@@ -77,10 +77,10 @@ export const test = baseTest.extend<TransactionApiFixture>({
     };
     await use(fn);
   },
-  requestCreateTransferTransaction: async ({ authenticate, request, userType }, use) => {
+  requestCreateTransferTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (transaction: Transaction.TransferRequest) => {
-      return request.post(`${process.env.BASE_URL}/transaction/v1/transactions/transfer`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/transaction/v1/transactions/transfer`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN, 
@@ -90,10 +90,10 @@ export const test = baseTest.extend<TransactionApiFixture>({
     };
     await use(fn);
   },
-  requestUpdateToTransferTransaction: async ({ authenticate, request, userType }, use) => {
+  requestUpdateToTransferTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (transactionId: Transaction.Id, transaction: Transaction.TransferRequest) => {
-      return request.put(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}/transfer`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}/transfer`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN, 
@@ -103,10 +103,10 @@ export const test = baseTest.extend<TransactionApiFixture>({
     };
     await use(fn);
   },
-  requestDeleteTransaction: async ({ authenticate, request, userType }, use) => {
+  requestDeleteTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (transactionId: Transaction.Id) => {
-      return request.delete(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}`, {
         headers: {
           Authorization: authToken, 
         },
@@ -114,10 +114,10 @@ export const test = baseTest.extend<TransactionApiFixture>({
     };
     await use(fn);
   },
-  requestGetTransaction: async ({ authenticate, request, userType }, use) => {
+  requestGetTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (accountId: Account.Id, transactionId: Transaction.Id) => {
-      return request.get(`${process.env.BASE_URL}/transaction/v1/accounts/${accountId}/transactions/${transactionId}`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/transaction/v1/accounts/${accountId}/transactions/${transactionId}`, {
         headers: {
           Authorization: authToken, 
         },
@@ -125,10 +125,10 @@ export const test = baseTest.extend<TransactionApiFixture>({
     };
     await use(fn);
   },
-  requestGetTransactionListByAccount: async ({ authenticate, request, userType }, use) => {
+  requestGetTransactionListByAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (accountId: Account.Id, querystring?: Partial<Common.Pagination<number>>) => {
-      return request.get(`${process.env.BASE_URL}/transaction/v1/accounts/${accountId}/transactions`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/transaction/v1/accounts/${accountId}/transactions`, {
         headers: {
           Authorization: authToken, 
         },
@@ -137,10 +137,10 @@ export const test = baseTest.extend<TransactionApiFixture>({
     };
     await use(fn);
   },
-  requestGetTransactionReports: async ({ authenticate, request, userType }, use) => {
+  requestGetTransactionReports: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (report: Report.Request) => {
-      return request.post(`${process.env.BASE_URL}/transaction/v1/transactionReports`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/transaction/v1/transactionReports`, {
         headers: {
           Authorization: authToken, 
         },
@@ -149,10 +149,10 @@ export const test = baseTest.extend<TransactionApiFixture>({
     };
     await use(fn);
   },
-  requestGetTransactionListByFile: async ({ authenticate, request, userType }, use) => {
+  requestGetTransactionListByFile: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (fileId: File.Id) => {
-      return request.get(`${process.env.BASE_URL}/transaction/v1/files/${fileId}/transactions`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/transaction/v1/files/${fileId}/transactions`, {
         headers: {
           Authorization: authToken, 
         },

@@ -15,11 +15,11 @@ type ProductApiFixture = {
 };
 
 export const test = baseTest.extend<ProductApiFixture>({
-  requestCreateProduct: async ({ authenticate, request, userType }, use) => {
+  requestCreateProduct: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreateProduct = async (product: Product.Request, categoryId: Category.Id) => {
-      return request.post(`${process.env.BASE_URL}/product/v1/categories/${categoryId}/products`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/product/v1/categories/${categoryId}/products`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -30,11 +30,11 @@ export const test = baseTest.extend<ProductApiFixture>({
 
     await use(requestCreateProduct);
   },
-  requestUpdateProduct: async ({ authenticate, request, userType }, use) => {
+  requestUpdateProduct: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateProduct = async (productId: Product.Id, product: Product.Request) => {
-      return request.put(`${process.env.BASE_URL}/product/v1/products/${productId}`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/product/v1/products/${productId}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -45,11 +45,11 @@ export const test = baseTest.extend<ProductApiFixture>({
 
     await use(requestUpdateProduct);
   },
-  requestDeleteProduct: async ({ authenticate, request, userType }, use) => {
+  requestDeleteProduct: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteProduct = async (productId: Product.Id) => {
-      return request.delete(`${process.env.BASE_URL}/product/v1/products/${productId}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/product/v1/products/${productId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -58,11 +58,11 @@ export const test = baseTest.extend<ProductApiFixture>({
 
     await use(requestDeleteProduct);
   },
-  requestMergeProducts: async ({ authenticate, request, userType }, use) => {
+  requestMergeProducts: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestMergeProducts = async (productId: Product.Id, sourceProductIds: Product.Id[]) => {
-      return request.post(`${process.env.BASE_URL}/product/v1/products/${productId}/merge`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/product/v1/products/${productId}/merge`, {
         headers: {
           Authorization: authToken,
         },
@@ -72,11 +72,11 @@ export const test = baseTest.extend<ProductApiFixture>({
 
     await use(requestMergeProducts);
   },
-  requestListProducts: async ({ authenticate, request, userType }, use) => {
+  requestListProducts: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListProducts = async () => {
-      return request.get(`${process.env.BASE_URL}/product/v1/products`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/product/v1/products`, {
         headers: {
           Authorization: authToken,
         },

@@ -10,14 +10,19 @@ import { reimbursementTransactionDataFactory } from '@household/test/api/transac
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { allowUsers } from '@household/test/utils';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { test, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService, categoryService, productService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const expect = mergeExpects(productApiExpect, apiExpect, transactionApiExpect);
 
 const permissionMap = allowUsers('editor') ;
+
+const test = mergeTests(productApiTest, accountDbTest, transactionDbTest, categoryDbTest, productDbTest);
 
 test.describe('DELETE /product/v1/products/{productId}', () => {
   let productDocument: Product.Document;
@@ -55,12 +60,12 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should delete product', async ({ requestDeleteProduct }) => {
-          await productService.saveProduct(productDocument);
+        test('should delete product', async ({ requestDeleteProduct, saveProduct, findProductById }) => {
+          await saveProduct(productDocument);
           const res = await requestDeleteProduct(getProductId(productDocument));
           expect(res).toBeNoContentResponse();
 
-          expect(await productService.findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
+          expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('in related transactions inventory', () => {
@@ -151,46 +156,46 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
               ],
             });
           });
-          test('should be unset if product is deleted', async ({ requestDeleteProduct }) => {
-            await accountService.saveAccounts(accountDocument, loanAccountDocument);
-            await categoryService.saveCategory(categoryDocument);
-            await productService.saveProducts(productDocument, unrelatedProductDocument);
-            await transactionService.saveTransactions(paymentTransactionDocument, splitTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument);
+          test('should be unset if product is deleted', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveCategory(categoryDocument);
+            await saveProducts(productDocument, unrelatedProductDocument);
+            await saveTransactions(paymentTransactionDocument, splitTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument);
             const res = await requestDeleteProduct(getProductId(productDocument));
             expect(res).toBeNoContentResponse();
             
-            expect(await productService.findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
-            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
+            expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
+            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
             });
-            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
+            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
             });
-            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(deferredTransactionDocument)), {
+            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
             });
-            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
+            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
             });
-            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
             });
-            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
+            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
             });
-            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(splitTransactionDocument)), {
+            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },

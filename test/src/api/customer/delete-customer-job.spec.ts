@@ -4,14 +4,17 @@ import { allowUsers } from '@household/test/utils';
 import { entries, getCustomerId } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
+import { test as customerApiTest, expect as domainExpect } from '@household/test/fixtures/customer-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(domainExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(customerApiTest, priceDbTest, customerDbTest);
 
 test.describe('DELETE customer/v1/customers/{customerId}/jobs/{jobName}', () => {
   let customerDocument: Customer.Document;
@@ -65,12 +68,12 @@ test.describe('DELETE customer/v1/customers/{customerId}/jobs/{jobName}', () => 
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should remove customer job', async ({ requestDeleteCustomerJob }) => {
-          await customerService.saveCustomers(customerDocument, blacklistedCustomer);
-          await priceService.savePrice(priceDocument);
+        test('should remove customer job', async ({ requestDeleteCustomerJob, savePrice, saveCustomers, getCustomerById }) => {
+          await saveCustomers(customerDocument, blacklistedCustomer);
+          await savePrice(priceDocument);
           const res = await requestDeleteCustomerJob(getCustomerId(customerDocument), jobName);
           expect(res).toBeNoContentResponse();
-          expect(jobName).toHaveBeenRemovedFromCustomerJobs(customerDocument, await customerService.getCustomerById(getCustomerId(customerDocument)));
+          expect(jobName).toHaveBeenRemovedFromCustomerJobs(customerDocument, await getCustomerById(getCustomerId(customerDocument)));
         });
 
         test.describe('should return error', () => {

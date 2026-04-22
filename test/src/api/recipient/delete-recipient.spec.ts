@@ -1,10 +1,9 @@
 import { entries, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { recipientService } from '@household/test/dependencies';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
@@ -12,13 +11,16 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { transactionService } from '@household/test/dependencies';
-import { accountService } from '@household/test/dependencies';
-import { mergeExpects } from '@playwright/test';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 
 const expect = mergeExpects(apiExpect, recipientApiExpect, transactionApiExpect);
 
 const permissionMap = allowUsers('editor');
+
+const test = mergeTests(recipientApiTest, accountDbTest, transactionDbTest, recipientDbTest);
 
 test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
 
@@ -50,13 +52,13 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should delete recipient', async ({ requestDeleteRecipient }) => {
-          await recipientService.saveRecipient(recipientDocument);
+        test('should delete recipient', async ({ requestDeleteRecipient, saveRecipient, findRecipientById }) => {
+          await saveRecipient(recipientDocument);
 
           const res = await requestDeleteRecipient(getRecipientId(recipientDocument));
           expect(res).toBeNoContentResponse();
 
-          expect(await recipientService.findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
+          expect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('in related transactions recipient', () => {
@@ -125,10 +127,10 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
             });
           });
 
-          test('should be unset if recipient is deleted', async ({ requestDeleteRecipient }) => {
-            await accountService.saveAccounts(accountDocument, loanAccountDocument);
-            await recipientService.saveRecipients(recipientDocument, unrelatedRecipientDocument);
-            await transactionService.saveTransactions(
+          test('should be unset if recipient is deleted', async ({ requestDeleteRecipient, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveRecipients(recipientDocument, unrelatedRecipientDocument);
+            await saveTransactions(
               paymentTransactionDocument,
               splitTransactionDocument,
               deferredTransactionDocument,
@@ -142,39 +144,39 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
             const res = await requestDeleteRecipient(getRecipientId(recipientDocument));
             expect(res).toBeNoContentResponse();
 
-            expect(await recipientService.findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
+            expect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(paymentTransactionDocument)), {
+            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },
             });
-            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(deferredTransactionDocument)), {
+            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },
             });
-            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },
             });
-            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
+            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },
             });
-            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
+            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },
             });
-            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await transactionService.findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
+            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },
             });
-            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await transactionService.findTransactionById(getTransactionId(splitTransactionDocument)), {
+            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },

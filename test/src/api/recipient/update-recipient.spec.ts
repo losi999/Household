@@ -1,12 +1,15 @@
 import { entries, getRecipientId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { Recipient } from '@household/shared/types/types';
-import { recipientService } from '@household/test/dependencies';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { mergeTests } from '@playwright/test';
 
 const permissionMap = allowUsers('editor');
+
+const test = mergeTests(recipientApiTest, recipientDbTest);
 
 test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
   let req: Recipient.Request;
@@ -40,14 +43,14 @@ test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
           apiExpect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should update a recipient', async ({ requestUpdateRecipient }) => {
-          await recipientService.saveRecipient(recipientDocument);
+        test('should update a recipient', async ({ requestUpdateRecipient, saveRecipient, findRecipientById }) => {
+          await saveRecipient(recipientDocument);
 
           const res = await requestUpdateRecipient(getRecipientId(recipientDocument), req);
           apiExpect(res).toBeCreatedResponse();
 
           const { recipientId } = (await res.json()) as Recipient.RecipientId;
-          recipientApiExpect(req).toHaveBeenSavedAsRecipientDocument(await recipientService.findRecipientById(recipientId));
+          recipientApiExpect(req).toHaveBeenSavedAsRecipientDocument(await findRecipientById(recipientId));
         });
 
         test.describe('should return error', () => {
@@ -89,10 +92,10 @@ test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
               apiExpect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different recipient', async ({ requestUpdateRecipient }) => {
+            test('is already in use by a different recipient', async ({ requestUpdateRecipient, saveRecipients }) => {
               const duplicateRecipientDocument = recipientDataFactory.document(req);
 
-              await recipientService.saveRecipients(recipientDocument, duplicateRecipientDocument);
+              await saveRecipients(recipientDocument, duplicateRecipientDocument);
 
               const res = await requestUpdateRecipient(getRecipientId(recipientDocument), recipientDataFactory.request({
                 name: duplicateRecipientDocument.name,

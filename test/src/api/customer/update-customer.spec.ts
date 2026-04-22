@@ -3,14 +3,17 @@ import { allowUsers } from '@household/test/utils';
 import { Customer, Price } from '@household/shared/types/types';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
-import { test, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(customerApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(customerApiTest, priceDbTest, customerDbTest);
 
 test.describe('PUT /customer/v1/customers/{customerId}', () => {
   let request: Customer.Request;
@@ -62,14 +65,14 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should update a customer', async ({ requestUpdateCustomer }) => {
-          await customerService.saveCustomers(customerDocument, blacklistedCustomer);
-          await priceService.savePrice(priceDocument);
+        test('should update a customer', async ({ requestUpdateCustomer, savePrice, saveCustomers, findCustomerById }) => {
+          await saveCustomers(customerDocument, blacklistedCustomer);
+          await savePrice(priceDocument);
           const res = await requestUpdateCustomer(getCustomerId(customerDocument), request);
           expect(res).toBeCreatedResponse();
 
           const { customerId } = (await res.json()) as Customer.CustomerId;
-          expect(request).toHaveBeenSavedAsCustomerDocument(await customerService.findCustomerById(customerId), customerDocument);
+          expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId), customerDocument);
         });
 
         test.describe('should return error', () => {
@@ -110,13 +113,13 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different customer', async ({ requestUpdateCustomer }) => {
+            test('is already in use by a different customer', async ({ requestUpdateCustomer, savePrice, saveCustomers }) => {
               const updatedCustomerDocument = customerDataFactory.document({
                 body: request,
               });
 
-              await customerService.saveCustomers(customerDocument, updatedCustomerDocument);
-              await priceService.savePrice(priceDocument);
+              await saveCustomers(customerDocument, updatedCustomerDocument);
+              await savePrice(priceDocument);
               const res = await requestUpdateCustomer(getCustomerId(customerDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate customer name');

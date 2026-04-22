@@ -4,12 +4,13 @@ import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
-import { test, expect as domainExpect } from '@household/test/fixtures/user-api.fixture';
+import { test as identityTest } from '@household/test/fixtures/identity.fixture';
+import { test as userApiTest, expect as domainExpect } from '@household/test/fixtures/user-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { identityService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
 
 const expect = mergeExpects(domainExpect, apiExpect);
+const test = mergeTests(identityTest, userApiTest);
 
 const permissionMap = allowUsers('editor') ;
 
@@ -20,8 +21,8 @@ test.describe('DELETE /user/v1/users/{email}', () => {
     pendingUser = userDataFactory.request();
   });
 
-  test.afterEach(async () => {
-    await identityService.deleteUser(pendingUser);
+  test.afterEach(async ({ deleteUser }) => {
+    await deleteUser(pendingUser);
   });
 
   test.describe('called as anonymous', () => {
@@ -45,11 +46,11 @@ test.describe('DELETE /user/v1/users/{email}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should delete user', async ({ requestDeleteUser }) => {
-          await identityService.createUser(pendingUser, UserType.Editor, true);
+        test('should delete user', async ({ requestDeleteUser, createUser, getUser }) => {
+          await createUser(pendingUser, UserType.Editor, true);
           const res = await requestDeleteUser(pendingUser.email);
           expect(res).toBeNoContentResponse();
-          expect(await identityService.getUser(pendingUser)).toHaveBeenDeleted();
+          expect(await getUser(pendingUser)).toHaveBeenDeleted();
         });
 
         test.describe('should return error', () => {

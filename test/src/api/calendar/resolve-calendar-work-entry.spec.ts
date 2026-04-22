@@ -7,16 +7,22 @@ import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { CalendarEntryResolutionStatus, SettingKey } from '@household/shared/enums';
 
 import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
-import { test, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { calendarEntryService, customerService, priceService, settingService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { default as moment } from 'moment-timezone';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as settingDbTest } from '@household/test/fixtures/setting-db.fixture';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect, paymentTransactionApiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(calendarApiTest, transactionDbTest, settingDbTest, priceDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
   let request: Calendar.Entry.ResolutionRequest;
@@ -71,32 +77,32 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
         });
       } else {
         test.describe('should update calendar work entry', () => {
-          test('with transfer payment', async ({ requestResolveCalendarWorkEntry }) => {
+          test('with transfer payment', async ({ requestResolveCalendarWorkEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {
             request = calendarEntryDataFactory.resolutionRequest({
               status: CalendarEntryResolutionStatus.PendingTransfer,
             });
 
-            await customerService.saveCustomer(customerDocument);   
-            await priceService.savePrice(priceDocument);
-            await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCustomer(customerDocument);   
+            await savePrice(priceDocument);
+            await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
             expect(res).toBeCreatedResponse();
 
-            expect(calendarWorkEntryDocument).toHaveBeenResolved(await calendarEntryService.getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)), request);
+            expect(calendarWorkEntryDocument).toHaveBeenResolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)), request);
           });
 
-          test('with cash payment', async ({ requestResolveCalendarWorkEntry }) => {            
+          test('with cash payment', async ({ requestResolveCalendarWorkEntry, findTransactionById, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer, getSettingByKey }) => {            
             request = calendarEntryDataFactory.resolutionRequest({
               status: CalendarEntryResolutionStatus.Paid,
             });
 
-            await customerService.saveCustomer(customerDocument);       
-            await priceService.savePrice(priceDocument);
-            await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCustomer(customerDocument);       
+            await savePrice(priceDocument);
+            await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
             expect(res).toBeCreatedResponse();
 
-            const updatedCalendarEntryDocument = await calendarEntryService.getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument));
+            const updatedCalendarEntryDocument = await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument));
 
             const transactionId = updatedCalendarEntryDocument.resolution.status === CalendarEntryResolutionStatus.Paid ? getTransactionId(updatedCalendarEntryDocument.transaction) : undefined;
 
@@ -112,29 +118,29 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
               amount: (request as Calendar.Entry.PaidResolutionRequest).amount,
               issuedAt: expectedIssuedAt.toISOString(),
               description: calendarWorkEntryDocument.title,
-              accountId: (await settingService.getSettingByKey<Account.Id>(SettingKey.HairdressingIncomeAccount)).value,
-              categoryId: (await settingService.getSettingByKey<Category.Id>(SettingKey.HairdressingIncomeCategory)).value,
+              accountId: (await getSettingByKey<Account.Id>(SettingKey.HairdressingIncomeAccount)).value,
+              categoryId: (await getSettingByKey<Category.Id>(SettingKey.HairdressingIncomeCategory)).value,
             });
-            expect(paymentRequest).toHaveBeenSavedAsPaymentTransactionDocument(await transactionService.findTransactionById(transactionId));
+            expect(paymentRequest).toHaveBeenSavedAsPaymentTransactionDocument(await findTransactionById(transactionId));
           });
 
-          test('with no show', async ({ requestResolveCalendarWorkEntry }) => {            
+          test('with no show', async ({ requestResolveCalendarWorkEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {            
             request = calendarEntryDataFactory.resolutionRequest({
               status: CalendarEntryResolutionStatus.NoShow,
             });
 
-            await customerService.saveCustomer(customerDocument);           
-            await priceService.savePrice(priceDocument);    
-            await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCustomer(customerDocument);           
+            await savePrice(priceDocument);    
+            await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
             expect(res).toBeCreatedResponse();
 
-            expect(calendarWorkEntryDocument).toHaveBeenResolved(await calendarEntryService.getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)), request);
+            expect(calendarWorkEntryDocument).toHaveBeenResolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)), request);
           });
         });
 
         test.describe('should return error', () => {    
-          test('if work entry is already resolved', async ({ requestResolveCalendarWorkEntry }) => {              
+          test('if work entry is already resolved', async ({ requestResolveCalendarWorkEntry, saveCalendarEntry }) => {              
             calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
               customer: customerDocument,
               resolution: {
@@ -142,21 +148,21 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
               },
             });
           
-            await calendarEntryService.saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
             expect(res).toBeBadRequestResponse();
             expect(res).toHaveMessage('Calendar entry is already resolved');
           });
 
-          test('if entry is personal', async ({ requestResolveCalendarWorkEntry }) => {              
-            await calendarEntryService.saveCalendarEntry(calendarPersonalEntryDocument);
+          test('if entry is personal', async ({ requestResolveCalendarWorkEntry, saveCalendarEntry }) => {              
+            await saveCalendarEntry(calendarPersonalEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
             expect(res).toBeBadRequestResponse();
             expect(res).toHaveMessage('Calendar entry must be of "work" type');
           });
 
-          test('if entry is issue', async ({ requestResolveCalendarWorkEntry }) => {              
-            await calendarEntryService.saveCalendarEntry(calendarIssueEntryDocument);
+          test('if entry is issue', async ({ requestResolveCalendarWorkEntry, saveCalendarEntry }) => {              
+            await saveCalendarEntry(calendarIssueEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
             expect(res).toBeBadRequestResponse();
             expect(res).toHaveMessage('Calendar entry must be of "work" type');

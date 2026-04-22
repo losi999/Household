@@ -2,12 +2,13 @@ import { entries } from '@household/shared/common/utils';
 import { Account } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { allowUsers } from '@household/test/utils';
-import { test, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
 
 const expect = mergeExpects(accountApiExpect, apiExpect);
+const test = mergeTests(accountApiTest, accountDbTest);
 
 const permissionMap = allowUsers('editor') ;
 test.describe('POST account/v1/accounts', () => {
@@ -38,27 +39,27 @@ test.describe('POST account/v1/accounts', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should create account', async ({ requestCreateAccount }) => {
+        test('should create account', async ({ requestCreateAccount, findAccountById }) => {
           const res = await requestCreateAccount(request);
           expect(res).toBeCreatedResponse();
 
           const { accountId } = (await res.json()) as Account.AccountId;
-          expect(request).toHaveBeenSavedAsAccountDocument(await accountService.findAccountById(accountId));
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
 
-        test('should create account with an existing name for a different owner', async ({ requestCreateAccount }) => {
+        test('should create account with an existing name for a different owner', async ({ requestCreateAccount, saveAccount, findAccountById }) => {
           const accountDocument = accountDataFactory.document(request);
 
           request = accountDataFactory.request({
             name: request.name,
           });
 
-          await accountService.saveAccount(accountDocument);
+          await saveAccount(accountDocument);
           const res = await requestCreateAccount(request);
           expect(res).toBeCreatedResponse();
 
           const { accountId } = (await res.json()) as Account.AccountId;
-          expect(request).toHaveBeenSavedAsAccountDocument(await accountService.findAccountById(accountId));
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
 
         test.describe('should return error', () => {
@@ -99,10 +100,10 @@ test.describe('POST account/v1/accounts', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different account of the same owner', async ({ requestCreateAccount }) => {
+            test('is already in use by a different account of the same owner', async ({ requestCreateAccount, saveAccount }) => {
               const accountDocument = accountDataFactory.document(request);
 
-              await accountService.saveAccount(accountDocument);
+              await saveAccount(accountDocument);
               const res = await requestCreateAccount(request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate account name');

@@ -13,7 +13,6 @@ import { customerSchema } from '@household/shared/mongodb-schemas/customer.schem
 import { priceSchema } from '@household/shared/mongodb-schemas/price.schema';
 import { calendarEntrySchema } from '@household/shared/mongodb-schemas/calendar-entry.schema';
 import { calendarDaySchema } from '@household/shared/mongodb-schemas/calendar-day.schema';
-console.log('mongodb service A');
 
 type CollectionMapping = {
   recipients: Recipient.Document;
@@ -45,8 +44,7 @@ export type IMongodbService = {
 };
 
 let connection: Connection;
-console.log('mongodb service B');
-set('debug', (!process.env.ENV || process.env.ENV === 'LOCAL') ? (collectionName, methodName, ...methodArgs) => {
+set('debug', !process.env.ENV ? (collectionName, methodName, ...methodArgs) => {
   const safeArgs = methodArgs.map(({ session, ...arg }) => {
     try {
       return JSON.stringify(arg, null, 2);

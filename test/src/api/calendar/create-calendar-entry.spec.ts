@@ -5,14 +5,18 @@ import { calendarEntryDataFactory } from '@household/test/api/calendar/data-fact
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
-import { test, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { calendarEntryService, customerService, priceService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
+
+const test = mergeTests(calendarApiTest, priceDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('POST /calendar/v1/entries', () => {
   let request: Calendar.Entry.Request;
@@ -48,40 +52,40 @@ test.describe('POST /calendar/v1/entries', () => {
         });
       } else {
         test.describe('should create calendar', () => {
-          test('personal entry', async ({ requestCreateCalendarEntry }) => {
+          test('personal entry', async ({ requestCreateCalendarEntry, getCalendarEntryById }) => {
             request = calendarEntryDataFactory.request.personal();
             const res = await requestCreateCalendarEntry(request);
             expect(res).toBeCreatedResponse();
 
             const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await calendarEntryService.getCalendarEntryById(calendarEntryId));
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
 
-          test('issue entry', async ({ requestCreateCalendarEntry }) => {
+          test('issue entry', async ({ requestCreateCalendarEntry, getCalendarEntryById }) => {
             request = calendarEntryDataFactory.request.issue();
             const res = await requestCreateCalendarEntry(request);
             expect(res).toBeCreatedResponse();
             
             const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await calendarEntryService.getCalendarEntryById(calendarEntryId));
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
 
-          test('work entry without prices', async ({ requestCreateCalendarEntry }) => {
+          test('work entry without prices', async ({ requestCreateCalendarEntry, getCalendarEntryById, saveCustomer }) => {
             request = calendarEntryDataFactory.request.work({
               body: {
                 customerId: getCustomerId(customerDocument),
               },
             });
             
-            await customerService.saveCustomer(customerDocument);
+            await saveCustomer(customerDocument);
             const res = await requestCreateCalendarEntry(request);
             expect(res).toBeCreatedResponse();
 
             const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await calendarEntryService.getCalendarEntryById(calendarEntryId));
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
 
-          test('work entry with prices', async ({ requestCreateCalendarEntry }) => {
+          test('work entry with prices', async ({ requestCreateCalendarEntry, savePrice, getCalendarEntryById, saveCustomer }) => {
 
             request = calendarEntryDataFactory.request.work({
               body: {
@@ -97,13 +101,13 @@ test.describe('POST /calendar/v1/entries', () => {
               },
             });
             
-            await customerService.saveCustomer(customerDocument);
-            await priceService.savePrice(priceDocument);
+            await saveCustomer(customerDocument);
+            await savePrice(priceDocument);
             const res = await requestCreateCalendarEntry(request);
             expect(res).toBeCreatedResponse();
             
             const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await calendarEntryService.getCalendarEntryById(calendarEntryId));
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
         });
 
@@ -451,9 +455,9 @@ test.describe('POST /calendar/v1/entries', () => {
               expect(res).toHavePatternValidationError('body', 'priceId');
             });
 
-            test('does not belong to any price', async ({ requestCreateCalendarEntry }) => {
-              await customerService.saveCustomer(customerDocument);
-              await priceService.savePrice(priceDocument);
+            test('does not belong to any price', async ({ requestCreateCalendarEntry, savePrice, saveCustomer }) => {
+              await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
               const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
                 body: {
                   customerId: getCustomerId(customerDocument), 

@@ -20,11 +20,11 @@ type CustomerApiFixture = {
 };
 
 export const test = baseTest.extend<CustomerApiFixture>({
-  requestCreateCustomer: async ({ authenticate, request, userType }, use) => {
+  requestCreateCustomer: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreateCustomer = async (customer: Customer.Request) => {
-      return request.post(`${process.env.BASE_URL}/customer/v1/customers`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/customer/v1/customers`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -35,11 +35,11 @@ export const test = baseTest.extend<CustomerApiFixture>({
 
     await use(requestCreateCustomer);
   },
-  requestUpdateCustomer: async ({ authenticate, request, userType }, use) => {
+  requestUpdateCustomer: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateCustomer = async (customerId: Customer.Id, customer: Customer.Request) => {
-      return request.put(`${process.env.BASE_URL}/customer/v1/customers/${customerId}`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/customer/v1/customers/${customerId}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -50,11 +50,11 @@ export const test = baseTest.extend<CustomerApiFixture>({
 
     await use(requestUpdateCustomer);
   },
-  requestGetCustomer: async ({ authenticate, request, userType }, use) => {
+  requestGetCustomer: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestGetCustomer = async (customerId: Customer.Id) => {
-      return request.get(`${process.env.BASE_URL}/customer/v1/customers/${customerId}`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/customer/v1/customers/${customerId}`, {
         headers: {
           Authorization: authToken,
         },
@@ -63,11 +63,11 @@ export const test = baseTest.extend<CustomerApiFixture>({
 
     await use(requestGetCustomer);
   },
-  requestListCustomers: async ({ authenticate, request, userType }, use) => {
+  requestListCustomers: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListCustomers = async () => {
-      return request.get(`${process.env.BASE_URL}/customer/v1/customers`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/customer/v1/customers`, {
         headers: {
           Authorization: authToken,
         },
@@ -76,11 +76,11 @@ export const test = baseTest.extend<CustomerApiFixture>({
 
     await use(requestListCustomers);
   },
-  requestListCustomerWorks: async ({ authenticate, request, userType }, use) => {
+  requestListCustomerWorks: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestListCustomerWorks = async (customerId: Customer.Id) => {
-      return request.get(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/works`, {
+      return loggedRequest.get(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/works`, {
         headers: {
           Authorization: authToken,
         },
@@ -89,11 +89,11 @@ export const test = baseTest.extend<CustomerApiFixture>({
 
     await use(requestListCustomerWorks);
   },
-  requestCreateCustomerJob: async ({ authenticate, request, userType }, use) => {
+  requestCreateCustomerJob: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestCreateCustomerJob = async (customerId: Customer.Id, job: Customer.Job.Request) => {
-      return request.post(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/jobs`, {
+      return loggedRequest.post(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/jobs`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -104,11 +104,11 @@ export const test = baseTest.extend<CustomerApiFixture>({
 
     await use(requestCreateCustomerJob);
   },
-  requestUpdateCustomerJob: async ({ authenticate, request, userType }, use) => {
+  requestUpdateCustomerJob: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestUpdateCustomerJob = async (customerId: Customer.Id, jobName: Customer.Job.Name['name'], job: Customer.Job.Request) => {
-      return request.put(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/jobs/${jobName}`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/jobs/${jobName}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -119,11 +119,11 @@ export const test = baseTest.extend<CustomerApiFixture>({
 
     await use(requestUpdateCustomerJob);
   },
-  requestDeleteCustomerJob: async ({ authenticate, request, userType }, use) => {
+  requestDeleteCustomerJob: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestDeleteCustomerJob = async (customerId: Customer.Id, jobName: Customer.Job.Name['name']) => {
-      return request.delete(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/jobs/${jobName}`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/jobs/${jobName}`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -133,11 +133,11 @@ export const test = baseTest.extend<CustomerApiFixture>({
 
     await use(requestDeleteCustomerJob);
   },
-  requestAddCustomerToBlacklist: async ({ authenticate, request, userType }, use) => {
+  requestAddCustomerToBlacklist: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestAddCustomerToBlacklist = async (body: Customer.Id[]) => {
-      return request.put(`${process.env.BASE_URL}/customer/v1/customers/blacklist`, {
+      return loggedRequest.put(`${process.env.BASE_URL}/customer/v1/customers/blacklist`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,
@@ -148,11 +148,11 @@ export const test = baseTest.extend<CustomerApiFixture>({
 
     await use(requestAddCustomerToBlacklist);
   },
-  requestRemoveCustomerFromBlacklist: async ({ authenticate, request, userType }, use) => {
+  requestRemoveCustomerFromBlacklist: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
     const requestRemoveCustomerFromBlacklist = async (body: Customer.Id[]) => {
-      return request.delete(`${process.env.BASE_URL}/customer/v1/customers/blacklist`, {
+      return loggedRequest.delete(`${process.env.BASE_URL}/customer/v1/customers/blacklist`, {
         headers: {
           Authorization: authToken,
           [headerExpiresIn]: process.env.EXPIRES_IN,

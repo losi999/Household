@@ -9,14 +9,17 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { AccountType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
-import { test, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects } from '@playwright/test';
-import { accountService, transactionService } from '@household/test/dependencies';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 
 const expect = mergeExpects(accountApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
+
+const test = mergeTests(accountApiTest, accountDbTest, transactionDbTest);
 
 test.describe('GET /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
@@ -137,9 +140,9 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test.beforeEach(async () => {
-          await accountService.saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
-          await transactionService.saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument, repayingTransferTransactionDocument, invertedRepayingTransferTransactionDocument);
+        test.beforeEach(async ({ saveAccounts, saveTransactions }) => {
+          await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
+          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument, repayingTransferTransactionDocument, invertedRepayingTransferTransactionDocument);
         });
         test('should get account by id', async ({ requestGetAccount }) => {
           const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
