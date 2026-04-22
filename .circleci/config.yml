@@ -203,7 +203,7 @@ jobs:
 workflows:
   local:
     jobs:
-      # - install
+      - install
       # - unit_test_api:
       #     name: unit_test_api
       #     requires:
@@ -233,9 +233,10 @@ workflows:
       #     requires:
       #       - api_deploy
       - api_test_setup:
-          # requires:
+          requires:
             # - web_deploy
             # - api_deploy
+            - install
           filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
       # - test:
       #     serial-group: api-test1
