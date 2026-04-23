@@ -15,9 +15,12 @@ export const expect = baseExpect.extend({
     const errors = draftTransactions.flatMap((document, index) => {
       const row = revolutRows.find(r => document.description.includes(r.Type));
       
+      const expectedIssuedAt = row?.['Started Date'];
+      expectedIssuedAt.setMilliseconds(0);
+
       const comparer = new Comparer(document, {
         amount: row?.Amount - row?.Fee,
-        issuedAt: row?.['Started Date'].toISOString(),
+        issuedAt: expectedIssuedAt.toISOString(),
         transactionType: TransactionType.Draft,
         description: `${row?.Type} ${row?.Description} ${row?.Currency}`,
         file: fileId,
@@ -35,9 +38,12 @@ export const expect = baseExpect.extend({
     const errors = draftTransactions.flatMap((document, index) => {
       const row = otpRows.find(r => document.description.includes(r['Forgalom típusa']));
       
+      const expectedIssuedAt = row?.['Tranzakció időpontja'];
+      expectedIssuedAt.setMilliseconds(0);
+
       const comparer = new Comparer(document, {
         amount: row?.Összeg,
-        issuedAt: row?.['Tranzakció időpontja'].toISOString(),
+        issuedAt: expectedIssuedAt.toISOString(),
         transactionType: TransactionType.Draft,
         description: `${row?.['Forgalom típusa']} ${row?.['Ellenoldali név']} ${row?.Közlemény}`,
         file: fileId,
@@ -55,6 +61,9 @@ export const expect = baseExpect.extend({
     const errors = draftTransactions.flatMap((document, index) => {
       const row = ersteRows.find(r => document.description.includes(r.Kategória));
       
+      const expectedIssuedAt = row?.Dátum;
+      expectedIssuedAt.setMilliseconds(0);
+
       const comparer = new Comparer(document, {
         amount: row?.Összeg,
         issuedAt: row?.Dátum.toISOString(),

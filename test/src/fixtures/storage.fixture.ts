@@ -8,7 +8,7 @@ export const test = baseTest.extend<Pick<IStorageService, 'writeFile' | 'uploadF
       const result = await importStorageService.writeFile(fileName, data, folder);
       await logServiceCall('writeFile', {
         fileName,
-        data,
+        data: data.toString('utf-8'),
         folder,
       }, result);
       return result;
@@ -21,7 +21,7 @@ export const test = baseTest.extend<Pick<IStorageService, 'writeFile' | 'uploadF
       const result = await importStorageService.uploadFile(fileName, data);
       await logServiceCall('uploadFile', {
         fileName,
-        data,
+        data: data.toString('utf-8'),
       }, result);
       return result;
     };

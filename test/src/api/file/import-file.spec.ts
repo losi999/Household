@@ -1,4 +1,3 @@
-import { File, Import } from '@household/shared/types/types';
 import { fileDataFactory } from '@household/test/api/file/data-factory';
 import { getFileId } from '@household/shared/common/utils';
 import { FileProcessingStatus, FileType } from '@household/shared/enums';
@@ -15,40 +14,17 @@ const expect = mergeExpects(fileApiExpect, apiExpect, transactionExpect);
 const test = mergeTests(fileApiTest, transactionDbTest, fileDbTest, storageTest);
 
 test.describe('Import file', () => {
-  let revolutFileDocument: File.Document;
-  let otpFileDocument: File.Document;
-  let ersteFileDocument: File.Document;
-  let revolutRow: Import.Revolut;
-  let otpRow: Import.Otp;
-  let ersteRow: Import.Erste;
-
-  test.beforeAll('uploading file to import bucket', async ({ saveFile, uploadFile }) => {
-    revolutFileDocument = fileDataFactory.document({
+  test('should trigger importing of revolut file', async ({ listDraftTransactionsByFileId, findFileById, saveFile, uploadFile }) => {
+    const revolutFileDocument = fileDataFactory.document({
       fileType: FileType.Revolut,
     });
 
-    otpFileDocument = fileDataFactory.document({
-      fileType: FileType.Otp,
-    });
-
-    ersteFileDocument = fileDataFactory.document({
-      fileType: FileType.Erste,
-    });
-
-    revolutRow = fileDataFactory.revolut.row();
-    ersteRow = fileDataFactory.erste.row();
-    otpRow = fileDataFactory.otp.row();
+    const revolutRow = fileDataFactory.revolut.row();
 
     await saveFile(revolutFileDocument);
-    await saveFile(otpFileDocument);
-    await saveFile(ersteFileDocument);
-    await uploadFile(getFileId(revolutFileDocument), fileDataFactory.revolut.file(revolutFileDocument.timezone, [revolutRow]));
-    await uploadFile(getFileId(otpFileDocument), fileDataFactory.otp.file(otpFileDocument.timezone, [otpRow]));
-    await uploadFile(getFileId(ersteFileDocument), fileDataFactory.erste.file(ersteFileDocument.timezone, [ersteRow]));
-    await new Promise(resolve => setTimeout(resolve, 3000));
-  });
 
-  test('should trigger importing of revolut file', async ({ listDraftTransactionsByFileId, findFileById }) => {
+    await uploadFile(getFileId(revolutFileDocument), fileDataFactory.revolut.file(revolutFileDocument.timezone, [revolutRow]));
+
     await expect.poll(async () => {
       const file = await findFileById(getFileId(revolutFileDocument));
       return file.processingStatus;
@@ -60,7 +36,15 @@ test.describe('Import file', () => {
     expect(await listDraftTransactionsByFileId(getFileId(revolutFileDocument))).toHaveBeenImportedFromRevolutFile(getFileId(revolutFileDocument), revolutRow);
   });
 
-  test('should trigger importing of import otp file', async ({ listDraftTransactionsByFileId, findFileById }) => {
+  test('should trigger importing of import otp file', async ({ listDraftTransactionsByFileId, findFileById, saveFile, uploadFile }) => {
+    const otpFileDocument = fileDataFactory.document({
+      fileType: FileType.Otp,
+    });
+    const otpRow = fileDataFactory.otp.row();
+
+    await saveFile(otpFileDocument);
+    await uploadFile(getFileId(otpFileDocument), fileDataFactory.otp.file(otpFileDocument.timezone, [otpRow]));
+
     await expect.poll(async () => {
       const file = await findFileById(getFileId(otpFileDocument));
       return file.processingStatus;
@@ -72,7 +56,14 @@ test.describe('Import file', () => {
     expect(await listDraftTransactionsByFileId(getFileId(otpFileDocument))).toHaveBeenImportedFromOtpFile(getFileId(otpFileDocument), otpRow);
   });
 
-  test('should trigger importing of import erste file', async ({ listDraftTransactionsByFileId, findFileById }) => {
+  test('should trigger importing of import erste file', async ({ listDraftTransactionsByFileId, findFileById, saveFile, uploadFile }) => {
+    const ersteFileDocument = fileDataFactory.document({
+      fileType: FileType.Erste,
+    });
+    const ersteRow = fileDataFactory.erste.row();
+    await saveFile(ersteFileDocument);
+    await uploadFile(getFileId(ersteFileDocument), fileDataFactory.erste.file(ersteFileDocument.timezone, [ersteRow]));
+
     await expect.poll(async () => {
       const file = await findFileById(getFileId(ersteFileDocument));
       return file.processingStatus;
