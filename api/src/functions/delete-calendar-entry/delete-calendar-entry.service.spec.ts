@@ -1,12 +1,12 @@
 import { deleteCalendarEntryServiceFactory, IDeleteCalendarEntryService } from '@household/api/functions/delete-calendar-entry/delete-calendar-entry.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 
 describe('Delete calendar entry service', () => {
   let service: IDeleteCalendarEntryService;
-  let mockCalendarEntryService: Mock<ICalendarEntryService>;
+  let mockCalendarEntryService: MockService<ICalendarEntryService>;
   beforeEach(() => {
     mockCalendarEntryService = createMockService('findCalendarEntryById', 'deleteCalendarEntry');
 

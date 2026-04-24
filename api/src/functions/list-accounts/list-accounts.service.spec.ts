@@ -1,13 +1,13 @@
 import { IListAccountsService, listAccountsServiceFactory } from '@household/api/functions/list-accounts/list-accounts.service';
 import { createAccountDocument, createAccountResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 
 describe('List accounts service', () => {
   let service: IListAccountsService;
-  let mockAccountService: Mock<IAccountService>;
-  let mockAccountDocumentConverter: Mock<IAccountDocumentConverter>;
+  let mockAccountService: MockService<IAccountService>;
+  let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('listAccounts');

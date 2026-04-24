@@ -1,54 +1,67 @@
-import { entries, getCategoryId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
-import { Category } from '@household/shared/types/types';
+import { getCategoryId } from '@household/shared/common/utils';
+import { entries } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/utils';
+import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { Category } from '@household/shared/types/types';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
 const permissionMap = allowUsers('editor');
 
-describe('PUT /category/v1/categories/{categoryId}', () => {
-  let categoryDocument: Category.Document;
-  let request: Category.Request;
+const expect = mergeExpects(categoryApiExpect, apiExpect);
 
-  beforeEach(() => {
-    request = categoryDataFactory.request();
+const test = mergeTests(categoryApiTest, categoryDbTest);
+
+test.describe('PUT /category/v1/categories/{categoryId}', () => {
+  let categoryDocument: Category.Document;
+  let req: Category.Request;
+
+  test.beforeEach(async () => {
+    req = categoryDataFactory.request();
 
     categoryDocument = categoryDataFactory.document();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestUpdateCategory(categoryDataFactory.id(), request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestUpdateCategory }) => {
+      const res = await requestUpdateCategory(categoryDataFactory.id(), req);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
-  entries(permissionMap).forEach(([
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestUpdateCategory(categoryDataFactory.id(), request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestUpdateCategory }) => {
+          const res = await requestUpdateCategory(categoryDataFactory.id(), req);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should update a category', () => {
-          cy.saveCategoryDocument(categoryDocument)
-            .authenticate(userType)
-            .requestUpdateCategory(getCategoryId(categoryDocument), request)
-            .expectCreatedResponse()
-            .validateCategoryDocument(request);
+        test('should update a category', async ({ requestUpdateCategory, saveCategory, findCategoryById }) => {
+          await saveCategory(categoryDocument);
+
+          const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
+          expect(res).toBeCreatedResponse();
+
+          const { categoryId } = (await res.json()) as Category.CategoryId;
+          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId));
         });
 
-        describe('children should be reassigned', () => {
+        test.describe('children should be reassigned', () => {
           let childCategory: Category.Document;
           let grandChildCategory: Category.Document;
           let otherParentCategory: Category.Document;
 
-          beforeEach(() => {
+          test.beforeEach(async () => {
             childCategory = categoryDataFactory.document({
               parentCategory: categoryDocument,
             });
@@ -60,210 +73,191 @@ describe('PUT /category/v1/categories/{categoryId}', () => {
             otherParentCategory = categoryDataFactory.document();
           });
 
-          it('to a different parent category', () => {
-            request = categoryDataFactory.request({
+          test('to a different parent category', async ({ requestUpdateCategory, saveCategories, findCategoryById }) => {
+            req = categoryDataFactory.request({
               parentCategoryId: getCategoryId(otherParentCategory),
             });
 
-            cy.saveCategoryDocument(categoryDocument)
-              .saveCategoryDocument(childCategory)
-              .saveCategoryDocument(grandChildCategory)
-              .saveCategoryDocument(otherParentCategory)
-              .authenticate(userType)
-              .requestUpdateCategory(getCategoryId(childCategory), request)
-              .expectCreatedResponse()
-              .validateCategoryDocument(request, otherParentCategory)
-              .validateCategoryParentReassign(grandChildCategory, getCategoryId(childCategory));
+            await saveCategories(categoryDocument, childCategory, grandChildCategory, otherParentCategory);
+
+            const res = await requestUpdateCategory(getCategoryId(childCategory), req);
+            expect(res).toBeCreatedResponse();
+
+            expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(childCategory)), otherParentCategory, ...otherParentCategory.ancestors);
+            expect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
           });
 
-          it('to root from previously set parent', () => {
-            request = categoryDataFactory.request({
+          test('to root from previously set parent', async ({ requestUpdateCategory, saveCategories, findCategoryById }) => {
+            req = categoryDataFactory.request({
               parentCategoryId: undefined,
             });
 
-            cy.saveCategoryDocument(categoryDocument)
-              .saveCategoryDocument(childCategory)
-              .saveCategoryDocument(grandChildCategory)
-              .authenticate(userType)
-              .requestUpdateCategory(getCategoryId(childCategory), request)
-              .expectCreatedResponse()
-              .validateCategoryDocument(request)
-              .validateCategoryParentReassign(grandChildCategory, getCategoryId(childCategory));
+            await saveCategories(categoryDocument, childCategory, grandChildCategory);
+
+            const res = await requestUpdateCategory(getCategoryId(childCategory), req);
+            expect(res).toBeCreatedResponse();
+
+            expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(childCategory)));
           });
 
-          it('to a parent from previously unset value', () => {
-            request = categoryDataFactory.request({
+          test('to a parent from previously unset value', async ({ requestUpdateCategory, saveCategories, findCategoryById }) => {
+            req = categoryDataFactory.request({
               parentCategoryId: getCategoryId(otherParentCategory),
             });
 
-            cy.saveCategoryDocument(categoryDocument)
-              .saveCategoryDocument(childCategory)
-              .saveCategoryDocument(grandChildCategory)
-              .saveCategoryDocument(otherParentCategory)
-              .authenticate(userType)
-              .requestUpdateCategory(getCategoryId(categoryDocument), request)
-              .expectCreatedResponse()
-              .validateCategoryDocument(request, otherParentCategory)
-              .validateCategoryParentReassign(childCategory, getCategoryId(categoryDocument))
-              .validateCategoryParentReassign(grandChildCategory, getCategoryId(childCategory));
+            await saveCategories(categoryDocument, childCategory, grandChildCategory, otherParentCategory);
+
+            const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
+            expect(res).toBeCreatedResponse();
+            expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(categoryDocument)), otherParentCategory, ...otherParentCategory.ancestors);
+            expect(childCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(childCategory)), await findCategoryById(getCategoryId(categoryDocument)));
+            expect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
           });
         });
-        describe('should return error', () => {
-          describe('if name', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateCategory(categoryDataFactory.id(),
-                  categoryDataFactory.request({
-                    name: undefined,
-                  }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
+
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), {
+                ...req,
+                extraProperty: 'extra',
+              } as any);
+          
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+          
+          test.describe('if name', () => {
+            test('is missing from body', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
+                name: undefined,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateCategory(categoryDataFactory.id(),
-                  categoryDataFactory.request({
-                    name: <any>1,
-                  }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
+            test('is not string', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
+                name: <any>1,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateCategory(categoryDataFactory.id(),
-                  categoryDataFactory.request({
-                    name: '',
-                  }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 1, 'body');
+            test('is too short', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
+                name: '',
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            it('is already in use by a different category', () => {
+            test('is already in use by a different category', async ({ requestUpdateCategory, saveCategories }) => {
               const duplicateCategoryDocument = categoryDataFactory.document({
-                body: request,
+                body: req,
               });
 
-              cy.saveCategoryDocument(duplicateCategoryDocument)
-                .saveCategoryDocument(categoryDocument)
-                .authenticate(userType)
-                .requestUpdateCategory(getCategoryId(categoryDocument), request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate category name');
+              await saveCategories(duplicateCategoryDocument, categoryDocument);
+
+              const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate category name');
             });
           });
 
-          describe('if categoryType', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateCategory(categoryDataFactory.id(),
-                  categoryDataFactory.request({
-                    categoryType: undefined,
-                  }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('categoryType', 'body');
+          test.describe('if categoryType', () => {
+            test('is missing from body', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
+                categoryType: undefined,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'categoryType');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateCategory(categoryDataFactory.id(),
-                  categoryDataFactory.request({
-                    categoryType: <any>1,
-                  }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('categoryType', 'string', 'body');
+            test('is not string', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
+                categoryType: <any>1,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'categoryType', 'string');
             });
 
-            it('is not a valid enum value', () => {
-              cy.authenticate(userType)
-                .requestUpdateCategory(categoryDataFactory.id(),
-                  categoryDataFactory.request({
-                    categoryType: <any>'not-category-type',
-                  }))
-                .expectBadRequestResponse()
-                .expectWrongEnumValue('categoryType', 'body');
+            test('is not a valid enum value', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
+                categoryType: <any>'not-category-type',
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveEnumValidationError('body', 'categoryType');
             });
           });
 
-          describe('if parentCategoryId', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateCategory(categoryDataFactory.id(),
-                  categoryDataFactory.request({
-                    parentCategoryId: <any>1,
-                  }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('parentCategoryId', 'string', 'body');
+          test.describe('if parentCategoryId', () => {
+            test('is not string', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
+                parentCategoryId: <any>1,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'parentCategoryId', 'string');
             });
 
-            it('does not match pattern', () => {
-              cy.authenticate(userType)
-                .requestUpdateCategory(categoryDataFactory.id(),
-                  categoryDataFactory.request({
-                    parentCategoryId: <any>'not-mongo-id',
-                  }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('parentCategoryId', 'body');
+            test('does not match pattern', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
+                parentCategoryId: <any>'not-mongo-id',
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'parentCategoryId');
             });
 
-            it('does not belong to any category', () => {
-              cy.saveCategoryDocument(categoryDocument)
-                .authenticate(userType)
-                .requestUpdateCategory(getCategoryId(categoryDocument),
-                  categoryDataFactory.request({
-                    parentCategoryId: categoryDataFactory.id(),
-                  }))
-                .expectBadRequestResponse()
-                .expectMessage('Parent category not found');
+            test('does not belong to any category', async ({ requestUpdateCategory, saveCategory }) => {
+              await saveCategory(categoryDocument);
+
+              const res = await requestUpdateCategory(getCategoryId(categoryDocument), categoryDataFactory.request({
+                parentCategoryId: categoryDataFactory.id(),
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Parent category not found');
             });
 
-            it('belongs to the category to be updated', () => {
-              cy.saveCategoryDocument(categoryDocument)
-                .authenticate(userType)
-                .requestUpdateCategory(getCategoryId(categoryDocument),
-                  categoryDataFactory.request({
-                    parentCategoryId: getCategoryId(categoryDocument),
-                  }))
-                .expectBadRequestResponse()
-                .expectMessage('Parent category cannot be the category itself');
+            test('belongs to the category to be updated', async ({ requestUpdateCategory, saveCategory }) => {
+              await saveCategory(categoryDocument);
+
+              const res = await requestUpdateCategory(getCategoryId(categoryDocument), categoryDataFactory.request({
+                parentCategoryId: getCategoryId(categoryDocument),
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Parent category cannot be the category itself');
             });
 
-            it('is already a descendent category', () => {
+            test('is already a descendent category', async ({ requestUpdateCategory, saveCategories }) => {
               const childCategoryDocument = categoryDataFactory.document({
                 parentCategory: categoryDocument,
               });
 
-              cy.saveCategoryDocuments([
-                categoryDocument,
-                childCategoryDocument,
-              ])
-                .authenticate(userType)
-                .requestUpdateCategory(getCategoryId(categoryDocument),
-                  categoryDataFactory.request({
-                    parentCategoryId: getCategoryId(childCategoryDocument),
-                  }))
-                .expectBadRequestResponse()
-                .expectMessage('Parent category is already a child of the current category');
+              await saveCategories(categoryDocument, childCategoryDocument);
+
+              const res = await requestUpdateCategory(getCategoryId(categoryDocument), categoryDataFactory.request({
+                parentCategoryId: getCategoryId(childCategoryDocument),
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Parent category is already a child of the current category');
             });
           });
 
-          describe('if categoryId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestUpdateCategory(categoryDataFactory.id('not-valid'), request)
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('categoryId', 'pathParameters');
+          test.describe('if categoryId', () => {
+            test('is not mongo id', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory('not-valid' as Category.Id, req);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'categoryId');
             });
 
-            it('does not belong to any category', () => {
-              cy.authenticate(userType)
-                .requestUpdateCategory(categoryDataFactory.id(), request)
-                .expectNotFoundResponse();
+            test('does not belong to any category', async ({ requestUpdateCategory }) => {
+              const res = await requestUpdateCategory(categoryDataFactory.id(), req);
+              expect(res).toBeNotFoundResponse();
             });
           });
         });
       }
     });
-  });
+  }
 });

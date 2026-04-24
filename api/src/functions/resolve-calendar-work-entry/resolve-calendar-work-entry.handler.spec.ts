@@ -9,7 +9,7 @@ describe('Resolve calendar work entry handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockResolveCalendarWorkEntryService = jest.fn();
+    mockResolveCalendarWorkEntryService = vi.fn();
     handlerFunction = handler(mockResolveCalendarWorkEntryService);
   });
 

@@ -1,15 +1,26 @@
 import { entries, getCalendarEntryId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
-import { default as schema } from '@household/test/api/schemas/calendar-entry-response';
+import { default as schema } from '@household/test/schemas/calendar-entry-response';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
+
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+
+const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
-describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
+const test = mergeTests(calendarApiTest, priceDbTest, calendarEntryDbTest, customerDbTest);
+
+test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
   let calendarPersonalEntryDocument: Calendar.Entry.Document;
   let calendarWorkEntryDocument: Calendar.Entry.Document;
   let calendarIssueEntryDocument: Calendar.Entry.Document;
@@ -17,7 +28,7 @@ describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
   let blacklistedCustomerDocument: Customer.Document;
   let priceDocument: Price.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     priceDocument = priceDataFactory.document();
     blacklistedCustomerDocument = customerDataFactory.document();
     customerDocument = customerDataFactory.document({
@@ -57,11 +68,10 @@ describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
           
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetCalendarEntry(calendarEntryDataFactory.id())
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestGetCalendarEntry }) => {
+      const res = await requestGetCalendarEntry(calendarEntryDataFactory.id());
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -69,62 +79,59 @@ describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetCalendarEntry(calendarEntryDataFactory.id())
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestGetCalendarEntry }) => {
+          const res = await requestGetCalendarEntry(calendarEntryDataFactory.id());
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should return calendar', () => {
-          it('personal entry', () => {
-            cy.saveCalendarEntryDocument(calendarPersonalEntryDocument)
-              .authenticate(userType)
-              .requestGetCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument))
-              .expectOkResponse()
-              .expectValidResponseSchema(schema)
-              .validateCalendarEntryResponse(calendarPersonalEntryDocument);
+        test.describe('should return calendar', () => {
+          test('personal entry', async ({ requestGetCalendarEntry, saveCalendarEntry }) => {
+            await saveCalendarEntry(calendarPersonalEntryDocument);
+            const res = await requestGetCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument));
+            expect(res).toBeOkResponse();
+            expect(res).toMatchSchema(schema);
+
+            expect(res).toMatchCalendarEntryDocument(calendarPersonalEntryDocument);
           });
 
-          it('issue entry', () => {                        
-            cy.saveCalendarEntryDocument(calendarIssueEntryDocument)
-              .authenticate(userType)
-              .requestGetCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument))
-              .expectOkResponse()
-              .expectValidResponseSchema(schema)
-              .validateCalendarEntryResponse(calendarIssueEntryDocument);
+          test('issue entry', async ({ requestGetCalendarEntry, saveCalendarEntry }) => {                        
+            await saveCalendarEntry(calendarIssueEntryDocument);
+            const res = await requestGetCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument));
+            expect(res).toBeOkResponse();
+            expect(res).toMatchSchema(schema);
+
+            expect(res).toMatchCalendarEntryDocument(calendarIssueEntryDocument);
           });
 
-          it('work entry', () => {          
-            cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
-              .saveCustomerDocuments([
-                customerDocument,
-                blacklistedCustomerDocument,
-              ])
-              .savePriceDocument(priceDocument)
-              .authenticate(userType)
-              .requestGetCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument))
-              .expectOkResponse()
-              .expectValidResponseSchema(schema)
-              .validateCalendarEntryResponse(calendarWorkEntryDocument);
+          test('work entry', async ({ requestGetCalendarEntry, savePrice, saveCalendarEntry, saveCustomers }) => {          
+            await saveCalendarEntry(calendarWorkEntryDocument);
+            await saveCustomers(customerDocument, blacklistedCustomerDocument);
+            await savePrice(priceDocument);
+            const res = await requestGetCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument));
+            expect(res).toBeOkResponse();
+            expect(res).toMatchSchema(schema);
+
+            expect(res).toMatchCalendarEntryDocument(calendarWorkEntryDocument);
           });
         });
 
-        describe('should return error', () => {    
-          describe('if calendarEntryId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestGetCalendarEntry(calendarEntryDataFactory.id('not-mongo-id'))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('calendarEntryId', 'pathParameters');
+        test.describe('should return error', () => {    
+          test.describe('if calendarEntryId', () => {
+            test('is not mongo id', async ({ requestGetCalendarEntry }) => {
+              const res = await requestGetCalendarEntry(calendarEntryDataFactory.id('not-mongo-id'));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'calendarEntryId');
             });
 
-            it('does not belong to any calendar entry', () => {
-              cy.authenticate(userType)
-                .requestGetCalendarEntry(calendarEntryDataFactory.id())
-                .expectNotFoundResponse()
-                .expectMessage('No calendar entry found');
+            test('does not belong to any calendar entry', async ({ requestGetCalendarEntry }) => {
+              const res = await requestGetCalendarEntry(calendarEntryDataFactory.id());
+              expect(res).toBeNotFoundResponse();
+              expect(res).toHaveMessage('No calendar entry found');
             });
           }); 
         });

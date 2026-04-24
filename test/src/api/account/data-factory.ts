@@ -2,7 +2,7 @@ import { accountDocumentConverter } from '@household/shared/dependencies/convert
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/api/utils';
+import { createId } from '@household/test/utils';
 import { AccountType } from '@household/shared/enums';
 
 export const accountDataFactory = (() => {
@@ -17,7 +17,7 @@ export const accountDataFactory = (() => {
   };
 
   const createAccountDocument: DataFactoryFunction<Account.Request, Account.Document> = (req) => {
-    return accountDocumentConverter.create(createAccountRequest(req), Cypress.env('EXPIRES_IN'), true);
+    return accountDocumentConverter.create(createAccountRequest(req), Number(process.env.EXPIRES_IN), true);
   };
   return {
     id: (createId<Account.Id>),

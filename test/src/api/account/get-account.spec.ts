@@ -1,4 +1,4 @@
-import { default as schema } from '@household/test/api/schemas/account-response';
+import { default as schema } from '@household/test/schemas/account-response';
 import { Account, Transaction } from '@household/shared/types/types';
 import { entries, getAccountId } from '@household/shared/common/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -8,11 +8,20 @@ import { splitTransactionDataFactory } from '@household/test/api/transaction/spl
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { AccountType } from '@household/shared/enums';
-import { forbidUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/utils';
+import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+
+const expect = mergeExpects(accountApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
 
-describe('GET /account/v1/accounts/{accountId}', () => {
+const test = mergeTests(accountApiTest, accountDbTest, transactionDbTest);
+
+test.describe('GET /account/v1/accounts/{accountId}', () => {
   let accountDocument: Account.Document;
   let loanAccountDocument: Account.Document;
   let secondaryAccountDocument: Account.Document;
@@ -30,7 +39,7 @@ describe('GET /account/v1/accounts/{accountId}', () => {
   let owningReimbursementTransactionDocument: Transaction.ReimbursementDocument;
   let deferredSplitTransactionDocument: Transaction.SplitDocument;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
     secondaryAccountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
@@ -110,11 +119,10 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetAccount(accountDataFactory.id())
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestGetAccount }) => {
+      const res = await requestGetAccount(accountDataFactory.id());
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -122,68 +130,48 @@ describe('GET /account/v1/accounts/{accountId}', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetAccount(accountDataFactory.id())
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestGetAccount }) => {
+          const res = await requestGetAccount(accountDataFactory.id());
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        beforeEach(() => {
-          cy.saveAccountDocuments([
-            loanAccountDocument,
-            accountDocument,
-            secondaryAccountDocument,
-          ])
-            .saveTransactionDocuments([
-              paymentTransactionDocument,
-              splitTransactionDocument,
-              transferTransactionDocument,
-              invertedTransferTransactionDocument,
-              loanTransferTransactionDocument,
-              invertedLoanTransferTransactionDocument,
-              payingDeferredTransactionDocument,
-              owningDeferredTransactionDocument,
-              payingDeferredToLoanTransactionDocument,
-              owningReimbursementTransactionDocument,
-              deferredSplitTransactionDocument,
-              repayingTransferTransactionDocument,
-              invertedRepayingTransferTransactionDocument,
-            ]);
+        test.beforeEach(async ({ saveAccounts, saveTransactions }) => {
+          await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
+          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument, repayingTransferTransactionDocument, invertedRepayingTransferTransactionDocument);
         });
-        it('should get account by id', () => {
+        test('should get account by id', async ({ requestGetAccount }) => {
           const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
 
-          cy.authenticate(userType)
-            .requestGetAccount(getAccountId(accountDocument))
-            .expectOkResponse()
-            .expectValidResponseSchema(schema)
-            .validateAccountResponse(accountDocument, expectedBalance);
+          const res = await requestGetAccount(getAccountId(accountDocument));
+          expect(res).toBeOkResponse();
+          expect(res).toMatchSchema(schema);
+          expect(res).toMatchAccountDocument(accountDocument, expectedBalance);
         });
 
-        it('should get loan account by id', () => {
+        test('should get loan account by id', async ({ requestGetAccount }) => {
           const expectedBalance = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
 
-          cy.authenticate(userType)
-            .requestGetAccount(getAccountId(loanAccountDocument))
-            .expectOkResponse()
-            .expectValidResponseSchema(schema)
-            .validateAccountResponse(loanAccountDocument, expectedBalance);
+          const res = await requestGetAccount(getAccountId(loanAccountDocument));
+          expect(res).toBeOkResponse();
+          expect(res).toMatchSchema(schema);
+          expect(res).toMatchAccountDocument(loanAccountDocument, expectedBalance);
         });
 
-        describe('should return error if accountId', () => {
-          it('is not mongo id', () => {
-            cy.authenticate(userType)
-              .requestGetAccount(accountDataFactory.id('not-valid'))
-              .expectBadRequestResponse()
-              .expectWrongPropertyPattern('accountId', 'pathParameters');
+        test.describe('should return error if accountId', () => {
+          test('is not mongo id', async ({ requestGetAccount }) => {
+            const res = await requestGetAccount(accountDataFactory.id('not-valid'));
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHavePatternValidationError('pathParameters', 'accountId');
           });
 
-          it('does not belong to any account', () => {
-            cy.authenticate(userType)
-              .requestGetAccount(accountDataFactory.id())
-              .expectNotFoundResponse();
+          test('does not belong to any account', async ({ requestGetAccount }) => {
+            const res = await requestGetAccount(accountDataFactory.id());
+            expect(res).toBeNotFoundResponse();
           });
         });
       }

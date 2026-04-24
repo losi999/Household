@@ -1,13 +1,13 @@
 import { IGetCalendarEntryService, getCalendarEntryServiceFactory } from '@household/api/functions/get-calendar-entry/get-calendar-entry.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 
 describe('Get calendar entry service', () => {
   let service: IGetCalendarEntryService;
-  let mockCalendarEntryService: Mock<ICalendarEntryService>;
-  let mockCalendarEntryDocumentConverter: Mock<ICalendarEntryDocumentConverter>;
+  let mockCalendarEntryService: MockService<ICalendarEntryService>;
+  let mockCalendarEntryDocumentConverter: MockService<ICalendarEntryDocumentConverter>;
 
   beforeEach(() => {
     mockCalendarEntryService = createMockService('getCalendarEntryById');

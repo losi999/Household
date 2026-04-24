@@ -4,7 +4,7 @@ import { Price } from '@household/shared/types/types';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 const createPriceDocument: DataFactoryFunction<Price.Request, Price.Document> = (req) => {
-  return priceDocumentConverter.create(testDataFactory.price.request(req), Cypress.env('EXPIRES_IN'), true);
+  return priceDocumentConverter.create(testDataFactory.price.request(req), Number(process.env.EXPIRES_IN), true);
 };
 export const priceDataFactory = {
   id: testDataFactory.price.id,

@@ -1,5 +1,6 @@
 import { Report, Transaction } from '@household/shared/types/types';
-import { FilterQuery, PipelineStage, Types } from 'mongoose';
+import { PipelineStage, Types } from 'mongoose';
+import { Filter, FilterOperators } from 'mongodb';
 
 export interface IReportDocumentConverter {
   createFilterQuery(body: Report.Request): PipelineStage.Match;
@@ -14,11 +15,11 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
         },
       };
 
-      const includedDateQueries: FilterQuery<Transaction.Document> = {
+      const includedDateQueries: Filter<Transaction.Document> = {
         $or: [],
       };
 
-      const excludedDateQueries: FilterQuery<Transaction.Document>[] = [];
+      const excludedDateQueries: Filter<Transaction.Document>[] = [];
 
       body.forEach((filter) => {
         switch(filter.filterType) {
@@ -35,20 +36,20 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
           } break;
           case 'issuedAt': {
             if(filter.include) {
-              const query: FilterQuery<Transaction.Document> = {
+              const query: Filter<Transaction.Document> = {
                 issuedAt: {},
               };
               if (filter.from) {
-                query.issuedAt.$gte = new Date(filter.from);
+                (query.issuedAt as FilterOperators<Date>).$gte = new Date(filter.from);
               }
 
               if (filter.to) {
-                query.issuedAt.$lte = new Date(filter.to);
+                (query.issuedAt as FilterOperators<Date>).$lte = new Date(filter.to);
               }
 
               includedDateQueries.$or.push(query);
             } else {
-              const query: FilterQuery<Transaction.Document> = {
+              const query: Filter<Transaction.Document> = {
                 $or: [],
               };
 
@@ -74,11 +75,11 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
       });
 
       if (includedDateQueries.$or.length > 0) {
-        match.$match.$and.push(includedDateQueries);
+        match.$match.$and.push(includedDateQueries as any);
       }
 
       if (excludedDateQueries.length > 0) {
-        match.$match.$and.push(...excludedDateQueries);
+        match.$match.$and.push(...excludedDateQueries as any);
       }
 
       return match;

@@ -1,105 +1,126 @@
 import { entries, getRecipientId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
-import { Recipient } from '@household/shared/types/types';
+import { allowUsers } from '@household/test/utils';
+import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { Recipient } from '@household/shared/types/types';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { mergeTests } from '@playwright/test';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = allowUsers('editor');
 
-describe('PUT /recipient/v1/recipients/{recipientId}', () => {
-  let request: Recipient.Request;
+const test = mergeTests(recipientApiTest, recipientDbTest);
+
+test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
+  let req: Recipient.Request;
   let recipientDocument: Recipient.Document;
 
-  beforeEach(() => {
-    request = recipientDataFactory.request();
+  test.beforeEach(async () => {
+    req = recipientDataFactory.request();
 
     recipientDocument = recipientDataFactory.document();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestUpdateRecipient(recipientDataFactory.id(), request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestUpdateRecipient }) => {
+      const res = await requestUpdateRecipient(recipientDataFactory.id(), req);
+      apiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
-  entries(permissionMap).forEach(([
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestUpdateRecipient(recipientDataFactory.id(), request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestUpdateRecipient }) => {
+          const res = await requestUpdateRecipient(recipientDataFactory.id(), req);
+          apiExpect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should update a recipient', () => {
-          cy.saveRecipientDocument(recipientDocument)
-            .authenticate(userType)
-            .requestUpdateRecipient(getRecipientId(recipientDocument), request)
-            .expectCreatedResponse()
-            .validateRecipientDocument(request);
+        test('should update a recipient', async ({ requestUpdateRecipient, saveRecipient, findRecipientById }) => {
+          await saveRecipient(recipientDocument);
+
+          const res = await requestUpdateRecipient(getRecipientId(recipientDocument), req);
+          apiExpect(res).toBeCreatedResponse();
+
+          const { recipientId } = (await res.json()) as Recipient.RecipientId;
+          recipientApiExpect(req).toHaveBeenSavedAsRecipientDocument(await findRecipientById(recipientId));
         });
 
-        describe('should return error', () => {
-          describe('if name', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
-                  name: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
-            });
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestUpdateRecipient }) => {
+              const res = await requestUpdateRecipient(recipientDataFactory.id(), {
+                ...req,
+                extraProperty: 'extra',
+              } as any);
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
-                  name: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
-            });
-
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
-                  name: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 1, 'body');
-            });
-
-            it('is already in use by a different recipient', () => {
-              const updatedRecipientDocument = recipientDataFactory.document(request);
-
-              cy.saveRecipientDocument(recipientDocument)
-                .saveRecipientDocument(updatedRecipientDocument)
-                .authenticate(userType)
-                .requestUpdateRecipient(getRecipientId(recipientDocument), request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate recipient name');
+              apiExpect(res).toBeBadRequestResponse();
+              apiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 
-          describe('if recipientId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestUpdateRecipient(recipientDataFactory.id('not-valid'), request)
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('recipientId', 'pathParameters');
+          test.describe('if name', () => {
+            test('is missing from body', async ({ requestUpdateRecipient }) => {
+              const res = await requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
+                name: undefined,
+              }));
+
+              apiExpect(res).toBeBadRequestResponse();
+              apiExpect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('does not belong to any recipient', () => {
-              cy.authenticate(userType)
-                .requestUpdateRecipient(recipientDataFactory.id(), request)
-                .expectNotFoundResponse();
+            test('is not string', async ({ requestUpdateRecipient }) => {
+              const res = await requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
+                name: <any>1,
+              }));
+              apiExpect(res).toBeBadRequestResponse();
+              apiExpect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
+            });
+
+            test('is too short', async ({ requestUpdateRecipient }) => {
+              const res = await requestUpdateRecipient(recipientDataFactory.id(), recipientDataFactory.request({
+                name: '',
+              }));
+              apiExpect(res).toBeBadRequestResponse();
+              apiExpect(res).toHaveTooShortValidationError('body', 'name', 1);
+            });
+
+            test('is already in use by a different recipient', async ({ requestUpdateRecipient, saveRecipients }) => {
+              const duplicateRecipientDocument = recipientDataFactory.document(req);
+
+              await saveRecipients(recipientDocument, duplicateRecipientDocument);
+
+              const res = await requestUpdateRecipient(getRecipientId(recipientDocument), recipientDataFactory.request({
+                name: duplicateRecipientDocument.name,
+              }));
+              apiExpect(res).toBeBadRequestResponse();
+              apiExpect(res).toHaveMessage('Duplicate recipient name');
+            });
+          });
+
+          test.describe('if recipientId', () => {
+            test('is not mongo id', async ({ requestUpdateRecipient }) => {
+              const res = await requestUpdateRecipient(recipientDataFactory.id('not-mongo-id'), req);
+
+              apiExpect(res).toBeBadRequestResponse();
+              apiExpect(res).toHavePatternValidationError('pathParameters', 'recipientId');
+            });
+
+            test('does not belong to any recipient', async ({ requestUpdateRecipient }) => {
+              const res = await requestUpdateRecipient(recipientDataFactory.id(), req);
+
+              apiExpect(res).toBeNotFoundResponse();
             });
           });
         });
       }
     });
-  });
+  }
 });

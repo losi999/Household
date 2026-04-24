@@ -1,85 +1,106 @@
-import { Recipient } from '@household/shared/types/types';
-import { recipientDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
 import { entries } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/utils';
+import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { Recipient } from '@household/shared/types/types';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = allowUsers('editor');
 
-describe('POST recipient/v1/recipients', () => {
-  let request: Recipient.Request;
+const expect = mergeExpects(recipientApiExpect, apiExpect);
 
-  beforeEach(() => {
-    request = recipientDataFactory.request();
+const test = mergeTests(recipientApiTest, recipientDbTest);
+
+test.describe('POST /recipient/v1/recipients', () => {
+  let req: Recipient.Request;
+
+  test.beforeEach(async () => {
+    req = recipientDataFactory.request();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateRecipient(request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestCreateRecipient }) => {
+      const res = await requestCreateRecipient(req);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
-  entries(permissionMap).forEach(([
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateRecipient(request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateRecipient }) => {
+          const res = await requestCreateRecipient(req);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should create recipient', () => {
-          cy.authenticate(userType)
-            .requestCreateRecipient(request)
-            .expectCreatedResponse()
-            .validateRecipientDocument(request);
+        test('should create recipient', async ({ requestCreateRecipient, findRecipientById }) => {
+          const res = await requestCreateRecipient(req);
+          expect(res).toBeCreatedResponse();
+
+          const { recipientId } = (await res.json()) as Recipient.RecipientId;
+          expect(req).toHaveBeenSavedAsRecipientDocument(await findRecipientById(recipientId));
         });
 
-        describe('should return error', () => {
-          describe('if name', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateRecipient(recipientDataFactory.request({
-                  name: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateRecipient }) => {
+              const res = await requestCreateRecipient({
+                ...req,
+                extraProperty: 'extra',
+              } as any);
+            
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+
+          test.describe('if name', () => {
+            test('is missing from body', async ({ requestCreateRecipient }) => {
+              const res = await requestCreateRecipient(recipientDataFactory.request({
+                name: undefined,
+              }));
+
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateRecipient(recipientDataFactory.request({
-                  name: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
+            test('is not string', async ({ requestCreateRecipient }) => {
+              const res = await requestCreateRecipient(recipientDataFactory.request({
+                name: <any>1,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateRecipient(recipientDataFactory.request({
-                  name: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 1, 'body');
+            test('is too short', async ({ requestCreateRecipient }) => {
+              const res = await requestCreateRecipient(recipientDataFactory.request({
+                name: '',
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            it('is already in use by a different recipient', () => {
-              const recipientDocument = recipientDataFactory.document(request);
+            test('is already in use by a different recipient', async ({ requestCreateRecipient, saveRecipient }) => {
+              const recipientDocument = recipientDataFactory.document(req);
 
-              cy.saveRecipientDocument(recipientDocument)
-                .authenticate(userType)
-                .requestCreateRecipient(request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate recipient name');
+              await saveRecipient(recipientDocument);
+
+              const res = await requestCreateRecipient(req);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate recipient name');
             });
           });
         });
       }
     });
-  });
+  }
 });

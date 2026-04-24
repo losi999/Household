@@ -1,4 +1,4 @@
-import { entries, getTransactionId } from '@household/shared/common/utils';
+import { entries, getCalendarEntryId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType } from '@household/shared/enums';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -9,11 +9,24 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { forbidUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/utils';
+
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+
+const expect = mergeExpects(transactionApiExpect, apiExpect, calendarApiExpect);
 
 const permissionMap = forbidUsers('viewer') ;
 
-describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, calendarEntryDbTest, customerDbTest);
+
+test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
   let loanAccountDocument: Account.Document;
   let transferAccountDocument: Account.Document;
@@ -24,7 +37,7 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
   let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
   let loanTransferTransactionDocument: Transaction.TransferDocument;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
     transferAccountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
@@ -65,11 +78,10 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestDeleteTransaction(paymentTransactionDataFactory.id())
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestDeleteTransaction }) => {
+      const res = await requestDeleteTransaction(paymentTransactionDataFactory.id());
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -77,16 +89,18 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestDeleteTransaction(paymentTransactionDataFactory.id())
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestDeleteTransaction }) => {
+          const res = await requestDeleteTransaction(paymentTransactionDataFactory.id());
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should delete', () => {
-          it('payment transaction', () => {
+        test.describe('should delete', () => {
+          test('payment transaction', async ({ requestDeleteTransaction, saveAccount, saveTransaction, findTransactionById, saveCalendarEntry, saveCustomer, getCalendarEntryById }) => {
             const customerDocument = customerDataFactory.document();
             const calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
               customer: customerDocument,
@@ -95,106 +109,85 @@ describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
               },
             });
 
-            cy.saveAccountDocument(accountDocument)
-              .saveTransactionDocument(paymentTransactionDocument)
-              .saveCustomerDocument(customerDocument)
-              .saveCalendarEntryDocument(calendarWorkEntryDocument)
-              .authenticate(userType)
-              .requestDeleteTransaction(getTransactionId(paymentTransactionDocument))
-              .expectNoContentResponse()
-              .validateTransactionDeleted(getTransactionId(paymentTransactionDocument))
-              .validateRelatedCalendarWorkEntryUnresolved(calendarWorkEntryDocument);
+            await saveAccount(accountDocument);
+            await saveTransaction(paymentTransactionDocument);
+            await saveCustomer(customerDocument);
+            await saveCalendarEntry(calendarWorkEntryDocument);
+            const res = await requestDeleteTransaction(getTransactionId(paymentTransactionDocument));
+            expect(res).toBeNoContentResponse();
+
+            expect(await findTransactionById(getTransactionId(paymentTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            expect(calendarWorkEntryDocument).toHaveBeenUnresolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
           });
 
-          it('split transaction', () => {
+          test('split transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransactions, findTransactionById }) => {
             const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
               account: accountDocument,
               transferAccount: transferAccountDocument,
               transactions: [splitTransactionDocument.deferredSplits[0]],
             });
 
-            cy.saveAccountDocuments([
-              accountDocument,
-              transferAccountDocument,
-              loanAccountDocument,
-            ])
-              .saveTransactionDocuments([
-                splitTransactionDocument,
-                repayingTransferTransactionDocument,
-              ])
-              .authenticate(userType)
-              .requestDeleteTransaction(getTransactionId(splitTransactionDocument))
-              .expectNoContentResponse()
-              .validateTransactionDeleted(getTransactionId(splitTransactionDocument))
-              .validateRelatedRepaymentDeleted(getTransactionId(splitTransactionDocument.deferredSplits[0]), getTransactionId(repayingTransferTransactionDocument));
+            await saveAccounts(accountDocument, transferAccountDocument, loanAccountDocument);
+            await saveTransactions(splitTransactionDocument, repayingTransferTransactionDocument);
+            const res = await requestDeleteTransaction(getTransactionId(splitTransactionDocument));
+            expect(res).toBeNoContentResponse();
+
+            expect(await findTransactionById(getTransactionId(splitTransactionDocument))).toHaveBeenDeletedFromDatabase();
+
+            expect(repayingTransferTransactionDocument).toHavePaymentRemoved(await findTransactionById(getTransactionId(repayingTransferTransactionDocument)), getTransactionId(splitTransactionDocument.deferredSplits[0]));
+            
           });
 
-          it('transfer transaction', () => {
-            cy.saveAccountDocuments([
-              accountDocument,
-              transferAccountDocument,
-            ])
-              .saveTransactionDocument(transferTransactionDocument)
-              .authenticate(userType)
-              .requestDeleteTransaction(getTransactionId(transferTransactionDocument))
-              .expectNoContentResponse()
-              .validateTransactionDeleted(getTransactionId(transferTransactionDocument));
+          test('transfer transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransaction, findTransactionById }) => {
+            await saveAccounts(accountDocument, transferAccountDocument);
+            await saveTransaction(transferTransactionDocument);
+            const res = await requestDeleteTransaction(getTransactionId(transferTransactionDocument));
+            expect(res).toBeNoContentResponse();
+
+            expect(await findTransactionById(getTransactionId(transferTransactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          it('deferred transaction', () => {
+          test('deferred transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransactions, findTransactionById }) => {
             const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
               account: accountDocument,
               transferAccount: transferAccountDocument,
               transactions: [deferredTransactionDocument],
             });
 
-            cy.saveAccountDocuments([
-              accountDocument,
-              transferAccountDocument,
-              loanAccountDocument,
-            ])
-              .saveTransactionDocuments([
-                deferredTransactionDocument,
-                repayingTransferTransactionDocument,
-              ])
-              .authenticate(userType)
-              .requestDeleteTransaction(getTransactionId(deferredTransactionDocument))
-              .expectNoContentResponse()
-              .validateTransactionDeleted(getTransactionId(deferredTransactionDocument))
-              .validateRelatedRepaymentDeleted(getTransactionId(deferredTransactionDocument), getTransactionId(repayingTransferTransactionDocument));
+            await saveAccounts(accountDocument, transferAccountDocument, loanAccountDocument);
+            await saveTransactions(deferredTransactionDocument, repayingTransferTransactionDocument);
+            const res = await requestDeleteTransaction(getTransactionId(deferredTransactionDocument));
+            expect(res).toBeNoContentResponse();
+            
+            expect(await findTransactionById(getTransactionId(deferredTransactionDocument))).toHaveBeenDeletedFromDatabase();
+
+            expect(repayingTransferTransactionDocument).toHavePaymentRemoved(await findTransactionById(getTransactionId(repayingTransferTransactionDocument)), getTransactionId(deferredTransactionDocument));
           });
 
-          it('reimbursement transaction', () => {
-            cy.saveAccountDocuments([
-              accountDocument,
-              loanAccountDocument,
-            ])
-              .saveTransactionDocument(reimbursementTransactionDocument)
-              .authenticate(userType)
-              .requestDeleteTransaction(getTransactionId(reimbursementTransactionDocument))
-              .expectNoContentResponse()
-              .validateTransactionDeleted(getTransactionId(reimbursementTransactionDocument));
+          test('reimbursement transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransaction, findTransactionById }) => {
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransaction(reimbursementTransactionDocument);
+            const res = await requestDeleteTransaction(getTransactionId(reimbursementTransactionDocument));
+            expect(res).toBeNoContentResponse();
+            
+            expect(await findTransactionById(getTransactionId(reimbursementTransactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          it('loan transfer transaction', () => {
-            cy.saveAccountDocuments([
-              accountDocument,
-              loanAccountDocument,
-            ])
-              .saveTransactionDocument(loanTransferTransactionDocument)
-              .authenticate(userType)
-              .requestDeleteTransaction(getTransactionId(loanTransferTransactionDocument))
-              .expectNoContentResponse()
-              .validateTransactionDeleted(getTransactionId(loanTransferTransactionDocument));
+          test('loan transfer transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransaction, findTransactionById }) => {
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransaction(loanTransferTransactionDocument);
+            const res = await requestDeleteTransaction(getTransactionId(loanTransferTransactionDocument));
+            expect(res).toBeNoContentResponse();
+            
+            expect(await findTransactionById(getTransactionId(loanTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
           });
         });
-        describe('should return error', () => {
-          describe('if transactionId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestDeleteTransaction(paymentTransactionDataFactory.id('not-valid'))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('transactionId', 'pathParameters');
+        test.describe('should return error', () => {
+          test.describe('if transactionId', () => {
+            test('is not mongo id', async ({ requestDeleteTransaction }) => {
+              const res = await requestDeleteTransaction(paymentTransactionDataFactory.id('not-valid'));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'transactionId');
             });
           });
         });

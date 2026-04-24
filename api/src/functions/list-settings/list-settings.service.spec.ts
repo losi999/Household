@@ -1,13 +1,13 @@
 import { IListSettingsService, listSettingsServiceFactory } from '@household/api/functions/list-settings/list-settings.service';
 import { createSettingDocument, createSettingResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ISettingDocumentConverter } from '@household/shared/converters/setting-document-converter';
 import { ISettingService } from '@household/shared/services/setting-service';
 
 describe('List settings service', () => {
   let service: IListSettingsService;
-  let mockSettingService: Mock<ISettingService>;
-  let mockSettingDocumentConverter: Mock<ISettingDocumentConverter>;
+  let mockSettingService: MockService<ISettingService>;
+  let mockSettingDocumentConverter: MockService<ISettingDocumentConverter>;
 
   beforeEach(() => {
     mockSettingService = createMockService('listSettings');

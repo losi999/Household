@@ -1,14 +1,14 @@
 import { IUpdateCustomerService, updateCustomerServiceFactory } from '@household/api/functions/update-customer/update-customer.service';
-import { testDataFactory, createDocumentUpdate2 } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { testDataFactory, createDocumentUpdate } from '@household/shared/common/test-data-factory';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCustomerId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
 
 describe('Update customer service', () => {
   let service: IUpdateCustomerService;
-  let mockCustomerService: Mock<ICustomerService>;
-  let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
+  let mockCustomerService: MockService<ICustomerService>;
+  let mockCustomerDocumentConverter: MockService<ICustomerDocumentConverter>;
 
   beforeEach(() => {
     mockCustomerService = createMockService('findCustomerById', 'updateCustomer');
@@ -20,7 +20,7 @@ describe('Update customer service', () => {
   const body = testDataFactory.customer.request();
   const queriedDocument = testDataFactory.customer.document();
   const customerId = getCustomerId(queriedDocument);
-  const updateQuery = createDocumentUpdate2({
+  const updateQuery = createDocumentUpdate({
     update: {
       name: 'updated',
     },

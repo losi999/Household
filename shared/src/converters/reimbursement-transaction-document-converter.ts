@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, createDate, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -6,7 +6,7 @@ import { IProductDocumentConverter } from '@household/shared/converters/product-
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
-import { Unset } from '@household/shared/types/common';
+import { DocumentUpdate, Unset } from '@household/shared/types/common';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
 
@@ -28,7 +28,7 @@ export interface IReimbursementTransactionDocumentConverter {
     recipient: Recipient.Document;
     project: Project.Document;
     product: Product.Document;
-  }, expiresIn: number): UpdateQuery<Transaction.Document>;
+  }, expiresIn: number): DocumentUpdate<Transaction.Document>;
   toResponse(document: Transaction.ReimbursementDocument): Transaction.ReimbursementResponse;
   toResponseList(documents: Transaction.ReimbursementDocument[]): Transaction.ReimbursementResponse[];
 }
@@ -89,42 +89,44 @@ export const reimbursementTransactionDocumentConverterFactory = (
       };
 
       return {
-        $unset: {
-          ...defaultUnset,
-          ...Object.entries(optionalSet).reduce((accumulator, [
-            key,
-            value,
-          ]) => {
-            if (value) {
-              return accumulator;
-            }
+        update: {
+          $unset: {
+            ...defaultUnset,
+            ...Object.entries(optionalSet).reduce((accumulator, [
+              key,
+              value,
+            ]) => {
+              if (value) {
+                return accumulator;
+              }
 
-            return {
-              ...accumulator,
-              [key]: true,
-            };
-          }, {}),
-        },
-        $set: {
-          amount,
-          payingAccount,
-          ownerAccount,
-          issuedAt: new Date(issuedAt),
-          transactionType,
-          expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
-          ...Object.entries(optionalSet).reduce((accumulator, [
-            key,
-            value,
-          ]) => {
-            if (value) {
               return {
                 ...accumulator,
-                [key]: value,
+                [key]: true,
               };
-            }
+            }, {}),
+          },
+          $set: {
+            amount,
+            payingAccount,
+            ownerAccount,
+            issuedAt: new Date(issuedAt),
+            transactionType,
+            expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+            ...Object.entries(optionalSet).reduce((accumulator, [
+              key,
+              value,
+            ]) => {
+              if (value) {
+                return {
+                  ...accumulator,
+                  [key]: value,
+                };
+              }
 
-            return accumulator;
-          }, {}),
+              return accumulator;
+            }, {}),
+          },
         },
       };
     },

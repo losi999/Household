@@ -5,6 +5,6 @@
     "shared/src",
     "web/src",
     "test",
-    "localhost"
+    "./*.ts"
   ]
 }

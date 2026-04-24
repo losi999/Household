@@ -1,22 +1,30 @@
 import { Price } from '@household/shared/types/types';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
+
+import { test as priceApiTest, expect as priceApiExpect } from '@household/test/fixtures/price-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+
+const expect = mergeExpects(priceApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser') ;
 
-describe('POST price/v1/prices', () => {
+const test = mergeTests(priceApiTest, priceDbTest);
+
+test.describe('POST price/v1/prices', () => {
   let request: Price.Request;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     request = priceDataFactory.request();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreatePrice(request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestCreatePrice }) => {
+      const res = await requestCreatePrice(request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -24,24 +32,27 @@ describe('POST price/v1/prices', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreatePrice(request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreatePrice }) => {
+          const res = await requestCreatePrice(request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should create price', () => {
-          it('with complete body', () => {
-            cy.authenticate(userType)
-              .requestCreatePrice(request)
-              .expectCreatedResponse()
-              .validatePriceDocument(request);
+        test.describe('should create price', () => {
+          test('with complete body', async ({ requestCreatePrice, findPriceById }) => {
+            const res = await requestCreatePrice(request);
+            expect(res).toBeCreatedResponse();
+
+            const { priceId } = (await res.json()) as Price.PriceId;
+            expect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(priceId));
           });
         });
 
-        it('should reactivate archived price', () => {
+        test('should reactivate archived price', async ({ requestCreatePrice, savePrice, findPriceById }) => {
           const archivedPriceDocument = {
             ...priceDataFactory.document({
               name: request.name,
@@ -49,108 +60,111 @@ describe('POST price/v1/prices', () => {
             isArchived: true,
           };
 
-          cy.savePriceDocument(archivedPriceDocument)
-            .authenticate(userType)
-            .requestCreatePrice(request)
-            .expectCreatedResponse()
-            .validatePriceDocument(request);
+          await savePrice(archivedPriceDocument);
+          const res = await requestCreatePrice(request);
+          expect(res).toBeCreatedResponse();
+
+          const { priceId } = (await res.json()) as Price.PriceId;
+          expect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(priceId));
         });
 
-        describe('should return error', () => {
-          describe('if name', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreatePrice(priceDataFactory.request({
-                  name: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreatePrice }) => {
+              const res = await requestCreatePrice({
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+          
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+
+          test.describe('if name', () => {
+            test('is missing from body', async ({ requestCreatePrice }) => {
+              const res = await requestCreatePrice(priceDataFactory.request({
+                name: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreatePrice(priceDataFactory.request({
-                  name: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
+            test('is not string', async ({ requestCreatePrice }) => {
+              const res = await requestCreatePrice(priceDataFactory.request({
+                name: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreatePrice(priceDataFactory.request({
-                  name: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 1, 'body');
+            test('is too short', async ({ requestCreatePrice }) => {
+              const res = await requestCreatePrice(priceDataFactory.request({
+                name: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            it('is already in use by a different price', () => {
+            test('is already in use by a different price', async ({ requestCreatePrice, savePrice }) => {
               const priceDocument = priceDataFactory.document(request);
 
-              cy.savePriceDocument(priceDocument)
-                .authenticate(userType)
-                .requestCreatePrice(request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate price name');
+              await savePrice(priceDocument);
+              const res = await requestCreatePrice(request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate price name');
             });
           });
 
-          describe('if amount', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreatePrice(priceDataFactory.request({
-                  amount: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('amount', 'body');
+          test.describe('if amount', () => {
+            test('is missing from body', async ({ requestCreatePrice }) => {
+              const res = await requestCreatePrice(priceDataFactory.request({
+                amount: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestCreatePrice(priceDataFactory.request({
-                  amount: 1.5,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('amount', 'integer', 'body');
+            test('is not integer', async ({ requestCreatePrice }) => {
+              const res = await requestCreatePrice(priceDataFactory.request({
+                amount: 1.5, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'integer');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestCreatePrice(priceDataFactory.request({
-                  amount: 0,
-                }))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('amount', 0, true, 'body');
+            test('is too small', async ({ requestCreatePrice }) => {
+              const res = await requestCreatePrice(priceDataFactory.request({
+                amount: 0, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'amount', 0);
             });
           });
 
-          describe('if unitOfMeasurement', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreatePrice(priceDataFactory.request({
-                  unitOfMeasurement: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('unitOfMeasurement', 'body');
+          test.describe('if unitOfMeasurement', () => {
+            test('is missing from body', async ({ requestCreatePrice }) => {
+              const res = await requestCreatePrice(priceDataFactory.request({
+                unitOfMeasurement: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'unitOfMeasurement');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreatePrice(priceDataFactory.request({
-                  unitOfMeasurement: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
+            test('is not string', async ({ requestCreatePrice }) => {
+              const res = await requestCreatePrice(priceDataFactory.request({
+                unitOfMeasurement: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'unitOfMeasurement', 'string');
             });
 
-            it('is not a valid enum value', () => {
-              cy.authenticate(userType)
-                .requestCreatePrice(priceDataFactory.request({
-                  unitOfMeasurement: <any>'not-enum',
-                }))
-                .expectBadRequestResponse()
-                .expectWrongEnumValue('unitOfMeasurement', 'body');
+            test('is not a valid enum value', async ({ requestCreatePrice }) => {
+              const res = await requestCreatePrice(priceDataFactory.request({
+                unitOfMeasurement: <any>'not-enum', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveEnumValidationError('body', 'unitOfMeasurement');
             });
           });
         });

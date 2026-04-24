@@ -1,25 +1,32 @@
 import { entries, getAccountId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { Account } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+
+const expect = mergeExpects(accountApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
 
-describe('PUT /account/v1/accounts/{accountId}', () => {
+const test = mergeTests(accountApiTest, accountDbTest);
+
+test.describe('PUT /account/v1/accounts/{accountId}', () => {
   let request: Account.Request;
   let accountDocument: Account.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     request = accountDataFactory.request();
 
     accountDocument = accountDataFactory.document();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestUpdateAccount(accountDataFactory.id(), request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestUpdateAccount }) => {
+      const res = await requestUpdateAccount(accountDataFactory.id(), request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -27,177 +34,174 @@ describe('PUT /account/v1/accounts/{accountId}', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestUpdateAccount(accountDataFactory.id(), request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestUpdateAccount }) => {
+          const res = await requestUpdateAccount(accountDataFactory.id(), request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should update account', () => {
-          cy.saveAccountDocument(accountDocument)
-            .authenticate(userType)
-            .requestUpdateAccount(getAccountId(accountDocument), request)
-            .expectCreatedResponse()
-            .validateAccountDocument(request);
+        test('should update account', async ({ requestUpdateAccount, saveAccount, findAccountById }) => {
+          await saveAccount(accountDocument);
+          const res = await requestUpdateAccount(getAccountId(accountDocument), request);
+          expect(res).toBeCreatedResponse();
+          
+          const { accountId } = (await res.json()) as Account.AccountId;
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
 
-        it('should update account with an existing name for a different owner', () => {
+        test('should update account with an existing name for a different owner', async ({ requestUpdateAccount, saveAccounts, findAccountById }) => {
           const sameNameAccountDocument = accountDataFactory.document({
             ...request,
             owner: 'different owner',
           });
 
-          cy.saveAccountDocuments([
-            accountDocument,
-            sameNameAccountDocument,
-          ])
-            .authenticate(userType)
-            .requestCreateAccount(request)
-            .expectCreatedResponse()
-            .validateAccountDocument(request);
+          await saveAccounts(accountDocument, sameNameAccountDocument);
+          const res = await requestUpdateAccount(getAccountId(accountDocument), request);
+          expect(res).toBeCreatedResponse();
+
+          const { accountId } = (await res.json()) as Account.AccountId;
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
-        describe('should return error', () => {
-          describe('if name', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  name: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), {
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+          
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+          test.describe('if name', () => {
+            test('is missing from body', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                name: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  name: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
+            test('is not string', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                name: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  name: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 1, 'body');
+            test('is too short', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                name: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            it('is already in use by a different account of the same owner', () => {
+            test('is already in use by a different account of the same owner', async ({ requestUpdateAccount, saveAccount }) => {
               const duplicateAccountDocument = accountDataFactory.document(request);
 
-              cy.saveAccountDocument(accountDocument)
-                .saveAccountDocument(duplicateAccountDocument)
-                .authenticate(userType)
-                .requestUpdateAccount(getAccountId(accountDocument), request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate account name');
+              await saveAccount(accountDocument);
+              await saveAccount(duplicateAccountDocument);
+              const res = await requestUpdateAccount(getAccountId(accountDocument), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate account name');
             });
           });
 
-          describe('if accountType', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  accountType: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('accountType', 'body');
+          test.describe('if accountType', () => {
+            test('is missing from body', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                accountType: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'accountType');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  accountType: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('accountType', 'string', 'body');
+            test('is not string', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                accountType: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'accountType', 'string');
             });
 
-            it('is not a valid enum value', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  accountType: <any>'not-account-type',
-                }))
-                .expectBadRequestResponse()
-                .expectWrongEnumValue('accountType', 'body');
+            test('is not a valid enum value', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                accountType: <any>'not-account-type', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveEnumValidationError('body', 'accountType');
             });
           });
 
-          describe('if currency', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  currency: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('currency', 'body');
+          test.describe('if currency', () => {
+            test('is missing from body', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                currency: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'currency');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  currency: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('currency', 'string', 'body');
+            test('is not string', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                currency: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'currency', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  currency: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('currency', 1, 'body');
+            test('is too short', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                currency: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'currency', 1);
             });
           });
 
-          describe('if owner', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  owner: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('owner', 'body');
+          test.describe('if owner', () => {
+            test('is missing from body', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                owner: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'owner');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  owner: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('owner', 'string', 'body');
+            test('is not string', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                owner: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'owner', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                  owner: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('owner', 1, 'body');
+            test('is too short', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
+                owner: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'owner', 1);
             });
           });
 
-          describe('if accountId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id('not-valid'), request)
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('accountId', 'pathParameters');
+          test.describe('if accountId', () => {
+            test('is not mongo id', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id('not-valid'), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'accountId');
             });
 
-            it('does not belong to any account', () => {
-              cy.authenticate(userType)
-                .requestUpdateAccount(accountDataFactory.id(), request)
-                .expectNotFoundResponse();
+            test('does not belong to any account', async ({ requestUpdateAccount }) => {
+              const res = await requestUpdateAccount(accountDataFactory.id(), request);
+              expect(res).toBeNotFoundResponse();
             });
           });
         });

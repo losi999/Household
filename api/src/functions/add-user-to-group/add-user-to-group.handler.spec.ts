@@ -8,7 +8,7 @@ describe('Add user to group handler', () => {
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockAddUserToGroupService = jest.fn();
+    mockAddUserToGroupService = vi.fn();
 
     apiHandler = handler(mockAddUserToGroupService);
   });

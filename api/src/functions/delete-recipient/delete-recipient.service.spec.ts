@@ -1,11 +1,11 @@
 import { IDeleteRecipientService, deleteRecipientServiceFactory } from '@household/api/functions/delete-recipient/delete-recipient.service';
 import { createRecipientId } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 
 describe('Delete recipient service', () => {
   let service: IDeleteRecipientService;
-  let mockRecipientService: Mock<IRecipientService>;
+  let mockRecipientService: MockService<IRecipientService>;
   beforeEach(() => {
     mockRecipientService = createMockService('deleteRecipient');
 

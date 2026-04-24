@@ -1,25 +1,33 @@
 import { Setting } from '@household/shared/types/types';
-import { settingDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { settingDataFactory } from '@household/test/api/setting/data-factory';
+import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { SettingKey } from '@household/shared/enums';
 
+import { test as settingApiTest, expect as settingApiExpect } from '@household/test/fixtures/setting-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as settingDbTest } from '@household/test/fixtures/setting-db.fixture';
+
+const expect = mergeExpects(settingApiExpect, apiExpect);
+
 const permissionMap = allowUsers('editor') ;
 
-describe('POST /setting/v1/settings/{settingKey}', () => {
+const test = mergeTests(settingApiTest, settingDbTest);
+
+test.describe('POST /setting/v1/settings/{settingKey}', () => {
   let request: Setting.Request;
   let settingKey: SettingKey;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     request = settingDataFactory.request();
     settingKey = settingDataFactory.key();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestUpdateSetting(settingKey, request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestUpdateSetting }) => {
+      const res = await requestUpdateSetting(settingKey, request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -27,68 +35,76 @@ describe('POST /setting/v1/settings/{settingKey}', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestUpdateSetting(settingKey, request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestUpdateSetting }) => {
+          const res = await requestUpdateSetting(settingKey, request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should update setting', () => {
-          it('with complete body', () => {
-            cy.authenticate(userType)
-              .requestUpdateSetting(settingKey, request)
-              .expectNoContentResponse()
-              .validateSettingDocument(settingKey, request);
+        test.describe('should update setting', () => {
+          test('with complete body', async ({ requestUpdateSetting, getSettingByKey }) => {
+            const res = await requestUpdateSetting(settingKey, request);
+            expect(res).toBeNoContentResponse();
+
+            expect(request).toHaveBeenSavedAsSettingDocument(settingKey, await getSettingByKey(settingKey));
           });
         });
 
-        describe('should return error', () => {
-          describe('if value', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateSetting(settingKey, settingDataFactory.request({
-                  value: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('value', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestUpdateSetting }) => {
+              const res = await requestUpdateSetting(settingKey, {
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+          
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+          test.describe('if value', () => {
+            test('is missing from body', async ({ requestUpdateSetting }) => {
+              const res = await requestUpdateSetting(settingKey, settingDataFactory.request({
+                value: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'value');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateSetting(settingKey, settingDataFactory.request({
-                  value: {} as any,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('value', 'string', 'body');
+            test('is not string', async ({ requestUpdateSetting }) => {
+              const res = await requestUpdateSetting(settingKey, settingDataFactory.request({
+                value: {} as any, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'value', 'string');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestUpdateSetting(settingKey, settingDataFactory.request({
-                  value: {} as any,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('value', 'number', 'body');
+            test('is not number', async ({ requestUpdateSetting }) => {
+              const res = await requestUpdateSetting(settingKey, settingDataFactory.request({
+                value: {} as any, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'value', 'number');
             });
 
-            it('is not boolean', () => {
-              cy.authenticate(userType)
-                .requestUpdateSetting(settingKey, settingDataFactory.request({
-                  value: {} as any,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('value', 'boolean', 'body');
+            test('is not boolean', async ({ requestUpdateSetting }) => {
+              const res = await requestUpdateSetting(settingKey, settingDataFactory.request({
+                value: {} as any, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'value', 'boolean');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateSetting(settingKey, settingDataFactory.request({
-                  value: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('value', 1, 'body');
+            test('is too short', async ({ requestUpdateSetting }) => {
+              const res = await requestUpdateSetting(settingKey, settingDataFactory.request({
+                value: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'value', 1);
             });
           });
         });

@@ -8,7 +8,7 @@ describe('Get transaction handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockGetTransactionService = jest.fn();
+    mockGetTransactionService = vi.fn();
     handlerFunction = handler(mockGetTransactionService);
   });
 

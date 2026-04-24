@@ -2,7 +2,7 @@ import { getAccountId, getTransactionId, toDictionary } from '@household/shared/
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Account, Transaction } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/api/utils';
+import { createId } from '@household/test/utils';
 import { transferTransactionDocumentConverter } from '@household/shared/dependencies/converters/transfer-transaction-document-converter';
 
 export const transferTransactionDataFactory = (() => {
@@ -54,7 +54,7 @@ export const transferTransactionDataFactory = (() => {
       account: ctx.account,
       transferAccount: ctx.transferAccount,
       transactions: ctx.transactions ? toDictionary(ctx.transactions, '_id') : undefined,
-    }, Cypress.env('EXPIRES_IN'), true);
+    }, Number(process.env.EXPIRES_IN), true);
   };
 
   return {

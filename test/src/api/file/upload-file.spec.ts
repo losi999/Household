@@ -1,23 +1,32 @@
 import { File } from '@household/shared/types/types';
-import { fileDataFactory } from './data-factory';
-import { default as schema } from '@household/test/api/schemas/file-url-response';
-import { allowUsers } from '@household/test/api/utils';
+import { fileDataFactory } from '@household/test/api/file/data-factory';
+import { default as schema } from '@household/test/schemas/file-url-response';
+import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
+
+import { test as fileApiTest, expect as fileApiExpect } from '@household/test/fixtures/file-api.fixture';
+import { test as storageTest } from '@household/test/fixtures/storage.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as fileDbTest } from '@household/test/fixtures/file-db.fixture';
+
+const expect = mergeExpects(fileApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
 
-describe('POST /file/v1/files', () => {
+const test = mergeTests(fileApiTest, fileDbTest, storageTest);
+
+test.describe('POST /file/v1/files', () => {
   let request: File.Request;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     request = fileDataFactory.request();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateUploadUrl(request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestCreateUploadUrl }) => {
+      const res = await requestCreateUploadUrl(request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -25,82 +34,93 @@ describe('POST /file/v1/files', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateUploadUrl(request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateUploadUrl }) => {
+          const res = await requestCreateUploadUrl(request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should upload file', () => {
-          it('with complete body', () => {
-            cy.authenticate(userType)
-              .requestCreateUploadUrl(request)
-              .expectOkResponse()
-              .expectValidResponseSchema(schema)
-              .validateFileDocument(request)
-              .requestUploadFile()
-              .validateFileInS3();
+        test.describe('should upload file', () => {
+          test('with complete body', async ({ requestCreateUploadUrl, requestUploadFile, findFileById, checkFile }) => {
+            const urlRes = await requestCreateUploadUrl(request);
+            expect(urlRes).toBeOkResponse();
+            expect(urlRes).toMatchSchema(schema);
+
+            const { fileId, url } = (await urlRes.json()) as File.FileId & File.Url;
+            expect(request).toHaveBeenSavedAsFileDocument(await findFileById(fileId));
+            
+            await requestUploadFile(url);
+            const file = await checkFile(fileId);
+            expect(file).toHaveBeenStoredInS3();
           });
         });
 
-        describe('should return error', () => {
-          describe('if fileType', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateUploadUrl(fileDataFactory.request({
-                  fileType: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('fileType', 'body');
-            });
-
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateUploadUrl(fileDataFactory.request({
-                  fileType: 1 as any,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('fileType', 'string', 'body');
-            });
-
-            it('is not a valid enum value', () => {
-              cy.authenticate(userType)
-                .requestCreateUploadUrl(fileDataFactory.request({
-                  fileType: 'not-enum' as any,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongEnumValue('fileType', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateUploadUrl }) => {
+              const res = await requestCreateUploadUrl({
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+  
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 
-          describe('if timezone', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateUploadUrl(fileDataFactory.request({
-                  timezone: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('timezone', 'body');
+          test.describe('if fileType', () => {
+            test('is missing from body', async ({ requestCreateUploadUrl }) => {
+              const res = await requestCreateUploadUrl(fileDataFactory.request({
+                fileType: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'fileType');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateUploadUrl(fileDataFactory.request({
-                  timezone: 1 as any,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('timezone', 'string', 'body');
+            test('is not string', async ({ requestCreateUploadUrl }) => {
+              const res = await requestCreateUploadUrl(fileDataFactory.request({
+                fileType: 1 as any, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'fileType', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateUploadUrl(fileDataFactory.request({
-                  timezone: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('timezone', 1, 'body');
+            test('is not a valid enum value', async ({ requestCreateUploadUrl }) => {
+              const res = await requestCreateUploadUrl(fileDataFactory.request({
+                fileType: 'not-enum' as any, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveEnumValidationError('body', 'fileType');
+            });
+          });
+
+          test.describe('if timezone', () => {
+            test('is missing from body', async ({ requestCreateUploadUrl }) => {
+              const res = await requestCreateUploadUrl(fileDataFactory.request({
+                timezone: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'timezone');
+            });
+
+            test('is not string', async ({ requestCreateUploadUrl }) => {
+              const res = await requestCreateUploadUrl(fileDataFactory.request({
+                timezone: 1 as any, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'timezone', 'string');
+            });
+
+            test('is too short', async ({ requestCreateUploadUrl }) => {
+              const res = await requestCreateUploadUrl(fileDataFactory.request({
+                timezone: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'timezone', 1);
             });
           });
         });

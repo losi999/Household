@@ -4,8 +4,8 @@ import { ITransferTransactionDocumentConverter } from '@household/shared/convert
 import { AccountType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { Transaction } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface IUpdateToTransferTransactionService {
   (ctx: {
@@ -58,7 +58,7 @@ export const updateToTransferTransactionServiceFactory = (
       account: transferAccount,
     }, 400);
 
-    let update: UpdateQuery<Transaction.Document>;
+    let update: DocumentUpdate<Transaction.Document>;
 
     if (account.accountType === AccountType.Loan && transferAccount.accountType === AccountType.Loan) {
       body.payments = undefined;

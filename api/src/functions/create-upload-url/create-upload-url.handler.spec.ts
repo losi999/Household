@@ -9,7 +9,7 @@ describe('Create upload url handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockCreateUploadUrlService = jest.fn();
+    mockCreateUploadUrlService = vi.fn();
     handlerFunction = handler(mockCreateUploadUrlService);
   });
 

@@ -8,7 +8,7 @@ describe('Merge recipients handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockMergeRecipientsService = jest.fn();
+    mockMergeRecipientsService = vi.fn();
     handlerFunction = handler(mockMergeRecipientsService);
   });
 

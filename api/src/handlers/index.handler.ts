@@ -3,7 +3,7 @@ export default <E, R>(params: {
   after: ((result: R) => R)[];
   handler: AWSLambda.Handler<E, R>;
 }): AWSLambda.Handler<E, R> => {
-  return async (event, context, callback) => {
+  return async (event, context) => {
     console.log('handler start');
     context.callbackWaitsForEmptyEventLoop = false;
     let modifiedEvent: E;
@@ -17,7 +17,7 @@ export default <E, R>(params: {
     }
 
     if (!result) {
-      result = (await params.handler(modifiedEvent, context, callback)) as R;
+      result = (await params.handler(modifiedEvent, context, undefined)) as R;
     }
 
     if (result) {

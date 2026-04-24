@@ -1,4 +1,4 @@
-import { default as schema } from '@household/test/api/schemas/transaction-response-list';
+import { default as schema } from '@household/test/schemas/transaction-response-list';
 import { Account } from '@household/shared/types/types';
 import { createAccountId } from '@household/shared/common/test-data-factory';
 import { entries, getAccountId, getTransactionId } from '@household/shared/common/utils';
@@ -13,22 +13,35 @@ import { transferTransactionDataFactory } from '@household/test/api/transaction/
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { AccountType, CategoryType } from '@household/shared/enums';
-import { forbidUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/utils';
+
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+
+const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
 
-describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
+
+test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
   let accountDocument: Account.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetTransactionListByAccount(getAccountId(accountDocument))
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestGetTransactionListByAccount }) => {
+      const res = await requestGetTransactionListByAccount(getAccountId(accountDocument));
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -36,16 +49,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetTransactionListByAccount(getAccountId(accountDocument))
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestGetTransactionListByAccount }) => {
+          const res = await requestGetTransactionListByAccount(getAccountId(accountDocument));
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should get a list of transactions', () => {
-          it('of a non-loan account', () => {
+        test.describe('should get a list of transactions', () => {
+          test('of a non-loan account', async ({ requestGetTransactionListByAccount, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProduct }) => {
             const loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -202,66 +217,43 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               transferAccount: accountDocument,
             });
 
-            cy.saveRecipientDocument(recipientDocument)
-              .saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-                transferAccountDocument,
-              ])
-              .saveCategoryDocuments([
-                regularCategoryDocument,
-                invoiceCategoryDocument,
-                inventoryCategoryDocument,
-              ])
-              .saveProjectDocument(projectDocument)
-              .saveProductDocument(productDocument)
-              .saveTransactionDocuments([
-                paymentTransactionDocument,
-                payingSplitTransactionDocument,
-                owningSplitTransactionDocument,
-                payingTransferTransactionDocument,
-                receivingTransferTransactionDocument,
-                loanTransferTransactionDocument,
-                invertedLoanTransferTransactionDocument,
-                payingNotRepaidDeferredTransactionDocument,
-                payingRepaidDeferredTransactionDocument,
-                payingSettledDeferredTransactionDocument,
-                owningNotRepaidDeferredTransactionDocument,
-                owningRepaidDeferredTransactionDocument,
-                owningSettledDeferredTransactionDocument,
-                owningReimbursementTransactionDocument,
-              ])
-              .authenticate(userType)
-              .requestGetTransactionListByAccount(getAccountId(accountDocument), {
-                pageNumber: 1,
-                pageSize: 100000,
-              })
-              .expectOkResponse()
-              .expectValidResponseSchema(schema)
-              .validateTransactionListResponse([
-                paymentTransactionDocument,
-                payingSplitTransactionDocument,
-                owningSplitTransactionDocument,
-                payingTransferTransactionDocument,
-                receivingTransferTransactionDocument,
-                loanTransferTransactionDocument,
-                invertedLoanTransferTransactionDocument,
-                payingNotRepaidDeferredTransactionDocument,
-                payingRepaidDeferredTransactionDocument,
-                payingSettledDeferredTransactionDocument,
-                owningNotRepaidDeferredTransactionDocument,
-                owningRepaidDeferredTransactionDocument,
-                owningSettledDeferredTransactionDocument,
-                owningReimbursementTransactionDocument,
-              ], getAccountId(accountDocument), {
-                [getTransactionId(owningRepaidDeferredTransactionDocument)]: payingTransferTransactionDocument.payments[0].amount,
-                [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: payingTransferTransactionDocument.payments[1].amount,
-                [getTransactionId(payingRepaidDeferredTransactionDocument)]: receivingTransferTransactionDocument.payments[0].amount,
-                [getTransactionId(payingSplitTransactionDocument.deferredSplits[2])]: receivingTransferTransactionDocument.payments[1].amount,
-              });
+            await saveRecipient(recipientDocument);
+            await saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
+            await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            await saveProject(projectDocument);
+            await saveProduct(productDocument);
+            await saveTransactions(paymentTransactionDocument, payingSplitTransactionDocument, owningSplitTransactionDocument, payingTransferTransactionDocument, receivingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingNotRepaidDeferredTransactionDocument, payingRepaidDeferredTransactionDocument, payingSettledDeferredTransactionDocument, owningNotRepaidDeferredTransactionDocument, owningRepaidDeferredTransactionDocument, owningSettledDeferredTransactionDocument, owningReimbursementTransactionDocument);
+            const res = await requestGetTransactionListByAccount(getAccountId(accountDocument), {
+              pageNumber: 1,
+              pageSize: 100000, 
+            });
+            expect(res).toBeOkResponse();
+            expect(res).toMatchSchema(schema);
+            expect(res).toContainMatchingPaymentTransactionDocument(paymentTransactionDocument);
+
+            expect(res).toContainMatchingSplitTransactionDocument(payingSplitTransactionDocument, {
+              [getTransactionId(payingSplitTransactionDocument.deferredSplits[2])]: receivingTransferTransactionDocument.payments[1].amount,
+            });
+            expect(res).toContainMatchingSplitTransactionDocument(owningSplitTransactionDocument, {
+              [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: payingTransferTransactionDocument.payments[1].amount,
+            });
+
+            expect(res).toContainMatchingTransferTransactionDocument(payingTransferTransactionDocument, getAccountId(accountDocument));
+            expect(res).toContainMatchingTransferTransactionDocument(receivingTransferTransactionDocument, getAccountId(accountDocument));
+            expect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(accountDocument));
+            expect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(accountDocument));
+
+            expect(res).toContainMatchingDeferredTransactionDocument(payingNotRepaidDeferredTransactionDocument);
+            expect(res).toContainMatchingDeferredTransactionDocument(payingRepaidDeferredTransactionDocument, receivingTransferTransactionDocument.payments[0].amount);
+            expect(res).toContainMatchingDeferredTransactionDocument(payingSettledDeferredTransactionDocument);
+            expect(res).toContainMatchingDeferredTransactionDocument(owningNotRepaidDeferredTransactionDocument);
+            expect(res).toContainMatchingDeferredTransactionDocument(owningRepaidDeferredTransactionDocument, payingTransferTransactionDocument.payments[0].amount);
+            expect(res).toContainMatchingDeferredTransactionDocument(owningSettledDeferredTransactionDocument);
+            
+            expect(res).toContainMatchingReimbursementTransactionDocument(owningReimbursementTransactionDocument);
           });
 
-          it('of a loan account', () => {
+          test('of a loan account', async ({ requestGetTransactionListByAccount, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProduct }) => {
             const loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -351,133 +343,108 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               transferAccount: accountDocument,
             });
 
-            cy.saveRecipientDocument(recipientDocument)
-              .saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-                transferAccountDocument,
-              ])
-              .saveCategoryDocuments([
-                regularCategoryDocument,
-                invoiceCategoryDocument,
-                inventoryCategoryDocument,
-              ])
-              .saveProjectDocument(projectDocument)
-              .saveProductDocument(productDocument)
-              .saveTransactionDocuments([
-                owningSplitTransactionDocument,
-                repayingTransferTransactionDocument,
-                loanTransferTransactionDocument,
-                invertedLoanTransferTransactionDocument,
-                owningNotRepaidDeferredTransactionDocument,
-                owningRepaidDeferredTransactionDocument,
-                owningSettledDeferredTransactionDocument,
-                payingReimbursementTransactionDocument,
-              ])
-              .authenticate(userType)
-              .requestGetTransactionListByAccount(getAccountId(loanAccountDocument), {
-                pageNumber: 1,
-                pageSize: 100000,
-              })
-              .expectOkResponse()
-              .expectValidResponseSchema(schema)
-              .validateTransactionListResponse([
-                owningSplitTransactionDocument,
-                loanTransferTransactionDocument,
-                invertedLoanTransferTransactionDocument,
-                owningNotRepaidDeferredTransactionDocument,
-                owningRepaidDeferredTransactionDocument,
-                owningSettledDeferredTransactionDocument,
-                payingReimbursementTransactionDocument,
-              ], getAccountId(loanAccountDocument), {
-                [getTransactionId(owningRepaidDeferredTransactionDocument)]: repayingTransferTransactionDocument.payments[0].amount,
-                [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: repayingTransferTransactionDocument.payments[1].amount,
-              });
+            await saveRecipient(recipientDocument);
+            await saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
+            await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            await saveProject(projectDocument);
+            await saveProduct(productDocument);
+            await saveTransactions(owningSplitTransactionDocument, repayingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, owningNotRepaidDeferredTransactionDocument, owningRepaidDeferredTransactionDocument, owningSettledDeferredTransactionDocument, payingReimbursementTransactionDocument);
+            const res = await requestGetTransactionListByAccount(getAccountId(loanAccountDocument), {
+              pageNumber: 1,
+              pageSize: 100000, 
+            });
+            expect(res).toBeOkResponse();
+            expect(res).toMatchSchema(schema);
+
+            expect(res).toContainMatchingSplitTransactionDocument(owningSplitTransactionDocument, {
+              [getTransactionId(owningSplitTransactionDocument.deferredSplits[2])]: repayingTransferTransactionDocument.payments[1].amount,
+            });
+
+            expect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(loanAccountDocument));
+            expect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(loanAccountDocument));
+
+            expect(res).toContainMatchingDeferredTransactionDocument(owningNotRepaidDeferredTransactionDocument);
+            expect(res).toContainMatchingDeferredTransactionDocument(owningRepaidDeferredTransactionDocument, repayingTransferTransactionDocument.payments[0].amount);
+            expect(res).toContainMatchingDeferredTransactionDocument(owningSettledDeferredTransactionDocument);
+
+            expect(res).toContainMatchingReimbursementTransactionDocument(payingReimbursementTransactionDocument);
           });
         });
 
-        describe('should return error', () => {
-          describe('if accountId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionListByAccount(createAccountId('not-mongo-id'))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('accountId', 'pathParameters');
+        test.describe('should return error', () => {
+          test.describe('if accountId', () => {
+            test('is not mongo id', async ({ requestGetTransactionListByAccount }) => {
+              const res = await requestGetTransactionListByAccount(createAccountId('not-mongo-id'));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'accountId');
             });
           });
 
-          describe('if querystring', () => {
-            it('has additional parameter', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionListByAccount(createAccountId(), {
-                  pageNumber: 1,
-                  pageSize: 100,
-                  extra: 1,
-                } as any)
-                .expectBadRequestResponse()
-                .expectAdditionalProperty('data', 'queryStringParameters');
+          test.describe('if querystring', () => {
+            test('has additional parameter', async ({ requestGetTransactionListByAccount }) => {
+              const res = await requestGetTransactionListByAccount(createAccountId(), {
+                pageNumber: 1,
+                pageSize: 100,
+                extra: 1, 
+              } as any);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('queryStringParameters', 'data', 'extra');
             });
           });
 
-          describe('if querystring.pageSize', () => {
-            it('is missing while pageNumber is set', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionListByAccount(createAccountId(), {
-                  pageNumber: 1,
-                })
-                .expectBadRequestResponse()
-                .expectRequiredProperty('pageSize', 'queryStringParameters');
+          test.describe('if querystring.pageSize', () => {
+            test('is missing while pageNumber is set', async ({ requestGetTransactionListByAccount }) => {
+              const res = await requestGetTransactionListByAccount(createAccountId(), {
+                pageNumber: 1, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('queryStringParameters', 'pageSize');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionListByAccount(createAccountId(), {
-                  pageNumber: 1,
-                  pageSize: 'asd' as any,
-                })
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('pageSize', 'queryStringParameters');
+            test('is not number', async ({ requestGetTransactionListByAccount }) => {
+              const res = await requestGetTransactionListByAccount(createAccountId(), {
+                pageNumber: 1,
+                pageSize: 'asd' as any, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('queryStringParameters', 'pageSize');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionListByAccount(createAccountId(), {
-                  pageNumber: 1,
-                  pageSize: 0,
-                })
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('pageSize', 'queryStringParameters');
+            test('is too small', async ({ requestGetTransactionListByAccount }) => {
+              const res = await requestGetTransactionListByAccount(createAccountId(), {
+                pageNumber: 1,
+                pageSize: 0, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('queryStringParameters', 'pageSize');
             });
           });
 
-          describe('if querystring.pageNumber', () => {
-            it('is missing while pageSize is set', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionListByAccount(createAccountId(), {
-                  pageSize: 1,
-                })
-                .expectBadRequestResponse()
-                .expectRequiredProperty('pageNumber', 'queryStringParameters');
+          test.describe('if querystring.pageNumber', () => {
+            test('is missing while pageSize is set', async ({ requestGetTransactionListByAccount }) => {
+              const res = await requestGetTransactionListByAccount(createAccountId(), {
+                pageSize: 1, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('queryStringParameters', 'pageNumber');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionListByAccount(createAccountId(), {
-                  pageNumber: 'asd' as any,
-                  pageSize: 1,
-                })
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('pageNumber', 'queryStringParameters');
+            test('is not number', async ({ requestGetTransactionListByAccount }) => {
+              const res = await requestGetTransactionListByAccount(createAccountId(), {
+                pageNumber: 'asd' as any,
+                pageSize: 1, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('queryStringParameters', 'pageNumber');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionListByAccount(createAccountId(), {
-                  pageNumber: 0,
-                  pageSize: 1,
-                })
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('pageNumber', 'queryStringParameters');
+            test('is too small', async ({ requestGetTransactionListByAccount }) => {
+              const res = await requestGetTransactionListByAccount(createAccountId(), {
+                pageNumber: 0,
+                pageSize: 1, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('queryStringParameters', 'pageNumber');
             });
           });
         });

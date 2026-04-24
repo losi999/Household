@@ -9,7 +9,7 @@ describe('Update account handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockUpdateAccountService = jest.fn();
+    mockUpdateAccountService = vi.fn();
     handlerFunction = handler(mockUpdateAccountService);
   });
 

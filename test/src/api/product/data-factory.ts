@@ -1,7 +1,7 @@
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Category, Product } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/api/utils';
+import { createId } from '@household/test/utils';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { CategoryType } from '@household/shared/enums';
@@ -32,7 +32,7 @@ export const productDataFactory = (() => {
         ...(ctx?.body ?? {}),
       }),
       category: ctx.category,
-    }, Cypress.env('EXPIRES_IN'), true);
+    }, Number(process.env.EXPIRES_IN), true);
   };
   return {
     request: createProductRequest,

@@ -1,6 +1,6 @@
 import { updateCustomerJobServiceFactory, IUpdateCustomerJobService } from '@household/api/functions/update-customer-job/update-customer-job.service';
-import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getPriceId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
@@ -8,9 +8,9 @@ import { IPriceService } from '@household/shared/services/price-service';
 
 describe('Update customer job service', () => {
   let service: IUpdateCustomerJobService;
-  let mockCustomerService: Mock<ICustomerService>;
-  let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
-  let mockPriceService: Mock<IPriceService>;
+  let mockCustomerService: MockService<ICustomerService>;
+  let mockCustomerDocumentConverter: MockService<ICustomerDocumentConverter>;
+  let mockPriceService: MockService<IPriceService>;
   beforeEach(() => {
     mockCustomerService = createMockService('findCustomerById', 'updateCustomer');
     mockCustomerDocumentConverter = createMockService('updateJob');
@@ -46,7 +46,7 @@ describe('Update customer job service', () => {
       },
     ],
   });
-  const documentUpdate = createDocumentUpdate2();
+  const documentUpdate = createDocumentUpdate();
   const customerId = testDataFactory.customer.id();
 
   it('should return', async () => {

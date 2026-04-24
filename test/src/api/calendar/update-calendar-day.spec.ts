@@ -1,25 +1,33 @@
 import { entries } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { Calendar } from '@household/shared/types/types';
 import { calendarDayDataFactory } from '@household/test/api/calendar/data-factory';
 
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
+
+const test = mergeTests(calendarApiTest, calendarDayDbTest);
+
+const expect = mergeExpects(calendarApiExpect, apiExpect);
+
 const permissionMap = allowUsers('hairdresser');
 
-describe('PUT /calendar/v1/days/{day}', () => {
+test.describe.serial('PUT /calendar/v1/days/{day}', () => {
   let request: Calendar.Day.Request;
   let day: string;
   let calendarDayDocument: Calendar.Day.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     request = calendarDayDataFactory.request.workday();
     day = calendarDayDataFactory.futureDay();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestUpdateCalendarDay(day, request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestUpdateCalendarDay }) => {
+      const res = await requestUpdateCalendarDay(day, request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -27,191 +35,193 @@ describe('PUT /calendar/v1/days/{day}', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestUpdateCalendarDay(day, request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestUpdateCalendarDay }) => {
+          const res = await requestUpdateCalendarDay(day, request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should save previously unset day to', () => {
-          it('workday', () => {
-            cy.clearCalendarDay(day)
-              .authenticate(userType)
-              .requestUpdateCalendarDay(day, request)
-              .expectNoContentResponse()
-              .validateCalendarDayDocument(day, request);
+        test.describe('should save previously unset day to', () => {
+          test('workday', async ({ requestUpdateCalendarDay, clearCalendarDay, findCalendarDayByDay }) => {
+            await clearCalendarDay(day);
+
+            const res = await requestUpdateCalendarDay(day, request);
+            expect(res).toBeNoContentResponse();
+
+            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
           
-          it('vacation', () => {
+          test('vacation', async ({ requestUpdateCalendarDay, clearCalendarDay, findCalendarDayByDay }) => {
             request = calendarDayDataFactory.request.vacation();
+            await clearCalendarDay(day);
             
-            cy.clearCalendarDay(day)
-              .authenticate(userType)
-              .requestUpdateCalendarDay(day, request)
-              .expectNoContentResponse()
-              .validateCalendarDayDocument(day, request);
+            const res = await requestUpdateCalendarDay(day, request);
+            expect(res).toBeNoContentResponse();
+
+            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
         });
 
-        describe('should update', () => {  
-          it('workday to vacation', () => {
+        test.describe('should update', () => {  
+          test('workday to vacation', async ({ requestUpdateCalendarDay, findCalendarDayByDay, saveCalendarDay }) => {
             calendarDayDocument = calendarDayDataFactory.document.work({
               day,
             });
 
             request = calendarDayDataFactory.request.vacation();
 
-            cy.saveCalendarDayDocument(calendarDayDocument)
-              .authenticate(userType)
-              .requestUpdateCalendarDay(day, request)
-              .expectNoContentResponse()
-              .validateCalendarDayDocument(day, request);
+            await saveCalendarDay(calendarDayDocument);
+            const res = await requestUpdateCalendarDay(day, request);
+            expect(res).toBeNoContentResponse();
+
+            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
           
-          it('vacation to workday', () => {
+          test('vacation to workday', async ({ requestUpdateCalendarDay, findCalendarDayByDay, saveCalendarDay }) => {
             calendarDayDocument = calendarDayDataFactory.document.vacation({
               day,
             });
 
             request = calendarDayDataFactory.request.workday();
 
-            cy.saveCalendarDayDocument(calendarDayDocument)
-              .authenticate(userType)
-              .requestUpdateCalendarDay(day, request)
-              .expectNoContentResponse()
-              .validateCalendarDayDocument(day, request);
+            await saveCalendarDay(calendarDayDocument);
+            const res = await requestUpdateCalendarDay(day, request);
+            expect(res).toBeNoContentResponse();
+
+            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
         });
 
-        describe('should return error', () => {
-          it('if holiday is to be updated', () => {
+        test.describe('should return error', () => {
+          test('if holiday is to be updated', async ({ requestUpdateCalendarDay, saveCalendarDay }) => {
             calendarDayDocument = calendarDayDataFactory.document.holiday({
               day,
             });
 
             request = calendarDayDataFactory.request.workday();
 
-            cy.saveCalendarDayDocument(calendarDayDocument)
-              .authenticate(userType)
-              .requestUpdateCalendarDay(day, request)
-              .expectBadRequestResponse()
-              .expectMessage('Selected calendar day is a national holiday');
+            await saveCalendarDay(calendarDayDocument);
+            const res = await requestUpdateCalendarDay(day, request);
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Selected calendar day is a national holiday');
+          });
+
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, {
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+            
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
           });
           
-          describe('if dayType', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  dayType: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('dayType', 'body');
+          test.describe('if dayType', () => {
+            test('is missing from body', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                dayType: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'dayType');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  dayType: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('dayType', 'string', 'body');
+            test('is not string', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                dayType: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'dayType', 'string');
             });
 
-            it('is not a valid constant value', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  dayType: 'not-valid-const' as any,
-                }))
-                .expectBadRequestResponse()
-                .expectNotConstantValue('dayType', 'body');
+            test('is not a valid constant value', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                dayType: 'not-valid-const' as any, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveConstantValueValidationError('body', 'dayType');
             });
           });
 
-          describe('if start', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  start: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('start', 'body');
+          test.describe('if start', () => {
+            test('is missing from body', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                start: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'start');
             });
 
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  start: 1.1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('start', 'integer', 'body');
+            test('is not integer', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                start: 1.1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'start', 'integer');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  start: -1,
-                }))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('start', 0, false, 'body');
+            test('is too small', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                start: -1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooSmallValidationError('body', 'start', 0);
             });
 
-            it('is too large', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  start: 97,
-                }))
-                .expectBadRequestResponse()
-                .expectTooLargeNumberProperty('start', 96, false, 'body');
+            test('is too large', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                start: 97, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooLargeValidationError('body', 'start', 96);
             });
           });
 
-          describe('if end', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  end: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('end', 'body');
+          test.describe('if end', () => {
+            test('is missing from body', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                end: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'end');
             });
 
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  end: 1.1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('end', 'integer', 'body');
+            test('is not integer', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                end: 1.1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'end', 'integer');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  start: 20,
-                  end: 10,
-                }))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('end', 0, true, 'body');
+            test('is too small', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                start: 20,
+                end: 10, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'end', 20);
             });
 
-            it('is too large', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
-                  end: 97,
-                }))
-                .expectBadRequestResponse()
-                .expectTooLargeNumberProperty('end', 96, false, 'body');
+            test('is too large', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
+                end: 97, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooLargeValidationError('body', 'end', 96);
             });
           });
 
-          describe('if day', () => {
-            it('is not date', () => {
-              cy.authenticate(userType)
-                .requestUpdateCalendarDay('not-date', request)
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('day', 'date', 'pathParameters');
+          test.describe('if day', () => {
+            test('is not date', async ({ requestUpdateCalendarDay }) => {
+              const res = await requestUpdateCalendarDay('not-date', request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('pathParameters', 'day', 'date');
             });
           });
         });

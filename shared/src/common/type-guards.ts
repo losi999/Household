@@ -34,6 +34,10 @@ export const isPriceBase = (price: (Customer.Job.Request | Customer.Job.Document
   return !!(price as Price.Base).name;
 };
 
+export const hasPriceId = (price: Exclude<(Customer.Job.Request | Customer.Job.Document)['prices'][number], Price.Base>): price is (Price.PriceId & Customer.Job.Quantity) => {
+  return !!(price as Price.PriceId).priceId;
+};
+
 // export const isListedPrice = (price: Customer.Job.Response['prices'][number]): price is Customer.Job.ListedPrice<Price.Response> => {
 //   return !!(price as Customer.Job.ListedPrice<Price.Response>).priceId;
 // };

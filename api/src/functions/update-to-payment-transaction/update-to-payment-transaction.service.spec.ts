@@ -1,6 +1,6 @@
 import { IUpdateToPaymentTransactionService, updateToPaymentTransactionServiceFactory } from '@household/api/functions/update-to-payment-transaction/update-to-payment-transaction.service';
 import { createAccountDocument, createCategoryDocument, createDocumentUpdate, createPaymentTransactionRequest, createProductDocument, createProductId, createProjectDocument, createRecipientDocument, createTransferTransactionDocument } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId, getProjectId, getRecipientId, getAccountId, getProductId, getTransactionId } from '@household/shared/common/utils';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
@@ -16,15 +16,15 @@ import { Transaction, Account, Category, Project, Recipient, Product } from '@ho
 
 describe('Update to payment transaction service', () => {
   let service: IUpdateToPaymentTransactionService;
-  let mockAccountService: Mock<IAccountService>;
-  let mockCategoryService: Mock<ICategoryService>;
-  let mockRecipientService: Mock<IRecipientService>;
-  let mockProjectService: Mock<IProjectService>;
-  let mockProductService: Mock<IProductService>;
-  let mockTransactionService: Mock<ITransactionService>;
-  let mockPaymentTransactionDocumentConverter: Mock<IPaymentTransactionDocumentConverter>;
-  let mockDeferredTransactionDocumentConverter: Mock<IDeferredTransactionDocumentConverter>;
-  let mockReimbursementTransactionDocumentConverter: Mock<IReimbursementTransactionDocumentConverter>;
+  let mockAccountService: MockService<IAccountService>;
+  let mockCategoryService: MockService<ICategoryService>;
+  let mockRecipientService: MockService<IRecipientService>;
+  let mockProjectService: MockService<IProjectService>;
+  let mockProductService: MockService<IProductService>;
+  let mockTransactionService: MockService<ITransactionService>;
+  let mockPaymentTransactionDocumentConverter: MockService<IPaymentTransactionDocumentConverter>;
+  let mockDeferredTransactionDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
+  let mockReimbursementTransactionDocumentConverter: MockService<IReimbursementTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('findAccountsByIds');
@@ -73,9 +73,7 @@ describe('Update to payment transaction service', () => {
 
   const queriedDocument = createTransferTransactionDocument();
   const transactionId = getTransactionId(queriedDocument);
-  const updateQuery = createDocumentUpdate({
-    description: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
 
   describe('should return', () => {
     it('if updated to payment transaction', async () => {

@@ -1,24 +1,32 @@
 import { entries } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { Calendar } from '@household/shared/types/types';
 import { calendarDayDataFactory } from '@household/test/api/calendar/data-factory';
 
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
+
+const expect = mergeExpects(calendarApiExpect, apiExpect);
+
 const permissionMap = allowUsers('hairdresser');
 
-describe('DELETE /calendar/v1/days/{day}', () => {
+const test = mergeTests(calendarApiTest, calendarDayDbTest);
+
+test.describe('DELETE /calendar/v1/days/{day}', () => {
   let day: string;
   let calendarDayDocument: Calendar.Day.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     calendarDayDocument = calendarDayDataFactory.document.work();
     day = calendarDayDocument.day;
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestDeleteCalendarDay(day)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestDeleteCalendarDay }) => {
+      const res = await requestDeleteCalendarDay(day);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -26,41 +34,40 @@ describe('DELETE /calendar/v1/days/{day}', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestDeleteCalendarDay(day)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestDeleteCalendarDay }) => {
+          const res = await requestDeleteCalendarDay(day);
+          expect(res).toBeForbiddenResponse();
         });
       } else {  
-        it('should delete calendar day', () => {
-          cy.saveCalendarDayDocument(calendarDayDocument)
-            .authenticate(userType)
-            .requestDeleteCalendarDay(day)
-            .expectNoContentResponse()
-            .validateCalendarDayDeleted(day);
+        test('should delete calendar day', async ({ requestDeleteCalendarDay, findCalendarDayByDay, saveCalendarDay }) => {
+          await saveCalendarDay(calendarDayDocument);
+          const res = await requestDeleteCalendarDay(day);
+          expect(res).toBeNoContentResponse();
+          expect(await findCalendarDayByDay(day)).toHaveBeenDeletedFromDatabase();
         });
 
-        describe('should return error', () => {
-          it('if holiday is to be deleted', () => {
+        test.describe('should return error', () => {
+          test('if holiday is to be deleted', async ({ requestDeleteCalendarDay, saveCalendarDay }) => {
             calendarDayDocument = calendarDayDataFactory.document.holiday({
               day,
             });
 
-            cy.saveCalendarDayDocument(calendarDayDocument)
-              .authenticate(userType)
-              .requestDeleteCalendarDay(day)
-              .expectBadRequestResponse()
-              .expectMessage('Selected calendar day is a national holiday');
+            await saveCalendarDay(calendarDayDocument);
+            const res = await requestDeleteCalendarDay(day);
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Selected calendar day is a national holiday');
           });
 
-          describe('if day', () => {
-            it('is not date', () => {
-              cy.authenticate(userType)
-                .requestDeleteCalendarDay('not-date')
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('day', 'date', 'pathParameters');
+          test.describe('if day', () => {
+            test('is not date', async ({ requestDeleteCalendarDay }) => {
+              const res = await requestDeleteCalendarDay('not-date');
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('pathParameters', 'day', 'date');
             });
           });
         });

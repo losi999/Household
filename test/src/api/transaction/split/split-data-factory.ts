@@ -3,7 +3,7 @@ import { splitTransactionDocumentConverter } from '@household/shared/dependencie
 import { DataFactoryFunction, Dictionary } from '@household/shared/types/common';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/api/utils';
+import { createId } from '@household/test/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
@@ -156,7 +156,7 @@ export const splitTransactionDataFactory = (() => {
       products,
       projects,
       recipient: ctx.recipient,
-    }, Cypress.env('EXPIRES_IN'), true);
+    }, Number(process.env.EXPIRES_IN), true);
 
     return doc;
   };

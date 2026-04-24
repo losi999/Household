@@ -1,11 +1,11 @@
 import { confirmUserServiceFactory, IConfirmUserService } from '@household/api/functions/confirm-user/confirm-user.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Mock, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { Auth } from '@household/shared/types/types';
 
 describe('Confirm user service', () => {
   let service: IConfirmUserService;
-  let mockIdentityService: Mock<IIdentityService>;
+  let mockIdentityService: MockService<IIdentityService>;
 
   beforeEach(() => {
     mockIdentityService = createMockService<IIdentityService>('confirmUser');

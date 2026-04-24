@@ -1,52 +1,67 @@
-import { entries, getProjectId } from '@household/shared/common/utils';
+import { entries, getProjectId, getTransactionId } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/utils';
+import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { Account, Project, Transaction } from '@household/shared/types/types';
-import { splitTransactionDataFactory } from '../transaction/split/split-data-factory';
-import { paymentTransactionDataFactory } from '../transaction/payment/payment-data-factory';
-import { projectDataFactory } from './data-factory';
-import { accountDataFactory } from '../account/data-factory';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { AccountType } from '@household/shared/enums';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { AccountType } from '@household/shared/enums';
-import { allowUsers } from '@household/test/api/utils';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
 
-const permissionMap = allowUsers('editor') ;
+const expect = mergeExpects(apiExpect, projectApiExpect, transactionApiExpect);
 
-describe('DELETE /project/v1/projects/{projectId}', () => {
+const permissionMap = allowUsers('editor');
+
+const test = mergeTests(projectApiTest, accountDbTest, transactionDbTest, projectDbTest);
+
+test.describe('DELETE /project/v1/projects/{projectId}', () => {
+
   let projectDocument: Project.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     projectDocument = projectDataFactory.document();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestDeleteProject(projectDataFactory.id())
-        .expectUnauthorizedResponse();
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestDeleteProject }) => {
+      const res = await requestDeleteProject(projectDataFactory.id());
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
-  entries(permissionMap).forEach(([
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+    
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestDeleteProject(projectDataFactory.id())
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestDeleteProject }) => {
+          const res = await requestDeleteProject(projectDataFactory.id());
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should delete project', () => {
-          cy.saveProjectDocument(projectDocument)
-            .authenticate(userType)
-            .requestDeleteProject(getProjectId(projectDocument))
-            .expectNoContentResponse()
-            .validateProjectDeleted(getProjectId(projectDocument));
+        test('should delete project', async ({ requestDeleteProject, saveProject, findProjectById }) => {
+          await saveProject(projectDocument);
+
+          const res = await requestDeleteProject(getProjectId(projectDocument));
+          expect(res).toBeNoContentResponse();
+          
+          expect(await findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
         });
 
-        describe('in related transactions project', () => {
+        test.describe('in related transactions project', () => {
           let unrelatedProjectDocument: Project.Document;
           let paymentTransactionDocument: Transaction.PaymentDocument;
           let deferredTransactionDocument: Transaction.DeferredDocument;
@@ -58,7 +73,7 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
           let accountDocument: Account.Document;
           let loanAccountDocument: Account.Document;
 
-          beforeEach(() => {
+          test.beforeEach(async () => {
             accountDocument = accountDataFactory.document();
             loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
@@ -122,77 +137,75 @@ describe('DELETE /project/v1/projects/{projectId}', () => {
               ],
             });
           });
-          it('should be unset if project is deleted', () => {
-            cy.saveAccountDocuments([
-              accountDocument,
-              loanAccountDocument,
-            ])
-              .saveProjectDocuments([
-                projectDocument,
-                unrelatedProjectDocument,
-              ])
-              .saveTransactionDocuments([
-                paymentTransactionDocument,
-                splitTransactionDocument,
-                deferredTransactionDocument,
-                reimbursementTransactionDocument,
-                unrelatedPaymentTransactionDocument,
-                unrelatedDeferredTransactionDocument,
-                unrelatedReimbursementTransactionDocument,
-              ])
-              .authenticate(userType)
-              .requestDeleteProject(getProjectId(projectDocument))
-              .expectNoContentResponse()
-              .validateProjectDeleted(getProjectId(projectDocument))
-              .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-                project: {
-                  from: getProjectId(projectDocument),
-                },
-              })
-              .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-                project: {
-                  from: getProjectId(projectDocument),
-                },
-              })
-              .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-                project: {
-                  from: getProjectId(projectDocument),
-                },
-              })
-              .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-                project: {
-                  from: getProjectId(projectDocument),
-                },
-              })
-              .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-                project: {
-                  from: getProjectId(projectDocument),
-                },
-              })
-              .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-                project: {
-                  from: getProjectId(projectDocument),
-                },
-              })
-              .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
-                project: {
-                  from: getProjectId(projectDocument),
-                },
-              });
+          
+          test('should be unset if project is deleted', async ({ requestDeleteProject, saveAccounts, saveTransactions, findTransactionById, saveProjects, findProjectById }) => {
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransactions(
+              paymentTransactionDocument,
+              deferredTransactionDocument,
+              reimbursementTransactionDocument,
+              unrelatedPaymentTransactionDocument,
+              unrelatedDeferredTransactionDocument,
+              unrelatedReimbursementTransactionDocument,
+              splitTransactionDocument,
+            );
+            await saveProjects(projectDocument, unrelatedProjectDocument);
+
+            const res = await requestDeleteProject(getProjectId(projectDocument));
+            expect(res).toBeNoContentResponse();
+          
+            expect(await findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
+
+            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
+              project: {
+                from: getProjectId(projectDocument),
+              },
+            });
+            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+              project: {
+                from: getProjectId(projectDocument),
+              },
+            });
+            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+              project: {
+                from: getProjectId(projectDocument),
+              },
+            });
+            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
+              project: {
+                from: getProjectId(projectDocument),
+              },
+            });
+            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
+              project: {
+                from: getProjectId(projectDocument),
+              },
+            });
+            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
+              project: {
+                from: getProjectId(projectDocument),
+              },
+            });
+            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
+              project: {
+                from: getProjectId(projectDocument),
+              },
+            });
+
           });
         });
 
-        describe('should return error', () => {
-          describe('if projectId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestDeleteProject(projectDataFactory.id('not-valid'))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('projectId', 'pathParameters');
+        test.describe('should return error', () => {
+          test.describe('if projectId', () => {
+            test('is not mongo id', async ({ requestDeleteProject }) => {
+              const res = await requestDeleteProject(projectDataFactory.id('not-mongo-id'));
+              
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'projectId');
             });
           });
         });
       }
     });
-  });
+  }
 });

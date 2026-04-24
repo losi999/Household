@@ -8,7 +8,7 @@ describe('Get calendar entry handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockGetCalendarEntryService = jest.fn();
+    mockGetCalendarEntryService = vi.fn();
     handlerFunction = handler(mockGetCalendarEntryService);
   });
 

@@ -1,11 +1,11 @@
 import { IDeletePriceService, deletePriceServiceFactory } from '@household/api/functions/delete-price/delete-price.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IPriceService } from '@household/shared/services/price-service';
 
 describe('Delete price service', () => {
   let service: IDeletePriceService;
-  let mockPriceService: Mock<IPriceService>;
+  let mockPriceService: MockService<IPriceService>;
 
   beforeEach(() => {
     mockPriceService = createMockService('deletePrice');

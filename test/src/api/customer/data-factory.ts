@@ -15,7 +15,7 @@ export const customerDataFactory = (() => {
     }[];
     blacklistedCustomers?: Customer.Document[];
   }): Customer.Document => {
-    const defaultCustomerDocument = customerDocumentConverter.create(testDataFactory.customer.request(ctx?.body), Cypress.env('EXPIRES_IN'), true);
+    const defaultCustomerDocument = customerDocumentConverter.create(testDataFactory.customer.request(ctx?.body), Number(process.env.EXPIRES_IN), true);
 
     const jobs = ctx?.jobs?.map<Customer.Job.Document>((j) => {
       const jobUpdate = customerDocumentConverter.addJob(testDataFactory.customer.job.request({

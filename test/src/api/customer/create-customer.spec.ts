@@ -1,22 +1,30 @@
 import { Customer } from '@household/shared/types/types';
-import { customerDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { customerDataFactory } from '@household/test/api/customer/data-factory';
+import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
+
+import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+
+const expect = mergeExpects(customerApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
-describe('POST customer/v1/customers', () => {
+const test = mergeTests(customerApiTest, customerDbTest);
+
+test.describe('POST customer/v1/customers', () => {
   let request: Customer.Request;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     request = customerDataFactory.request();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateCustomer(request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestCreateCustomer }) => {
+      const res = await requestCreateCustomer(request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -24,138 +32,141 @@ describe('POST customer/v1/customers', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateCustomer(request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateCustomer }) => {
+          const res = await requestCreateCustomer(request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should create customer', () => {
-          cy.authenticate(userType)
-            .requestCreateCustomer(request)
-            .expectCreatedResponse()
-            .validateCustomerDocument(request);
+        test('should create customer', async ({ requestCreateCustomer, findCustomerById }) => {
+          const res = await requestCreateCustomer(request);
+          expect(res).toBeCreatedResponse();
+
+          const { customerId } = (await res.json()) as Customer.CustomerId;
+          expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId));
         });
 
-        describe('should return error', () => {
-          describe('if name', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  name: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer({
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+          
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+
+          test.describe('if name', () => {
+            test('is missing from body', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                name: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  name: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
+            test('is not string', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                name: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  name: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 1, 'body');
+            test('is too short', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                name: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            it('is already in use by a different customer', () => {
+            test('is already in use by a different customer', async ({ requestCreateCustomer, saveCustomer }) => {
               const customerDocument = customerDataFactory.document({
                 body: request,
               });
 
-              cy.saveCustomerDocument(customerDocument)
-                .authenticate(userType)
-                .requestCreateCustomer(request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate customer name');
+              await saveCustomer(customerDocument);
+              const res = await requestCreateCustomer(request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate customer name');
             });
           });
 
-          describe('if description', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  description: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('description', 'string', 'body');
+          test.describe('if description', () => {
+            test('is not string', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                description: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  description: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('description', 1, 'body');
+            test('is too short', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                description: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
-          describe('if isGroup', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  isGroup: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('isGroup', 'body');
+          test.describe('if isGroup', () => {
+            test('is missing from body', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                isGroup: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'isGroup');
             });
 
-            it('is not boolean', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  isGroup: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('isGroup', 'boolean', 'body');
+            test('is not boolean', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                isGroup: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'isGroup', 'boolean');
             });
           });
 
-          describe('if rating', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  rating: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('rating', 'body');
+          test.describe('if rating', () => {
+            test('is missing from body', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                rating: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'rating');
             });
 
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  rating: 1.5,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('rating', 'integer', 'body');
+            test('is not integer', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                rating: 1.5, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'rating', 'integer');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  rating: 0,
-                }))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('rating', 1, false, 'body');
+            test('is too small', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                rating: 0, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooSmallValidationError('body', 'rating', 1);
             });
 
-            it('is too large', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomer(customerDataFactory.request({
-                  rating: 6,
-                }))
-                .expectBadRequestResponse()
-                .expectTooLargeNumberProperty('rating', 5, false, 'body');
+            test('is too large', async ({ requestCreateCustomer }) => {
+              const res = await requestCreateCustomer(customerDataFactory.request({
+                rating: 6, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooLargeValidationError('body', 'rating', 5);
             });
           });
         });

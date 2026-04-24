@@ -38,7 +38,7 @@ export const userDataFactory = (() => {
   return {
     request: createUserRequest,
     confirmedUser: createConfirmedUser,
-    pendindUser: createPendingUser,
+    pendingUser: createPendingUser,
     confirmRequest: createConfirmRequest,
   };
 })();

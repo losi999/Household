@@ -8,7 +8,7 @@ describe('Confirm forgot password handler', () => {
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockConfirmForgotPasswordService = jest.fn();
+    mockConfirmForgotPasswordService = vi.fn();
 
     apiHandler = handler(mockConfirmForgotPasswordService);
   });

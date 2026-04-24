@@ -1,51 +1,52 @@
-import { default as schema } from '@household/test/api/schemas/recipient-response-list';
-import { Recipient } from '@household/shared/types/types';
-import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { forbidUsers } from '@household/test/api/utils';
 import { entries } from '@household/shared/common/utils';
+import { forbidUsers } from '@household/test/utils';
+import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { default as schema } from '@household/test/schemas/recipient-response-list';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { mergeTests } from '@playwright/test';
 
 const permissionMap = forbidUsers();
 
-describe('GET /recipient/v1/recipients', () => {
-  let recipientDocument1: Recipient.Document;
-  let recipientDocument2: Recipient.Document;
+const test = mergeTests(recipientApiTest, recipientDbTest);
 
-  beforeEach(() => {
-    recipientDocument1 = recipientDataFactory.document();
-    recipientDocument2 = recipientDataFactory.document();
-  });
-
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetRecipientList()
-        .expectUnauthorizedResponse();
+test.describe('GET /recipient/v1/recipients', () => {
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestListRecipients }) => {
+      const res = await requestListRecipients();
+      apiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
-  entries(permissionMap).forEach(([
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetRecipientList()
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestListRecipients }) => {
+          const res = await requestListRecipients();
+          apiExpect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should get a list of recipients', () => {
-          cy.saveRecipientDocument(recipientDocument1)
-            .saveRecipientDocument(recipientDocument2)
-            .authenticate(userType)
-            .requestGetRecipientList()
-            .expectOkResponse()
-            .expectValidResponseSchema(schema)
-            .validateInRecipientListResponse(recipientDocument1)
-            .validateInRecipientListResponse(recipientDocument2);
+        test('should get a list of recipients', async ({ requestListRecipients, saveRecipients }) => {
+          const recipientDocument1 = recipientDataFactory.document();
+          const recipientDocument2 = recipientDataFactory.document();
+
+          await saveRecipients(recipientDocument1, recipientDocument2);
+
+          const res = await requestListRecipients();
+          apiExpect(res).toBeOkResponse();
+          apiExpect(res).toMatchSchema(schema);
+          recipientApiExpect(res).toContainMatchingRecipientDocument(recipientDocument1);
+          recipientApiExpect(res).toContainMatchingRecipientDocument(recipientDocument2);
         });
       }
     });
-  });
+  }
 });

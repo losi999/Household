@@ -1,6 +1,6 @@
 import { ICreateSplitTransactionService, createSplitTransactionServiceFactory } from '@household/api/functions/create-split-transaction/create-split-transaction.service';
 import { createAccountDocument, createCategoryDocument, createLoanRequestItem, createProductDocument, createProjectDocument, createRecipientDocument, createSplitRequestItem, createSplitTransactionDocument, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
 import { AccountType, CategoryType } from '@household/shared/enums';
@@ -14,13 +14,13 @@ import { Transaction } from '@household/shared/types/types';
 
 describe('Create split transaction service', () => {
   let service: ICreateSplitTransactionService;
-  let mockAccountService: Mock<IAccountService>;
-  let mockCategoryService: Mock<ICategoryService>;
-  let mockRecipientService: Mock<IRecipientService>;
-  let mockProjectService: Mock<IProjectService>;
-  let mockProductService: Mock<IProductService>;
-  let mockTransactionService: Mock<ITransactionService>;
-  let mockSplitTransactionDocumentConverter: Mock<ISplitTransactionDocumentConverter>;
+  let mockAccountService: MockService<IAccountService>;
+  let mockCategoryService: MockService<ICategoryService>;
+  let mockRecipientService: MockService<IRecipientService>;
+  let mockProjectService: MockService<IProjectService>;
+  let mockProductService: MockService<IProductService>;
+  let mockTransactionService: MockService<ITransactionService>;
+  let mockSplitTransactionDocumentConverter: MockService<ISplitTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('findAccountsByIds');

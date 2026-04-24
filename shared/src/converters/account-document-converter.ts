@@ -1,11 +1,11 @@
-import { generateMongoId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface IAccountDocumentConverter {
   create(body: Account.Request, expiresIn: number, generateId?: boolean): Account.Document;
-  update(body: Account.Request, expiresIn: number): UpdateQuery<Account.Document>;
+  update(body: Account.Request, expiresIn: number): DocumentUpdate<Account.Document>;
   toReport(document: Account.Document): Account.Report;
   toResponse(document: Account.Document): Account.Response;
   toResponseList(docs: Account.Document[]): Account.Response[];
@@ -22,11 +22,13 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: (body, expiresIn): UpdateQuery<Account.Document> => {
+    update: (body, expiresIn): DocumentUpdate<Account.Document> => {
       return {
-        $set: {
-          ...body,
-          expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+        update: {
+          $set: {
+            ...body,
+            expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+          },
         },
       };
     },

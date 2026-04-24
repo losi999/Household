@@ -1,20 +1,19 @@
-import { createFileDocument, createFileRequest, createFileResponse } from '@household/shared/common/test-data-factory';
+import { createDocumentUpdate, createFileDocument, createFileRequest, createFileResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getFileId } from '@household/shared/common/utils';
 import { fileDocumentConverterFactory, IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { FileProcessingStatus, FileType } from '@household/shared/enums';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('File document converter', () => {
   let converter: IFileDocumentConverter;
   const now = new Date();
 
   beforeEach(() => {
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = fileDocumentConverterFactory();
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const expiresIn = 3600;
@@ -64,11 +63,13 @@ describe('File document converter', () => {
   describe('update status', () => {
     it('should update document', () => {
       const result = converter.updateStatus(FileProcessingStatus.Completed);
-      expect(result).toEqual({
-        $set: {
-          processingStatus: 'completed',
+      expect(result).toEqual(createDocumentUpdate({
+        update: {
+          $set: {
+            processingStatus: 'completed',
+          },
         },
-      });
+      }));
     });
   });
 

@@ -2,19 +2,18 @@ import { createAccountDocument, createAccountReport, createAccountRequest, creat
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
 import { accountDocumentConverterFactory, IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { AccountType } from '@household/shared/enums';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Account document converter', () => {
   let converter: IAccountDocumentConverter;
   const now = new Date();
 
   beforeEach(() => {
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = accountDocumentConverterFactory();
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const name = 'Pénztárca';
@@ -78,9 +77,11 @@ describe('Account document converter', () => {
     it('should update document', () => {
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
-        $set: {
-          ...body,
-          expiresAt: addSeconds(expiresIn, now),
+        update: {
+          $set: {
+            ...body,
+            expiresAt: addSeconds(expiresIn, now),
+          },
         },
       }));
     });

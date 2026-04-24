@@ -9,7 +9,7 @@ describe('Create transfer transaction handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockCreateTransferTransactionService = jest.fn();
+    mockCreateTransferTransactionService = vi.fn();
     handlerFunction = handler(mockCreateTransferTransactionService);
   });
 

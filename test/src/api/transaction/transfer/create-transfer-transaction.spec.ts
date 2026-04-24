@@ -4,17 +4,27 @@ import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
+
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+
+const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
 
-describe('POST transaction/v1/transactions/transfer (transfer)', () => {
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest);
+
+test.describe('POST transaction/v1/transactions/transfer (transfer)', () => {
   let request: Transaction.TransferRequest;
   let accountDocument: Account.Document;
   let transferAccountDocument: Account.Document;
   let relatedDocumentIds: Pick<Transaction.TransferRequest, 'accountId' | 'transferAccountId'> ;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
     transferAccountDocument = accountDataFactory.document();
 
@@ -26,11 +36,10 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
     request = transferTransactionDataFactory.request(relatedDocumentIds);
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateTransferTransaction(request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestCreateTransferTransaction }) => {
+      const res = await requestCreateTransferTransaction(request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -38,27 +47,26 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateTransferTransaction(request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateTransferTransaction }) => {
+          const res = await requestCreateTransferTransaction(request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should create transaction', () => {
-          it('between non-loan accounts', () => {
-            cy.saveAccountDocuments([
-              accountDocument,
-              transferAccountDocument,
-            ])
-              .authenticate(userType)
-              .requestCreateTransferTransaction(request)
-              .expectCreatedResponse()
-              .validateTransactionTransferDocument(request);
+        test.describe('should create transaction', () => {
+          test('between non-loan accounts', async ({ requestCreateTransferTransaction, saveAccounts, getTransactionById }) => {
+            await saveAccounts(accountDocument, transferAccountDocument);
+            const res = await requestCreateTransferTransaction(request);
+            expect(res).toBeCreatedResponse();
+            const { transactionId } = await res.json() as Transaction.TransactionId;
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
           });
 
-          it('between a non-loan and a loan account', () => {
+          test('between a non-loan and a loan account', async ({ requestCreateTransferTransaction, saveAccounts, getTransactionById }) => {
             const loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -68,17 +76,14 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
               transferAccountId: getAccountId(loanAccountDocument),
             });
 
-            cy.saveAccountDocuments([
-              accountDocument,
-              loanAccountDocument,
-            ])
-              .authenticate(userType)
-              .requestCreateTransferTransaction(request)
-              .expectCreatedResponse()
-              .validateTransactionTransferDocument(request);
+            await saveAccounts(accountDocument, loanAccountDocument);
+            const res = await requestCreateTransferTransaction(request);
+            expect(res).toBeCreatedResponse();
+            const { transactionId } = await res.json() as Transaction.TransactionId;
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
           });
 
-          it('between two loan accounts', () => {
+          test('between two loan accounts', async ({ requestCreateTransferTransaction, saveAccounts, getTransactionById }) => {
             accountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -92,17 +97,14 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
               transferAccountId: getAccountId(transferAccountDocument),
             });
 
-            cy.saveAccountDocuments([
-              accountDocument,
-              transferAccountDocument,
-            ])
-              .authenticate(userType)
-              .requestCreateTransferTransaction(request)
-              .expectCreatedResponse()
-              .validateTransactionTransferDocument(request);
+            await saveAccounts(accountDocument, transferAccountDocument);
+            const res = await requestCreateTransferTransaction(request);
+            expect(res).toBeCreatedResponse();
+            const { transactionId } = await res.json() as Transaction.TransactionId;
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
           });
 
-          it('with payments between non-loan accounts', () => {
+          test('with payments between non-loan accounts', async ({ requestCreateTransferTransaction, saveAccounts, saveTransaction, getTransactionById }) => {
             const deferredTransactionDocument = deferredTransactionDataFactory.document({
               body: {
                 amount: -5000,
@@ -123,18 +125,15 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
               ],
             });
 
-            cy.saveAccountDocuments([
-              accountDocument,
-              transferAccountDocument,
-            ])
-              .saveTransactionDocument(deferredTransactionDocument)
-              .authenticate(userType)
-              .requestCreateTransferTransaction(request)
-              .expectCreatedResponse()
-              .validateTransactionTransferDocument(request);
+            await saveAccounts(accountDocument, transferAccountDocument);
+            await saveTransaction(deferredTransactionDocument);
+            const res = await requestCreateTransferTransaction(request);
+            expect(res).toBeCreatedResponse();
+            const { transactionId } = await res.json() as Transaction.TransactionId;
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
           });
 
-          it('with payments between a non-loan and a loan account', () => {
+          test('with payments between a non-loan and a loan account', async ({ requestCreateTransferTransaction, saveAccounts, saveTransaction, getTransactionById }) => {
             const loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -160,18 +159,15 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
               ],
             });
 
-            cy.saveAccountDocuments([
-              accountDocument,
-              loanAccountDocument,
-            ])
-              .saveTransactionDocument(deferredTransactionDocument)
-              .authenticate(userType)
-              .requestCreateTransferTransaction(request)
-              .expectCreatedResponse()
-              .validateTransactionTransferDocument(request);
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransaction(deferredTransactionDocument);
+            const res = await requestCreateTransferTransaction(request);
+            expect(res).toBeCreatedResponse();
+            const { transactionId } = await res.json() as Transaction.TransactionId;
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
           });
 
-          it('with payment amount max out by deferred transaction amount', () => {
+          test('with payment amount max out by deferred transaction amount', async ({ requestCreateTransferTransaction, saveAccounts, saveTransaction, getTransactionById }) => {
             const deferredTransactionDocument = deferredTransactionDataFactory.document({
               body: {
                 amount: -500,
@@ -192,230 +188,203 @@ describe('POST transaction/v1/transactions/transfer (transfer)', () => {
               ],
             });
 
-            cy.saveAccountDocuments([
-              accountDocument,
-              transferAccountDocument,
-            ])
-              .saveTransactionDocument(deferredTransactionDocument)
-              .authenticate(userType)
-              .requestCreateTransferTransaction(request)
-              .expectCreatedResponse()
-              .validateTransactionTransferDocument(request, [Math.abs(deferredTransactionDocument.amount)]);
+            await saveAccounts(accountDocument, transferAccountDocument);
+            await saveTransaction(deferredTransactionDocument);
+            const res = await requestCreateTransferTransaction(request);
+            expect(res).toBeCreatedResponse();
+            const { transactionId } = await res.json() as Transaction.TransactionId;
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId), [Math.abs(deferredTransactionDocument.amount)]);
           });
 
-          describe('without optional properties', () => {
-            it('description', () => {
+          test.describe('without optional properties', () => {
+            test('description', async ({ requestCreateTransferTransaction, saveAccounts, getTransactionById }) => {
               request = transferTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                transferAccountDocument,
-              ])
-                .authenticate(userType)
-                .requestCreateTransferTransaction(request)
-                .expectCreatedResponse()
-                .validateTransactionTransferDocument(request);
+              await saveAccounts(accountDocument, transferAccountDocument);
+              const res = await requestCreateTransferTransaction(request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('transferAmount', () => {
+            test('transferAmount', async ({ requestCreateTransferTransaction, saveAccounts, getTransactionById }) => {
               request = transferTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 transferAmount: undefined,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                transferAccountDocument,
-              ])
-                .authenticate(userType)
-                .requestCreateTransferTransaction(request)
-                .expectCreatedResponse()
-                .validateTransactionTransferDocument(request);
+              await saveAccounts(accountDocument, transferAccountDocument);
+              const res = await requestCreateTransferTransaction(request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
             });
           });
         });
 
-        describe('should return error', () => {
-          describe('if body', () => {
-            it('has additional properties', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  extra: 123,
-                } as any))
-                .expectBadRequestResponse()
-                .expectAdditionalProperty('data', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                extra: 123, 
+              } as any));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
             });
           });
 
-          describe('if amount', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  amount: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('amount', 'body');
+          test.describe('if amount', () => {
+            test('is missing', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                amount: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  amount: <any>'1',
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('amount', 'number', 'body');
+            test('is not number', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                amount: <any>'1', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
             });
           });
 
-          describe('if description', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  description: <any> 1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('description', 'string', 'body');
+          test.describe('if description', () => {
+            test('is not string', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                description: <any> 1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  description: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('description', 1, 'body');
+            test('is too short', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                description: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
-          describe('if issuedAt', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  issuedAt: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('issuedAt', 'body');
+          test.describe('if issuedAt', () => {
+            test('is missing', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                issuedAt: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'issuedAt');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  issuedAt: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('issuedAt', 'string', 'body');
+            test('is not string', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                issuedAt: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'issuedAt', 'string');
             });
 
-            it('is not date-time format', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  issuedAt: 'not-date-time',
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('issuedAt', 'date-time', 'body');
+            test('is not date-time format', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                issuedAt: 'not-date-time', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('body', 'issuedAt', 'date-time');
             });
           });
 
-          describe('if accountId', () => {
-            it('does not belong to any account', () => {
-              cy.saveAccountDocument(transferAccountDocument)
-                .authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  ...relatedDocumentIds,
-                  accountId: accountDataFactory.id(),
-                }))
-                .expectBadRequestResponse()
-                .expectMessage('No account found');
+          test.describe('if accountId', () => {
+            test('does not belong to any account', async ({ requestCreateTransferTransaction, saveAccount }) => {
+              await saveAccount(transferAccountDocument);
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                accountId: accountDataFactory.id(), 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('No account found');
             });
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  accountId: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('accountId', 'body');
+            test('is missing', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                accountId: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'accountId');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  accountId: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('accountId', 'string', 'body');
+            test('is not string', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                accountId: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'accountId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  accountId: accountDataFactory.id('not-mongo-id'),
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('accountId', 'body');
+            test('is not mongo id format', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                accountId: accountDataFactory.id('not-mongo-id'), 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'accountId');
             });
           });
 
-          describe('if transferAccountId', () => {
-            it('is the same as accountId', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  ...relatedDocumentIds,
-                  transferAccountId: getAccountId(accountDocument),
-                }))
-                .expectBadRequestResponse()
-                .expectMessage('Cannot transfer to same account');
+          test.describe('if transferAccountId', () => {
+            test('is the same as accountId', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                transferAccountId: getAccountId(accountDocument), 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Cannot transfer to same account');
             });
 
-            it('does not belong to any account', () => {
-              cy.saveAccountDocument(accountDocument)
-                .authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  ...relatedDocumentIds,
-                  transferAccountId: accountDataFactory.id(),
-                }))
-                .expectBadRequestResponse()
-                .expectMessage('No account found');
+            test('does not belong to any account', async ({ requestCreateTransferTransaction, saveAccount }) => {
+              await saveAccount(accountDocument);
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                transferAccountId: accountDataFactory.id(), 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('No account found');
             });
 
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  transferAccountId: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('transferAccountId', 'body');
+            test('is missing', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                transferAccountId: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'transferAccountId');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  transferAccountId: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('transferAccountId', 'string', 'body');
+            test('is not string', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                transferAccountId: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'transferAccountId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  transferAccountId: accountDataFactory.id('not-mongo-id'),
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('transferAccountId', 'body');
+            test('is not mongo id format', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                transferAccountId: accountDataFactory.id('not-mongo-id'), 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'transferAccountId');
             });
           });
 
-          describe('if transferAmount', () => {
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestCreateTransferTransaction(transferTransactionDataFactory.request({
-                  transferAmount: <any>'1',
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('transferAmount', 'number', 'body');
+          test.describe('if transferAmount', () => {
+            test('is not number', async ({ requestCreateTransferTransaction }) => {
+              const res = await requestCreateTransferTransaction(transferTransactionDataFactory.request({
+                transferAmount: <any>'1', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'transferAmount', 'number');
             });
           });
         });

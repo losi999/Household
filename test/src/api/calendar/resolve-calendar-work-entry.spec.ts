@@ -1,14 +1,30 @@
-import { entries, getCalendarEntryId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
-import { Calendar, Customer, Price } from '@household/shared/types/types';
+import { entries, getCalendarEntryId, getTransactionId } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/utils';
+import { Account, Calendar, Category, Customer, Price } from '@household/shared/types/types';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
-import { CalendarEntryResolutionStatus } from '@household/shared/enums';
+import { CalendarEntryResolutionStatus, SettingKey } from '@household/shared/enums';
+
+import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
+import { default as moment } from 'moment-timezone';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as settingDbTest } from '@household/test/fixtures/setting-db.fixture';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+
+const expect = mergeExpects(calendarApiExpect, apiExpect, paymentTransactionApiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
-describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
+const test = mergeTests(calendarApiTest, transactionDbTest, settingDbTest, priceDbTest, calendarEntryDbTest, customerDbTest);
+
+test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
   let request: Calendar.Entry.ResolutionRequest;
   let calendarPersonalEntryDocument: Calendar.Entry.Document;
   let calendarWorkEntryDocument: Calendar.Entry.Document;
@@ -16,7 +32,7 @@ describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
   let customerDocument: Customer.Document;
   let priceDocument: Price.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     customerDocument = customerDataFactory.document();
     priceDocument = priceDataFactory.document();
 
@@ -39,11 +55,10 @@ describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
     request = calendarEntryDataFactory.resolutionRequest();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestResolveCalendarWorkEntry(calendarEntryDataFactory.id(), request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestResolveCalendarWorkEntry }) => {
+      const res = await requestResolveCalendarWorkEntry(calendarEntryDataFactory.id(), request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -51,54 +66,81 @@ describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestResolveCalendarWorkEntry(calendarEntryDataFactory.id(), request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestResolveCalendarWorkEntry }) => {
+          const res = await requestResolveCalendarWorkEntry(calendarEntryDataFactory.id(), request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should update calendar work entry', () => {
-          it('with transfer payment', () => {
+        test.describe('should update calendar work entry', () => {
+          test('with transfer payment', async ({ requestResolveCalendarWorkEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {
             request = calendarEntryDataFactory.resolutionRequest({
               status: CalendarEntryResolutionStatus.PendingTransfer,
             });
 
-            cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
-              .authenticate(userType)
-              .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request)
-              .expectCreatedResponse()
-              .validateCalendarEntryDocumentResolved(calendarWorkEntryDocument, request);
+            await saveCustomer(customerDocument);   
+            await savePrice(priceDocument);
+            await saveCalendarEntry(calendarWorkEntryDocument);
+            const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
+            expect(res).toBeCreatedResponse();
+
+            expect(calendarWorkEntryDocument).toHaveBeenResolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)), request);
           });
 
-          it('with cash payment', () => {            
+          test('with cash payment', async ({ requestResolveCalendarWorkEntry, findTransactionById, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer, getSettingByKey }) => {            
             request = calendarEntryDataFactory.resolutionRequest({
               status: CalendarEntryResolutionStatus.Paid,
             });
+
+            await saveCustomer(customerDocument);       
+            await savePrice(priceDocument);
+            await saveCalendarEntry(calendarWorkEntryDocument);
+            const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
+            expect(res).toBeCreatedResponse();
+
+            const updatedCalendarEntryDocument = await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument));
+
+            const transactionId = updatedCalendarEntryDocument.resolution.status === CalendarEntryResolutionStatus.Paid ? getTransactionId(updatedCalendarEntryDocument.transaction) : undefined;
+
+            expect(calendarWorkEntryDocument).toHaveBeenResolved(updatedCalendarEntryDocument, request, transactionId);
             
-            cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
-              .authenticate(userType)
-              .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request)
-              .expectCreatedResponse()
-              .validateCalendarEntryDocumentResolved(calendarWorkEntryDocument, request);
+            const expectedIssuedAt = moment.tz(updatedCalendarEntryDocument.day, 'Europe/Budapest'); 
+            expectedIssuedAt.set({
+              hour: Math.floor(updatedCalendarEntryDocument.end / 4),
+              minute: (updatedCalendarEntryDocument.end % 4) * 15,
+            });
+
+            const paymentRequest = paymentTransactionDataFactory.request({
+              amount: (request as Calendar.Entry.PaidResolutionRequest).amount,
+              issuedAt: expectedIssuedAt.toISOString(),
+              description: calendarWorkEntryDocument.title,
+              accountId: (await getSettingByKey<Account.Id>(SettingKey.HairdressingIncomeAccount)).value,
+              categoryId: (await getSettingByKey<Category.Id>(SettingKey.HairdressingIncomeCategory)).value,
+            });
+            expect(paymentRequest).toHaveBeenSavedAsPaymentTransactionDocument(await findTransactionById(transactionId));
           });
 
-          it('with no show', () => {            
+          test('with no show', async ({ requestResolveCalendarWorkEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {            
             request = calendarEntryDataFactory.resolutionRequest({
               status: CalendarEntryResolutionStatus.NoShow,
             });
-            
-            cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
-              .authenticate(userType)
-              .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request)
-              .expectCreatedResponse()
-              .validateCalendarEntryDocumentResolved(calendarWorkEntryDocument, request);
+
+            await saveCustomer(customerDocument);           
+            await savePrice(priceDocument);    
+            await saveCalendarEntry(calendarWorkEntryDocument);
+            const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
+            expect(res).toBeCreatedResponse();
+
+            expect(calendarWorkEntryDocument).toHaveBeenResolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)), request);
           });
         });
 
-        describe('should return error', () => {    
-          it('if work entry is already resolved', () => {              
+        test.describe('should return error', () => {    
+          test('if work entry is already resolved', async ({ requestResolveCalendarWorkEntry, saveCalendarEntry }) => {              
             calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
               customer: customerDocument,
               resolution: {
@@ -106,111 +148,111 @@ describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
               },
             });
           
-            cy.saveCalendarEntryDocument(calendarWorkEntryDocument)
-              .authenticate(userType)
-              .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request)
-              .expectBadRequestResponse()
-              .expectMessage('Calendar entry is already resolved');
+            await saveCalendarEntry(calendarWorkEntryDocument);
+            const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Calendar entry is already resolved');
           });
 
-          it('if entry is personal', () => {              
-            cy.saveCalendarEntryDocument(calendarPersonalEntryDocument)
-              .authenticate(userType)
-              .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarPersonalEntryDocument), request)
-              .expectBadRequestResponse()
-              .expectMessage('Calendar entry must be of "work" type');
+          test('if entry is personal', async ({ requestResolveCalendarWorkEntry, saveCalendarEntry }) => {              
+            await saveCalendarEntry(calendarPersonalEntryDocument);
+            const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Calendar entry must be of "work" type');
           });
 
-          it('if entry is issue', () => {              
-            cy.saveCalendarEntryDocument(calendarIssueEntryDocument)
-              .authenticate(userType)
-              .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarIssueEntryDocument), request)
-              .expectBadRequestResponse()
-              .expectMessage('Calendar entry must be of "work" type');
+          test('if entry is issue', async ({ requestResolveCalendarWorkEntry, saveCalendarEntry }) => {              
+            await saveCalendarEntry(calendarIssueEntryDocument);
+            const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Calendar entry must be of "work" type');
+          });
+
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestResolveCalendarWorkEntry }) => {
+              const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), {
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+            
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
           });
           
-          describe('if status', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
-                  status: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('status', 'body');
+          test.describe('if status', () => {
+            test('is missing from body', async ({ requestResolveCalendarWorkEntry }) => {
+              const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
+                status: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'status');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
-                  status: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('status', 'string', 'body');
+            test('is not string', async ({ requestResolveCalendarWorkEntry }) => {
+              const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
+                status: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'status', 'string');
             });
 
-            it('is not a valid value', () => {
-              cy.authenticate(userType)
-                .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
-                  status: 'not-valid-enum' as any,
-                }))
-                .expectBadRequestResponse()
-                .expectNotConstantValue('status', 'body');
+            test('is not a valid value', async ({ requestResolveCalendarWorkEntry }) => {
+              const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
+                status: 'not-valid-enum' as any, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveConstantValueValidationError('body', 'status');
             });
           });
 
-          describe('if amount', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
-                  amount: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('amount', 'body');
+          test.describe('if amount', () => {
+            test('is missing from body', async ({ requestResolveCalendarWorkEntry }) => {
+              const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
+                amount: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
-                  amount: <any>'1',
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('amount', 'number', 'body');
+            test('is not number', async ({ requestResolveCalendarWorkEntry }) => {
+              const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
+                amount: <any>'1', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
             });
           });
 
-          describe('if delay', () => {
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
-                  delay: <any>'1',
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('delay', 'integer', 'body');
+          test.describe('if delay', () => {
+            test('is not integer', async ({ requestResolveCalendarWorkEntry }) => {
+              const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
+                delay: <any>'1', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'delay', 'integer');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
-                  delay: 0,
-                }))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('delay', 0, true, 'body');
+            test('is too small', async ({ requestResolveCalendarWorkEntry }) => {
+              const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
+                delay: 0, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'delay', 0);
             });
           });
 
-          describe('if calendarEntryId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestResolveCalendarWorkEntry(calendarEntryDataFactory.id('not-mongo-id'), calendarEntryDataFactory.resolutionRequest())
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('calendarEntryId', 'pathParameters');
+          test.describe('if calendarEntryId', () => {
+            test('is not mongo id', async ({ requestResolveCalendarWorkEntry }) => {
+              const res = await requestResolveCalendarWorkEntry(calendarEntryDataFactory.id('not-mongo-id'), calendarEntryDataFactory.resolutionRequest());
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'calendarEntryId');
             });
 
-            it('does not belong to any calendar entry', () => {
-              cy.authenticate(userType)
-                .requestResolveCalendarWorkEntry(calendarEntryDataFactory.id(), calendarEntryDataFactory.resolutionRequest())
-                .expectNotFoundResponse()
-                .expectMessage('No calendar entry found');
+            test('does not belong to any calendar entry', async ({ requestResolveCalendarWorkEntry }) => {
+              const res = await requestResolveCalendarWorkEntry(calendarEntryDataFactory.id(), calendarEntryDataFactory.resolutionRequest());
+              expect(res).toBeNotFoundResponse();
+              expect(res).toHaveMessage('No calendar entry found');
             });
           }); 
         });

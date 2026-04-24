@@ -1,13 +1,13 @@
 import { IRemoveCustomerFromBlacklistService, removeCustomerFromBlacklistServiceFactory } from '@household/api/functions/remove-customer-from-blacklist/remove-customer-from-blacklist.service';
-import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
+import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, MockService, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
 
 describe('Remove customer from blacklist service', () => {
   let service: IRemoveCustomerFromBlacklistService;
-  let mockCustomerService: Mock<ICustomerService>;
-  let mockCustomerDocumentConverter: Mock<ICustomerDocumentConverter>;
+  let mockCustomerService: MockService<ICustomerService>;
+  let mockCustomerDocumentConverter: MockService<ICustomerDocumentConverter>;
   beforeEach(() => {
     mockCustomerService = createMockService('findCustomerById', 'updateCustomers');
     mockCustomerDocumentConverter = createMockService('removeBlacklistedCustomer');
@@ -17,14 +17,14 @@ describe('Remove customer from blacklist service', () => {
 
   const customerIdA = testDataFactory.customer.id();
   const queriedCustomerA = testDataFactory.customer.document();
-  const documentUpdateA = createDocumentUpdate2({
+  const documentUpdateA = createDocumentUpdate({
     update: {
       $set: {
         update: 'A',
       },
     },
   });
-  const documentUpdateB = createDocumentUpdate2({
+  const documentUpdateB = createDocumentUpdate({
     update: {
       $set: {
         update: 'B',

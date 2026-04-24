@@ -1,13 +1,13 @@
 import { IListDeferredTransactionsService, listDeferredTransactionsServiceFactory } from '@household/api/functions/list-deferred-transactions/list-deferred-transactions.service';
 import { createDeferredTransactionDocument, createDeferredTransactionResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
 describe('List deferred transactions service', () => {
   let service: IListDeferredTransactionsService;
-  let mockTransactionService: Mock<ITransactionService>;
-  let mockTransactionDocumentConverter: Mock<IDeferredTransactionDocumentConverter>;
+  let mockTransactionService: MockService<ITransactionService>;
+  let mockTransactionDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockTransactionService = createMockService('listDeferredTransactions');

@@ -1,101 +1,111 @@
 import { Auth, User } from '@household/shared/types/types';
-import { userDataFactory } from './data-factory';
+import { userDataFactory } from '@household/test/api/user/data-factory';
 import { UserType } from '@household/shared/enums';
 
-describe('POST user/v1/users/{email}/confirm', () => {
+import { test as identityTest } from '@household/test/fixtures/identity.fixture';
+import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+
+const expect = mergeExpects(userApiExpect, apiExpect);
+const test = mergeTests(identityTest, userApiTest);
+
+test.describe('POST user/v1/users/{email}/confirm', () => {
   let pendingUser: User.Request & Auth.TemporaryPassword;
   let request: Auth.ConfirmUser.Request;
 
-  beforeEach(() => {
-    pendingUser = userDataFactory.pendindUser();
+  test.beforeEach(async () => {
+    pendingUser = userDataFactory.pendingUser();
     request = userDataFactory.confirmRequest({
       temporaryPassword: pendingUser.temporaryPassword,
     });
   });
 
-  afterEach(() => {
-    cy.deleteUser(pendingUser);
+  test.afterEach(async ({ deleteUser }) => {
+    await deleteUser(pendingUser);
   });
 
-  describe('called as anonymous', () => {
-    describe('should confirm user', () => {
-      it('with complete body', () => {
-        cy.createUser(pendingUser, UserType.Editor, true)
-          .authenticate('anonymous')
-          .requestConfirmUser(pendingUser.email, request)
-          .expectOkResponse()
-          .validateUserInCognito({
-            email: pendingUser.email,
-            password: request.password,
-          });
+  test.describe('called as anonymous', () => {
+    test.describe('should confirm user', () => {
+      test('with complete body', async ({ requestConfirmUser, createUser, getUser }) => {
+        await createUser(pendingUser, UserType.Editor, true);
+        const res = await requestConfirmUser(pendingUser.email, request);
+        expect(res).toBeOkResponse();
+
+        expect(await getUser(pendingUser)).toHaveBeenConfirmed();
       });
     });
 
-    describe('should return error', () => {
-      describe('if email', () => {
-        it('is not email', () => {
-          cy.authenticate('anonymous')
-            .requestConfirmUser('not-email', request)
-            .expectBadRequestResponse()
-            .expectWrongPropertyFormat('email', 'email', 'pathParameters');
+    test.describe('should return error', () => {
+      test.describe('if email', () => {
+        test('is not email', async ({ requestConfirmUser }) => {
+          const res = await requestConfirmUser('not-email', request);
+          expect(res).toBeBadRequestResponse();
+          expect(res).toHaveWrongFormatValidationError('pathParameters', 'email', 'email');
         });
       });
 
-      describe('if password', () => {
-        it('is missing from body', () => {
-          cy.authenticate('anonymous')
-            .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
-              password: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('password', 'body');
-        });
-
-        it('is not string', () => {
-          cy.authenticate('anonymous')
-            .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
-              password: 1 as any,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('password', 'string', 'body');
-        });
-
-        it('is too short', () => {
-          cy.authenticate('anonymous')
-            .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
-              password: 'asdfg',
-            }))
-            .expectBadRequestResponse()
-            .expectTooShortProperty('password', 6, 'body');
+      test.describe('if body', () => {
+        test('has additional properties', async ({ requestConfirmUser }) => {
+          const res = await requestConfirmUser(pendingUser.email, {
+            ...request,
+            extraProperty: 'extra',
+          } as any);
+        
+          expect(res).toBeBadRequestResponse();
+          expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
         });
       });
 
-      describe('if temporaryPassword', () => {
-        it('is missing from body', () => {
-          cy.authenticate('anonymous')
-            .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
-              temporaryPassword: undefined,
-            }))
-            .expectBadRequestResponse()
-            .expectRequiredProperty('temporaryPassword', 'body');
+      test.describe('if password', () => {
+        test('is missing from body', async ({ requestConfirmUser }) => {
+          const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
+            password: undefined, 
+          }));
+          expect(res).toBeBadRequestResponse();
+          expect(res).toHaveRequiredPropertyValidationError('body', 'password');
         });
 
-        it('is not string', () => {
-          cy.authenticate('anonymous')
-            .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
-              temporaryPassword: 1 as any,
-            }))
-            .expectBadRequestResponse()
-            .expectWrongPropertyType('temporaryPassword', 'string', 'body');
+        test('is not string', async ({ requestConfirmUser }) => {
+          const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
+            password: 1 as any, 
+          }));
+          expect(res).toBeBadRequestResponse();
+          expect(res).toHaveWrongTypeValidationError('body', 'password', 'string');
         });
 
-        it('is too short', () => {
-          cy.authenticate('anonymous')
-            .requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
-              temporaryPassword: 'asdfg',
-            }))
-            .expectBadRequestResponse()
-            .expectTooShortProperty('temporaryPassword', 6, 'body');
+        test('is too short', async ({ requestConfirmUser }) => {
+          const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
+            password: 'asdfg', 
+          }));
+          expect(res).toBeBadRequestResponse();
+          expect(res).toHaveTooShortValidationError('body', 'password', 6);
+        });
+      });
+
+      test.describe('if temporaryPassword', () => {
+        test('is missing from body', async ({ requestConfirmUser }) => {
+          const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
+            temporaryPassword: undefined, 
+          }));
+          expect(res).toBeBadRequestResponse();
+          expect(res).toHaveRequiredPropertyValidationError('body', 'temporaryPassword');
+        });
+
+        test('is not string', async ({ requestConfirmUser }) => {
+          const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
+            temporaryPassword: 1 as any, 
+          }));
+          expect(res).toBeBadRequestResponse();
+          expect(res).toHaveWrongTypeValidationError('body', 'temporaryPassword', 'string');
+        });
+
+        test('is too short', async ({ requestConfirmUser }) => {
+          const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
+            temporaryPassword: 'asdfg', 
+          }));
+          expect(res).toBeBadRequestResponse();
+          expect(res).toHaveTooShortValidationError('body', 'temporaryPassword', 6);
         });
       });
     });

@@ -2,7 +2,7 @@ import { settingDocumentConverter } from '@household/shared/dependencies/convert
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Setting } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
-import { UpdateQuery } from 'mongoose';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { SettingKey } from '@household/shared/enums';
 
 export const settingDataFactory = (() => {
@@ -13,8 +13,8 @@ export const settingDataFactory = (() => {
     };
   };
 
-  const createSettingUpdate: DataFactoryFunction<Setting.Request, UpdateQuery<Setting.Document>> = (req) => {
-    return settingDocumentConverter.update(createSettingRequest(req), Cypress.env('EXPIRES_IN'));
+  const createSettingUpdate: DataFactoryFunction<Setting.Request, DocumentUpdate<Setting.Document>> = (req) => {
+    return settingDocumentConverter.update(createSettingRequest(req), Number(process.env.EXPIRES_IN));
   };
 
   const createSettingDocument = (settingKey: SettingKey, req: Setting.Request): Setting.Document => {

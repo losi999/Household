@@ -8,7 +8,7 @@ describe('Delete recipient handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockDeleteRecipientService = jest.fn();
+    mockDeleteRecipientService = vi.fn();
     handlerFunction = handler(mockDeleteRecipientService);
   });
 

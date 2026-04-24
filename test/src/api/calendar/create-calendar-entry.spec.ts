@@ -1,29 +1,39 @@
 import { entries, getCustomerId, getPriceId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
+import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+
+const expect = mergeExpects(calendarApiExpect, apiExpect);
+
 const permissionMap = allowUsers('hairdresser');
 
-describe('POST /calendar/v1/entries', () => {
+const test = mergeTests(calendarApiTest, priceDbTest, calendarEntryDbTest, customerDbTest);
+
+test.describe('POST /calendar/v1/entries', () => {
   let request: Calendar.Entry.Request;
   let customerDocument: Customer.Document;
   let priceDocument: Price.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     customerDocument = customerDataFactory.document();
     priceDocument = priceDataFactory.document();
             
     request = calendarEntryDataFactory.request.personal();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateCalendarEntry(request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestCreateCalendarEntry }) => {
+      const res = await requestCreateCalendarEntry(request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -31,46 +41,51 @@ describe('POST /calendar/v1/entries', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateCalendarEntry(request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateCalendarEntry }) => {
+          const res = await requestCreateCalendarEntry(request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should create calendar', () => {
-          it('personal entry', () => {
+        test.describe('should create calendar', () => {
+          test('personal entry', async ({ requestCreateCalendarEntry, getCalendarEntryById }) => {
             request = calendarEntryDataFactory.request.personal();
-            cy.authenticate(userType)
-              .requestCreateCalendarEntry(request)
-              .expectCreatedResponse()
-              .validateCalendarEntryDocument(request);
+            const res = await requestCreateCalendarEntry(request);
+            expect(res).toBeCreatedResponse();
+
+            const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
 
-          it('issue entry', () => {
+          test('issue entry', async ({ requestCreateCalendarEntry, getCalendarEntryById }) => {
             request = calendarEntryDataFactory.request.issue();
-            cy.authenticate(userType)
-              .requestCreateCalendarEntry(request)
-              .expectCreatedResponse()
-              .validateCalendarEntryDocument(request);
+            const res = await requestCreateCalendarEntry(request);
+            expect(res).toBeCreatedResponse();
+            
+            const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
 
-          it('work entry without prices', () => {
+          test('work entry without prices', async ({ requestCreateCalendarEntry, getCalendarEntryById, saveCustomer }) => {
             request = calendarEntryDataFactory.request.work({
               body: {
                 customerId: getCustomerId(customerDocument),
               },
             });
             
-            cy.saveCustomerDocument(customerDocument)
-              .authenticate(userType)
-              .requestCreateCalendarEntry(request)
-              .expectCreatedResponse()
-              .validateCalendarEntryDocument(request);
+            await saveCustomer(customerDocument);
+            const res = await requestCreateCalendarEntry(request);
+            expect(res).toBeCreatedResponse();
+
+            const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
 
-          it('work entry with prices', () => {
+          test('work entry with prices', async ({ requestCreateCalendarEntry, savePrice, getCalendarEntryById, saveCustomer }) => {
 
             request = calendarEntryDataFactory.request.work({
               body: {
@@ -86,522 +101,495 @@ describe('POST /calendar/v1/entries', () => {
               },
             });
             
-            cy.saveCustomerDocument(customerDocument)
-              .savePriceDocument(priceDocument)
-              .authenticate(userType)
-              .requestCreateCalendarEntry(request)
-              .expectCreatedResponse()
-              .validateCalendarEntryDocument(request);
+            await saveCustomer(customerDocument);
+            await savePrice(priceDocument);
+            const res = await requestCreateCalendarEntry(request);
+            expect(res).toBeCreatedResponse();
+            
+            const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
           });
         });
 
-        describe('should return error', () => {    
-          describe('if day', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    day: undefined,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('day', 'body');
+        test.describe('should return error', () => {    
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry({
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+          
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+          test.describe('if day', () => {
+            test('is missing from body', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  day: undefined, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'day');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    day: <any>1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('day', 'string', 'body');
+            test('is not string', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  day: <any>1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'day', 'string');
             });
 
-            it('is not date format', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    day: 'not-date',
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('day', 'date', 'body');
-            });
-          }); 
-
-          describe('if title', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    title: undefined,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('title', 'body');
-            });
-
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    title: <any>1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('title', 'string', 'body');
-            });
-
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    title: '',
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('title', 1, 'body');
+            test('is not date format', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  day: 'not-date', 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('body', 'day', 'date');
             });
           }); 
 
-          describe('if description', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    description: <any>1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('description', 'string', 'body');
+          test.describe('if title', () => {
+            test('is missing from body', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  title: undefined, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'title');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    description: '',
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('description', 1, 'body');
+            test('is not string', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  title: <any>1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'title', 'string');
+            });
+
+            test('is too short', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  title: '', 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'title', 1);
+            });
+          }); 
+
+          test.describe('if description', () => {
+            test('is not string', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  description: <any>1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
+            });
+
+            test('is too short', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  description: '', 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
           
-          describe('if entryType', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    entryType: undefined,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('entryType', 'body');
+          test.describe('if entryType', () => {
+            test('is missing from body', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  entryType: undefined, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'entryType');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    entryType: <any>1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('entryType', 'string', 'body');
+            test('is not string', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  entryType: <any>1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'entryType', 'string');
             });
 
-            it('is not a valid constant value', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    entryType: 'not-valid-const' as any,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectNotConstantValue('entryType', 'body');
+            test('is not a valid constant value', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  entryType: 'not-valid-const' as any, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveConstantValueValidationError('body', 'entryType');
             });
           });
 
-          describe('if start', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    start: undefined,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('start', 'body');
+          test.describe('if start', () => {
+            test('is missing from body', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  start: undefined, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'start');
             });
 
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    start: 1.1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('start', 'integer', 'body');
+            test('is not integer', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  start: 1.1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'start', 'integer');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    start: -1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('start', 0, false, 'body');
+            test('is too small', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  start: -1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooSmallValidationError('body', 'start', 0);
             });
 
-            it('is too large', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    start: 97,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooLargeNumberProperty('start', 96, false, 'body');
+            test('is too large', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  start: 97, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooLargeValidationError('body', 'start', 96);
             });
           });
 
-          describe('if end', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    end: undefined,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('end', 'body');
+          test.describe('if end', () => {
+            test('is missing from body', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  end: undefined, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'end');
             });
 
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    end: 1.1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('end', 'integer', 'body');
+            test('is not integer', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  end: 1.1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'end', 'integer');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    start: 20,
-                    end: 10,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('end', 0, true, 'body');
+            test('is too small', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  start: 20,
+                  end: 10, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'end', 20);
             });
 
-            it('is too large', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    end: 97,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooLargeNumberProperty('end', 96, false, 'body');
+            test('is too large', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  end: 97, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooLargeValidationError('body', 'end', 96);
             });
           }); 
           
-          describe('if customerId', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    customerId: undefined,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('customerId', 'body');
+          test.describe('if customerId', () => {
+            test('is missing from body', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: undefined, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'customerId');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    customerId: <any>1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('customerId', 'string', 'body');
+            test('is not string', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: <any>1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'customerId', 'string');
             });
 
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    customerId: 'not-mongo-id' as Customer.Id,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('customerId', 'body');
+            test('is not mongo id', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: 'not-mongo-id' as Customer.Id, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'customerId');
             });
 
-            it('does not belong to any customer', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    customerId: customerDataFactory.id(),
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectMessage('No customer found');
+            test('does not belong to any customer', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: customerDataFactory.id(), 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('No customer found');
             });
           }); 
 
-          describe('if prices', () => {
-            it('is not array', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry({
-                  ...calendarEntryDataFactory.request.work(),
-                  prices: <any>{},
-                })
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('prices', 'array', 'body');
+          test.describe('if prices', () => {
+            test('is not array', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry({
+                ...calendarEntryDataFactory.request.work(),
+                prices: <any>{}, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'prices', 'array');
             });
 
-            it('has too few items', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry({                  
-                  ...calendarEntryDataFactory.request.work(),
-                  prices: [],
-                })
-                .expectBadRequestResponse()
-                .expectTooFewItemsProperty('prices', 1, 'body');
+            test('has too few items', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry({
+                ...calendarEntryDataFactory.request.work(),
+                prices: [], 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooFewItemsValidationError('body', 'prices', 1);
             });
           });
 
-          describe('if prices[0]', () => {
-            it('is not object', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry({                  
-                  ...calendarEntryDataFactory.request.work(),
-                  prices: [1] as any,
-                })
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('prices/0', 'object', 'body');
+          test.describe('if prices[0]', () => {
+            test('is not object', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry({
+                ...calendarEntryDataFactory.request.work(),
+                prices: [1] as any, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'prices/0', 'object');
             });
 
-            it('has additional properties', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry({                  
-                  ...calendarEntryDataFactory.request.work(),
-                  prices: [
+            test('has additional properties', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry({
+                ...calendarEntryDataFactory.request.work(),
+                prices: [
+                  {
+                    extra: 1, 
+                  }, 
+                ] as any, 
+              });
+              expect(res).toBeBadRequestResponse(); 
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'prices/0', 'extra');
+            });
+          });
+
+          test.describe('if prices[0].priceId', () => {
+            test('is missing', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  listed: [
                     {
-                      extra: 1,
-                    },
-                  ] as any,
-                })
-                .expectBadRequestResponse()
-                .expectAdditionalProperty('prices/0', 'body');
+                      priceId: undefined, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'priceId');
+            });
+
+            test('is not string', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  listed: [
+                    {
+                      priceId: <any>1, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'priceId', 'string');
+            });
+
+            test('is not mongo id', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  listed: [
+                    {
+                      priceId: <any>'not mongo id', 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'priceId');
+            });
+
+            test('does not belong to any price', async ({ requestCreateCalendarEntry, savePrice, saveCustomer }) => {
+              await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: getCustomerId(customerDocument), 
+                },
+                prices: {
+                  listed: [
+                    {
+                      priceId: priceDataFactory.id(), 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Some of the prices are not found');
             });
           });
 
-          describe('if prices[0].priceId', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {                  
-                    listed: [
-                      {
-                        priceId: undefined,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('priceId', 'body');
+          test.describe('if prices[0].quantity', () => {
+            test('is missing', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  listed: [
+                    {
+                      quantity: undefined, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'quantity');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {                  
-                    listed: [
-                      {
-                        priceId: <any>1,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('priceId', 'string', 'body');
+            test('is not integer', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  listed: [
+                    {
+                      quantity: <any>1.1, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'integer');
             });
 
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {                  
-                    listed: [
-                      {
-                        priceId: <any>'not mongo id',
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('priceId', 'body');
-            });
-
-            it('does not belong to any price', () => {
-              cy.saveCustomerDocument(customerDocument)
-                .savePriceDocument(priceDocument)
-                .authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  body: {
-                    customerId: getCustomerId(customerDocument),
-                  },
-                  prices: {                  
-                    listed: [
-                      {
-                        priceId: priceDataFactory.id(),
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectMessage('Some of the prices are not found');
+            test('is too small', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  listed: [
+                    {
+                      quantity: 0, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
             });
           });
 
-          describe('if prices[0].quantity', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {                  
-                    listed: [
-                      {
-                        quantity: undefined,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('quantity', 'body');
+          test.describe('if prices[0].name', () => {
+            test('is missing', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  custom: [
+                    {
+                      name: undefined, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {                  
-                    listed: [
-                      {
-                        quantity: <any>1.1,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('quantity', 'integer', 'body');
+            test('is not string', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  custom: [
+                    {
+                      name: <any>1, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {                  
-                    listed: [
-                      {
-                        quantity: 0,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('quantity', 0, true, 'body');
+            test('is too short', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  custom: [
+                    {
+                      name: '', 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
           });
 
-          describe('if prices[0].name', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {
-                    custom: [
-                      {
-                        name: undefined,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
+          test.describe('if prices[0].amount', () => {
+            test('is missing', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  custom: [
+                    {
+                      amount: undefined, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {
-                    custom: [
-                      {
-                        name: <any>1,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
-            });
-
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {
-                    custom: [
-                      {
-                        name: '',
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 0, 'body');
-            });
-          });
-
-          describe('if prices[0].amount', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {
-                    custom: [
-                      {
-                        amount: undefined,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('amount', 'body');
-            });
-
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
-                  prices: {
-                    custom: [
-                      {
-                        amount: <any>1.1,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('amount', 'integer', 'body');
+            test('is not integer', async ({ requestCreateCalendarEntry }) => {
+              const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
+                prices: {
+                  custom: [
+                    {
+                      amount: <any>1.1, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'integer');
             });
           });
         });

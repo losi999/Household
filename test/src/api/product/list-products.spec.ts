@@ -1,20 +1,30 @@
-import { default as schema } from '@household/test/api/schemas/product-response-list';
+import { default as schema } from '@household/test/schemas/product-response-list';
 import { Category, Product } from '@household/shared/types/types';
-import { productDataFactory } from './data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { CategoryType } from '@household/shared/enums';
-import { forbidUsers } from '@household/test/api/utils';
-import { entries } from '@household/shared/common/utils';
+import { forbidUsers } from '@household/test/utils';
+import { entries, getCategoryId } from '@household/shared/common/utils';
+
+import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+
+const expect = mergeExpects(productApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
 
-describe('GET /product/v1/products', () => {
+const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
+
+test.describe('GET /product/v1/products', () => {
   let productDocument1: Product.Document;
   let productDocument2: Product.Document;
   let categoryDocument1: Category.Document;
   let categoryDocument2: Category.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     categoryDocument1 = categoryDataFactory.document({
       body: {
         categoryType: CategoryType.Inventory,
@@ -34,11 +44,10 @@ describe('GET /product/v1/products', () => {
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetProductList()
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestListProducts }) => {
+      const res = await requestListProducts();
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -46,37 +55,25 @@ describe('GET /product/v1/products', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetProductList()
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestListProducts }) => {
+          const res = await requestListProducts();
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should get a list of products', () => {
-          cy.saveProductDocuments([
-            productDocument1,
-            productDocument2,
-          ])
-            .saveCategoryDocuments([
-              categoryDocument1,
-              categoryDocument2,
-            ])
-            .authenticate(userType)
-            .requestGetProductList()
-            .expectOkResponse()
-            .expectValidResponseSchema(schema)
-            .validateProductListResponse([
-              {
-                fullName: categoryDocument1.name,
-                products: [productDocument1],
-              },
-              {
-                fullName: categoryDocument2.name,
-                products: [productDocument2],
-              },
-            ]);
+        test('should get a list of products', async ({ requestListProducts, saveCategories, saveProducts }) => {
+          await saveProducts(productDocument1, productDocument2);
+          await saveCategories(categoryDocument1, categoryDocument2);
+          const res = await requestListProducts();
+          expect(res).toBeOkResponse();
+          expect(res).toMatchSchema(schema);
+
+          expect(res).toContainMatchingProductDocument(productDocument1, getCategoryId(categoryDocument1));
+          expect(res).toContainMatchingProductDocument(productDocument2, getCategoryId(categoryDocument2));
         });
       }
     });

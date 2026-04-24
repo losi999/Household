@@ -1,11 +1,11 @@
 import { createUserServiceFactory, ICreateUserService } from '@household/api/functions/create-user/create-user.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Mock, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { User } from '@household/shared/types/types';
 
 describe('Create user service', () => {
   let service: ICreateUserService;
-  let mockIdentityService: Mock<IIdentityService>;
+  let mockIdentityService: MockService<IIdentityService>;
 
   beforeEach(() => {
     mockIdentityService = createMockService<IIdentityService>('createUser');

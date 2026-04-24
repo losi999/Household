@@ -1,12 +1,12 @@
 import { IMergeProjectsService, mergeProjectsServiceFactory } from '@household/api/functions/merge-projects/merge-projects.service';
 import { createProjectDocument } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProjectId } from '@household/shared/common/utils';
 import { IProjectService } from '@household/shared/services/project-service';
 
 describe('Merge project service', () => {
   let service: IMergeProjectsService;
-  let mockProjectService: Mock<IProjectService>;
+  let mockProjectService: MockService<IProjectService>;
 
   beforeEach(() => {
     mockProjectService = createMockService('findProjectsByIds', 'mergeProjects');

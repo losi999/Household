@@ -1,6 +1,6 @@
 import { ICreateProductService, createProductServiceFactory } from '@household/api/functions/create-product/create-product.service';
 import { createProductRequest, createProductDocument, createCategoryDocument } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { CategoryType } from '@household/shared/enums';
@@ -9,9 +9,9 @@ import { IProductService } from '@household/shared/services/product-service';
 
 describe('Create product service', () => {
   let service: ICreateProductService;
-  let mockProductService: Mock<IProductService>;
-  let mockCategoryService: Mock<ICategoryService>;
-  let mockProductDocumentConverter: Mock<IProductDocumentConverter>;
+  let mockProductService: MockService<IProductService>;
+  let mockCategoryService: MockService<ICategoryService>;
+  let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
 
   beforeEach(() => {
     mockProductService = createMockService('saveProduct');

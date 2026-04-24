@@ -1,4 +1,4 @@
-import { generateMongoId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, createDate, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -7,7 +7,7 @@ import { IProductDocumentConverter } from '@household/shared/converters/product-
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
-import { Dictionary, Unset } from '@household/shared/types/common';
+import { Dictionary, DocumentUpdate, Unset } from '@household/shared/types/common';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Types, UpdateQuery } from 'mongoose';
 
@@ -27,7 +27,7 @@ export interface ISplitTransactionDocumentConverter {
     recipient: Recipient.Document;
     projects: Dictionary<Project.Document>;
     products: Dictionary<Product.Document>;
-  }, expiresIn: number): UpdateQuery<Transaction.Document>;
+  }, expiresIn: number): DocumentUpdate<Transaction.Document>;
   toResponse(document: Transaction.SplitDocument): Transaction.SplitResponse;
   toResponseList(documents: Transaction.SplitDocument[]): Transaction.SplitResponse[];
 }
@@ -115,67 +115,69 @@ export const splitTransactionDocumentConverterFactory = (
       };
 
       return {
-        $unset: {
-          ...defaultUnset,
-          ...Object.entries(optionalSet).reduce((accumulator, [
-            key,
-            value,
-          ]) => {
-            if (value) {
-              return accumulator;
-            }
+        update: {
+          $unset: {
+            ...defaultUnset,
+            ...Object.entries(optionalSet).reduce((accumulator, [
+              key,
+              value,
+            ]) => {
+              if (value) {
+                return accumulator;
+              }
 
-            return {
-              ...accumulator,
-              [key]: true,
-            };
-          }, {}),
-        },
-        $set: {
-          amount,
-          account: accounts[accountId],
-          recipient,
-          transactionType,
-          issuedAt: new Date(issuedAt),
-          expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
-          splits: splits?.map((s) => createSplitDocumentItem(s, categories[s.categoryId], projects[s.projectId], products[s.productId])) ?? [],
-          deferredSplits: loans?.map((s) => {
-            const category = categories[s.categoryId];
-
-            const deferredDocument = deferredTransactionDocumentConverter.create({
-              body: {
-                ...s,
-                accountId: accountId,
-                issuedAt: undefined,
-                recipientId: undefined,
-              },
-              category,
-              ownerAccount: accounts[s.loanAccountId],
-              payingAccount: accounts[accountId],
-              product: products[s.productId],
-              project: projects[s.projectId],
-              recipient,
-            }, expiresIn);
-
-            if (s.transactionId) {
-              deferredDocument._id = new Types.ObjectId(s.transactionId);
-            }
-
-            return deferredDocument;
-          }) ?? [],
-          ...Object.entries(optionalSet).reduce((accumulator, [
-            key,
-            value,
-          ]) => {
-            if (value) {
               return {
                 ...accumulator,
-                [key]: value,
+                [key]: true,
               };
-            }
+            }, {}),
+          },
+          $set: {
+            amount,
+            account: accounts[accountId],
+            recipient,
+            transactionType,
+            issuedAt: new Date(issuedAt),
+            expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
+            splits: splits?.map((s) => createSplitDocumentItem(s, categories[s.categoryId], projects[s.projectId], products[s.productId])) ?? [],
+            deferredSplits: loans?.map((s) => {
+              const category = categories[s.categoryId];
 
-            return accumulator;
-          }, {}),
+              const deferredDocument = deferredTransactionDocumentConverter.create({
+                body: {
+                  ...s,
+                  accountId: accountId,
+                  issuedAt: undefined,
+                  recipientId: undefined,
+                },
+                category,
+                ownerAccount: accounts[s.loanAccountId],
+                payingAccount: accounts[accountId],
+                product: products[s.productId],
+                project: projects[s.projectId],
+                recipient,
+              }, expiresIn);
+
+              if (s.transactionId) {
+                deferredDocument._id = new Types.ObjectId(s.transactionId);
+              }
+
+              return deferredDocument;
+            }) ?? [],
+            ...Object.entries(optionalSet).reduce((accumulator, [
+              key,
+              value,
+            ]) => {
+              if (value) {
+                return {
+                  ...accumulator,
+                  [key]: value,
+                };
+              }
+
+              return accumulator;
+            }, {}),
+          },
         },
       };
     },

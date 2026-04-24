@@ -8,7 +8,7 @@ describe('Login handler', () => {
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockLoginService = jest.fn();
+    mockLoginService = vi.fn();
 
     apiHandler = handler(mockLoginService);
   });

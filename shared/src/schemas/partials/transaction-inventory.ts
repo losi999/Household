@@ -6,7 +6,7 @@ import { default as quantity } from '@household/shared/schemas/partials/transact
 const schema: StrictJSONSchema7<Transaction.Quantity & Product.ProductId> = {
   type: 'object',
   additionalProperties: false,
-  dependentRequired: {
+  dependencies: {
     productId: ['quantity'],
     quantity: ['productId'],
   },

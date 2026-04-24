@@ -19,7 +19,8 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
       return {
         amount: p['Összeg'],
         description: createDescription(p, 'Forgalom típusa', 'Ellenoldali név', 'Közlemény'),
-        issuedAt: moment((p['Tranzakció időpontja'] as Date).toISOString().replace('Z', '')).toDate(),
+        issuedAt: moment((p['Tranzakció időpontja'] as Date).toISOString().replace('Z', '')).millisecond(0)
+          .toDate(),
       };
     }));
   };
@@ -31,7 +32,8 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
       return {
         amount: p['Amount'] - p['Fee'],
         description: createDescription(p, 'Type', 'Description', 'Currency'),
-        issuedAt: moment((p['Started Date'] as Date).toISOString().replace('Z', '')).toDate(),
+        issuedAt: moment((p['Started Date'] as Date).toISOString().replace('Z', '')).millisecond(0)
+          .toDate(),
       };
     }));
   };
@@ -43,11 +45,13 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
 
     return parsed.map((p => {
 
-      const date = p['Tranzakció dátuma és ideje'] ? moment(p['Tranzakció dátuma és ideje'], 'YYYY.MM.DD HH:mm:ss').toDate() : moment((p['Dátum'] as Date).toISOString().replace('Z', '')).toDate();
+      const date = p['Tranzakció dátuma és ideje'] ? moment(p['Tranzakció dátuma és ideje'], 'YYYY.MM.DD HH:mm:ss') : moment((p['Dátum'] as Date).toISOString().replace('Z', ''));
+      
       return {
         amount: p['Összeg'],
         description: createDescription(p, 'Partner név', 'Közlemény', 'Kategória'),
-        issuedAt: date,
+        issuedAt: date.millisecond(0)
+          .toDate(),
       };
     }));
   };

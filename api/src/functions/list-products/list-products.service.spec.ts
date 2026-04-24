@@ -1,13 +1,13 @@
 import { IListProductsService, listProductsServiceFactory } from '@household/api/functions/list-products/list-products.service';
 import { createCategoryDocument, createProductDocument, createProductGroupedResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { IProductService } from '@household/shared/services/product-service';
 
 describe('List products service', () => {
   let service: IListProductsService;
-  let mockProductService: Mock<IProductService>;
-  let mockProductDocumentConverter: Mock<IProductDocumentConverter>;
+  let mockProductService: MockService<IProductService>;
+  let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
 
   beforeEach(() => {
     mockProductService = createMockService('listProducts');

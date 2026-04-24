@@ -1,14 +1,14 @@
 import { IUpdateCategoryService, updateCategoryServiceFactory } from '@household/api/functions/update-category/update-category.service';
 import { createCategoryDocument, createCategoryRequest, createDocumentUpdate } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 
 describe('Update category service', () => {
   let service: IUpdateCategoryService;
-  let mockCategoryService: Mock<ICategoryService>;
-  let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
+  let mockCategoryService: MockService<ICategoryService>;
+  let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
 
   beforeEach(() => {
     mockCategoryService = createMockService('findCategoryById', 'updateCategory');
@@ -21,9 +21,7 @@ describe('Update category service', () => {
   const queriedDocument = createCategoryDocument();
   const categoryId = getCategoryId(queriedDocument);
   const queriedParentCategory = createCategoryDocument();
-  const updateQuery = createDocumentUpdate({
-    name: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
 
   describe('should return', () => {
     it('if parent is given', async () => {

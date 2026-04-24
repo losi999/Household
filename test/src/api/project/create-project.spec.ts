@@ -1,120 +1,141 @@
-import { Project } from '@household/shared/types/types';
-import { projectDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
 import { entries } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/utils';
+import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { projectDataFactory } from '@household/test/api/project/data-factory';
+import { Project } from '@household/shared/types/types';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = allowUsers('editor');
 
-describe('POST project/v1/projects', () => {
-  let request: Project.Request;
+const expect = mergeExpects(projectApiExpect, apiExpect);
 
-  beforeEach(() => {
-    request = projectDataFactory.request();
+const test = mergeTests(projectApiTest, projectDbTest);
+
+test.describe('POST /project/v1/projects', () => {
+  let req: Project.Request;
+
+  test.beforeEach(async () => {
+    req = projectDataFactory.request();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateProject(request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestCreateProject }) => {
+      const res = await requestCreateProject(req);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
-  entries(permissionMap).forEach(([
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateProject(request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateProject }) => {
+          const res = await requestCreateProject(req);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should create project', () => {
-          it('with complete body', () => {
-            cy.authenticate(userType)
-              .requestCreateProject(request)
-              .expectCreatedResponse()
-              .validateProjectDocument(request);
+        test.describe('should create project', () => {
+          test('with complete body', async ({ requestCreateProject, findProjectById }) => {
+            const res = await requestCreateProject(req);
+            expect(res).toBeCreatedResponse();
+
+            const { projectId } = (await res.json()) as Project.ProjectId;
+            expect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
           });
 
-          describe('without optional property in body', () => {
-            it('description', () => {
-              request = projectDataFactory.request({
+          test.describe('without optional property in body', () => {
+            test('description', async ({ requestCreateProject, findProjectById }) => {
+              req = projectDataFactory.request({
                 description: undefined,
               });
 
-              cy.authenticate(userType)
-                .requestCreateProject(request)
-                .expectCreatedResponse()
-                .validateProjectDocument(request);
+              const res = await requestCreateProject(req);
+              expect(res).toBeCreatedResponse();
+              
+              const { projectId } = (await res.json()) as Project.ProjectId;
+              expect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
             });
           });
         });
 
-        describe('should return error', () => {
-          describe('if name', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateProject(projectDataFactory.request({
-                  name: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
-            });
-
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateProject(projectDataFactory.request({
-                  name: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
-            });
-
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateProject(projectDataFactory.request({
-                  name: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 1, 'body');
-            });
-
-            it('is already in use by a different project', () => {
-              const projectDocument = projectDataFactory.document(request);
-
-              cy.saveProjectDocument(projectDocument)
-                .authenticate(userType)
-                .requestCreateProject(request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate project name');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateProject }) => {
+              const res = await requestCreateProject({
+                ...req,
+                extraProperty: 'extra',
+              } as any);
+  
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 
-          describe('if description', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateProject(projectDataFactory.request({
-                  description: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('description', 'string', 'body');
+          test.describe('if name', () => {
+            test('is missing from body', async ({ requestCreateProject }) => {
+              const res = await requestCreateProject(projectDataFactory.request({
+                name: undefined,
+              }));
+
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
+            });
+            
+            test('is not string', async({ requestCreateProject }) => {
+              
+              const res = await requestCreateProject(projectDataFactory.request({
+                name: <any>1,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateProject(projectDataFactory.request({
-                  description: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('description', 1, 'body');
+            test('is too short', async ({ requestCreateProject }) => {
+              const res = await requestCreateProject(projectDataFactory.request({
+                name: '',
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
+            });
+
+            test('is already in use by a different project', async ({ requestCreateProject, saveProject }) => {
+              const projectDocument = projectDataFactory.document(req);
+
+              await saveProject(projectDocument);
+
+              const res = await requestCreateProject(req);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate project name');
+            });
+          });
+
+          test.describe('if description', () => {
+            test('is not string', async({ requestCreateProject }) => {
+              const res = await requestCreateProject(projectDataFactory.request({
+                description: <any>1,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string'); 
+            });
+
+            test('is too short', async ({ requestCreateProject }) => {
+              const res = await requestCreateProject(projectDataFactory.request({
+                description: '',
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
         });
       }
     });
-  });
+  }
 });

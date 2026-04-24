@@ -8,7 +8,7 @@ describe('List transactions handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockListTransactionsService = jest.fn();
+    mockListTransactionsService = vi.fn();
     handlerFunction = handler(mockListTransactionsService);
   });
   const transactions = [createDeferredTransactionResponse()];

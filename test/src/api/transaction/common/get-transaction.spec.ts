@@ -1,9 +1,9 @@
 import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
-import { default as paymentTransactionSchema } from '@household/test/api/schemas/transaction-payment-response';
-import { default as deferredTransactionSchema } from '@household/test/api/schemas/transaction-deferred-response';
-import { default as reimbursementTransactionSchema } from '@household/test/api/schemas/transaction-reimbursement-response';
-import { default as transferTransactionSchema } from '@household/test/api/schemas/transaction-transfer-response';
-import { default as splitTransactionSchema } from '@household/test/api/schemas/transaction-split-response';
+import { default as paymentTransactionSchema } from '@household/test/schemas/transaction-payment-response';
+import { default as deferredTransactionSchema } from '@household/test/schemas/transaction-deferred-response';
+import { default as reimbursementTransactionSchema } from '@household/test/schemas/transaction-reimbursement-response';
+import { default as transferTransactionSchema } from '@household/test/schemas/transaction-transfer-response';
+import { default as splitTransactionSchema } from '@household/test/schemas/transaction-split-response';
 import { entries, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
@@ -16,11 +16,25 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { AccountType, CategoryType } from '@household/shared/enums';
-import { forbidUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/utils';
+
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+
+const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
 
-describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}', () => {
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
+
+test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}', () => {
   let accountDocument: Account.Document;
   let loanAccountDocument: Account.Document;
   let transferAccountDocument: Account.Document;
@@ -31,7 +45,7 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
   let invoiceCategoryDocument: Category.Document;
   let productDocument: Product.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
       accountType: AccountType.Loan,
@@ -65,11 +79,10 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetTransaction(getAccountId(accountDocument), paymentTransactionDataFactory.id())
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestGetTransaction }) => {
+      const res = await requestGetTransaction(getAccountId(accountDocument), paymentTransactionDataFactory.id());
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -77,17 +90,19 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetTransaction(getAccountId(accountDocument), paymentTransactionDataFactory.id())
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestGetTransaction }) => {
+          const res = await requestGetTransaction(getAccountId(accountDocument), paymentTransactionDataFactory.id());
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should get', () => {
-          describe('of a non-loan account', () => {
-            it('regular payment transaction', () => {
+        test.describe('should get', () => {
+          test.describe('of a non-loan account', () => {
+            test('regular payment transaction', async ({ requestGetTransaction, saveAccount, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = paymentTransactionDataFactory.document({
                 account: accountDocument,
                 category: regularCategoryDocument,
@@ -95,19 +110,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 recipient: recipientDocument,
               });
 
-              cy.saveAccountDocument(accountDocument)
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(paymentTransactionSchema)
-                .validateTransactionPaymentResponse(document);
+              await saveAccount(accountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(paymentTransactionSchema);
+              expect(res).toMatchPaymentTransactionDocument(document);
             });
 
-            it('inventory payment transaction', () => {
+            test('inventory payment transaction', async ({ requestGetTransaction, saveAccount, saveTransaction, saveCategory, saveProject, saveRecipient, saveProduct }) => {
               const document = paymentTransactionDataFactory.document({
                 account: accountDocument,
                 category: inventoryCategoryDocument,
@@ -116,20 +130,19 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 product: productDocument,
               });
 
-              cy.saveAccountDocument(accountDocument)
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(inventoryCategoryDocument)
-                .saveProductDocument(productDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(paymentTransactionSchema)
-                .validateTransactionPaymentResponse(document);
+              await saveAccount(accountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProduct(productDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(paymentTransactionSchema);
+              expect(res).toMatchPaymentTransactionDocument(document);
             });
 
-            it('invoice payment transaction', () => {
+            test('invoice payment transaction', async ({ requestGetTransaction, saveAccount, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = paymentTransactionDataFactory.document({
                 account: accountDocument,
                 category: invoiceCategoryDocument,
@@ -137,19 +150,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 recipient: recipientDocument,
               });
 
-              cy.saveAccountDocument(accountDocument)
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(invoiceCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(paymentTransactionSchema)
-                .validateTransactionPaymentResponse(document);
+              await saveAccount(accountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(paymentTransactionSchema);
+              expect(res).toMatchPaymentTransactionDocument(document);
             });
 
-            it('regular deferred transaction', () => {
+            test('regular deferred transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = deferredTransactionDataFactory.document({
                 account: accountDocument,
                 category: regularCategoryDocument,
@@ -158,22 +170,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: loanAccountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document);
             });
 
-            it('inventory deferred transaction', () => {
+            test('inventory deferred transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient, saveProduct }) => {
               const document = deferredTransactionDataFactory.document({
                 account: accountDocument,
                 category: inventoryCategoryDocument,
@@ -183,23 +191,19 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: loanAccountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(inventoryCategoryDocument)
-                .saveProductDocument(productDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProduct(productDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document);
             });
 
-            it('invoice deferred transaction', () => {
+            test('invoice deferred transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = deferredTransactionDataFactory.document({
                 account: accountDocument,
                 category: invoiceCategoryDocument,
@@ -208,22 +212,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: loanAccountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(invoiceCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document);
             });
 
-            it('owning deferred transaction', () => {
+            test('owning deferred transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = deferredTransactionDataFactory.document({
                 account: transferAccountDocument,
                 category: regularCategoryDocument,
@@ -232,22 +232,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: accountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                transferAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document);
+              await saveAccounts(accountDocument, transferAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document);
             });
 
-            it('paying deferred transaction which has been repaid', () => {
+            test('paying deferred transaction which has been repaid', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveCategory, saveProject, saveRecipient }) => {
               const document = deferredTransactionDataFactory.document({
                 body: {
                   amount: -5000,
@@ -268,25 +264,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 transactions: [document],
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                transferAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocuments([
-                  document,
-                  repayingTransferTransactionDocument,
-                ])
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document, repayingTransferTransactionDocument.payments[0].amount);
+              await saveAccounts(accountDocument, transferAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransactions(document, repayingTransferTransactionDocument);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document, repayingTransferTransactionDocument.payments[0].amount);
             });
 
-            it('owning deferred transaction which has been repaid', () => {
+            test('owning deferred transaction which has been repaid', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveCategory, saveProject, saveRecipient }) => {
               const document = deferredTransactionDataFactory.document({
                 body: {
                   amount: -5000,
@@ -307,25 +296,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 transactions: [document],
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                transferAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocuments([
-                  document,
-                  repayingTransferTransactionDocument,
-                ])
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document, repayingTransferTransactionDocument.payments[0].amount);
+              await saveAccounts(accountDocument, transferAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransactions(document, repayingTransferTransactionDocument);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document, repayingTransferTransactionDocument.payments[0].amount);
             });
 
-            it('paying deferred transaction which has been settled', () => {
+            test('paying deferred transaction which has been settled', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = deferredTransactionDataFactory.document({
                 body: {
                   isSettled: true,
@@ -337,22 +319,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: transferAccountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                transferAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document);
+              await saveAccounts(accountDocument, transferAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document);
             });
 
-            it('owning deferred transaction which has been settled', () => {
+            test('owning deferred transaction which has been settled', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = deferredTransactionDataFactory.document({
                 body: {
                   isSettled: true,
@@ -364,22 +342,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: accountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                transferAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document);
+              await saveAccounts(accountDocument, transferAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document);
             });
 
-            it('regular owning reimbursement transaction', () => {
+            test('regular owning reimbursement transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = reimbursementTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: regularCategoryDocument,
@@ -388,22 +362,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: accountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(reimbursementTransactionSchema)
-                .validateTransactionReimbursementResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(reimbursementTransactionSchema);
+              expect(res).toMatchReimbursementTransactionDocument(document);
             });
 
-            it('regular paying reimbursement transaction', () => {
+            test('regular paying reimbursement transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = reimbursementTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: regularCategoryDocument,
@@ -412,22 +382,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: accountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(reimbursementTransactionSchema)
-                .validateTransactionReimbursementResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(reimbursementTransactionSchema);
+              expect(res).toMatchReimbursementTransactionDocument(document);
             });
 
-            it('inventory reimbursement transaction', () => {
+            test('inventory reimbursement transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient, saveProduct }) => {
               const document = reimbursementTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: inventoryCategoryDocument,
@@ -437,23 +403,19 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: accountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(inventoryCategoryDocument)
-                .saveProductDocument(productDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(reimbursementTransactionSchema)
-                .validateTransactionReimbursementResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProduct(productDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(reimbursementTransactionSchema);
+              expect(res).toMatchReimbursementTransactionDocument(document);
             });
 
-            it('invoice reimbursement transaction', () => {
+            test('invoice reimbursement transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = reimbursementTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: invoiceCategoryDocument,
@@ -462,22 +424,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: accountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(invoiceCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(reimbursementTransactionSchema)
-                .validateTransactionReimbursementResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(reimbursementTransactionSchema);
+              expect(res).toMatchReimbursementTransactionDocument(document);
             });
 
-            it('paying split transaction', () => {
+            test('paying split transaction', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               const document = splitTransactionDataFactory.document({
                 account: accountDocument,
                 recipient: recipientDocument,
@@ -536,33 +494,21 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 transactions: [lastDeferredSplit],
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-                transferAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProductDocument(productDocument)
-                .saveTransactionDocuments([
-                  document,
-                  repayingTransferTransactionDocument,
-                ])
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(splitTransactionSchema)
-                .validateTransactionSplitResponse(document, {
-                  [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount,
-                });
+              await saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProduct(productDocument);
+              await saveTransactions(document, repayingTransferTransactionDocument);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(splitTransactionSchema);
+              expect(res).toMatchSplitTransactionDocument(document, {
+                [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount, 
+              });
             });
 
-            it('owning split transaction', () => {
+            test('owning split transaction', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveProject, saveRecipient }) => {
               const document = splitTransactionDataFactory.document({
                 account: transferAccountDocument,
                 recipient: recipientDocument,
@@ -597,64 +543,61 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 transactions: [lastDeferredSplit],
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                transferAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveTransactionDocuments([
-                  document,
-                  repayingTransferTransactionDocument,
-                ])
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(splitTransactionSchema)
-                .validateTransactionSplitResponse(document, {
-                  [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount,
-                });
+              await saveAccounts(accountDocument, transferAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveTransactions(document, repayingTransferTransactionDocument);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(splitTransactionSchema);
+              expect(res).toMatchSplitTransactionDocument(document, {
+                [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount, 
+              });
             });
 
-            it('transfer transaction', () => {
+            test('transfer transaction', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveCategory, saveProject, saveRecipient }) => {
+              const deferredTransactionDocument = deferredTransactionDataFactory.document({
+                account: transferAccountDocument,
+                loanAccount: loanAccountDocument,
+                category: regularCategoryDocument,
+                project: projectDocument,
+                recipient: recipientDocument,
+              });
+
               const document = transferTransactionDataFactory.document({
                 account: accountDocument,
                 transferAccount: transferAccountDocument,
+                transactions: [deferredTransactionDocument],
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                transferAccountDocument,
-              ])
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(accountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(transferTransactionSchema)
-                .validateTransactionTransferResponse(document, getAccountId(accountDocument));
+              await saveAccounts(accountDocument, transferAccountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransactions(document, deferredTransactionDocument);
+              const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(transferTransactionSchema);
+              expect(res).toMatchTransferTransactionDocument(document, getAccountId(accountDocument));
             });
 
-            it('loan transfer transaction', () => {
+            test('loan transfer transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction }) => {
               const document = transferTransactionDataFactory.document({
                 account: loanAccountDocument,
                 transferAccount: transferAccountDocument,
               });
 
-              cy.saveAccountDocuments([
-                loanAccountDocument,
-                transferAccountDocument,
-              ])
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(transferTransactionSchema)
-                .validateTransactionTransferResponse(document, getAccountId(loanAccountDocument));
+              await saveAccounts(loanAccountDocument, transferAccountDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(transferTransactionSchema);
+              expect(res).toMatchTransferTransactionDocument(document, getAccountId(loanAccountDocument));
             });
           });
 
-          describe('of a loan account', () => {
-            it('owning deferred transaction', () => {
+          test.describe('of a loan account', () => {
+            test('owning deferred transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = deferredTransactionDataFactory.document({
                 account: accountDocument,
                 category: regularCategoryDocument,
@@ -663,22 +606,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: loanAccountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document);
             });
 
-            it('owning deferred transaction which has been repaid', () => {
+            test('owning deferred transaction which has been repaid', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveCategory, saveProject, saveRecipient }) => {
               const document = deferredTransactionDataFactory.document({
                 body: {
                   amount: -5000,
@@ -699,26 +638,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 transactions: [document],
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-                transferAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocuments([
-                  document,
-                  repayingTransferTransactionDocument,
-                ])
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document, repayingTransferTransactionDocument.payments[0].amount);
+              await saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransactions(document, repayingTransferTransactionDocument);
+              const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document, repayingTransferTransactionDocument.payments[0].amount);
             });
 
-            it('owning deferred transaction which has been settled', () => {
+            test('owning deferred transaction which has been settled', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = deferredTransactionDataFactory.document({
                 body: {
                   isSettled: true,
@@ -730,22 +661,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: loanAccountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(deferredTransactionSchema)
-                .validateTransactionDeferredResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(deferredTransactionSchema);
+              expect(res).toMatchDeferredTransactionDocument(document);
             });
 
-            it('regular reimbursement transaction', () => {
+            test('regular reimbursement transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = reimbursementTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: regularCategoryDocument,
@@ -754,22 +681,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: accountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(regularCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(reimbursementTransactionSchema)
-                .validateTransactionReimbursementResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(reimbursementTransactionSchema);
+              expect(res).toMatchReimbursementTransactionDocument(document);
             });
 
-            it('inventory reimbursement transaction', () => {
+            test('inventory reimbursement transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient, saveProduct }) => {
               const document = reimbursementTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: inventoryCategoryDocument,
@@ -779,23 +702,19 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: accountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(inventoryCategoryDocument)
-                .saveProductDocument(productDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(reimbursementTransactionSchema)
-                .validateTransactionReimbursementResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProduct(productDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(reimbursementTransactionSchema);
+              expect(res).toMatchReimbursementTransactionDocument(document);
             });
 
-            it('invoice reimbursement transaction', () => {
+            test('invoice reimbursement transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               const document = reimbursementTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: invoiceCategoryDocument,
@@ -804,22 +723,18 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 loanAccount: accountDocument,
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveCategoryDocument(invoiceCategoryDocument)
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(reimbursementTransactionSchema)
-                .validateTransactionReimbursementResponse(document);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(reimbursementTransactionSchema);
+              expect(res).toMatchReimbursementTransactionDocument(document);
             });
 
-            it('owning split transaction', () => {
+            test('owning split transaction', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveProject, saveRecipient }) => {
               const document = splitTransactionDataFactory.document({
                 account: accountDocument,
                 recipient: recipientDocument,
@@ -854,68 +769,53 @@ describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}'
                 transactions: [lastDeferredSplit],
               });
 
-              cy.saveAccountDocuments([
-                accountDocument,
-                loanAccountDocument,
-                transferAccountDocument,
-              ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveTransactionDocuments([
-                  document,
-                  repayingTransferTransactionDocument,
-                ])
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(splitTransactionSchema)
-                .validateTransactionSplitResponse(document, {
-                  [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount,
-                });
+              await saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveTransactions(document, repayingTransferTransactionDocument);
+              const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(splitTransactionSchema);
+              expect(res).toMatchSplitTransactionDocument(document, {
+                [getTransactionId(lastDeferredSplit)]: repayingTransferTransactionDocument.payments[0].amount, 
+              });
             });
 
-            it('loan transfer transaction', () => {
+            test('loan transfer transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction }) => {
               const document = transferTransactionDataFactory.document({
                 account: loanAccountDocument,
                 transferAccount: transferAccountDocument,
               });
 
-              cy.saveAccountDocuments([
-                loanAccountDocument,
-                transferAccountDocument,
-              ])
-                .saveTransactionDocument(document)
-                .authenticate(userType)
-                .requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document))
-                .expectOkResponse()
-                .expectValidResponseSchema(transferTransactionSchema)
-                .validateTransactionTransferResponse(document, getAccountId(loanAccountDocument));
+              await saveAccounts(loanAccountDocument, transferAccountDocument);
+              await saveTransaction(document);
+              const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(transferTransactionSchema);
+              expect(res).toMatchTransferTransactionDocument(document, getAccountId(loanAccountDocument));
             });
           });
         });
 
-        describe('should return error', () => {
-          describe('if transactionId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestGetTransaction(accountDataFactory.id(), paymentTransactionDataFactory.id('not-valid'))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('transactionId', 'pathParameters');
+        test.describe('should return error', () => {
+          test.describe('if transactionId', () => {
+            test('is not mongo id', async ({ requestGetTransaction }) => {
+              const res = await requestGetTransaction(accountDataFactory.id(), paymentTransactionDataFactory.id('not-valid'));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'transactionId');
             });
 
-            it('does not belong to any transaction', () => {
-              cy.authenticate(userType)
-                .requestGetTransaction(accountDataFactory.id(), paymentTransactionDataFactory.id())
-                .expectNotFoundResponse();
+            test('does not belong to any transaction', async ({ requestGetTransaction }) => {
+              const res = await requestGetTransaction(accountDataFactory.id(), paymentTransactionDataFactory.id());
+              expect(res).toBeNotFoundResponse();
             });
           });
 
-          describe('if accountId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestGetTransaction(accountDataFactory.id('not-valid'), paymentTransactionDataFactory.id())
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('accountId', 'pathParameters');
+          test.describe('if accountId', () => {
+            test('is not mongo id', async ({ requestGetTransaction }) => {
+              const res = await requestGetTransaction(accountDataFactory.id('not-valid'), paymentTransactionDataFactory.id());
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'accountId');
             });
           });
         });

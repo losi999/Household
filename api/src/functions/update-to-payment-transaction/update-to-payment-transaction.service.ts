@@ -10,8 +10,8 @@ import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
+import { DocumentUpdate } from '@household/shared/types/common';
 import { Transaction } from '@household/shared/types/types';
-import { UpdateQuery } from 'mongoose';
 
 export interface IUpdateToPaymentTransactionService {
   (ctx: {
@@ -113,7 +113,7 @@ export const updateToPaymentTransactionServiceFactory = (
       });
     }
 
-    let update: UpdateQuery<Transaction.Document>;
+    let update: DocumentUpdate<Transaction.Document>;
 
     if (!body.loanAccountId) {
       httpErrors.transaction.invalidLoanAccountType(account);

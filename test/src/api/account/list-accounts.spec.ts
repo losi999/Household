@@ -1,4 +1,4 @@
-import { default as schema } from '@household/test/api/schemas/account-response-list';
+import { default as schema } from '@household/test/schemas/account-response-list';
 import { Account, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
@@ -7,12 +7,22 @@ import { reimbursementTransactionDataFactory } from '@household/test/api/transac
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { AccountType } from '@household/shared/enums';
-import { forbidUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
+
+import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+
+const expect = mergeExpects(accountApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
 
-describe('GET /account/v1/accounts', () => {
+const test = mergeTests(accountApiTest, accountDbTest, transactionDbTest);
+
+test.describe('GET /account/v1/accounts', () => {
   let accountDocument: Account.Document;
   let loanAccountDocument: Account.Document;
   let secondaryAccountDocument: Account.Document;
@@ -30,7 +40,7 @@ describe('GET /account/v1/accounts', () => {
   let owningReimbursementTransactionDocument: Transaction.ReimbursementDocument;
   let deferredSplitTransactionDocument: Transaction.SplitDocument;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
     secondaryAccountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
@@ -110,11 +120,10 @@ describe('GET /account/v1/accounts', () => {
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetAccountList()
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestListAccounts }) => {
+      const res = await requestListAccounts();
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -122,45 +131,28 @@ describe('GET /account/v1/accounts', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetAccountList()
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestListAccounts }) => {
+          const res = await requestListAccounts();
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should get a list of accounts', () => {
+        test('should get a list of accounts', async ({ requestListAccounts, saveAccounts, saveTransactions }) => {
           const expectedBalance1 = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
 
           const expectedBalance2 = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
 
-          cy.saveAccountDocuments([
-            loanAccountDocument,
-            accountDocument,
-            secondaryAccountDocument,
-          ])
-            .saveTransactionDocuments([
-              paymentTransactionDocument,
-              splitTransactionDocument,
-              transferTransactionDocument,
-              invertedTransferTransactionDocument,
-              loanTransferTransactionDocument,
-              invertedLoanTransferTransactionDocument,
-              payingDeferredTransactionDocument,
-              owningDeferredTransactionDocument,
-              payingDeferredToLoanTransactionDocument,
-              owningReimbursementTransactionDocument,
-              deferredSplitTransactionDocument,
-              repayingTransferTransactionDocument,
-              invertedRepayingTransferTransactionDocument,
-            ])
-            .authenticate(userType)
-            .requestGetAccountList()
-            .expectOkResponse()
-            .expectValidResponseSchema(schema)
-            .validateInAccountListResponse(accountDocument, expectedBalance1)
-            .validateInAccountListResponse(loanAccountDocument, expectedBalance2);
+          await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
+          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument, repayingTransferTransactionDocument, invertedRepayingTransferTransactionDocument);
+          const res = await requestListAccounts();
+          expect(res).toBeOkResponse();
+          expect(res).toMatchSchema(schema);
+          expect(res).toContainMatchingAccountDocument(accountDocument, expectedBalance1);
+          expect(res).toContainMatchingAccountDocument(loanAccountDocument, expectedBalance2);
         });
       }
     });

@@ -1,15 +1,15 @@
 import { IListCalendarDaysService, listCalendarDaysServiceFactory } from '@household/api/functions/list-calendar-days/list-calendar-days.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 
 describe('List calendar days service', () => {
   let service: IListCalendarDaysService;
-  let mockCalendarEntryService: Mock<ICalendarEntryService>;
-  let mockCalendarDayService: Mock<ICalendarDayService>;
-  let mockCalendarDayDocumentConverter: Mock<ICalendarDayDocumentConverter>;
+  let mockCalendarEntryService: MockService<ICalendarEntryService>;
+  let mockCalendarDayService: MockService<ICalendarDayService>;
+  let mockCalendarDayDocumentConverter: MockService<ICalendarDayDocumentConverter>;
 
   beforeEach(() => {
     mockCalendarEntryService = createMockService('listCalendarEntries');

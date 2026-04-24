@@ -8,7 +8,7 @@ describe('List recipients handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockListRecipientsService = jest.fn();
+    mockListRecipientsService = vi.fn();
     handlerFunction = handler(mockListRecipientsService);
   });
 
