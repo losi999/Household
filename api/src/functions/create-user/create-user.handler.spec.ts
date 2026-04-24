@@ -8,7 +8,7 @@ describe('Create user handler', () => {
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockCreateUserService = jest.fn();
+    mockCreateUserService = vi.fn();
 
     apiHandler = handler(mockCreateUserService);
   });

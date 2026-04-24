@@ -19,9 +19,16 @@ const schema: StrictJSONSchema7<Transaction.PaymentRequest> = {
     ...issuedAt.required,
     ...accountId.required,
   ],
-  dependentRequired: {
-    ...invoice.dependentRequired,
-    ...inventory.dependentRequired,
+  dependencies: {
+    ...invoice.dependencies,
+    ...inventory.dependencies,
+    loanAccountId: {
+      properties: {
+        amount: {
+          exclusiveMaximum: 0,
+        },
+      },
+    },
   },
   properties: {
     ...accountId.properties,
@@ -36,15 +43,6 @@ const schema: StrictJSONSchema7<Transaction.PaymentRequest> = {
     loanAccountId: mongoId,
     isSettled: {
       type: 'boolean',
-    },
-  },
-  dependentSchemas: {
-    loanAccountId: {
-      properties: {
-        amount: {
-          exclusiveMaximum: 0,
-        },
-      },
     },
   },
 };

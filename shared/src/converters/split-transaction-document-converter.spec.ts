@@ -1,9 +1,8 @@
 import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createProductDocument, createSplitResponseItem, createProductResponse, createSplitRequestItem, createSplitDocumentItem, createDeferredTransactionDocument, createDeferredTransactionResponse, createLoanRequestItem } from '@household/shared/common/test-data-factory';
 import { addSeconds, getTransactionId, getProjectId, getCategoryId, toDictionary, getAccountId, getProductId } from '@household/shared/common/utils';
-import { advanceTo, clear } from 'jest-date-mock';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
-import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
@@ -13,12 +12,12 @@ import { CategoryType } from '@household/shared/enums';
 
 describe('Split transaction document converter', () => {
   let converter: ISplitTransactionDocumentConverter;
-  let mockAccountDocumentConverter: Mock<IAccountDocumentConverter>;
-  let mockProjectDocumentConverter: Mock<IProjectDocumentConverter>;
-  let mockRecipientDocumentConverter: Mock<IRecipientDocumentConverter>;
-  let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
-  let mockProductDocumentConverter: Mock<IProductDocumentConverter>;
-  let mockDeferredDocumentConverter: Mock<IDeferredTransactionDocumentConverter>;
+  let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
+  let mockProjectDocumentConverter: MockService<IProjectDocumentConverter>;
+  let mockRecipientDocumentConverter: MockService<IRecipientDocumentConverter>;
+  let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
+  let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
+  let mockDeferredDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
@@ -29,12 +28,12 @@ describe('Split transaction document converter', () => {
     mockProductDocumentConverter = createMockService('toResponse');
     mockDeferredDocumentConverter = createMockService('create', 'toResponse');
 
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = splitTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockDeferredDocumentConverter.service);
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const description = 'bevásárlás';

@@ -8,7 +8,7 @@ describe('List products handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockListProductsService = jest.fn();
+    mockListProductsService = vi.fn();
     handlerFunction = handler(mockListProductsService);
   });
 

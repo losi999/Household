@@ -1,30 +1,37 @@
-import { default as schema } from '@household/test/api/schemas/setting-response-list';
+import { default as schema } from '@household/test/schemas/setting-response-list';
 import { Setting } from '@household/shared/types/types';
-import { settingDataFactory } from './data-factory';
-import { forbidUsers } from '@household/test/api/utils';
+import { settingDataFactory } from '@household/test/api/setting/data-factory';
+import { forbidUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { SettingKey } from '@household/shared/enums';
+import { test as settingApiTest, expect as settingApiExpect } from '@household/test/fixtures/setting-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as settingDbTest } from '@household/test/fixtures/setting-db.fixture';
+
+const expect = mergeExpects(settingApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
 
-describe('GET /setting/v1/settings', () => {
+const test = mergeTests(settingApiTest, settingDbTest);
+
+test.describe('GET /setting/v1/settings', () => {
   let settingKey1: SettingKey;
   let settingKey2: SettingKey;
   let settingRequest2: Setting.Request;
   let settingRequest1: Setting.Request;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     settingKey1 = settingDataFactory.key();
     settingKey2 = settingDataFactory.key();
     settingRequest1 = settingDataFactory.request();
     settingRequest2 = settingDataFactory.request();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetSettingList()
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestListSettings }) => {
+      const res = await requestListSettings();
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -32,25 +39,25 @@ describe('GET /setting/v1/settings', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetSettingList()
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestListSettings }) => {
+          const res = await requestListSettings();
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should get a list of settings', () => {
-          cy.updateSettingDocument(settingKey1, settingDataFactory.update(settingRequest1))
-            .updateSettingDocument(settingKey2, settingDataFactory.update(settingRequest2))
-            .authenticate(userType)
-            .requestGetSettingList()
-            .expectOkResponse()
-            .expectValidResponseSchema(schema)
-            .validateSettingListResponse([
-              settingDataFactory.document(settingKey1, settingRequest1),
-              settingDataFactory.document(settingKey2, settingRequest2),
-            ]);
+        test('should get a list of settings', async ({ requestListSettings, updateSetting }) => {
+          await updateSetting(settingKey1, settingDataFactory.update(settingRequest1));
+          await updateSetting(settingKey2, settingDataFactory.update(settingRequest2));
+          const res = await requestListSettings();
+          expect(res).toBeOkResponse();
+          expect(res).toMatchSchema(schema);
+
+          expect(res).toContainMatchingSettingDocument(settingDataFactory.document(settingKey1, settingRequest1));
+          expect(res).toContainMatchingSettingDocument(settingDataFactory.document(settingKey2, settingRequest2));
         });
       }
     });

@@ -8,7 +8,7 @@ describe('List categories handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockListCategoriesService = jest.fn();
+    mockListCategoriesService = vi.fn();
     handlerFunction = handler(mockListCategoriesService);
   });
   const categories = [createCategoryResponse()];

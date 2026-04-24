@@ -1,8 +1,7 @@
-import { addDays, dateToISODateString, generateMongoId } from '@household/shared/common/utils';
+import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account, Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
-import type { UpdateQuery } from 'mongoose';
 import { faker } from '@faker-js/faker';
 import { priceUnitsOfMeasurement, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 
@@ -13,31 +12,31 @@ const amount = -100;
 type DataFactoryFunction<T> = (input?: Partial<T>) => T;
 
 export const createAccountId = (id?: string): Account.Id => {
-  return (id ?? generateMongoId().toString()) as Account.Id;
+  return createId(id);
 };
 
 export const createCategoryId = (id?: string): Category.Id => {
-  return (id ?? generateMongoId().toString()) as Category.Id;
+  return createId(id);
 };
 
 export const createProjectId = (id?: string): Project.Id => {
-  return (id ?? generateMongoId().toString()) as Project.Id;
+  return createId(id);
 };
 
 export const createRecipientId = (id?: string): Recipient.Id => {
-  return (id ?? generateMongoId().toString()) as Recipient.Id;
+  return createId(id);
 };
 
 export const createTransactionId = (id?: string): Transaction.Id => {
-  return (id ?? generateMongoId().toString()) as Transaction.Id;
+  return createId(id);
 };
 
 export const createProductId = (id?: string): Product.Id => {
-  return (id ?? generateMongoId().toString()) as Product.Id;
+  return createId(id);
 };
 
 export const createFileId = (id?: string): File.Id => {
-  return (id ?? generateMongoId().toString()) as File.Id;
+  return createId(id);
 };
 
 export const createSettingKey = (key?: string): SettingKey => {
@@ -46,7 +45,7 @@ export const createSettingKey = (key?: string): SettingKey => {
 
 export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     accountType: AccountType.BankAccount,
     name: 'account name',
     currency: 'Ft',
@@ -58,7 +57,7 @@ export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc
 };
 export const createProjectDocument: DataFactoryFunction<Project.Document> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     name: 'project name',
     description: 'project description',
     expiresAt: undefined,
@@ -67,7 +66,7 @@ export const createProjectDocument: DataFactoryFunction<Project.Document> = (doc
 };
 export const createCategoryDocument: DataFactoryFunction<Category.Document> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     name: 'category name',
     expiresAt: undefined,
     categoryType: CategoryType.Regular,
@@ -77,7 +76,7 @@ export const createCategoryDocument: DataFactoryFunction<Category.Document> = (d
 };
 export const createRecipientDocument: DataFactoryFunction<Recipient.Document> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     name: 'recipient name',
     expiresAt: undefined,
     ...doc,
@@ -86,7 +85,7 @@ export const createRecipientDocument: DataFactoryFunction<Recipient.Document> = 
 
 export const createProductDocument: DataFactoryFunction<Product.Document> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     brand: 'product brand',
     measurement: 300,
     unitOfMeasurement: 'g',
@@ -99,7 +98,7 @@ export const createProductDocument: DataFactoryFunction<Product.Document> = (doc
 
 export const createTransactionRawReport: DataFactoryFunction<Transaction.RawReport> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     amount,
     description: 'transaction description',
     product: createProductDocument(),
@@ -118,7 +117,7 @@ export const createTransactionRawReport: DataFactoryFunction<Transaction.RawRepo
 
 export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.PaymentDocument> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     transactionType: TransactionType.Payment,
     amount,
     description: 'transaction description',
@@ -139,7 +138,7 @@ export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.P
 
 export const createDeferredTransactionDocument: DataFactoryFunction<Transaction.DeferredDocument> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     transactionType: TransactionType.Deferred,
     amount,
     description: 'transaction description',
@@ -163,7 +162,7 @@ export const createDeferredTransactionDocument: DataFactoryFunction<Transaction.
 
 export const createReimbursementTransactionDocument: DataFactoryFunction<Transaction.ReimbursementDocument> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     transactionType: TransactionType.Reimbursement,
     amount,
     description: 'transaction description',
@@ -200,7 +199,7 @@ export const createSplitDocumentItem: DataFactoryFunction<Transaction.SplitDocum
 
 export const createSplitTransactionDocument: DataFactoryFunction<Transaction.SplitDocument> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     transactionType: TransactionType.Split,
     amount: ((doc?.splits?.length ?? 0) + (doc?.deferredSplits?.length ?? 0)) * amount || amount,
     description: 'transaction description',
@@ -216,7 +215,7 @@ export const createSplitTransactionDocument: DataFactoryFunction<Transaction.Spl
 
 export const createTransferTransactionDocument: DataFactoryFunction<Transaction.TransferDocument> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     transactionType: TransactionType.Transfer,
     amount,
     description: 'transaction description',
@@ -232,7 +231,7 @@ export const createTransferTransactionDocument: DataFactoryFunction<Transaction.
 
 export const createDraftTransactionDocument: DataFactoryFunction<Transaction.DraftDocument> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     transactionType: TransactionType.Draft,
     amount,
     description: 'transaction description',
@@ -736,7 +735,7 @@ export const createFileRequest: DataFactoryFunction<File.Request> = (req) => {
 
 export const createFileDocument: DataFactoryFunction<File.Document> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     expiresAt: undefined,
     timezone: 'Europe/Budapest',
     fileType: FileType.Otp,
@@ -754,17 +753,7 @@ export const createFileResponse: DataFactoryFunction<File.Response> = (doc) => {
   };
 };
 
-//deprecated
-export const createDocumentUpdate: DataFactoryFunction<UpdateQuery<any>> = (update) => {
-  return {
-    $set: {
-      someProperty: 123,
-    },
-    ...update,
-  };
-};
-
-export const createDocumentUpdate2: DataFactoryFunction<DocumentUpdate<any>> = (update) => {
+export const createDocumentUpdate: DataFactoryFunction<DocumentUpdate<any>> = (update) => {
   return {
     update: {
       $set: {
@@ -807,7 +796,7 @@ const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
 
 const createPriceDocument: DataFactoryFunction<Price.Document> = (doc) => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     ...createPriceRequest(),
     isArchived: false,
     expiresAt: undefined,
@@ -855,7 +844,7 @@ const createCustomerDocument = (ctx?: {
   blacklistedCustomers?: Customer.Document[];
 }): Customer.Document => {
   return {
-    _id: generateMongoId(),
+    _id: createId(),
     ...createCustomerRequest(),
     jobs: ctx?.jobs?.map<Customer.Job.Document>((j) => {
       return {
@@ -1001,8 +990,44 @@ const createFutureCalendarDay = () => {
   }));
 };
 
+const createFutureWorkday = () => {
+  const date = faker.date.soon({
+    days: 50,
+    refDate: addDays(1),
+  });
+
+  if (date.getDay() === 6) {
+    return dateToISODateString(addDays(-1, date));
+  }
+
+  if (date.getDay() === 0) {
+    return dateToISODateString(addDays(1, date));
+  }
+
+  return dateToISODateString(date);
+};
+
+const createFutureWeekend = () => {
+  const date = faker.date.soon({
+    days: 50,
+    refDate: addDays(1),
+  });
+
+  const day = date.getDay();
+
+  if (day === 0 || day === 6) {
+    return dateToISODateString(date);
+  }
+
+  const distanceToPreviousSunday = day;
+  const distanceToNextSaturday = 6 - day;
+  const nearestWeekendOffset = distanceToPreviousSunday <= distanceToNextSaturday ? -distanceToPreviousSunday : distanceToNextSaturday;
+
+  return dateToISODateString(addDays(nearestWeekendOffset, date));
+};
+
 const createCalendarEntryId = (id?: string): Calendar.Entry.Id => {
-  return (id ?? generateMongoId().toString()) as Calendar.Entry.Id;
+  return (id ?? createId().toString()) as Calendar.Entry.Id;
 };
 
 const createCalendarPersonalEntryRequest: DataFactoryFunction<Calendar.Entry.PersonalEntryRequest> = (req) => {
@@ -1107,7 +1132,7 @@ const createCalendarEntryDocument: DataFactoryFunction<Calendar.Entry.Document> 
 
   return {
     ...createCalendarPersonalEntryRequest(),
-    _id: generateMongoId(),
+    _id: createId(),
     customer: undefined,
     expiresAt: undefined,
     resolution: undefined,
@@ -1272,6 +1297,8 @@ export const testDataFactory = {
     day: {
       pastDay: createPastCalendarDay,
       futureDay: createFutureCalendarDay,
+      futureWorkday: createFutureWorkday,
+      futureWeekend: createFutureWeekend,
       request: {
         workday: createCalendarWorkdayRequest,
         vacation: createCalendarVacationRequest,

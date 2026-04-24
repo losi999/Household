@@ -3,7 +3,7 @@ import { paymentTransactionDocumentConverter } from '@household/shared/dependenc
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/api/utils';
+import { createId } from '@household/test/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
 
@@ -69,7 +69,7 @@ export const paymentTransactionDataFactory = (() => {
       product: ctx.product,
       project: ctx.project,
       recipient: ctx.recipient,
-    }, Cypress.env('EXPIRES_IN'), true);
+    }, Number(process.env.EXPIRES_IN), true);
   };
 
   return {

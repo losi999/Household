@@ -1,17 +1,25 @@
 import { entries, getCategoryId } from '@household/shared/common/utils';
-import { allowUsers } from '@household/test/api/utils';
-import { Category } from '@household/shared/types/types';
+import { allowUsers } from '@household/test/utils';
+import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { Category } from '@household/shared/types/types';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
-const permissionMap = allowUsers('editor') ;
+const permissionMap = allowUsers('editor');
 
-describe('POST category/v1/categories', () => {
-  let request: Category.Request;
+const expect = mergeExpects(categoryApiExpect, apiExpect);
+
+const test = mergeTests(categoryApiTest, categoryDbTest);
+
+test.describe('POST /category/v1/categories', () => {
+  let req: Category.Request;
   let parentCategoryDocument: Category.Document;
   let grandparentCategoryDocument: Category.Document;
 
-  beforeEach(() => {
-    request = categoryDataFactory.request();
+  test.beforeEach(async () => {
+    req = categoryDataFactory.request();
 
     grandparentCategoryDocument = categoryDataFactory.document();
     parentCategoryDocument = categoryDataFactory.document({
@@ -19,153 +27,159 @@ describe('POST category/v1/categories', () => {
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateCategory(request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestCreateCategory }) => {
+      const res = await requestCreateCategory(req);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
-  entries(permissionMap).forEach(([
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateCategory(request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateCategory }) => {
+          const res = await requestCreateCategory(req);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should create category', () => {
-          cy.authenticate(userType)
-            .requestCreateCategory(request)
-            .expectCreatedResponse()
-            .validateCategoryDocument(request);
+        test('should create category', async ({ requestCreateCategory, findCategoryById }) => {
+          test.step('logging 1', () => {
+            
+          });
+          const res = await requestCreateCategory(req);
+          expect(res).toBeCreatedResponse();
+
+          const { categoryId } = (await res.json()) as Category.CategoryId;
+          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId));
         });
 
-        it('should create category with parent category', () => {
-          request = categoryDataFactory.request({
+        test('should create category with parent category', async ({ requestCreateCategory, saveCategories, findCategoryById }) => {
+          req = categoryDataFactory.request({
             parentCategoryId: getCategoryId(parentCategoryDocument),
           });
 
-          cy.saveCategoryDocuments([
-            grandparentCategoryDocument,
-            parentCategoryDocument,
-          ])
-            .authenticate(userType)
-            .requestCreateCategory(request)
-            .expectCreatedResponse()
-            .validateCategoryDocument(request, grandparentCategoryDocument, parentCategoryDocument);
+          await saveCategories(grandparentCategoryDocument, parentCategoryDocument);
+
+          const res = await requestCreateCategory(req);
+          expect(res).toBeCreatedResponse();
+
+          const { categoryId } = (await res.json()) as Category.CategoryId;
+          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId), grandparentCategoryDocument, parentCategoryDocument);
         });
 
-        describe('should return error', () => {
-          describe('if name', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCategory(categoryDataFactory.request({
-                  name: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateCategory }) => {
+              const res = await requestCreateCategory({
+                ...req,
+                extraProperty: 'extra',
+              } as any);
+  
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+
+          test.describe('if name', () => {
+            test('is missing from body', async ({ requestCreateCategory }) => {
+              const res = await requestCreateCategory(categoryDataFactory.request({
+                name: undefined,
+              }));
+
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCategory(categoryDataFactory.request({
-                  name: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
+            test('is not string', async ({ requestCreateCategory }) => {
+              const res = await requestCreateCategory(categoryDataFactory.request({
+                name: <any>1,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateCategory(categoryDataFactory.request({
-                  name: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 1, 'body');
+            test('is too short', async ({ requestCreateCategory }) => {
+              const res = await requestCreateCategory(categoryDataFactory.request({
+                name: '',
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            it('is already in use by a different category', () => {
+            test('is already in use by a different category', async ({ requestCreateCategory, saveCategory }) => {
               const categoryDocument = categoryDataFactory.document({
-                body: request,
+                body: req,
               });
 
-              cy.saveCategoryDocument(categoryDocument)
-                .authenticate(userType)
-                .requestCreateCategory(request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate category name');
+              await saveCategory(categoryDocument);
+
+              const res = await requestCreateCategory(req);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate category name');
             });
           });
 
-          describe('if categoryType', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCategory(categoryDataFactory.request({
-                  categoryType: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('categoryType', 'body');
+          test.describe('if categoryType', () => {
+            test('is missing from body', async ({ requestCreateCategory }) => {
+              const res = await requestCreateCategory(categoryDataFactory.request({
+                categoryType: undefined,
+              }));
+
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'categoryType');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCategory(categoryDataFactory.request({
-                  categoryType: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('categoryType', 'string', 'body');
+            test('is not string', async ({ requestCreateCategory }) => {
+              const res = await requestCreateCategory(categoryDataFactory.request({
+                categoryType: <any>1,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'categoryType', 'string');
             });
 
-            it('is not a valid enum value', () => {
-              cy.authenticate(userType)
-                .requestCreateCategory(
-                  categoryDataFactory.request({
-                    categoryType: <any>'not-category-type',
-                  }))
-                .expectBadRequestResponse()
-                .expectWrongEnumValue('categoryType', 'body');
+            test('is not a valid enum value', async ({ requestCreateCategory }) => {
+              const res = await requestCreateCategory(categoryDataFactory.request({
+                categoryType: <any>'not-category-type',
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveEnumValidationError('body', 'categoryType');
             });
           });
 
-          describe('if parentCategoryId', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCategory(
-                  categoryDataFactory.request({
-                    parentCategoryId: <any>1,
-                  }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('parentCategoryId', 'string', 'body');
+          test.describe('if parentCategoryId', () => {
+            test('is not string', async ({ requestCreateCategory }) => {
+              const res = await requestCreateCategory(categoryDataFactory.request({
+                parentCategoryId: <any>1,
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'parentCategoryId', 'string');
             });
 
-            it('does not match pattern', () => {
-              cy.authenticate(userType)
-                .requestCreateCategory(
-                  categoryDataFactory.request({
-                    parentCategoryId: <any>'not-mongo-id',
-                  }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('parentCategoryId', 'body');
+            test('does not match pattern', async ({ requestCreateCategory }) => {
+              const res = await requestCreateCategory(categoryDataFactory.request({
+                parentCategoryId: <any>'not-mongo-id',
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'parentCategoryId');
             });
 
-            it('does not belong to any category', () => {
-              cy.authenticate(userType)
-                .requestCreateCategory(
-                  categoryDataFactory.request({
-                    parentCategoryId: categoryDataFactory.id(),
-                  }))
-                .expectBadRequestResponse()
-                .expectMessage('Parent category not found');
+            test('does not belong to any category', async ({ requestCreateCategory }) => {
+              const res = await requestCreateCategory(categoryDataFactory.request({
+                parentCategoryId: categoryDataFactory.id(),
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Parent category not found');
             });
           });
         });
       }
     });
-  });
+  }
 });

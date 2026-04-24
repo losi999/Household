@@ -6,7 +6,7 @@ describe('Delete calendar day handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockDeleteCalendarDayService = jest.fn();
+    mockDeleteCalendarDayService = vi.fn();
     handlerFunction = handler(mockDeleteCalendarDayService);
   });
 

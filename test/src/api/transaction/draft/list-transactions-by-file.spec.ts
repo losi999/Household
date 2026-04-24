@@ -1,4 +1,5 @@
-import { default as schema } from '@household/test/api/schemas/transaction-response-list';
+// @ts-nocheck
+import { default as schema } from '@household/test/schemas/transaction-response-list';
 import { Account, File, Transaction } from '@household/shared/types/types';
 import { fileDataFactory } from '../../file/data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
@@ -6,16 +7,26 @@ import { addSeconds, entries, getFileId } from '@household/shared/common/utils';
 import { createFileId } from '@household/shared/common/test-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
 import { AccountType } from '@household/shared/enums';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+
+const expect = mergeExpects(transactionApiExpect, apiExpect);
+
 const permissionMap = allowUsers('editor') ;
 
-describe('GET /transaction/v1/files/{fileId}/transactions', () => {
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest);
+
+test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
   let fileDocument: File.Document;
   let accountDocument: Account.Document;
   let loanAccountDocument: Account.Document;
@@ -29,7 +40,7 @@ describe('GET /transaction/v1/files/{fileId}/transactions', () => {
   let duplicateDeferredDocument: Transaction.DeferredDocument;
   let duplicateReimbursementDocument: Transaction.ReimbursementDocument;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     fileDocument = fileDataFactory.document();
     accountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
@@ -98,11 +109,10 @@ describe('GET /transaction/v1/files/{fileId}/transactions', () => {
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetTransactionListByFile(getFileId(fileDocument))
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestGetTransactionListByFile }) => {
+      const res = await requestGetTransactionListByFile(getFileId(fileDocument));
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -110,59 +120,33 @@ describe('GET /transaction/v1/files/{fileId}/transactions', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetTransactionListByFile(getFileId(fileDocument))
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestGetTransactionListByFile }) => {
+          const res = await requestGetTransactionListByFile(getFileId(fileDocument));
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should get a list of draft transactions', () => {
-          cy.saveTransactionDocuments([
-            draftDocument,
-            duplicatedDraftDocument,
-            duplicatePaymentDocument,
-            duplicateInvertedPaymentDocument,
-            duplicateSplitDocument,
-            duplicateTransferDocument,
-            duplicateInvertedTransferDocument,
-            duplicateDeferredDocument,
-            duplicateReimbursementDocument,
-          ])
-            .saveAccountDocuments([
-              accountDocument,
-              loanAccountDocument,
-            ])
-            .authenticate(userType)
-            .requestGetTransactionListByFile(getFileId(fileDocument))
-            .expectOkResponse()
-            .expectValidResponseSchema(schema)
-            .validateTransactionDraftListResponse(
-              {
-                document: draftDocument,
-              },
-              {
-                document: duplicatedDraftDocument,
-                duplicateTransactions: [
-                  duplicatePaymentDocument,
-                  duplicateInvertedPaymentDocument,
-                  duplicateSplitDocument,
-                  duplicateTransferDocument,
-                  duplicateInvertedTransferDocument,
-                  duplicateDeferredDocument,
-                  duplicateReimbursementDocument,
-                ],
-              });
+        test('should get a list of draft transactions', async ({ requestGetTransactionListByFile, saveAccounts, saveTransactions }) => {
+          await saveTransactions(draftDocument, duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateDeferredDocument, duplicateReimbursementDocument);
+          await saveAccounts(accountDocument, loanAccountDocument);
+          const res = await requestGetTransactionListByFile(getFileId(fileDocument));
+          expect(res).toBeOkResponse();
+          expect(res).toMatchSchema(schema);
+
+          expect(res).toContainMatchingDraftTransactionDocument(draftDocument);
+          expect(res).toContainMatchingDraftTransactionDocument(duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateDeferredDocument, duplicateReimbursementDocument);
         });
 
-        describe('should return error', () => {
-          describe('if fileId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionListByFile(createFileId('not-mongo-id'))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('fileId', 'pathParameters');
+        test.describe('should return error', () => {
+          test.describe('if fileId', () => {
+            test('is not mongo id', async ({ requestGetTransactionListByFile }) => {
+              const res = await requestGetTransactionListByFile(createFileId('not-mongo-id'));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'fileId');
             });
           });
         });

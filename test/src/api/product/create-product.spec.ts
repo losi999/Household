@@ -3,15 +3,25 @@ import { CategoryType } from '@household/shared/enums';
 import { Category, Product } from '@household/shared/types/types';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
+
+import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+
+const expect = mergeExpects(productApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
 
-describe('POST product/v1/products', () => {
+const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
+
+test.describe('POST product/v1/products', () => {
   let request: Product.Request;
   let categoryDocument: Category.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     request = productDataFactory.request();
 
     categoryDocument = categoryDataFactory.document({
@@ -21,11 +31,10 @@ describe('POST product/v1/products', () => {
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateProduct(request, getCategoryId(categoryDocument))
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestCreateProduct }) => {
+      const res = await requestCreateProduct(request, getCategoryId(categoryDocument));
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -33,139 +42,142 @@ describe('POST product/v1/products', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateProduct(request, getCategoryId(categoryDocument))
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateProduct }) => {
+          const res = await requestCreateProduct(request, getCategoryId(categoryDocument));
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should create product', () => {
-          it('with complete body', () => {
-            cy.saveCategoryDocument(categoryDocument)
-              .authenticate(userType)
-              .requestCreateProduct(request, getCategoryId(categoryDocument))
-              .expectCreatedResponse()
-              .validateProductDocument(request, getCategoryId(categoryDocument));
+        test.describe('should create product', () => {
+          test('with complete body', async ({ requestCreateProduct, saveCategory, findProductById }) => {
+            await saveCategory(categoryDocument);
+            const res = await requestCreateProduct(request, getCategoryId(categoryDocument));
+            expect(res).toBeCreatedResponse();
+
+            const { productId } = (await res.json()) as Product.ProductId;
+            expect(request).toHaveBeenSavedAsProductDocument(await findProductById(productId), getCategoryId(categoryDocument));
           });
         });
 
-        describe('should return error', () => {
-          describe('if brand', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(productDataFactory.request({
-                  brand: undefined,
-                }), getCategoryId(categoryDocument))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('brand', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct({
+                ...request,
+                extraProperty: 'extra',
+              } as any, categoryDataFactory.id());
+          
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+          
+          test.describe('if brand', () => {
+            test('is missing from body', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(productDataFactory.request({
+                brand: undefined, 
+              }), getCategoryId(categoryDocument));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'brand');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(productDataFactory.request({
-                  brand: <any>1,
-                }), getCategoryId(categoryDocument))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('brand', 'string', 'body');
+            test('is not string', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(productDataFactory.request({
+                brand: <any>1, 
+              }), getCategoryId(categoryDocument));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'brand', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(productDataFactory.request({
-                  brand: '',
-                }), getCategoryId(categoryDocument))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('brand', 1, 'body');
+            test('is too short', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(productDataFactory.request({
+                brand: '', 
+              }), getCategoryId(categoryDocument));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'brand', 1);
             });
 
-            it('is already in use by a different product', () => {
+            test('is already in use by a different product', async ({ requestCreateProduct, saveCategory, saveProduct }) => {
               const productDocument = productDataFactory.document({
                 body: request,
                 category: categoryDocument,
               });
 
-              cy.saveProductDocument(productDocument)
-                .saveCategoryDocument(categoryDocument)
-                .authenticate(userType)
-                .requestCreateProduct(request, getCategoryId(categoryDocument))
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate product name');
+              await saveProduct(productDocument);
+              await saveCategory(categoryDocument);
+              const res = await requestCreateProduct(request, getCategoryId(categoryDocument));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate product name');
             });
           });
 
-          describe('if measurement', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(productDataFactory.request({
-                  measurement: undefined,
-                }), getCategoryId(categoryDocument))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('measurement', 'body');
+          test.describe('if measurement', () => {
+            test('is missing from body', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(productDataFactory.request({
+                measurement: undefined, 
+              }), getCategoryId(categoryDocument));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'measurement');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(productDataFactory.request({
-                  measurement: <any>'1',
-                }), getCategoryId(categoryDocument))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('measurement', 'number', 'body');
+            test('is not number', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(productDataFactory.request({
+                measurement: <any>'1', 
+              }), getCategoryId(categoryDocument));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'measurement', 'number');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(productDataFactory.request({
-                  measurement: 0,
-                }), getCategoryId(categoryDocument))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('measurement', 0, true, 'body');
+            test('is too small', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(productDataFactory.request({
+                measurement: 0, 
+              }), getCategoryId(categoryDocument));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'measurement', 0);
             });
           });
 
-          describe('if unitOfMeasurement', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(productDataFactory.request({
-                  unitOfMeasurement: undefined,
-                }), getCategoryId(categoryDocument))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('unitOfMeasurement', 'body');
+          test.describe('if unitOfMeasurement', () => {
+            test('is missing from body', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(productDataFactory.request({
+                unitOfMeasurement: undefined, 
+              }), getCategoryId(categoryDocument));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'unitOfMeasurement');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(productDataFactory.request({
-                  unitOfMeasurement: <any>1,
-                }), getCategoryId(categoryDocument))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('unitOfMeasurement', 'string', 'body');
+            test('is not string', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(productDataFactory.request({
+                unitOfMeasurement: <any>1, 
+              }), getCategoryId(categoryDocument));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'unitOfMeasurement', 'string');
             });
 
-            it('is not a valid enum value', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(productDataFactory.request({
-                  unitOfMeasurement: <any>'not-valid',
-                }), getCategoryId(categoryDocument))
-                .expectBadRequestResponse()
-                .expectWrongEnumValue('unitOfMeasurement', 'body');
+            test('is not a valid enum value', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(productDataFactory.request({
+                unitOfMeasurement: <any>'not-valid', 
+              }), getCategoryId(categoryDocument));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveEnumValidationError('body', 'unitOfMeasurement');
             });
           });
 
-          describe('if categoryId', () => {
-            it('is not a valid mongo id', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(request, categoryDataFactory.id('not-valid'))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('categoryId', 'pathParameters');
+          test.describe('if categoryId', () => {
+            test('is not a valid mongo id', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(request, categoryDataFactory.id('not-valid'));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'categoryId');
             });
 
-            it('does not belong to any category', () => {
-              cy.authenticate(userType)
-                .requestCreateProduct(request, categoryDataFactory.id())
-                .expectBadRequestResponse()
-                .expectMessage('No category found');
+            test('does not belong to any category', async ({ requestCreateProduct }) => {
+              const res = await requestCreateProduct(request, categoryDataFactory.id());
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('No category found');
             });
           });
         });

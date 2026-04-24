@@ -1,27 +1,34 @@
 import { User } from '@household/shared/types/types';
-import { userDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { userDataFactory } from '@household/test/api/user/data-factory';
+import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
+import { test as identityTest } from '@household/test/fixtures/identity.fixture';
+import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+
+const expect = mergeExpects(userApiExpect, apiExpect);
+const test = mergeTests(identityTest, userApiTest);
+
 const permissionMap = allowUsers('editor') ;
 
-describe('DELETE /user/v1/users/{email}', () => {
+test.describe('DELETE /user/v1/users/{email}', () => {
   let pendingUser: User.Request;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     pendingUser = userDataFactory.request();
   });
 
-  afterEach(() => {
-    cy.deleteUser(pendingUser);
+  test.afterEach(async ({ deleteUser }) => {
+    await deleteUser(pendingUser);
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestDeleteUser(pendingUser.email)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestDeleteUser }) => {
+      const res = await requestDeleteUser(pendingUser.email);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -29,29 +36,29 @@ describe('DELETE /user/v1/users/{email}', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestDeleteUser(pendingUser.email)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestDeleteUser }) => {
+          const res = await requestDeleteUser(pendingUser.email);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should delete user', () => {
-          cy.createUser(pendingUser, UserType.Editor, true)
-            .authenticate(userType)
-            .requestDeleteUser(pendingUser.email)
-            .expectNoContentResponse()
-            .validateUserDeleted(pendingUser.email);
+        test('should delete user', async ({ requestDeleteUser, createUser, getUser }) => {
+          await createUser(pendingUser, UserType.Editor, true);
+          const res = await requestDeleteUser(pendingUser.email);
+          expect(res).toBeNoContentResponse();
+          expect(await getUser(pendingUser)).toHaveBeenDeleted();
         });
 
-        describe('should return error', () => {
-          describe('if userId', () => {
-            it('is not email', () => {
-              cy.authenticate(userType)
-                .requestDeleteUser('not an email')
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('email', 'email', 'pathParameters');
+        test.describe('should return error', () => {
+          test.describe('if userId', () => {
+            test('is not email', async ({ requestDeleteUser }) => {
+              const res = await requestDeleteUser('not an email');
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('pathParameters', 'email', 'email');
             });
           });
         });

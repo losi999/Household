@@ -1,6 +1,6 @@
 import { IUpdateToTransferTransactionService, updateToTransferTransactionServiceFactory } from '@household/api/functions/update-to-transfer-transaction/update-to-transfer-transaction.service';
 import { createTransferTransactionRequest, createAccountDocument, createPaymentTransactionDocument, createDeferredTransactionDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
 import { AccountType } from '@household/shared/enums';
@@ -10,9 +10,9 @@ import { Transaction } from '@household/shared/types/types';
 
 describe('Update to transfer transaction service', () => {
   let service: IUpdateToTransferTransactionService;
-  let mockAccountService: Mock<IAccountService>;
-  let mockTransactionService: Mock<ITransactionService>;
-  let mockTransferTransactionDocumentConverter: Mock<ITransferTransactionDocumentConverter>;
+  let mockAccountService: MockService<IAccountService>;
+  let mockTransactionService: MockService<ITransactionService>;
+  let mockTransferTransactionDocumentConverter: MockService<ITransferTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('findAccountsByIds');
@@ -25,9 +25,7 @@ describe('Update to transfer transaction service', () => {
   const queriedAccount = createAccountDocument();
   const queriedTransferAccount = createAccountDocument();
   let body: Transaction.TransferRequest;
-  const updateQuery = createDocumentUpdate({
-    description: 'updated',
-  });
+  const updateQuery = createDocumentUpdate();
   const queriedDocument = createPaymentTransactionDocument();
   const transactionId = getTransactionId(queriedDocument);
 

@@ -1,23 +1,30 @@
 import { User } from '@household/shared/types/types';
-import { userDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { userDataFactory } from '@household/test/api/user/data-factory';
+import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
+import { test as identityTest } from '@household/test/fixtures/identity.fixture';
+import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+
+const expect = mergeExpects(userApiExpect, apiExpect);
+const test = mergeTests(identityTest, userApiTest);
+
 const permissionMap = allowUsers('editor') ;
 
-describe('POST user/v1/users', () => {
+test.describe('POST user/v1/users', () => {
   let request: User.Request;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     request = userDataFactory.request();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateUser(request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestCreateUser }) => {
+      const res = await requestCreateUser(request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -25,58 +32,67 @@ describe('POST user/v1/users', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateUser(request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateUser }) => {
+          const res = await requestCreateUser(request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should create user', () => {
-          it('with complete body', () => {
-            cy.authenticate(userType)
-              .requestCreateUser(request)
-              .expectCreatedResponse()
-              .validateUserInCognito(request);
+        test.describe('should create user', () => {
+          test('with complete body', async ({ requestCreateUser, getUser }) => {
+            const res = await requestCreateUser(request);
+            expect(res).toBeCreatedResponse();
+            expect(await getUser(request)).toHaveBeenCreated();
           });
         });
 
-        describe('should return error', () => {
-          describe('if email', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateUser(userDataFactory.request({
-                  email: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('email', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateUser }) => {
+              const res = await requestCreateUser({
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+  
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+
+          test.describe('if email', () => {
+            test('is missing from body', async ({ requestCreateUser }) => {
+              const res = await requestCreateUser(userDataFactory.request({
+                email: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'email');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateUser(userDataFactory.request({
-                  email: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('email', 'string', 'body');
+            test('is not string', async ({ requestCreateUser }) => {
+              const res = await requestCreateUser(userDataFactory.request({
+                email: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'email', 'string');
             });
 
-            it('is not email', () => {
-              cy.authenticate(userType)
-                .requestCreateUser(userDataFactory.request({
-                  email: 'not-email',
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('email', 'email', 'body');
+            test('is not email', async ({ requestCreateUser }) => {
+              const res = await requestCreateUser(userDataFactory.request({
+                email: 'not-email', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('body', 'email', 'email');
             });
 
-            it('is already in use by a different user', () => {
-              cy.createUser(request, UserType.Editor, true)
-                .authenticate(userType)
-                .requestCreateUser(request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate user email');
+            test('is already in use by a different user', async ({ requestCreateUser, createUser }) => {
+              await createUser(request, UserType.Editor, true);
+              const res = await requestCreateUser(request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate user email');
             });
           });
         });
@@ -84,7 +100,7 @@ describe('POST user/v1/users', () => {
     });
   });
 
-  afterEach(() => {
-    cy.deleteUser(request);
+  test.afterEach(async ({ deleteUser }) => {
+    await deleteUser(request);
   });
 });

@@ -1,6 +1,6 @@
 import { IUpdateCalendarEntryService, updateCalendarEntryServiceFactory } from '@household/api/functions/update-calendar-entry/update-calendar-entry.service';
-import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
@@ -10,10 +10,10 @@ import { IPriceService } from '@household/shared/services/price-service';
 
 describe('Update calendar entry service', () => {
   let service: IUpdateCalendarEntryService;
-  let mockCalendarEntryService: Mock<ICalendarEntryService>;
-  let mockCalendarEntryDocumentConverter: Mock<ICalendarEntryDocumentConverter>;
-  let mockCustomerService: Mock<ICustomerService>;
-  let mockPriceService: Mock<IPriceService>;
+  let mockCalendarEntryService: MockService<ICalendarEntryService>;
+  let mockCalendarEntryDocumentConverter: MockService<ICalendarEntryDocumentConverter>;
+  let mockCustomerService: MockService<ICustomerService>;
+  let mockPriceService: MockService<IPriceService>;
 
   beforeEach(() => {
     mockCalendarEntryService = createMockService('findCalendarEntryById', 'updateCalendarEntry');
@@ -35,7 +35,7 @@ describe('Update calendar entry service', () => {
     entryType: CalendarEntryType.Work,
   });
 
-  const updateQuery = createDocumentUpdate2();
+  const updateQuery = createDocumentUpdate();
 
   it('should return if personal entry is updated', async () => {
     const body = testDataFactory.calendar.entry.request.personal();

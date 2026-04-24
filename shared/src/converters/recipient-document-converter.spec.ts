@@ -1,19 +1,18 @@
 import { createDocumentUpdate, createRecipientDocument, createRecipientReport, createRecipientRequest, createRecipientResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getRecipientId } from '@household/shared/common/utils';
 import { recipientDocumentConverterFactory, IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Recipient document converter', () => {
   let converter: IRecipientDocumentConverter;
   const now = new Date();
 
   beforeEach(() => {
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = recipientDocumentConverterFactory();
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const name = 'Bolt';
@@ -53,9 +52,11 @@ describe('Recipient document converter', () => {
     it('should update document', () => {
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
-        $set: {
-          ...body,
-          expiresAt: addSeconds(expiresIn, now),
+        update: {
+          $set: {
+            ...body,
+            expiresAt: addSeconds(expiresIn, now),
+          },
         },
       }));
     });

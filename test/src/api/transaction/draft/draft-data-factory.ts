@@ -1,7 +1,7 @@
 import { draftTransactionDocumentConverter } from '@household/shared/dependencies/converters/draft-transaction-document-converter';
 import { File, Transaction } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/api/utils';
+import { createId } from '@household/test/utils';
 
 export const draftTransactionDataFactory = (() => {
   const createDraftTransactionDocument = (ctx: {
@@ -21,7 +21,7 @@ export const draftTransactionDataFactory = (() => {
         ...ctx.body,
       },
       file: ctx.file,
-    }, Cypress.env('EXPIRES_IN'), true);
+    }, Number(process.env.EXPIRES_IN), true);
   };
 
   return {

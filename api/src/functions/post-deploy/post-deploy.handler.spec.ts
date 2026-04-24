@@ -9,7 +9,7 @@ describe('Post deploy handler', () => {
   const infrastructureStack = 'stackName';
 
   beforeEach(() => {
-    mockPostDeployService = jest.fn();
+    mockPostDeployService = vi.fn();
 
     process.env.INFRASTRUCTURE_STACK = infrastructureStack;
 

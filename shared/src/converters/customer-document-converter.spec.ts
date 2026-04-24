@@ -1,24 +1,23 @@
-import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock } from '@household/shared/common/unit-testing';
+import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { addSeconds, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { customerDocumentConverterFactory, ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Customer document converter', () => {
   let converter: ICustomerDocumentConverter;
-  let mockPriceDocumentConverter: Mock<IPriceDocumentConverter>;
+  let mockPriceDocumentConverter: MockService<IPriceDocumentConverter>;
   const now = new Date();
   const expiresIn = 3600;
 
   beforeEach(() => {
     mockPriceDocumentConverter = createMockService('toResponse');
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = customerDocumentConverterFactory(mockPriceDocumentConverter.service);
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   describe('createJobPriceList', () => {
@@ -76,7 +75,7 @@ describe('Customer document converter', () => {
       const body = testDataFactory.customer.request();
 
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual(createDocumentUpdate2({
+      expect(result).toEqual(createDocumentUpdate({
         update: {
           $set: {
             ...body,
@@ -90,7 +89,7 @@ describe('Customer document converter', () => {
       const body = testDataFactory.customer.request({});
       delete body.description;
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual(createDocumentUpdate2({
+      expect(result).toEqual(createDocumentUpdate({
         update: {
           $set: {
             ...body,
@@ -109,7 +108,7 @@ describe('Customer document converter', () => {
 
     it('should return update', () => {
       const result = converter.addBlacklistedCustomer(customer);
-      expect(result).toEqual(createDocumentUpdate2({
+      expect(result).toEqual(createDocumentUpdate({
         update: {
           $addToSet: {
             blacklistedCustomers: customer,
@@ -123,7 +122,7 @@ describe('Customer document converter', () => {
     const customerId = testDataFactory.customer.id();
     it('should return update', () => {
       const result = converter.removeBlacklistedCustomer(customerId);
-      expect(result).toEqual(createDocumentUpdate2({
+      expect(result).toEqual(createDocumentUpdate({
         update: {
           $pull: {
             blacklistedCustomers: customerId,
@@ -158,7 +157,7 @@ describe('Customer document converter', () => {
 
     it('should return update', () => {
       const result = converter.addJob(job, [priceDocument]);
-      expect(result).toEqual(createDocumentUpdate2({
+      expect(result).toEqual(createDocumentUpdate({
         update: {
           $push: {
             jobs: {
@@ -205,7 +204,7 @@ describe('Customer document converter', () => {
 
     it('should return update', () => {
       const result = converter.updateJob(job.name, job, [priceDocument]);
-      expect(result).toEqual(createDocumentUpdate2({
+      expect(result).toEqual(createDocumentUpdate({
         update: {
           $set: {
             'jobs.$[job]': {
@@ -236,7 +235,7 @@ describe('Customer document converter', () => {
     it('should return update', () => {
       const jobName = 'job name';
       const result = converter.deleteJob(jobName);
-      expect(result).toEqual(createDocumentUpdate2({
+      expect(result).toEqual(createDocumentUpdate({
         update: {
           $pull: {
             jobs: {

@@ -1,59 +1,68 @@
-import { default as schema } from '@household/test/api/schemas/category-response-list';
-import { Category } from '@household/shared/types/types';
+import { default as schema } from '@household/test/schemas/category-response-list';
+import { entries } from '@household/shared/common/utils';
+import { forbidUsers } from '@household/test/utils';
+import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { CategoryType } from '@household/shared/enums';
-import { forbidUsers } from '@household/test/api/utils';
-import { entries } from '@household/shared/common/utils';
+import { Category } from '@household/shared/types/types';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
 const permissionMap = forbidUsers();
 
-describe('GET /category/v1/categories', () => {
-  let categoryDocument1: Category.Document;
-  let categoryDocument2: Category.Document;
+const expect = mergeExpects(categoryApiExpect, apiExpect);
 
-  beforeEach(() => {
-    categoryDocument1 = categoryDataFactory.document({
+const test = mergeTests(categoryApiTest, categoryDbTest);
+
+test.describe('GET /category/v1/categories', () => {
+  let parentCategoryDocument: Category.Document;
+  let childCategoryDocument: Category.Document;
+
+  test.beforeEach(async () => {
+    parentCategoryDocument = categoryDataFactory.document({
       body: {
         categoryType: CategoryType.Inventory,
       },
     });
 
-    categoryDocument2 = categoryDataFactory.document();
-  });
-
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetCategoryList()
-        .expectUnauthorizedResponse();
+    childCategoryDocument = categoryDataFactory.document({
+      parentCategory: parentCategoryDocument,
     });
   });
 
-  entries(permissionMap).forEach(([
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestListCategories }) => {
+      const res = await requestListCategories();
+      expect(res).toBeUnauthorizedResponse();
+    });
+  });
+
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetCategoryList()
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestListCategories }) => {
+          const res = await requestListCategories();
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should get a list of categories', () => {
-          cy.saveCategoryDocument(categoryDocument1)
-            .saveCategoryDocument(categoryDocument2)
-            .authenticate(userType)
-            .requestGetCategoryList()
-            .expectOkResponse()
-            .expectValidResponseSchema(schema)
-            .validateCategoryListResponse([
-              categoryDocument1,
-              categoryDocument2,
-            ]);
+        test('should get a list of categories', async ({ requestListCategories, saveCategories }) => {
+          await saveCategories(parentCategoryDocument, childCategoryDocument);
+
+          const res = await requestListCategories();
+          expect(res).toBeOkResponse();
+          expect(res).toMatchSchema(schema);
+          expect(res).toContainMatchingCategoryDocument(parentCategoryDocument);
+          expect(res).toContainMatchingCategoryDocument(childCategoryDocument, parentCategoryDocument);
         });
       }
     });
-  });
+  }
 });

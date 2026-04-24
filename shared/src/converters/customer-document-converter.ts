@@ -1,5 +1,6 @@
 import { isPriceBase } from '@household/shared/common/type-guards';
-import { generateMongoId, getPriceId } from '@household/shared/common/utils';
+import { generateMongoId } from '@household/shared/common/mongoose-utils';
+import { getPriceId } from '@household/shared/common/utils';
 import { addSeconds, getCustomerId } from '@household/shared/common/utils';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 import { DocumentUpdate } from '@household/shared/types/common';

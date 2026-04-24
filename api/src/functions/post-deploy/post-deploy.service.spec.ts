@@ -1,12 +1,12 @@
 import { IPostDeployService, postDeployServiceFactory } from '@household/api/functions/post-deploy/post-deploy.service';
-import { Mock, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IInfrastructureService } from '@household/shared/services/infrastructure-service';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 
 describe('Post deploy service', () => {
   let service: IPostDeployService;
-  let mockInfrastructureService: Mock<IInfrastructureService>;
-  let mockMongodbService: Mock<IMongodbService>;
+  let mockInfrastructureService: MockService<IInfrastructureService>;
+  let mockMongodbService: MockService<IMongodbService>;
 
   beforeEach(() => {
     mockInfrastructureService = createMockService('executePostDeployFunctions');

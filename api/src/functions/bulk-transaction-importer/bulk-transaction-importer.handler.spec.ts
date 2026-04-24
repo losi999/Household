@@ -26,7 +26,7 @@ describe('Bulk transaction importer handler', () => {
   } as AWSLambda.S3Event;
 
   beforeEach(() => {
-    mockBulkTransactionImporterService = jest.fn();
+    mockBulkTransactionImporterService = vi.fn();
 
     handlerFuntion = handler(mockBulkTransactionImporterService);
   });

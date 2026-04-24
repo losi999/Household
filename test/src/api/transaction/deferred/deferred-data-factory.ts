@@ -34,7 +34,7 @@ export const deferredTransactionDataFactory = (() => {
       product: ctx.product,
       project: ctx.project,
       recipient: ctx.recipient,
-    }, Cypress.env('EXPIRES_IN'), true);
+    }, Number(process.env.EXPIRES_IN), true);
   };
 
   return {

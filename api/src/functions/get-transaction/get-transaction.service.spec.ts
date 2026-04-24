@@ -1,14 +1,14 @@
 import { IGetTransactionService, getTransactionServiceFactory } from '@household/api/functions/get-transaction/get-transaction.service';
 import { createAccountId, createPaymentTransactionDocument, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getTransactionId } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
 describe('Get transaction service', () => {
   let service: IGetTransactionService;
-  let mockTransactionService: Mock<ITransactionService>;
-  let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
+  let mockTransactionService: MockService<ITransactionService>;
+  let mockTransactionDocumentConverter: MockService<ITransactionDocumentConverter>;
 
   beforeEach(() => {
     mockTransactionService = createMockService('getTransactionByIdAndAccountId');

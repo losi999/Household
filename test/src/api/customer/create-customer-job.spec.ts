@@ -1,17 +1,27 @@
 import { Customer, Price } from '@household/shared/types/types';
-import { customerDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { customerDataFactory } from '@household/test/api/customer/data-factory';
+import { allowUsers } from '@household/test/utils';
 import { entries, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
+import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+
+const expect = mergeExpects(customerApiExpect, apiExpect);
+
 const permissionMap = allowUsers('hairdresser');
 
-describe('POST customer/v1/customers/{customerId}/jobs', () => {
+const test = mergeTests(customerApiTest, priceDbTest, customerDbTest);
+
+test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
   let request: Customer.Job.Request;
   let customerDocument: Customer.Document;
   let priceDocument: Price.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     priceDocument = priceDataFactory.document();
 
     customerDocument = customerDataFactory.document({
@@ -44,11 +54,10 @@ describe('POST customer/v1/customers/{customerId}/jobs', () => {
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateCustomerJob(customerDataFactory.id(), request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestCreateCustomerJob }) => {
+      const res = await requestCreateCustomerJob(customerDataFactory.id(), request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -56,59 +65,69 @@ describe('POST customer/v1/customers/{customerId}/jobs', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateCustomerJob(customerDataFactory.id(), request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateCustomerJob }) => {
+          const res = await requestCreateCustomerJob(customerDataFactory.id(), request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should add customer job', () => {
-          cy.saveCustomerDocument(customerDocument)
-            .savePriceDocument(priceDocument)
-            .authenticate(userType)
-            .requestCreateCustomerJob(getCustomerId(customerDocument), request)
-            .expectCreatedResponse()
-            .validateCustomerJobCreated(customerDocument, request);
+        test('should add customer job', async ({ requestCreateCustomerJob, savePrice, saveCustomer, getCustomerById }) => {
+          await saveCustomer(customerDocument);
+          await savePrice(priceDocument);
+          const res = await requestCreateCustomerJob(getCustomerId(customerDocument), request);
+          expect(res).toBeCreatedResponse();
+          expect(request).toHaveBeenAddedToCustomerJobs(customerDocument, await getCustomerById(getCustomerId(customerDocument)));
         });
 
-        describe('should return error', () => {
-          describe('if name', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  body: {
-                    name: undefined,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), {
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+            
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+                    
+          test.describe('if name', () => {
+            test('is missing from body', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                body: {
+                  name: undefined, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  body: {
-                    name: <any>1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
+            test('is not string', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                body: {
+                  name: <any>1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  body: {
-                    name: '',
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 1, 'body');
+            test('is too short', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                body: {
+                  name: '', 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            it('is already in use by a different job on the same customer', () => {
+            test('is already in use by a different job on the same customer', async ({ requestCreateCustomerJob, saveCustomer }) => {
               const customerDocument = customerDataFactory.document({
                 jobs: [
                   {
@@ -119,335 +138,310 @@ describe('POST customer/v1/customers/{customerId}/jobs', () => {
                 ],
               });
 
-              cy.saveCustomerDocument(customerDocument)
-                .authenticate(userType)
-                .requestCreateCustomerJob(getCustomerId(customerDocument), request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate customer job name');
+              await saveCustomer(customerDocument);
+              const res = await requestCreateCustomerJob(getCustomerId(customerDocument), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate customer job name');
             });
           });
 
-          describe('if description', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  body: {
-                    description: <any>1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('description', 'string', 'body');
+          test.describe('if description', () => {
+            test('is not string', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                body: {
+                  description: <any>1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  body: {
-                    description: '',
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('description', 1, 'body');
+            test('is too short', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                body: {
+                  description: '', 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
-          describe('if duration', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  body: {
-                    duration: undefined,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('duration', 'body');
+          test.describe('if duration', () => {
+            test('is missing from body', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                body: {
+                  duration: undefined, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'duration');
             });
 
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  body: {
-                    duration: 1.1,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('duration', 'integer', 'body');
+            test('is not integer', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                body: {
+                  duration: 1.1, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'duration', 'integer');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  body: {
-                    duration: 0,
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('duration', 0, true, 'body');
+            test('is too small', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                body: {
+                  duration: 0, 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'duration', 0);
             });
 
           });
 
-          describe('if prices', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), {
-                  ...customerDataFactory.jobRequest(),
-                  prices: undefined,
-                })
-                .expectBadRequestResponse()
-                .expectRequiredProperty('prices', 'body');
+          test.describe('if prices', () => {
+            test('is missing from body', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), {
+                ...customerDataFactory.jobRequest(),
+                prices: undefined, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'prices');
             });
 
-            it('is not array', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), {
-                  ...customerDataFactory.jobRequest(),
-                  prices: <any>{},
-                })
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('prices', 'array', 'body');
+            test('is not array', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), {
+                ...customerDataFactory.jobRequest(),
+                prices: <any>{}, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'prices', 'array');
             });
 
-            it('has too few items', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), {
-                  ...customerDataFactory.jobRequest(),
-                  prices: [],
-                })
-                .expectBadRequestResponse()
-                .expectTooFewItemsProperty('prices', 1, 'body');
+            test('has too few items', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), {
+                ...customerDataFactory.jobRequest(),
+                prices: [], 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooFewItemsValidationError('body', 'prices', 1);
             });
           });
 
-          describe('if prices[0]', () => {
-            it('is not object', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), {
-                  ...customerDataFactory.jobRequest(),
-                  prices: [1] as any,
-                })
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('prices/0', 'object', 'body');
+          test.describe('if prices[0]', () => {
+            test('is not object', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), {
+                ...customerDataFactory.jobRequest(),
+                prices: [1] as any, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'prices/0', 'object');
             });
 
-            it('has additional properties', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), {
-                  ...customerDataFactory.jobRequest(),
-                  prices: [
+            test('has additional properties', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), {
+                ...customerDataFactory.jobRequest(),
+                prices: [
+                  {
+                    extra: 1, 
+                  }, 
+                ] as any, 
+              });
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'prices/0', 'extra');
+            });
+          });
+
+          test.describe('if prices[0].priceId', () => {
+            test('is missing', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  listed: [
                     {
-                      extra: 1,
-                    },
-                  ] as any,
-                })
-                .expectBadRequestResponse()
-                .expectAdditionalProperty('prices/0', 'body');
+                      priceId: undefined, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'priceId');
+            });
+
+            test('is not string', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  listed: [
+                    {
+                      priceId: <any>1, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'priceId', 'string');
+            });
+
+            test('is not mongo id', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  listed: [
+                    {
+                      priceId: <any>'not mongo id', 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'priceId');
+            });
+
+            test('does not belong to any price', async ({ requestCreateCustomerJob, savePrice, saveCustomer }) => {
+              await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
+              const res = await requestCreateCustomerJob(getCustomerId(customerDocument), customerDataFactory.jobRequest({
+                prices: {
+                  listed: [
+                    {
+                      priceId: priceDataFactory.id(), 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Some of the prices are not found');
             });
           });
 
-          describe('if prices[0].priceId', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {                  
-                    listed: [
-                      {
-                        priceId: undefined,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('priceId', 'body');
+          test.describe('if prices[0].quantity', () => {
+            test('is missing', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  listed: [
+                    {
+                      quantity: undefined, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'quantity');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {                  
-                    listed: [
-                      {
-                        priceId: <any>1,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('priceId', 'string', 'body');
+            test('is not integer', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  listed: [
+                    {
+                      quantity: <any>1.1, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'integer');
             });
 
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {                  
-                    listed: [
-                      {
-                        priceId: <any>'not mongo id',
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('priceId', 'body');
-            });
-
-            it('does not belong to any price', () => {
-              cy.saveCustomerDocument(customerDocument)
-                .savePriceDocument(priceDocument)
-                .authenticate(userType)
-                .requestCreateCustomerJob(getCustomerId(customerDocument), customerDataFactory.jobRequest({
-                  prices: {                  
-                    listed: [
-                      {
-                        priceId: priceDataFactory.id(),
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectMessage('Some of the prices are not found');
+            test('is too small', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  listed: [
+                    {
+                      quantity: 0, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
             });
           });
 
-          describe('if prices[0].quantity', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {                  
-                    listed: [
-                      {
-                        quantity: undefined,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('quantity', 'body');
+          test.describe('if prices[0].name', () => {
+            test('is missing', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  custom: [
+                    {
+                      name: undefined, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {                  
-                    listed: [
-                      {
-                        quantity: <any>1.1,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('quantity', 'integer', 'body');
+            test('is not string', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  custom: [
+                    {
+                      name: <any>1, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {                  
-                    listed: [
-                      {
-                        quantity: 0,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('quantity', 0, true, 'body');
+            test('is too short', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  custom: [
+                    {
+                      name: '', 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
           });
 
-          describe('if prices[0].name', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {
-                    custom: [
-                      {
-                        name: undefined,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
+          test.describe('if prices[0].amount', () => {
+            test('is missing', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  custom: [
+                    {
+                      amount: undefined, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {
-                    custom: [
-                      {
-                        name: <any>1,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
-            });
-
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {
-                    custom: [
-                      {
-                        name: '',
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 0, 'body');
+            test('is not integer', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
+                prices: {
+                  custom: [
+                    {
+                      amount: <any>1.1, 
+                    }, 
+                  ], 
+                }, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'integer');
             });
           });
 
-          describe('if prices[0].amount', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {
-                    custom: [
-                      {
-                        amount: undefined,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('amount', 'body');
+          test.describe('if customerId', () => {
+            test('is not mongo id', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id('not-valid'), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'customerId');
             });
 
-            it('is not integer', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                  prices: {
-                    custom: [
-                      {
-                        amount: <any>1.1,
-                      },
-                    ],
-                  },
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('amount', 'integer', 'body');
-            });
-          });
-
-          describe('if customerId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id('not-valid'), request)
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('customerId', 'pathParameters');
-            });
-
-            it('does not belong to any customer', () => {
-              cy.authenticate(userType)
-                .requestCreateCustomerJob(customerDataFactory.id(), request)
-                .expectNotFoundResponse()
-                .expectMessage('No customer found');
+            test('does not belong to any customer', async ({ requestCreateCustomerJob }) => {
+              const res = await requestCreateCustomerJob(customerDataFactory.id(), request);
+              expect(res).toBeNotFoundResponse();
+              expect(res).toHaveMessage('No customer found');
             });
           });
         });

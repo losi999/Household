@@ -4,7 +4,7 @@ import { FileType } from '@household/shared/enums';
 import { faker } from '@faker-js/faker';
 import { utils, WorkSheet, write } from 'xlsx';
 import { fileDocumentConverter } from '@household/shared/dependencies/converters/file-document-converter';
-import { createId } from '@household/test/api/utils';
+import { createId } from '@household/test/utils';
 import { default as moment } from 'moment-timezone';
 import { addSeconds } from '@household/shared/common/utils';
 
@@ -144,7 +144,7 @@ export const fileDataFactory = (() => {
   };
 
   const createFileDocument: DataFactoryFunction<File.Request, File.Document> = (req) => {
-    return fileDocumentConverter.create(createFileRequest(req), Cypress.env('EXPIRES_IN'), true);
+    return fileDocumentConverter.create(createFileRequest(req), Number(process.env.EXPIRES_IN), true);
   };
 
   return {

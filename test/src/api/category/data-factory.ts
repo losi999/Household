@@ -1,10 +1,10 @@
-import { DataFactoryFunction } from '@household/shared/types/common';
-import { Category } from '@household/shared/types/types';
-import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/api/utils';
 import { categoryDocumentConverter } from '@household/shared/dependencies/converters/category-document-converter';
 import { getCategoryId } from '@household/shared/common/utils';
 import { CategoryType } from '@household/shared/enums';
+import { DataFactoryFunction } from '@household/shared/types/common';
+import { Category } from '@household/shared/types/types';
+import { faker } from '@faker-js/faker';
+import { createId } from '@household/test/utils';
 
 export const categoryDataFactory = (() => {
   const createCategoryRequest: DataFactoryFunction<Category.Request> = (req) => {
@@ -26,8 +26,9 @@ export const categoryDataFactory = (() => {
         parentCategoryId: getCategoryId(ctx?.parentCategory),
       }),
       parentCategory: ctx?.parentCategory,
-    }, Cypress.env('EXPIRES_IN'), true);
+    }, Number(process.env.EXPIRES_IN), true);
   };
+
   return {
     request: createCategoryRequest,
     document: createCategoryDocument,

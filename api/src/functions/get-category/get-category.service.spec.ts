@@ -1,13 +1,13 @@
 import { IGetCategoryService, getCategoryServiceFactory } from '@household/api/functions/get-category/get-category.service';
 import { createCategoryDocument, createCategoryResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 describe('Get category service', () => {
   let service: IGetCategoryService;
-  let mockCategoryService: Mock<ICategoryService>;
-  let mockCategoryDocumentConverter: Mock<ICategoryDocumentConverter>;
+  let mockCategoryService: MockService<ICategoryService>;
+  let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
 
   beforeEach(() => {
     mockCategoryService = createMockService('getCategoryById');

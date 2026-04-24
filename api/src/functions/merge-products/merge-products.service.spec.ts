@@ -1,12 +1,12 @@
 import { IMergeProductsService, mergeProductsServiceFactory } from '@household/api/functions/merge-products/merge-products.service';
 import { createCategoryDocument, createProductDocument } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProductId } from '@household/shared/common/utils';
 import { IProductService } from '@household/shared/services/product-service';
 
 describe('Merge product service', () => {
   let service: IMergeProductsService;
-  let mockProductService: Mock<IProductService>;
+  let mockProductService: MockService<IProductService>;
 
   beforeEach(() => {
     mockProductService = createMockService('listProductsByIds', 'mergeProducts');

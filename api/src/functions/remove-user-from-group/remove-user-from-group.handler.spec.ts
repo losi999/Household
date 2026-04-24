@@ -8,7 +8,7 @@ describe('Confirm user handler', () => {
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockRemoveUserFromGroupService = jest.fn();
+    mockRemoveUserFromGroupService = vi.fn();
 
     apiHandler = handler(mockRemoveUserFromGroupService);
   });

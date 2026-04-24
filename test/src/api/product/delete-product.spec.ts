@@ -1,4 +1,4 @@
-import { entries, getProductId } from '@household/shared/common/utils';
+import { entries, getProductId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { Account, Category, Product, Transaction } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -8,15 +8,27 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
+import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+
+const expect = mergeExpects(productApiExpect, apiExpect, transactionApiExpect);
 
 const permissionMap = allowUsers('editor') ;
 
-describe('DELETE /product/v1/products/{productId}', () => {
+const test = mergeTests(productApiTest, accountDbTest, transactionDbTest, categoryDbTest, productDbTest);
+
+test.describe('DELETE /product/v1/products/{productId}', () => {
   let productDocument: Product.Document;
   let categoryDocument: Category.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     categoryDocument = categoryDataFactory.document({
       body: {
         categoryType: CategoryType.Inventory,
@@ -27,11 +39,10 @@ describe('DELETE /product/v1/products/{productId}', () => {
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestDeleteProduct(productDataFactory.id())
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestDeleteProduct }) => {
+      const res = await requestDeleteProduct(productDataFactory.id());
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -39,23 +50,25 @@ describe('DELETE /product/v1/products/{productId}', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestDeleteProduct(productDataFactory.id())
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestDeleteProduct }) => {
+          const res = await requestDeleteProduct(productDataFactory.id());
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should delete product', () => {
-          cy.saveProductDocument(productDocument)
-            .authenticate(userType)
-            .requestDeleteProduct(getProductId(productDocument))
-            .expectNoContentResponse()
-            .validateProductDeleted(getProductId(productDocument));
+        test('should delete product', async ({ requestDeleteProduct, saveProduct, findProductById }) => {
+          await saveProduct(productDocument);
+          const res = await requestDeleteProduct(getProductId(productDocument));
+          expect(res).toBeNoContentResponse();
+
+          expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
         });
 
-        describe('in related transactions inventory', () => {
+        test.describe('in related transactions inventory', () => {
           let unrelatedProductDocument: Product.Document;
           let paymentTransactionDocument: Transaction.PaymentDocument;
           let deferredTransactionDocument: Transaction.DeferredDocument;
@@ -67,7 +80,7 @@ describe('DELETE /product/v1/products/{productId}', () => {
           let accountDocument: Account.Document;
           let loanAccountDocument: Account.Document;
 
-          beforeEach(() => {
+          test.beforeEach(async () => {
             accountDocument = accountDataFactory.document();
             loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
@@ -143,74 +156,59 @@ describe('DELETE /product/v1/products/{productId}', () => {
               ],
             });
           });
-          it('should be unset if product is deleted', () => {
-            cy.saveAccountDocuments([
-              accountDocument,
-              loanAccountDocument,
-            ])
-              .saveCategoryDocument(categoryDocument)
-              .saveProductDocuments([
-                productDocument,
-                unrelatedProductDocument,
-              ])
-              .saveTransactionDocuments([
-                paymentTransactionDocument,
-                splitTransactionDocument,
-                deferredTransactionDocument,
-                reimbursementTransactionDocument,
-                unrelatedPaymentTransactionDocument,
-                unrelatedDeferredTransactionDocument,
-                unrelatedReimbursementTransactionDocument,
-              ])
-              .authenticate(userType)
-              .requestDeleteProduct(getProductId(productDocument))
-              .expectNoContentResponse()
-              .validateProductDeleted(getProductId(productDocument))
-              .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-                product: {
-                  from: getProductId(productDocument),
-                },
-              })
-              .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-                product: {
-                  from: getProductId(productDocument),
-                },
-              })
-              .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-                product: {
-                  from: getProductId(productDocument),
-                },
-              })
-              .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-                product: {
-                  from: getProductId(productDocument),
-                },
-              })
-              .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-                product: {
-                  from: getProductId(productDocument),
-                },
-              })
-              .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-                product: {
-                  from: getProductId(productDocument),
-                },
-              })
-              .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
-                product: {
-                  from: getProductId(productDocument),
-                },
-              });
+          test('should be unset if product is deleted', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveCategory(categoryDocument);
+            await saveProducts(productDocument, unrelatedProductDocument);
+            await saveTransactions(paymentTransactionDocument, splitTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument);
+            const res = await requestDeleteProduct(getProductId(productDocument));
+            expect(res).toBeNoContentResponse();
+            
+            expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
+            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
+              product: {
+                from: getProductId(productDocument),
+              },
+            });
+            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
+              product: {
+                from: getProductId(productDocument),
+              },
+            });
+            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+              product: {
+                from: getProductId(productDocument),
+              },
+            });
+            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
+              product: {
+                from: getProductId(productDocument),
+              },
+            });
+            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+              product: {
+                from: getProductId(productDocument),
+              },
+            });
+            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
+              product: {
+                from: getProductId(productDocument),
+              },
+            });
+            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
+              product: {
+                from: getProductId(productDocument),
+              },
+            });
           });
         });
 
-        describe('should return error', () => {
-          describe('if productId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestDeleteProduct(productDataFactory.id('not-valid'))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('productId', 'pathParameters');
+        test.describe('should return error', () => {
+          test.describe('if productId', () => {
+            test('is not mongo id', async ({ requestDeleteProduct }) => {
+              const res = await requestDeleteProduct(productDataFactory.id('not-valid'));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'productId');
             });
           });
         });

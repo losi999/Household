@@ -8,7 +8,7 @@ describe('Refresh token handler', () => {
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockRefreshTokenLoginService = jest.fn();
+    mockRefreshTokenLoginService = vi.fn();
 
     apiHandler = handler(mockRefreshTokenLoginService);
   });

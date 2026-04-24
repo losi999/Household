@@ -8,7 +8,7 @@ describe('Confirm user handler', () => {
   let apiHandler: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockConfirmUserService = jest.fn();
+    mockConfirmUserService = vi.fn();
 
     apiHandler = handler(mockConfirmUserService);
   });

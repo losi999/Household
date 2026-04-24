@@ -1,21 +1,27 @@
 import { entries } from '@household/shared/common/utils';
 import { Account } from '@household/shared/types/types';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
+import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+
+const expect = mergeExpects(accountApiExpect, apiExpect);
+const test = mergeTests(accountApiTest, accountDbTest);
 
 const permissionMap = allowUsers('editor') ;
-describe('POST account/v1/accounts', () => {
+test.describe('POST account/v1/accounts', () => {
   let request: Account.Request;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     request = accountDataFactory.request();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestCreateAccount(request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestCreateAccount }) => {
+      const res = await requestCreateAccount(request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -23,159 +29,162 @@ describe('POST account/v1/accounts', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestCreateAccount(request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestCreateAccount }) => {
+          const res = await requestCreateAccount(request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should create account', () => {
-          cy.authenticate(userType)
-            .requestCreateAccount(request)
-            .expectCreatedResponse()
-            .validateAccountDocument(request);
+        test('should create account', async ({ requestCreateAccount, findAccountById }) => {
+          const res = await requestCreateAccount(request);
+          expect(res).toBeCreatedResponse();
+
+          const { accountId } = (await res.json()) as Account.AccountId;
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
 
-        it('should create account with an existing name for a different owner', () => {
+        test('should create account with an existing name for a different owner', async ({ requestCreateAccount, saveAccount, findAccountById }) => {
           const accountDocument = accountDataFactory.document(request);
 
           request = accountDataFactory.request({
             name: request.name,
           });
 
-          cy.saveAccountDocument(accountDocument)
-            .authenticate(userType)
-            .requestCreateAccount(request)
-            .expectCreatedResponse()
-            .validateAccountDocument(request);
+          await saveAccount(accountDocument);
+          const res = await requestCreateAccount(request);
+          expect(res).toBeCreatedResponse();
+
+          const { accountId } = (await res.json()) as Account.AccountId;
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
 
-        describe('should return error', () => {
-          describe('if name', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  name: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('name', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount({
+                ...request,
+                extraProperty: 'extra',
+              } as any);
+  
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+            });
+          });
+
+          test.describe('if name', () => {
+            test('is missing from body', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                name: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  name: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('name', 'string', 'body');
+            test('is not string', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                name: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  name: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('name', 1, 'body');
+            test('is too short', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                name: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            it('is already in use by a different account of the same owner', () => {
+            test('is already in use by a different account of the same owner', async ({ requestCreateAccount, saveAccount }) => {
               const accountDocument = accountDataFactory.document(request);
 
-              cy.saveAccountDocument(accountDocument)
-                .authenticate(userType)
-                .requestCreateAccount(request)
-                .expectBadRequestResponse()
-                .expectMessage('Duplicate account name');
+              await saveAccount(accountDocument);
+              const res = await requestCreateAccount(request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Duplicate account name');
             });
           });
 
-          describe('if accountType', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  accountType: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('accountType', 'body');
+          test.describe('if accountType', () => {
+            test('is missing from body', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                accountType: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'accountType');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  accountType: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('accountType', 'string', 'body');
+            test('is not string', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                accountType: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'accountType', 'string');
             });
 
-            it('is not a valid enum value', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  accountType: 'not-account-type' as any,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongEnumValue('accountType', 'body');
+            test('is not a valid enum value', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                accountType: 'not-account-type' as any, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveEnumValidationError('body', 'accountType');
             });
           });
 
-          describe('if currency', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  currency: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('currency', 'body');
+          test.describe('if currency', () => {
+            test('is missing from body', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                currency: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'currency');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  currency: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('currency', 'string', 'body');
+            test('is not string', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                currency: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'currency', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  currency: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('currency', 1, 'body');
+            test('is too short', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                currency: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'currency', 1);
             });
           });
 
-          describe('if owner', () => {
-            it('is missing from body', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  owner: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('owner', 'body');
+          test.describe('if owner', () => {
+            test('is missing from body', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                owner: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'owner');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  owner: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('owner', 'string', 'body');
+            test('is not string', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                owner: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'owner', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestCreateAccount(accountDataFactory.request({
-                  owner: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('owner', 1, 'body');
+            test('is too short', async ({ requestCreateAccount }) => {
+              const res = await requestCreateAccount(accountDataFactory.request({
+                owner: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'owner', 1);
             });
           });
         });

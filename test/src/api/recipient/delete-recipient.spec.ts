@@ -1,52 +1,67 @@
-import { entries, getRecipientId } from '@household/shared/common/utils';
+import { entries, getRecipientId, getTransactionId } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/utils';
+import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { Account, Recipient, Transaction } from '@household/shared/types/types';
-import { splitTransactionDataFactory } from '../transaction/split/split-data-factory';
-import { paymentTransactionDataFactory } from '../transaction/payment/payment-data-factory';
-import { recipientDataFactory } from './data-factory';
-import { accountDataFactory } from '../account/data-factory';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { AccountType } from '@household/shared/enums';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { AccountType } from '@household/shared/enums';
-import { allowUsers } from '@household/test/api/utils';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 
-const permissionMap = allowUsers('editor') ;
+const expect = mergeExpects(apiExpect, recipientApiExpect, transactionApiExpect);
 
-describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
+const permissionMap = allowUsers('editor');
+
+const test = mergeTests(recipientApiTest, accountDbTest, transactionDbTest, recipientDbTest);
+
+test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
+
   let recipientDocument: Recipient.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     recipientDocument = recipientDataFactory.document();
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestDeleteRecipient(recipientDataFactory.id())
-        .expectUnauthorizedResponse();
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestDeleteRecipient }) => {
+      const res = await requestDeleteRecipient(recipientDataFactory.id());
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
-  entries(permissionMap).forEach(([
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestDeleteRecipient(recipientDataFactory.id())
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestDeleteRecipient }) => {
+          const res = await requestDeleteRecipient(recipientDataFactory.id());
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should delete recipient', () => {
-          cy.saveRecipientDocument(recipientDocument)
-            .authenticate(userType)
-            .requestDeleteRecipient(getRecipientId(recipientDocument))
-            .expectNoContentResponse()
-            .validateRecipientDeleted(getRecipientId(recipientDocument));
+        test('should delete recipient', async ({ requestDeleteRecipient, saveRecipient, findRecipientById }) => {
+          await saveRecipient(recipientDocument);
+
+          const res = await requestDeleteRecipient(getRecipientId(recipientDocument));
+          expect(res).toBeNoContentResponse();
+
+          expect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
         });
 
-        describe('in related transactions recipient', () => {
+        test.describe('in related transactions recipient', () => {
           let unrelatedRecipientDocument: Recipient.Document;
           let paymentTransactionDocument: Transaction.PaymentDocument;
           let deferredTransactionDocument: Transaction.DeferredDocument;
@@ -59,7 +74,7 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
           let accountDocument: Account.Document;
           let loanAccountDocument: Account.Document;
 
-          beforeEach(() => {
+          test.beforeEach(async () => {
             accountDocument = accountDataFactory.document();
             loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
@@ -112,78 +127,74 @@ describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
             });
           });
 
-          it('should be unset if recipient is deleted', () => {
-            cy.saveAccountDocuments([
-              accountDocument,
-              loanAccountDocument,
-            ])
-              .saveRecipientDocuments([
-                recipientDocument,
-                unrelatedRecipientDocument,
-              ])
-              .saveTransactionDocuments([
-                paymentTransactionDocument,
-                splitTransactionDocument,
-                deferredTransactionDocument,
-                reimbursementTransactionDocument,
-                unrelatedPaymentTransactionDocument,
-                unrelatedDeferredTransactionDocument,
-                unrelatedReimbursementTransactionDocument,
-                unrelatedSplitTransactionDocument,
-              ])
-              .authenticate(userType)
-              .requestDeleteRecipient(getRecipientId(recipientDocument))
-              .expectNoContentResponse()
-              .validateRecipientDeleted(getRecipientId(recipientDocument))
-              .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-                recipient: {
-                  from: getRecipientId(recipientDocument),
-                },
-              })
-              .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-                recipient: {
-                  from: getRecipientId(recipientDocument),
-                },
-              })
-              .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-                recipient: {
-                  from: getRecipientId(recipientDocument),
-                },
-              })
-              .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-                recipient: {
-                  from: getRecipientId(recipientDocument),
-                },
-              })
-              .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-                recipient: {
-                  from: getRecipientId(recipientDocument),
-                },
-              })
-              .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-                recipient: {
-                  from: getRecipientId(recipientDocument),
-                },
-              })
-              .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
-                recipient: {
-                  from: getRecipientId(recipientDocument),
-                },
-              });
+          test('should be unset if recipient is deleted', async ({ requestDeleteRecipient, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveRecipients(recipientDocument, unrelatedRecipientDocument);
+            await saveTransactions(
+              paymentTransactionDocument,
+              splitTransactionDocument,
+              deferredTransactionDocument,
+              reimbursementTransactionDocument,
+              unrelatedPaymentTransactionDocument,
+              unrelatedDeferredTransactionDocument,
+              unrelatedReimbursementTransactionDocument,
+              unrelatedSplitTransactionDocument,
+            );
+
+            const res = await requestDeleteRecipient(getRecipientId(recipientDocument));
+            expect(res).toBeNoContentResponse();
+
+            expect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
+
+            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
+              recipient: {
+                from: getRecipientId(recipientDocument),
+              },
+            });
+            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+              recipient: {
+                from: getRecipientId(recipientDocument),
+              },
+            });
+            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+              recipient: {
+                from: getRecipientId(recipientDocument),
+              },
+            });
+            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
+              recipient: {
+                from: getRecipientId(recipientDocument),
+              },
+            });
+            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
+              recipient: {
+                from: getRecipientId(recipientDocument),
+              },
+            });
+            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
+              recipient: {
+                from: getRecipientId(recipientDocument),
+              },
+            });
+            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
+              recipient: {
+                from: getRecipientId(recipientDocument),
+              },
+            });
           });
         });
 
-        describe('should return error', () => {
-          describe('if recipientId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestDeleteRecipient(recipientDataFactory.id('not-valid'))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('recipientId', 'pathParameters');
+        test.describe('should return error', () => {
+          test.describe('if recipientId', () => {
+            test('is not mongo id', async ({ requestDeleteRecipient }) => {
+              const res = await requestDeleteRecipient(recipientDataFactory.id('not-mongo-id'));
+
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'recipientId');
             });
           });
         });
       }
     });
-  });
+  }
 });

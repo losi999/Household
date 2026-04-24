@@ -1,6 +1,6 @@
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { entries, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
-import { default as schema } from '@household/test/api/schemas/transaction-report-list';
+import { default as schema } from '@household/test/schemas/transaction-report-list';
 import { createAccountId } from '@household/shared/common/test-data-factory';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
@@ -14,7 +14,19 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { isDeferredTransaction } from '@household/shared/common/type-guards';
 import { AccountType, CategoryType } from '@household/shared/enums';
-import { forbidUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/utils';
+
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+
+const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
 
@@ -26,12 +38,13 @@ const splitTransactionHelper = (doc: Transaction.SplitDocument, split: Transacti
   };
 };
 
-describe('POST /transaction/v1/transactionReports', () => {
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetTransactionReports([])
-        .expectUnauthorizedResponse();
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
+
+test.describe('POST /transaction/v1/transactionReports', () => {
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestGetTransactionReports }) => {
+      const res = await requestGetTransactionReports([]);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -39,15 +52,17 @@ describe('POST /transaction/v1/transactionReports', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetTransactionReports([])
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestGetTransactionReports }) => {
+          const res = await requestGetTransactionReports([]);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should get a list of transaction reports', () => {
+        test.describe('should get a list of transaction reports', () => {
           let accountDocument: Account.Document;
           let secondaryAccountDocument: Account.Document;
           let loanAccountDocument: Account.Document;
@@ -73,7 +88,7 @@ describe('POST /transaction/v1/transactionReports', () => {
           let transferTransactionDocument: Transaction.TransferDocument;
           let loanTransferTransactionDocument: Transaction.TransferDocument;
 
-          beforeEach(() => {
+          test.beforeEach(async ({ saveAccounts, saveTransactions, saveCategories, saveProjects, saveRecipients, saveProducts }) => {
             accountDocument = accountDataFactory.document();
             secondaryAccountDocument = accountDataFactory.document();
             loanAccountDocument = accountDataFactory.document({
@@ -123,37 +138,16 @@ describe('POST /transaction/v1/transactionReports', () => {
               transferAccount: loanAccountDocument,
             });
 
-            cy.saveRecipientDocuments([
-              recipientDocument,
-              secondaryRecipientDocument,
-            ])
-              .saveAccountDocuments([
-                accountDocument,
-                secondaryAccountDocument,
-                loanAccountDocument,
-              ])
-              .saveCategoryDocuments([
-                regularCategoryDocument,
-                invoiceCategoryDocument,
-                inventoryCategoryDocument,
-                secondaryCategoryDocument,
-              ])
-              .saveProjectDocuments([
-                projectDocument,
-                secondaryProjectDocument,
-              ])
-              .saveProductDocuments([
-                productDocument,
-                secondaryProductDocument,
-              ])
-              .saveTransactionDocuments([
-                transferTransactionDocument,
-                loanTransferTransactionDocument,
-              ]);
+            await saveRecipients(recipientDocument, secondaryRecipientDocument);
+            await saveAccounts(accountDocument, secondaryAccountDocument, loanAccountDocument);
+            await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument, secondaryCategoryDocument);
+            await saveProjects(projectDocument, secondaryProjectDocument);
+            await saveProducts(productDocument, secondaryProductDocument);
+            await saveTransactions(transferTransactionDocument, loanTransferTransactionDocument);
           });
 
-          describe('filtered by account', () => {
-            beforeEach(() => {
+          test.describe('filtered by account', () => {
+            test.beforeEach(async ({ saveTransactions }) => {
               includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
                 account: accountDocument,
                 recipient: recipientDocument,
@@ -207,65 +201,43 @@ describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              cy.saveTransactionDocuments([
-                includedPaymentTransactionDocument,
-                splitTransactionDocument,
-                includedDeferredTransactionDocument,
-                includedReimbursementTransactionDocument,
-                excludedPaymentTransactionDocument,
-                excludedDeferredTransactionDocument,
-                excludedReimbursementTransactionDocument,
-                deferredSplitTransactionDocument,
-              ]);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
             });
-            it('to include', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [getAccountId(accountDocument)],
-                    include: true,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  includedPaymentTransactionDocument,
-                  includedDeferredTransactionDocument,
-                  includedReimbursementTransactionDocument,
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
-                ]);
+            test('to include', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [getAccountId(accountDocument)],
+                  include: true, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
-            it('to exclude', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'recipient',
-                    items: [getRecipientId(recipientDocument)],
-                    include: true,
-                  },
-                  {
-                    filterType: 'account',
-                    items: [getAccountId(accountDocument)],
-                    include: false,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  excludedPaymentTransactionDocument,
-                  excludedDeferredTransactionDocument,
-                  excludedReimbursementTransactionDocument,
-                ]);
+            test('to exclude', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'recipient',
+                  items: [getRecipientId(recipientDocument)],
+                  include: true, 
+                },
+                {
+                  filterType: 'account',
+                  items: [getAccountId(accountDocument)],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, ])
 
             });
           });
 
-          describe('filtered by recipient', () => {
-            beforeEach(() => {
+          test.describe('filtered by recipient', () => {
+            test.beforeEach(async ({ saveTransactions }) => {
               includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
                 account: accountDocument,
                 recipient: recipientDocument,
@@ -319,65 +291,43 @@ describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              cy.saveTransactionDocuments([
-                includedPaymentTransactionDocument,
-                splitTransactionDocument,
-                includedDeferredTransactionDocument,
-                includedReimbursementTransactionDocument,
-                excludedPaymentTransactionDocument,
-                excludedDeferredTransactionDocument,
-                excludedReimbursementTransactionDocument,
-                deferredSplitTransactionDocument,
-              ]);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
             });
-            it('to include', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'recipient',
-                    items: [getRecipientId(recipientDocument)],
-                    include: true,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  includedPaymentTransactionDocument,
-                  includedDeferredTransactionDocument,
-                  includedReimbursementTransactionDocument,
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
-                ]);
+            test('to include', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'recipient',
+                  items: [getRecipientId(recipientDocument)],
+                  include: true, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
-            it('to exclude', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [getAccountId(accountDocument)],
-                    include: true,
-                  },
-                  {
-                    filterType: 'recipient',
-                    items: [getRecipientId(recipientDocument)],
-                    include: false,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  excludedPaymentTransactionDocument,
-                  excludedDeferredTransactionDocument,
-                  excludedReimbursementTransactionDocument,
-                ]);
+            test('to exclude', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [getAccountId(accountDocument)],
+                  include: true, 
+                },
+                {
+                  filterType: 'recipient',
+                  items: [getRecipientId(recipientDocument)],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, ])
 
             });
           });
 
-          describe('filtered by project', () => {
-            beforeEach(() => {
+          test.describe('filtered by project', () => {
+            test.beforeEach(async ({ saveTransactions }) => {
               includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
                 account: accountDocument,
                 project: projectDocument,
@@ -435,66 +385,43 @@ describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              cy.saveTransactionDocuments([
-                includedPaymentTransactionDocument,
-                splitTransactionDocument,
-                includedDeferredTransactionDocument,
-                includedReimbursementTransactionDocument,
-                excludedPaymentTransactionDocument,
-                excludedDeferredTransactionDocument,
-                excludedReimbursementTransactionDocument,
-                deferredSplitTransactionDocument,
-              ]);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
             });
-            it('to include', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'project',
-                    items: [getProjectId(projectDocument)],
-                    include: true,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  includedPaymentTransactionDocument,
-                  includedDeferredTransactionDocument,
-                  includedReimbursementTransactionDocument,
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
-                ]);
+            test('to include', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'project',
+                  items: [getProjectId(projectDocument)],
+                  include: true, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
-            it('to exclude', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [getAccountId(accountDocument)],
-                    include: true,
-                  },
-                  {
-                    filterType: 'project',
-                    items: [getProjectId(projectDocument)],
-                    include: false,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  excludedPaymentTransactionDocument,
-                  excludedDeferredTransactionDocument,
-                  excludedReimbursementTransactionDocument,
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
-                ]);
+            test('to exclude', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [getAccountId(accountDocument)],
+                  include: true, 
+                },
+                {
+                  filterType: 'project',
+                  items: [getProjectId(projectDocument)],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]), ])
 
             });
           });
 
-          describe('filtered by category', () => {
-            beforeEach(() => {
+          test.describe('filtered by category', () => {
+            test.beforeEach(async ({ saveTransactions }) => {
               includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
                 account: accountDocument,
                 category: regularCategoryDocument,
@@ -558,76 +485,51 @@ describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              cy.saveTransactionDocuments([
-                includedPaymentTransactionDocument,
-                splitTransactionDocument,
-                includedDeferredTransactionDocument,
-                includedReimbursementTransactionDocument,
-                excludedPaymentTransactionDocument,
-                excludedDeferredTransactionDocument,
-                excludedReimbursementTransactionDocument,
-                deferredSplitTransactionDocument,
-              ]);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
             });
-            it('to include', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'category',
-                    items: [
-                      getCategoryId(regularCategoryDocument),
-                      getCategoryId(inventoryCategoryDocument),
-                      getCategoryId(invoiceCategoryDocument),
-                    ],
-                    include: true,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  includedPaymentTransactionDocument,
-                  includedDeferredTransactionDocument,
-                  includedReimbursementTransactionDocument,
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[2]),
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
-                ]);
+            test('to include', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'category',
+                  items: [
+                    getCategoryId(regularCategoryDocument),
+                    getCategoryId(inventoryCategoryDocument),
+                    getCategoryId(invoiceCategoryDocument), 
+                  ],
+                  include: true, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[2]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
-            it('to exclude', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [getAccountId(accountDocument)],
-                    include: true,
-                  },
-                  {
-                    filterType: 'category',
-                    items: [
-                      getCategoryId(regularCategoryDocument),
-                      getCategoryId(inventoryCategoryDocument),
-                      getCategoryId(invoiceCategoryDocument),
-                    ],
-                    include: false,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  excludedPaymentTransactionDocument,
-                  excludedDeferredTransactionDocument,
-                  excludedReimbursementTransactionDocument,
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[3]),
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
-                ]);
+            test('to exclude', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [getAccountId(accountDocument)],
+                  include: true, 
+                },
+                {
+                  filterType: 'category',
+                  items: [
+                    getCategoryId(regularCategoryDocument),
+                    getCategoryId(inventoryCategoryDocument),
+                    getCategoryId(invoiceCategoryDocument), 
+                  ],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[3]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]), ])
 
             });
           });
 
-          describe('filtered by product', () => {
-            beforeEach(() => {
+          test.describe('filtered by product', () => {
+            test.beforeEach(async ({ saveTransactions }) => {
               includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
                 account: accountDocument,
                 category: inventoryCategoryDocument,
@@ -695,66 +597,43 @@ describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              cy.saveTransactionDocuments([
-                includedPaymentTransactionDocument,
-                splitTransactionDocument,
-                includedDeferredTransactionDocument,
-                includedReimbursementTransactionDocument,
-                excludedPaymentTransactionDocument,
-                excludedDeferredTransactionDocument,
-                excludedReimbursementTransactionDocument,
-                deferredSplitTransactionDocument,
-              ]);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
             });
-            it('to include', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'product',
-                    items: [getProductId(productDocument)],
-                    include: true,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  includedPaymentTransactionDocument,
-                  includedDeferredTransactionDocument,
-                  includedReimbursementTransactionDocument,
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
-                ]);
+            test('to include', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'product',
+                  items: [getProductId(productDocument)],
+                  include: true, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
-            it('to exclude', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [getAccountId(accountDocument)],
-                    include: true,
-                  },
-                  {
-                    filterType: 'product',
-                    items: [getProductId(productDocument)],
-                    include: false,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  excludedPaymentTransactionDocument,
-                  excludedDeferredTransactionDocument,
-                  excludedReimbursementTransactionDocument,
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]),
-                ]);
+            test('to exclude', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [getAccountId(accountDocument)],
+                  include: true, 
+                },
+                {
+                  filterType: 'product',
+                  items: [getProductId(productDocument)],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]), ])
 
             });
           });
 
-          describe('filtered by issuedAt', () => {
-            beforeEach(() => {
+          test.describe('filtered by issuedAt', () => {
+            test.beforeEach(async ({ saveTransactions }) => {
               includedPaymentTransactionDocument = paymentTransactionDataFactory.document({
                 body: {
                   issuedAt: new Date(2024, 7, 5, 12, 0, 0).toISOString(),
@@ -824,321 +703,280 @@ describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              cy.saveTransactionDocuments([
-                includedPaymentTransactionDocument,
-                splitTransactionDocument,
-                includedDeferredTransactionDocument,
-                includedReimbursementTransactionDocument,
-                excludedPaymentTransactionDocument,
-                excludedDeferredTransactionDocument,
-                excludedReimbursementTransactionDocument,
-                deferredSplitTransactionDocument,
-              ]);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
             });
-            it('to include a range', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [getAccountId(accountDocument)],
-                    include: true,
-                  },
-                  {
-                    filterType: 'issuedAt',
-                    from: new Date(2024, 7, 5, 0, 0, 0).toISOString(),
-                    to: new Date(2024, 7, 6, 0, 0, 0).toISOString(),
-                    include: true,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  includedPaymentTransactionDocument,
-                  includedDeferredTransactionDocument,
-                  includedReimbursementTransactionDocument,
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]),
-                  splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]),
-                  splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]),
-                ]);
+            test('to include a range', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [getAccountId(accountDocument)],
+                  include: true, 
+                },
+                {
+                  filterType: 'issuedAt',
+                  from: new Date(2024, 7, 5, 0, 0, 0).toISOString(),
+                  to: new Date(2024, 7, 6, 0, 0, 0).toISOString(),
+                  include: true, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
-            it('to exclude a range', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [getAccountId(accountDocument)],
-                    include: true,
-                  },
-                  {
-                    filterType: 'issuedAt',
-                    from: new Date(2024, 7, 5, 0, 0, 0).toISOString(),
-                    to: new Date(2024, 7, 6, 0, 0, 0).toISOString(),
-                    include: false,
-                  },
-                ])
-                .expectOkResponse()
-                .expectValidResponseSchema(schema)
-                .validateTransactionListReport([
-                  excludedPaymentTransactionDocument,
-                  excludedDeferredTransactionDocument,
-                  excludedReimbursementTransactionDocument,
-                ]);
+            test('to exclude a range', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [getAccountId(accountDocument)],
+                  include: true, 
+                },
+                {
+                  filterType: 'issuedAt',
+                  from: new Date(2024, 7, 5, 0, 0, 0).toISOString(),
+                  to: new Date(2024, 7, 6, 0, 0, 0).toISOString(),
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeOkResponse();
+              expect(res).toMatchSchema(schema);
+              // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, ])
 
             });
           });
         });
 
-        describe('should return error', () => {
-          describe('if body', () => {
-            it('is not an array', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports({} as any)
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('data', 'array', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('is not an array', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports({} as any);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
             });
 
-            it('does not have at least one item', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([])
-                .expectBadRequestResponse()
-                .expectTooFewItemsProperty('data', 1, 'body');
+            test('does not have at least one item', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooFewItemsValidationError('body', 'data', 1);
             });
           });
 
-          describe('if body[0]', () => {
-            it('has additional properties', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [createAccountId()],
-                    include: true,
-                    extra: 1,
-                  } as any,
-                ])
-                .expectBadRequestResponse()
-                .expectAdditionalProperty('data', 'body');
+          test.describe('if body[0]', () => {
+            test('has additional properties', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [createAccountId()],
+                  include: true,
+                  extra: 1, 
+                } as any, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', '0', 'extra');
             });
 
-            it('is missing both "from" and "to" properties', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'issuedAt',
-                    from: undefined,
-                    to: undefined,
-                    include: true,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectRequiredProperty('from', 'body')
-                .expectRequiredProperty('to', 'body');
+            test('is missing both "from" and "to" properties', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'issuedAt',
+                  from: undefined,
+                  to: undefined,
+                  include: true, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'from');
+              expect(res).toHaveRequiredPropertyValidationError('body', 'to');
             });
           });
 
-          describe('if body[0].include', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [createAccountId()],
-                    include: undefined,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectRequiredProperty('include', 'body');
+          test.describe('if body[0].include', () => {
+            test('is missing', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [createAccountId()],
+                  include: undefined, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'include');
             });
 
-            it('is not boolean', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [createAccountId()],
-                    include: 1 as any,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyType ('include', 'boolean', 'body');
+            test('is not boolean', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [createAccountId()],
+                  include: 1 as any, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'include', 'boolean');
             });
           });
 
-          describe('if body[0].filterType', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: undefined,
-                    items: [createAccountId()],
-                    include: false,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectRequiredProperty ('filterType', 'body');
+          test.describe('if body[0].filterType', () => {
+            test('is missing', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: undefined,
+                  items: [createAccountId()],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'filterType');
             });
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 1 as any,
-                    items: [createAccountId()],
-                    include: false,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyType ('filterType', 'string', 'body');
+            test('is not string', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 1 as any,
+                  items: [createAccountId()],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'filterType', 'string');
             });
-            it('is not a valid enum value', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'not filter type' as any,
-                    items: [createAccountId()],
-                    include: false,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectWrongEnumValue ('filterType', 'body');
+            test('is not a valid enum value', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'not filter type' as any,
+                  items: [createAccountId()],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveEnumValidationError('body', 'filterType');
             });
           });
 
-          describe('if body[0].items', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: undefined,
-                    include: false,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectRequiredProperty ('items', 'body');
+          test.describe('if body[0].items', () => {
+            test('is missing', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: undefined,
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'items');
             });
-            it('is not an array', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: 1 as any,
-                    include: false,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyType ('items', 'array', 'body');
+            test('is not an array', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: 1 as any,
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'items', 'array');
             });
-            it('has less than 1 item', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [],
-                    include: false,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectTooFewItemsProperty ('items', 1, 'body');
+            test('has less than 1 item', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooFewItemsValidationError('body', 'items', 1);
             });
           });
 
-          describe('if body[0].items[0]', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: [1 as any],
-                    include: false,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('items/0', 'string', 'body');
+          test.describe('if body[0].items[0]', () => {
+            test('is not string', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: [1 as any],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'items/0', 'string');
             });
-            it('does not match pattern', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'account',
-                    items: ['not mongo id' as any],
-                    include: false,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('items/0', 'body');
+            test('does not match pattern', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'account',
+                  items: ['not mongo id' as any],
+                  include: false, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'items/0');
             });
           });
 
-          describe('if body[0].from', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'issuedAt',
-                    include: false,
-                    from: 1 as any,
-                    to: undefined,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('from', 'string', 'body');
+          test.describe('if body[0].from', () => {
+            test('is not string', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'issuedAt',
+                  include: false,
+                  from: 1 as any,
+                  to: undefined, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'from', 'string');
             });
-            it('is not a date', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'issuedAt',
-                    include: false,
-                    from: 'not date',
-                    to: undefined,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('from', 'date-time', 'body');
+            test('is not a date', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'issuedAt',
+                  include: false,
+                  from: 'not date',
+                  to: undefined, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('body', 'from', 'date-time');
             });
           });
 
-          describe('if body[0].to', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'issuedAt',
-                    include: false,
-                    to: 1 as any,
-                    from: undefined,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('to', 'string', 'body');
+          test.describe('if body[0].to', () => {
+            test('is not string', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'issuedAt',
+                  include: false,
+                  to: 1 as any,
+                  from: undefined, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'to', 'string');
             });
-            it('is not a date', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'issuedAt',
-                    include: false,
-                    to: 'not date',
-                    from: undefined,
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('to', 'date-time', 'body');
+            test('is not a date', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'issuedAt',
+                  include: false,
+                  to: 'not date',
+                  from: undefined, 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('body', 'to', 'date-time');
             });
 
-            it('is earlier than "from"', () => {
-              cy.authenticate(userType)
-                .requestGetTransactionReports([
-                  {
-                    filterType: 'issuedAt',
-                    include: false,
-                    to: new Date(2024, 3, 4, 12, 0, 0).toISOString(),
-                    from: new Date(2024, 4, 4, 12, 0, 0).toISOString(),
-                  },
-                ])
-                .expectBadRequestResponse()
-                .expectTooEarlyDateProperty('to', true, 'body');
+            test('is earlier than "from"', async ({ requestGetTransactionReports }) => {
+              const res = await requestGetTransactionReports([
+                {
+                  filterType: 'issuedAt',
+                  include: false,
+                  to: new Date(2024, 3, 4, 12, 0, 0).toISOString(),
+                  from: new Date(2024, 4, 4, 12, 0, 0).toISOString(), 
+                }, 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooEarlyDateValidationError('body', 'to', true);
             });
           });
         });

@@ -1,23 +1,22 @@
 import { createDraftTransactionDocument, createDraftTransactionResponse, createFileDocument, createPaymentTransactionDocument, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getTransactionId } from '@household/shared/common/utils';
-import { advanceTo, clear } from 'jest-date-mock';
 import { IDraftTransactionDocumentConverter, draftTransactionDocumentConverterFactory } from '@household/shared/converters/draft-transaction-document-converter';
-import { createMockService, Mock, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 
 describe('Draft transaction document converter', () => {
   let converter: IDraftTransactionDocumentConverter;
-  let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
+  let mockTransactionDocumentConverter: MockService<ITransactionDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     mockTransactionDocumentConverter = createMockService('toResponseList');
     converter = draftTransactionDocumentConverterFactory(mockTransactionDocumentConverter.service);
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const amount = 12000;

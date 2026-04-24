@@ -1,18 +1,28 @@
 import { Customer, Price } from '@household/shared/types/types';
-import { customerDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { customerDataFactory } from '@household/test/api/customer/data-factory';
+import { allowUsers } from '@household/test/utils';
 import { entries, getCustomerId } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
+import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+
+const expect = mergeExpects(customerApiExpect, apiExpect);
+
 const permissionMap = allowUsers('hairdresser');
 
-describe('PUT customer/v1/customers/blacklist', () => {
+const test = mergeTests(customerApiTest, priceDbTest, customerDbTest);
+
+test.describe('PUT customer/v1/customers/blacklist', () => {
   let customerDocumentA: Customer.Document;
   let customerDocumentB: Customer.Document;
   let alreadyBlacklistedCustomer: Customer.Document;
   let priceDocument: Price.Document;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     priceDocument = priceDataFactory.document();
 
     alreadyBlacklistedCustomer = customerDataFactory.document();
@@ -36,14 +46,13 @@ describe('PUT customer/v1/customers/blacklist', () => {
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestAddCustomerToBlacklist([
-          customerDataFactory.id(),
-          customerDataFactory.id(),
-        ])
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestAddCustomerToBlacklist }) => {
+      const res = await requestAddCustomerToBlacklist([
+        customerDataFactory.id(),
+        customerDataFactory.id(), 
+      ]);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -51,139 +60,121 @@ describe('PUT customer/v1/customers/blacklist', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestAddCustomerToBlacklist([
-              customerDataFactory.id(),
-              customerDataFactory.id(),
-            ])
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestAddCustomerToBlacklist }) => {
+          const res = await requestAddCustomerToBlacklist([
+            customerDataFactory.id(),
+            customerDataFactory.id(), 
+          ]);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should add customer to blacklist', () => {
-          cy.saveCustomerDocuments([
-            customerDocumentA,
-            customerDocumentB,
-            alreadyBlacklistedCustomer,
-          ])
-            .savePriceDocument(priceDocument)
-            .authenticate(userType)
-            .requestAddCustomerToBlacklist([
-              getCustomerId(customerDocumentA),
-              getCustomerId(customerDocumentB),
-            ])
-            .expectNoContentResponse()
-            .validateCustomerAddedToBlacklist(customerDocumentA, customerDocumentB)
-            .validateCustomerAddedToBlacklist(customerDocumentB, customerDocumentA);
+        test('should add customer to blacklist', async ({ requestAddCustomerToBlacklist, savePrice, saveCustomers, getCustomerById }) => {
+          await saveCustomers(customerDocumentA, customerDocumentB, alreadyBlacklistedCustomer);
+          await savePrice(priceDocument);
+          const res = await requestAddCustomerToBlacklist([
+            getCustomerId(customerDocumentA),
+            getCustomerId(customerDocumentB), 
+          ]);
+          expect(res).toBeNoContentResponse();
+          expect(customerDocumentA).toHaveBeenAddedToBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
+          expect(customerDocumentB).toHaveBeenAddedToBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
         });
 
-        it('should handle if customers are already added to blacklist', () => {
+        test('should handle if customers are already added to blacklist', async ({ requestAddCustomerToBlacklist, savePrice, saveCustomers, getCustomerById }) => {
           customerDocumentA = customerDataFactory.document({
             blacklistedCustomers: [customerDocumentB],
           });
 
-          cy.saveCustomerDocuments([
-            customerDocumentA,
-            customerDocumentB,
-          ])
-            .savePriceDocument(priceDocument)
-            .authenticate(userType)
-            .requestAddCustomerToBlacklist([
-              getCustomerId(customerDocumentA),
-              getCustomerId(customerDocumentB),
-            ])
-            .expectNoContentResponse()
-            .validateCustomerAddedToBlacklist(customerDocumentA, customerDocumentB)
-            .validateCustomerAddedToBlacklist(customerDocumentB, customerDocumentA);
+          await saveCustomers(customerDocumentA, customerDocumentB);
+          await savePrice(priceDocument);
+          const res = await requestAddCustomerToBlacklist([
+            getCustomerId(customerDocumentA),
+            getCustomerId(customerDocumentB), 
+          ]);
+          expect(res).toBeNoContentResponse();
+          expect(customerDocumentA).toHaveBeenAddedToBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
+          expect(customerDocumentB).toHaveBeenAddedToBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
         });
 
-        describe('should return error', () => {
-          describe('if body', () => {
-            it('is not array', () => {
-              cy.authenticate(userType)
-                .requestAddCustomerToBlacklist(<any>{})
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('data', 'array', 'body');
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('is not array', async ({ requestAddCustomerToBlacklist }) => {
+              const res = await requestAddCustomerToBlacklist(<any>{});
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
             });
 
-            it('is has to few items', () => {
-              cy.authenticate(userType)
-                .requestAddCustomerToBlacklist([customerDataFactory.id()])
-                .expectBadRequestResponse()
-                .expectTooFewItemsProperty('data', 2, 'body');
+            test('is has to few items', async ({ requestAddCustomerToBlacklist }) => {
+              const res = await requestAddCustomerToBlacklist([customerDataFactory.id()]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooFewItemsValidationError('body', 'data', 2);
             });
 
-            it('has too many items', () => {
-              cy.authenticate(userType)
-                .requestAddCustomerToBlacklist([
-                  customerDataFactory.id(),
-                  customerDataFactory.id(),
-                  customerDataFactory.id(),
-                ])
-                .expectBadRequestResponse()
-                .expectTooManyItemsProperty('data', 2, 'body');
+            test('has too many items', async ({ requestAddCustomerToBlacklist }) => {
+              const res = await requestAddCustomerToBlacklist([
+                customerDataFactory.id(),
+                customerDataFactory.id(),
+                customerDataFactory.id(), 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooManyItemsValidationError('body', 'data', 2);
             });
 
-            it('items are the same', () => {
-              cy.authenticate(userType)
-                .requestAddCustomerToBlacklist([
-                  getCustomerId(customerDocumentA),
-                  getCustomerId(customerDocumentA),
-                ])
-                .expectBadRequestResponse()
-                .expectMessage('Customer cannot be blacklisted with itself');
+            test('items are the same', async ({ requestAddCustomerToBlacklist }) => {
+              const res = await requestAddCustomerToBlacklist([
+                getCustomerId(customerDocumentA),
+                getCustomerId(customerDocumentA), 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Customer cannot be blacklisted with itself');
             });
           });
 
-          describe('if body[0]', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestAddCustomerToBlacklist([
-                  customerDataFactory.id('not-mongo-id'),
-                  customerDataFactory.id(),
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('data/0', 'body');
+          test.describe('if body[0]', () => {
+            test('is not mongo id', async ({ requestAddCustomerToBlacklist }) => {
+              const res = await requestAddCustomerToBlacklist([
+                customerDataFactory.id('not-mongo-id'),
+                customerDataFactory.id(), 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'data/0');
             });
 
-            it('does not belong to any customer', () => {
-              cy.saveCustomerDocument(customerDocumentB)
-                .savePriceDocument(priceDocument)
-                .authenticate(userType)
-                .requestAddCustomerToBlacklist([
-                  getCustomerId(customerDocumentA),
-                  getCustomerId(customerDocumentB),
-                ])
-                .expectNotFoundResponse()
-                .expectMessage('No customer found');
+            test('does not belong to any customer', async ({ requestAddCustomerToBlacklist, savePrice, saveCustomer }) => {
+              await saveCustomer(customerDocumentB);
+              await savePrice(priceDocument);
+              const res = await requestAddCustomerToBlacklist([
+                getCustomerId(customerDocumentA),
+                getCustomerId(customerDocumentB), 
+              ]);
+              expect(res).toBeNotFoundResponse();
+              expect(res).toHaveMessage('No customer found');
             });
           });
 
-          describe('if body[1]', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestAddCustomerToBlacklist([
-                  customerDataFactory.id(),
-                  customerDataFactory.id('not-mongo-id'),
-                ])
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('data/1', 'body');
+          test.describe('if body[1]', () => {
+            test('is not mongo id', async ({ requestAddCustomerToBlacklist }) => {
+              const res = await requestAddCustomerToBlacklist([
+                customerDataFactory.id(),
+                customerDataFactory.id('not-mongo-id'), 
+              ]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'data/1');
             });
 
-            it('does not belong to any customer', () => {
-              cy.saveCustomerDocuments([
-                customerDocumentA,
-                alreadyBlacklistedCustomer,
-              ])
-                .authenticate(userType)
-                .requestAddCustomerToBlacklist([
-                  getCustomerId(customerDocumentA),
-                  getCustomerId(customerDocumentB),
-                ])
-                .expectNotFoundResponse()
-                .expectMessage('No customer found');
+            test('does not belong to any customer', async ({ requestAddCustomerToBlacklist, saveCustomers }) => {
+              await saveCustomers(customerDocumentA, alreadyBlacklistedCustomer);
+              const res = await requestAddCustomerToBlacklist([
+                getCustomerId(customerDocumentA),
+                getCustomerId(customerDocumentB), 
+              ]);
+              expect(res).toBeNotFoundResponse();
+              expect(res).toHaveMessage('No customer found');
             });
           });
         });

@@ -1,22 +1,23 @@
-export type Mock<T> = {
+import { Mock } from 'vitest';
+
+export type MockService<T> = {
   service: T;
   functions: {
-    // @ts-ignore
-    [P in keyof T]?: jest.Mock<ReturnType<T[P]>, Parameters<T[P]>>;
+    [P in keyof T]?: Mock<T[P] extends (...args: any) => any ? T[P] : never>;
   };
 };
 
-export type MockBusinessService<T extends (...args: any) => any> = jest.Mock<ReturnType<T>, Parameters<T>>;
+export type MockBusinessService<T extends (...args: any) => any> = Mock<T>;
 
-export const createMockService = <T>(...functionsToMock: (keyof T)[]): Mock<T> => {
+export const createMockService = <T>(...functionsToMock: (keyof T)[]): MockService<T> => {
   const functions = functionsToMock.reduce((accumulator, currentValue) => ({
     ...accumulator,
-    [currentValue]: jest.fn(),
+    [currentValue]: vi.fn(),
   }), {});
 
   return {
     functions,
-    service: jest.fn<Partial<T>, undefined[]>(() => functions)() as T,
+    service: functions as T,
   };
 };
 

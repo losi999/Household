@@ -15,8 +15,8 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
 
   const instance: ICalendarDayService = {
     saveCalendarDay: (doc) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.calendarDays.findOneAndReplace({
+      return mongodbService.calendarDays((model, session) => {
+        return model.findOneAndReplace({
           day: doc.day,
         }, doc, {
           upsert: true,
@@ -26,8 +26,8 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
     },
     findCalendarDayByDay: async(day) => {
       if (day) {
-        return mongodbService.inSession((session) => {
-          return mongodbService.calendarDays.findOne({
+        return mongodbService.calendarDays((model, session) => {
+          return model.findOne({
             day,
           })
             .session(session)
@@ -36,8 +36,8 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
       }
     },
     deleteCalendarDay: async (day) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.calendarDays.deleteOne({
+      return mongodbService.calendarDays((model, session) => {
+        return model.deleteOne({
           day,
         }, {
           session,
@@ -45,25 +45,23 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
       });
     },
     clearCalendarDay: async (day) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async() => {
-          await mongodbService.calendarDays.deleteMany({
-            day,
-          }, {
-            session,
-          });
+      return mongodbService.inTransaction(async (models, session) => {
+        await models.calendarDays.deleteMany({
+          day,
+        }, {
+          session,
+        });
 
-          await mongodbService.calendarEntries.deleteMany({
-            day,
-          }, {
-            session,
-          });
+        await models.calendarEntries.deleteMany({
+          day,
+        }, {
+          session,
         });
       });
     },
     updateCalendarDay: async (day, { update }) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.calendarDays.findOneAndUpdate({
+      return mongodbService.calendarDays((model, session) => {
+        return model.findOneAndUpdate({
           day,
         }, update, {
           runValidators: true,
@@ -73,8 +71,8 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
       });
     },
     listCalendarDays: ({ dateFrom, dateTo }) => {
-      return mongodbService.inSession(async(session) => {
-        return mongodbService.calendarDays.find({
+      return mongodbService.calendarDays((model, session) => {
+        return model.find({
           day: {
             $gte: dateFrom,
             $lte: dateTo,
@@ -87,7 +85,6 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
             day: 1,
           })
           .lean();
-          
       });
     },
   };

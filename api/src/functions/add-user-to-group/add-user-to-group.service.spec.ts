@@ -1,11 +1,11 @@
 import { addUserToGroupServiceFactory, IAddUserToGroup } from '@household/api/functions/add-user-to-group/add-user-to-group.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Mock, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { UserType } from '@household/shared/enums';
 
 describe('Add user to group service', () => {
   let service: IAddUserToGroup;
-  let mockIdentityService: Mock<IIdentityService>;
+  let mockIdentityService: MockService<IIdentityService>;
 
   beforeEach(() => {
     mockIdentityService = createMockService<IIdentityService>('addUserToGroup');

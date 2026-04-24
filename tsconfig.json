@@ -1,33 +1,42 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "esnext",
     "esModuleInterop": true,
-    "target": "es2017",
+    "target": "esnext",
     "lib": [
       "es2017",
       "es2019",
+      "ES2022",
       "ES2023.Array",
+    ],
+    "types": [
+      "vitest/globals",
+      "aws-lambda",
+      "node",
     ],
     "noImplicitAny": true,
     "noUnusedLocals": false,
     "sourceMap": false,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "outDir": "output",
-    "baseUrl": ".",
+    "skipLibCheck": true,
+    "strict": false,
     "paths": {
       "@household/api/*": [
-        "api/src/*"
+        "./api/src/*"
       ],
       "@household/shared/*": [
-        "shared/src/*"
+        "./shared/src/*"
+      ],
+      "@household/test/*": [
+        "./test/src/*"
       ]
     }
   },
   "include": [
     "api/src",
     "shared/src",
-    "localhost"
+    "test"
   ]
 }

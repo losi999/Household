@@ -1,11 +1,11 @@
 import { IDeleteProjectService, deleteProjectServiceFactory } from '@household/api/functions/delete-project/delete-project.service';
 import { createProjectId } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IProjectService } from '@household/shared/services/project-service';
 
 describe('Delete project service', () => {
   let service: IDeleteProjectService;
-  let mockProjectService: Mock<IProjectService>;
+  let mockProjectService: MockService<IProjectService>;
 
   beforeEach(() => {
     mockProjectService = createMockService('deleteProject');

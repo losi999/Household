@@ -1,14 +1,14 @@
 import { IUpdatePriceService, updatePriceServiceFactory } from '@household/api/functions/update-price/update-price.service';
-import { createDocumentUpdate2, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getPriceId } from '@household/shared/common/utils';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 import { IPriceService } from '@household/shared/services/price-service';
 
 describe('Update price service', () => {
   let service: IUpdatePriceService;
-  let mockPriceService: Mock<IPriceService>;
-  let mockPriceDocumentConverter: Mock<IPriceDocumentConverter>;
+  let mockPriceService: MockService<IPriceService>;
+  let mockPriceDocumentConverter: MockService<IPriceDocumentConverter>;
 
   beforeEach(() => {
     mockPriceService = createMockService('findPriceById', 'updatePrice');
@@ -20,7 +20,7 @@ describe('Update price service', () => {
   const body = testDataFactory.price.request();
   const queriedDocument = testDataFactory.price.document();
   const priceId = getPriceId(queriedDocument);
-  const updateQuery = createDocumentUpdate2({
+  const updateQuery = createDocumentUpdate({
     update: {
       $set: {
         name: 'updated',

@@ -4,7 +4,7 @@ import { Customer } from '@household/shared/types/types';
 
 export interface ICustomerService {
   saveCustomer(doc: Customer.Document): Promise<Customer.Document>;
-  saveCustomers(docs: Customer.Document[]): Promise<unknown>;
+  saveCustomers(...docs: Customer.Document[]): Promise<unknown>;
   findCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
   getCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
   updateCustomer(customerId: Customer.Id, update: DocumentUpdate<Customer.Document>): Promise<unknown>;
@@ -17,27 +17,25 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
 
   const instance: ICustomerService = {
     saveCustomer: async (doc) => {
-      const [customer] = await mongodbService.inSession((session) => {
-        return mongodbService.customers.create([doc], {
+      const [customer] = await mongodbService.customers((model, session) => {
+        return model.create([doc], {
           session,
         });
       });
       
       return customer;
     },
-    saveCustomers: (docs) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(() => {
-          return mongodbService.customers.insertMany(docs, {
-            session,
-          });
+    saveCustomers: (...docs) => {
+      return mongodbService.inTransaction((models, session) => {
+        return models.customers.insertMany(docs, {
+          session,
         });
       });
     },
     findCustomerById: async (customerId) => {
       if (customerId) {
-        return mongodbService.inSession((session) => {
-          return mongodbService.customers.findById(customerId)
+        return mongodbService.customers((model, session) => {
+          return model.findById(customerId)
             .session(session)
             .lean();
         });
@@ -45,8 +43,8 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
     },
     getCustomerById: async (customerId) => {
       if (customerId) {
-        return mongodbService.inSession((session) => {
-          return mongodbService.customers.findById(customerId)
+        return mongodbService.customers((model, session) => {
+          return model.findById(customerId)
             .session(session)
             .populate('jobs.prices.price')
             .populate('blacklistedCustomers')
@@ -55,21 +53,19 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
       }        
     },
     updateCustomers: async (ctx) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          return Promise.all(ctx.map(({ customerId, update: { update, arrayFilters } }) => {
-            return mongodbService.customers.findByIdAndUpdate(customerId, update, {
-              arrayFilters,
-              runValidators: true,
-              session,
-            });
-          }));
-        });
+      return mongodbService.inTransaction(async (models, session) => {
+        return Promise.all(ctx.map(({ customerId, update: { update, arrayFilters } }) => {
+          return models.customers.findByIdAndUpdate(customerId, update, {
+            arrayFilters,
+            runValidators: true,
+            session,
+          });
+        }));
       });
     },
     updateCustomer: async (customerId, { update, arrayFilters }) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.customers.findByIdAndUpdate(customerId, update, {
+      return mongodbService.customers((model, session) => {
+        return model.findByIdAndUpdate(customerId, update, {
           arrayFilters,
           runValidators: true,
           session,
@@ -77,8 +73,8 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
       });
     },
     listCustomers: () => {
-      return mongodbService.inSession(async(session) => {
-        return mongodbService.customers.find({}).session(session)
+      return mongodbService.customers((model, session) => {
+        return model.find({}).session(session)
           .populate('jobs.prices.price')
           .populate('blacklistedCustomers')
           .collation({
@@ -86,7 +82,6 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
           })
           .sort('name')
           .lean();
-          
       });
     },
     findCustomersByIds: async (customerIds) => {
@@ -94,8 +89,8 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
         return [];
       }
       
-      return mongodbService.inSession((session) => {
-        return mongodbService.customers.find({
+      return mongodbService.customers((model, session) => {
+        return model.find({
           _id: {
             $in: customerIds,
           },

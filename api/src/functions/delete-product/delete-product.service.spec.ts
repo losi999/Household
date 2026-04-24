@@ -1,11 +1,11 @@
 import { IDeleteProductService, deleteProductServiceFactory } from '@household/api/functions/delete-product/delete-product.service';
 import { createProductId } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IProductService } from '@household/shared/services/product-service';
 
 describe('Delete product service', () => {
   let service: IDeleteProductService;
-  let mockProductService: Mock<IProductService>;
+  let mockProductService: MockService<IProductService>;
 
   beforeEach(() => {
     mockProductService = createMockService('deleteProduct');

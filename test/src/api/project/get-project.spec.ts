@@ -1,62 +1,67 @@
-import { default as schema } from '@household/test/api/schemas/project-response';
-import { Project } from '@household/shared/types/types';
 import { entries, getProjectId } from '@household/shared/common/utils';
-import { projectDataFactory } from './data-factory';
-import { forbidUsers } from '@household/test/api/utils';
+import { forbidUsers } from '@household/test/utils';
+import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { default as schema } from '@household/test/schemas/project-response';
+import { projectDataFactory } from '@household/test/api/project/data-factory';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { mergeTests } from '@playwright/test';
 
 const permissionMap = forbidUsers();
 
-describe('GET /project/v1/projects/{projectId}', () => {
-  let projectDocument: Project.Document;
+const test = mergeTests(projectApiTest, projectDbTest);
 
-  beforeEach(() => {
-    projectDocument = projectDataFactory.document();
-  });
-
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetProject(projectDataFactory.id())
-        .expectUnauthorizedResponse();
+test.describe('GET /project/v1/projects/{projectId}', () => {
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestGetProject }) => {
+      const res = await requestGetProject(projectDataFactory.id());
+      apiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
-  entries(permissionMap).forEach(([
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+    
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetProject(projectDataFactory.id())
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestGetProject }) => {
+          const res = await requestGetProject(projectDataFactory.id());
+          apiExpect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should get project by id', () => {
-          cy.saveProjectDocument(projectDocument)
-            .authenticate(userType)
-            .requestGetProject(getProjectId(projectDocument))
-            .expectOkResponse()
-            .expectValidResponseSchema(schema)
-            .validateProjectResponse(projectDocument);
+        test('should get project by id', async ({ requestGetProject, saveProject }) => {
+          const projectDocument = projectDataFactory.document();
+
+          await saveProject(projectDocument);
+
+          const res = await requestGetProject(getProjectId(projectDocument));
+          apiExpect(res).toBeOkResponse();
+          apiExpect(res).toMatchSchema(schema);
+          projectApiExpect(res).toMatchProjectDocument(projectDocument);
         });
 
-        describe('should return error if projectId', () => {
-          it('is not mongo id', () => {
-            cy.authenticate(userType)
-              .requestGetProject(projectDataFactory.id('not-valid'))
-              .expectBadRequestResponse()
-              .expectWrongPropertyPattern('projectId', 'pathParameters');
-          });
-
-          it('does not belong to any project', () => {
-            cy.authenticate(userType)
-              .requestGetProject(projectDataFactory.id())
-              .expectNotFoundResponse();
+        test.describe('should return error', () => {
+          test.describe('if projectId', () => {
+            test('is not mongo id', async ({ requestGetProject }) => {
+              const res = await requestGetProject(projectDataFactory.id('not-mongo-id'));
+              
+              apiExpect(res).toBeBadRequestResponse();
+              apiExpect(res).toHavePatternValidationError('pathParameters', 'projectId');
+            });
+            
+            test('does not belong to any project', async ({ requestGetProject }) => {
+              const res = await requestGetProject(projectDataFactory.id());
+              
+              apiExpect(res).toBeNotFoundResponse();
+            });
           });
         });
       }
     });
-  });
+  }
 });

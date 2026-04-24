@@ -8,7 +8,7 @@ describe('List accounts handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockListAccountsService = jest.fn();
+    mockListAccountsService = vi.fn();
     handlerFunction = handler(mockListAccountsService);
   });
 

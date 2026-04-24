@@ -1,252 +1,271 @@
-import { entries, getProjectId } from '@household/shared/common/utils';
+import { entries, getProjectId, getTransactionId } from '@household/shared/common/utils';
+import { allowUsers } from '@household/test/utils';
+import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { Account, Project, Transaction } from '@household/shared/types/types';
-import { splitTransactionDataFactory } from '../transaction/split/split-data-factory';
-import { paymentTransactionDataFactory } from '../transaction/payment/payment-data-factory';
-import { projectDataFactory } from './data-factory';
-import { accountDataFactory } from '../account/data-factory';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { AccountType } from '@household/shared/enums';
+import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { AccountType } from '@household/shared/enums';
-import { allowUsers } from '@household/test/api/utils';
+import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
 
-const permissionMap = allowUsers('editor') ;
+const expect = mergeExpects(apiExpect, projectApiExpect, transactionApiExpect);
 
-describe('POST project/v1/projects/{projectId}/merge', () => {
-  let accountDocument: Account.Document;
-  let loanAccountDocument: Account.Document;
+const permissionMap = allowUsers('editor');
+
+const test = mergeTests(projectApiTest, accountDbTest, transactionDbTest, projectDbTest);
+
+test.describe('POST /project/v1/projects/{projectId}/merge', () => {
+
   let sourceProjectDocument: Project.Document;
   let targetProjectDocument: Project.Document;
-  let unrelatedProjectDocument: Project.Document;
-  let paymentTransactionDocument: Transaction.PaymentDocument;
-  let deferredTransactionDocument: Transaction.DeferredDocument;
-  let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
-  let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
-  let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
-  let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
-  let splitTransactionDocument: Transaction.SplitDocument;
 
-  beforeEach(() => {
-    accountDocument = accountDataFactory.document();
-    loanAccountDocument = accountDataFactory.document({
-      accountType: AccountType.Loan,
-    });
-
+  test.beforeEach(async () => {
     sourceProjectDocument = projectDataFactory.document();
     targetProjectDocument = projectDataFactory.document();
-    unrelatedProjectDocument = projectDataFactory.document();
+  });
 
-    paymentTransactionDocument = paymentTransactionDataFactory.document({
-      account: accountDocument,
-      project: sourceProjectDocument,
-    });
-
-    deferredTransactionDocument = deferredTransactionDataFactory.document({
-      account: accountDocument,
-      project: sourceProjectDocument,
-      loanAccount: loanAccountDocument,
-    });
-
-    reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-      account: loanAccountDocument,
-      project: sourceProjectDocument,
-      loanAccount: accountDocument,
-    });
-
-    unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-      account: accountDocument,
-      project: unrelatedProjectDocument,
-    });
-
-    unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-      account: accountDocument,
-      project: unrelatedProjectDocument,
-      loanAccount: loanAccountDocument,
-    });
-
-    unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-      account: loanAccountDocument,
-      project: unrelatedProjectDocument,
-      loanAccount: accountDocument,
-    });
-
-    splitTransactionDocument = splitTransactionDataFactory.document({
-      account: accountDocument,
-      splits: [
-        {
-          project: unrelatedProjectDocument,
-        },
-        {
-          project: sourceProjectDocument,
-        },
-        {
-          project: targetProjectDocument,
-        },
-      ],
-      loans: [
-        {
-          project: unrelatedProjectDocument,
-          loanAccount: loanAccountDocument,
-        },
-        {
-          project: sourceProjectDocument,
-          loanAccount: loanAccountDocument,
-        },
-        {
-          project: targetProjectDocument,
-          loanAccount: loanAccountDocument,
-        },
-      ],
+  test.describe('called as anyonymous', () => {
+    test('should return unauthorized', async ({ requestMergeProjects }) => {
+      const res = await requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id()]);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id()])
-        .expectUnauthorizedResponse();
-    });
-  });
-
-  entries(permissionMap).forEach(([
+  for (const [
     userType,
     isAllowed,
-  ]) => {
-    describe(`called as ${userType}`, () => {
+  ] of entries(permissionMap)) {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType,
+      });
+    
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id()])
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestMergeProjects }) => {
+          const res = await requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id()]);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should merge projects', () => {
-          cy.saveAccountDocuments([
-            accountDocument,
-            loanAccountDocument,
-          ])
-            .saveProjectDocuments([
-              sourceProjectDocument,
-              targetProjectDocument,
-              unrelatedProjectDocument,
-            ])
-            .saveTransactionDocuments([
+        test('should merge projects', async ({ requestMergeProjects, saveProjects, findProjectById }) => {
+          await saveProjects(sourceProjectDocument, targetProjectDocument);
+
+          const res = await requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)]);
+          expect(res).toBeCreatedResponse();
+          
+          expect(await findProjectById(getProjectId(sourceProjectDocument))).toHaveBeenDeletedFromDatabase();
+        });
+
+        test.describe('in related transactions source project', () => {
+          let unrelatedProjectDocument: Project.Document;
+          let paymentTransactionDocument: Transaction.PaymentDocument;
+          let deferredTransactionDocument: Transaction.DeferredDocument;
+          let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
+          let splitTransactionDocument: Transaction.SplitDocument;
+          let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
+          let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
+          let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+          let accountDocument: Account.Document;
+          let loanAccountDocument: Account.Document;
+
+          test.beforeEach(async () => {
+            accountDocument = accountDataFactory.document();
+            loanAccountDocument = accountDataFactory.document({
+              accountType: AccountType.Loan,
+            });
+
+            unrelatedProjectDocument = projectDataFactory.document();
+
+            paymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              project: sourceProjectDocument,
+            });
+
+            deferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
+              project: sourceProjectDocument,
+              loanAccount: loanAccountDocument,
+            });
+
+            reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              project: sourceProjectDocument,
+              loanAccount: accountDocument,
+            });
+
+            unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              project: unrelatedProjectDocument,
+            });
+
+            unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
+              project: unrelatedProjectDocument,
+              loanAccount: loanAccountDocument,
+            });
+
+            unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              project: unrelatedProjectDocument,
+              loanAccount: accountDocument,
+            });
+
+            splitTransactionDocument = splitTransactionDataFactory.document({
+              account: accountDocument,
+              splits: [
+                {
+                  project: unrelatedProjectDocument,
+                },
+                {
+                  project: sourceProjectDocument,
+                },
+                {
+                  project: targetProjectDocument,
+                },
+              ],
+              loans: [
+                {
+                  project: unrelatedProjectDocument,
+                  loanAccount: loanAccountDocument,
+                },
+                {
+                  project: sourceProjectDocument,
+                  loanAccount: loanAccountDocument,
+                },
+                {
+                  project: targetProjectDocument,
+                  loanAccount: loanAccountDocument,
+                },
+              ],
+            });
+          });
+          
+          test('should be unset if project is merged into another project', async ({ requestMergeProjects, saveAccounts, saveTransactions, findTransactionById, saveProjects, findProjectById }) => {
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransactions(
               paymentTransactionDocument,
-              splitTransactionDocument,
               deferredTransactionDocument,
               reimbursementTransactionDocument,
               unrelatedPaymentTransactionDocument,
               unrelatedDeferredTransactionDocument,
               unrelatedReimbursementTransactionDocument,
-            ])
-            .authenticate(userType)
-            .requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)])
-            .expectCreatedResponse()
-            .validateProjectDeleted(getProjectId(sourceProjectDocument))
-            .validateRelatedChangesInPaymentDocument(paymentTransactionDocument, {
-              project: {
-                from: getProjectId(sourceProjectDocument),
-                to: getProjectId(targetProjectDocument),
-              },
-            })
-            .validateRelatedChangesInPaymentDocument(unrelatedPaymentTransactionDocument, {
-              project: {
-                from: getProjectId(sourceProjectDocument),
-                to: getProjectId(targetProjectDocument),
-              },
-            })
-            .validateRelatedChangesInDeferredDocument(deferredTransactionDocument, {
-              project: {
-                from: getProjectId(sourceProjectDocument),
-                to: getProjectId(targetProjectDocument),
-              },
-            })
-            .validateRelatedChangesInDeferredDocument(unrelatedDeferredTransactionDocument, {
-              project: {
-                from: getProjectId(sourceProjectDocument),
-                to: getProjectId(targetProjectDocument),
-              },
-            })
-            .validateRelatedChangesInReimbursementDocument(reimbursementTransactionDocument, {
-              project: {
-                from: getProjectId(sourceProjectDocument),
-                to: getProjectId(targetProjectDocument),
-              },
-            })
-            .validateRelatedChangesInReimbursementDocument(unrelatedReimbursementTransactionDocument, {
-              project: {
-                from: getProjectId(sourceProjectDocument),
-                to: getProjectId(targetProjectDocument),
-              },
-            })
-            .validateRelatedChangesInSplitDocument(splitTransactionDocument, {
+              splitTransactionDocument,
+            );
+            await saveProjects(sourceProjectDocument, targetProjectDocument, unrelatedProjectDocument);
+
+            const res = await requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)]);
+            expect(res).toBeCreatedResponse();
+          
+            expect(await findProjectById(getProjectId(sourceProjectDocument))).toHaveBeenDeletedFromDatabase();
+
+            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
               project: {
                 from: getProjectId(sourceProjectDocument),
                 to: getProjectId(targetProjectDocument),
               },
             });
+            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+
+              },
+            });
+            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+
+              },
+            });
+            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            });
+            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            });
+            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            });
+            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
+              project: {
+                from: getProjectId(sourceProjectDocument),
+                to: getProjectId(targetProjectDocument),
+              },
+            });
+
+          });
         });
 
-        describe('should return error', () => {
-          it('if a source project does not exist', () => {
-            cy.saveProjectDocument(targetProjectDocument)
-              .saveProjectDocument(sourceProjectDocument)
-              .authenticate(userType)
-              .requestMergeProjects(getProjectId(targetProjectDocument), [
-                getProjectId(sourceProjectDocument),
-                projectDataFactory.id(),
-              ])
-              .expectBadRequestResponse()
-              .expectMessage('Some of the projects are not found');
+        test.describe('should return error', () => {
+          test('if a source project does not exist', async ({ requestMergeProjects, saveProjects }) => {
+            await saveProjects(targetProjectDocument);
+
+            const res = await requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)]);
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Some of the projects are not found');
           });
-          describe('if body', () => {
-            it('is not array', () => {
-              cy.authenticate(userType)
-                .requestMergeProjects(projectDataFactory.id(), {} as any)
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('data', 'array', 'body');
+
+          test.describe('if body', () => {
+            test('is not array', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id(), {} as any);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
             });
 
-            it('has too few items', () => {
-              cy.authenticate(userType)
-                .requestMergeProjects(projectDataFactory.id(), [])
-                .expectBadRequestResponse()
-                .expectTooFewItemsProperty('data', 1, 'body');
+            test('has too few items', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id(), []);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooFewItemsValidationError('body', 'data', 1);
             });
           });
 
-          describe('if body[0]', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestMergeProjects(projectDataFactory.id(), [1] as any)
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('data', 'string', 'body');
+          test.describe('if body[0]', () => {
+            test('is not string', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id(), [1] as any);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'data/0', 'string');
             });
 
-            it('is not a valid mongo id', () => {
-              cy.authenticate(userType)
-                .requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id('not-valid')])
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('data', 'body');
+            test('is not a valid mongo id', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id(), [projectDataFactory.id('not-valid')]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'data/0');
             });
           });
 
-          describe('if projectId', () => {
-            it('is not a valid mongo id', () => {
-              cy.authenticate(userType)
-                .requestMergeProjects(projectDataFactory.id('not-valid'), [projectDataFactory.id()])
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('projectId', 'pathParameters');
+          test.describe('if projectId', () => {
+            test('is not mongo id', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id('not-mongo-id'), [projectDataFactory.id()]);
+                        
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'projectId');
             });
 
-            it('does not belong to any project', () => {
-              cy.authenticate(userType)
-                .requestMergeProjects(projectDataFactory.id(), [getProjectId(sourceProjectDocument)])
-                .expectBadRequestResponse()
-                .expectMessage('Some of the projects are not found');
+            test('does not belong to any project', async ({ requestMergeProjects }) => {
+              const res = await requestMergeProjects(projectDataFactory.id(), [getProjectId(sourceProjectDocument)]);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Some of the projects are not found');
             });
           });
         });
       }
     });
-  });
+  }
 });

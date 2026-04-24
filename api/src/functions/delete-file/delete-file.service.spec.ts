@@ -1,13 +1,13 @@
 import { IDeleteFileService, deleteFileServiceFactory } from '@household/api/functions/delete-file/delete-file.service';
 import { createFileId } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
 
 describe('Delete file service', () => {
   let service: IDeleteFileService;
-  let mockFileService: Mock<IFileService>;
-  let mockStorageService: Mock<IStorageService>;
+  let mockFileService: MockService<IFileService>;
+  let mockStorageService: MockService<IStorageService>;
 
   beforeEach(() => {
     mockFileService = createMockService('deleteFile');

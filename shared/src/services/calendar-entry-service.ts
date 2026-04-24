@@ -34,8 +34,8 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
 
   const instance: ICalendarEntryService = {
     saveCalendarEntry: async (doc) => {
-      const [entry] = await mongodbService.inSession((session) => {
-        return mongodbService.calendarEntries.create([doc], {
+      const [entry] = await mongodbService.calendarEntries((model, session) => {
+        return model.create([doc], {
           session,
         });
       });
@@ -44,8 +44,8 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
     },
     findCalendarEntryById: async (calendarEntryId) => {
       if (calendarEntryId) {
-        return mongodbService.inSession((session) => {
-          return mongodbService.calendarEntries.findById(calendarEntryId)
+        return mongodbService.calendarEntries((model, session) => {
+          return model.findById(calendarEntryId)
             .lean()
             .session(session);        
         });
@@ -53,44 +53,42 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
     },
     getCalendarEntryById: (calendarEntryId) => {
       if (calendarEntryId) {
-        return mongodbService.inSession(async(session) => {
-          return mongodbService.calendarEntries.findById(calendarEntryId).session(session)
+        return mongodbService.calendarEntries((model, session) => {
+          return model.findById(calendarEntryId).session(session)
             .populate(calendarEntryPopulate)
             .lean();          
         });
       }
     },
     deleteCalendarEntry: async (calendarEntryId) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.calendarEntries.findByIdAndDelete(calendarEntryId, {
+      return mongodbService.calendarEntries((model, session) => {
+        return model.findByIdAndDelete(calendarEntryId, {
           session,
         });          
       });
     },
     updateCalendarEntry: async (calendarEntryId, { update }) => {
-      return mongodbService.inSession(async(session) => {
-        return mongodbService.calendarEntries.findByIdAndUpdate(calendarEntryId, update, {
+      return mongodbService.calendarEntries((model, session) => {
+        return model.findByIdAndUpdate(calendarEntryId, update, {
           runValidators: true,
           session,
         });
       });
     },
     updateCalendarEntryWithPayment: async (calendarEntryId, { update }) => {
-      return mongodbService.inSession((session) => {
-        return session.withTransaction(async () => {
-          const [transaction] = await mongodbService.transactions.create([update.$set.transaction], {
-            session,
-          });
-
-          await mongodbService.calendarEntries.findByIdAndUpdate(calendarEntryId, update).session(session);
-
-          return transaction;
+      return mongodbService.inTransaction(async (models, session) => {
+        const [transaction] = await models.transactions.create([update.$set.transaction], {
+          session,
         });
+
+        await models.calendarEntries.findByIdAndUpdate(calendarEntryId, update).session(session);
+
+        return transaction;
       });
     },
     listCalendarEntries: ({ dateFrom, dateTo }) => {
-      return mongodbService.inSession(async(session) => {
-        return mongodbService.calendarEntries.find({
+      return mongodbService.calendarEntries((model, session) => {
+        return model.find({
           day: {
             $gte: dateFrom,
             $lte: dateTo,
@@ -105,12 +103,11 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
             start: 1,
           })
           .lean();
-          
       });
     },
     listCalendarWorkEntriesByCustomerId: (customerId) => {
-      return mongodbService.inSession((session) => {
-        return mongodbService.calendarEntries.find({
+      return mongodbService.calendarEntries((model, session) => {
+        return model.find({
           customer: customerId,
         })
           .session(session)

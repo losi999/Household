@@ -1,13 +1,13 @@
 import { IListTransactionsByAccountService, listTransactionsByAccountServiceFactory } from '@household/api/functions/list-transactions-by-account/list-transactions-by-account.service';
 import { createAccountId, createPaymentTransactionDocument, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
 describe('List transactions by account service', () => {
   let service: IListTransactionsByAccountService;
-  let mockTransactionService: Mock<ITransactionService>;
-  let mockTransactionDocumentConverter: Mock<ITransactionDocumentConverter>;
+  let mockTransactionService: MockService<ITransactionService>;
+  let mockTransactionDocumentConverter: MockService<ITransactionDocumentConverter>;
 
   beforeEach(() => {
     mockTransactionService = createMockService('listTransactionsByAccountId');

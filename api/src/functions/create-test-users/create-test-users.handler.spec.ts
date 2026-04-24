@@ -7,7 +7,7 @@ describe('Create test users handler', () => {
   let mockCreateTestUsersService: MockBusinessService<ICreateTestUsersService>;
 
   beforeEach(() => {
-    mockCreateTestUsersService = jest.fn();
+    mockCreateTestUsersService = vi.fn();
 
     handlerFunction = handler(mockCreateTestUsersService);
   });

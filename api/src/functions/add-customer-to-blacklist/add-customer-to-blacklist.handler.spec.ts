@@ -8,7 +8,7 @@ describe('Add customer to blacklist handler', () => {
   let handlerFunction: ReturnType<typeof handler>;
 
   beforeEach(() => {
-    mockAddCustomerToBlacklistService = jest.fn();
+    mockAddCustomerToBlacklistService = vi.fn();
     handlerFunction = handler(mockAddCustomerToBlacklistService);
   });
 

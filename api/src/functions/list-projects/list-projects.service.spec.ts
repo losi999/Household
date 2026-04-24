@@ -1,13 +1,13 @@
 import { IListProjectsService, listProjectsServiceFactory } from '@household/api/functions/list-projects/list-projects.service';
 import { createProjectDocument, createProjectResponse } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
 
 describe('List projects service', () => {
   let service: IListProjectsService;
-  let mockProjectService: Mock<IProjectService>;
-  let mockProjectDocumentConverter: Mock<IProjectDocumentConverter>;
+  let mockProjectService: MockService<IProjectService>;
+  let mockProjectDocumentConverter: MockService<IProjectDocumentConverter>;
 
   beforeEach(() => {
     mockProjectService = createMockService('listProjects');

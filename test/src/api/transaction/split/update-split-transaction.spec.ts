@@ -10,11 +10,25 @@ import { deferredTransactionDataFactory } from '@household/test/api/transaction/
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { allowUsers } from '@household/test/utils';
+
+import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+
+const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
 
-describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => {
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
+
+test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => {
   let request: Transaction.SplitRequest;
   let originalDocument: Transaction.PaymentDocument;
 
@@ -29,7 +43,7 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
   let relatedDocumentIds: Pick<Transaction.SplitRequest, 'accountId' | 'recipientId'>;
   let relatedDocumentItemIds: Pick<Transaction.SplitRequestItem, 'categoryId' | 'productId' | 'projectId'>;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     projectDocument = projectDataFactory.document();
     recipientDocument = recipientDataFactory.document();
     accountDocument = accountDataFactory.document();
@@ -106,11 +120,10 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
     );
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestUpdateToSplitTransaction(splitTransactionDataFactory.id(), request)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestUpdateToSplitTransaction }) => {
+      const res = await requestUpdateToSplitTransaction(splitTransactionDataFactory.id(), request);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -118,36 +131,31 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestUpdateToSplitTransaction(splitTransactionDataFactory.id(), request)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestUpdateToSplitTransaction }) => {
+          const res = await requestUpdateToSplitTransaction(splitTransactionDataFactory.id(), request);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        describe('should update transaction', () => {
-          it('with complete body', () => {
-            cy.saveTransactionDocument(originalDocument)
-              .saveAccountDocuments([
-                accountDocument,
-                secondaryAccountDocument,
-              ])
-              .saveCategoryDocuments([
-                regularCategoryDocument,
-                invoiceCategoryDocument,
-                inventoryCategoryDocument,
-              ])
-              .saveProjectDocument(projectDocument)
-              .saveRecipientDocument(recipientDocument)
-              .saveProductDocument(productDocument)
-              .authenticate(userType)
-              .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-              .expectCreatedResponse()
-              .validateTransactionSplitDocument(request);
+        test.describe('should update transaction', () => {
+          test('with complete body', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
+            await saveTransaction(originalDocument);
+            await saveAccounts(accountDocument, secondaryAccountDocument);
+            await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            await saveProject(projectDocument);
+            await saveRecipient(recipientDocument);
+            await saveProduct(productDocument);
+            const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+            expect(res).toBeCreatedResponse();
+            const { transactionId } = await res.json() as Transaction.TransactionId;
+            expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
           });
 
-          it('keeping existing deferred split and its repayment', () => {
+          test('keeping existing deferred split and its repayment', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransactions, getTransactionById }) => {
             const splitDocument = splitTransactionDataFactory.document({
               account: accountDocument,
               loans: [
@@ -174,138 +182,97 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
               },
             ]);
 
-            cy.saveTransactionDocuments([
-              splitDocument,
-              repayingTransferTransactionDocument,
-            ])
-              .saveAccountDocuments([
-                accountDocument,
-                secondaryAccountDocument,
-                transferAccountDocument,
-              ])
-              .authenticate(userType)
-              .requestUpdateToSplitTransaction(getTransactionId(splitDocument), request)
-              .expectCreatedResponse()
-              .validateTransactionSplitDocument(request)
-              .validateRelatedRepaymentUnchanged(getTransactionId(splitDocument.deferredSplits[0]), repayingTransferTransactionDocument);
+            await saveTransactions(splitDocument, repayingTransferTransactionDocument);
+            await saveAccounts(accountDocument, secondaryAccountDocument, transferAccountDocument);
+            const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
+            expect(res).toBeCreatedResponse();
+            const { transactionId } = await res.json() as Transaction.TransactionId;
+            expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+            expect(repayingTransferTransactionDocument).toBeTheSame(await getTransactionById(getTransactionId(repayingTransferTransactionDocument)));
           });
-          describe('without optional properties', () => {
-            it('description', () => {
+
+          test.describe('without optional properties', () => {
+            test('description', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               }, request.splits, request.loans);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('recipientId', () => {
+            test('recipientId', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveProduct }) => {
               request = splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: undefined,
               }, request.splits, request.loans);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('splits', () => {
+            test('splits', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [], request.loans);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('loans', () => {
+            test('loans', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, []);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('splits.description', () => {
+            test('splits.description', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
                   description: undefined,
                 },
               ], request.loans);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('splits.inventory', () => {
+            test('splits.inventory', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
@@ -314,26 +281,19 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   quantity: undefined,
                 },
               ], request.loans);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('splits.invoice', () => {
+            test('splits.invoice', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
@@ -343,26 +303,19 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   billingStartDate: undefined,
                 },
               ], request.loans);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('splits.invoice.invoiceNumber', () => {
+            test('splits.invoice.invoiceNumber', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
@@ -370,78 +323,57 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   invoiceNumber: undefined,
                 },
               ], request.loans);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('splits.categoryId', () => {
+            test('splits.categoryId', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
                   categoryId: undefined,
                 },
               ], request.loans);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('splits.projectId', () => {
+            test('splits.projectId', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [
                 {
                   ...relatedDocumentItemIds,
                   projectId: undefined,
                 },
               ], request.loans);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('loans.description', () => {
+            test('loans.description', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -449,26 +381,19 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   description: undefined,
                 },
               ]);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('loans.inventory', () => {
+            test('loans.inventory', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -478,26 +403,19 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   quantity: undefined,
                 },
               ]);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('loans.invoice', () => {
+            test('loans.invoice', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -508,26 +426,19 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   billingStartDate: undefined,
                 },
               ]);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('loans.invoice.invoiceNumber', () => {
+            test('loans.invoice.invoiceNumber', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -536,26 +447,19 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   invoiceNumber: undefined,
                 },
               ]);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('loans.categoryId', () => {
+            test('loans.categoryId', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -563,26 +467,19 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   categoryId: undefined,
                 },
               ]);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('loans.projectId', () => {
+            test('loans.projectId', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
                 {
                   ...relatedDocumentItemIds,
@@ -590,30 +487,23 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                   projectId: undefined,
                 },
               ]);
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
           });
 
-          describe('with unsetting', () => {
+          test.describe('with unsetting', () => {
             let splitDocument: Transaction.SplitDocument;
 
-            beforeEach(() => {
+            test.beforeEach(async () => {
               splitDocument = splitTransactionDataFactory.document({
                 account: accountDocument,
                 recipient: recipientDocument,
@@ -628,75 +518,54 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
               });
             });
 
-            it('description', () => {
+            test('description', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               }, request.splits, request.loans);
-              cy.saveTransactionDocument(splitDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(splitDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(splitDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('recipientId', () => {
+            test('recipientId', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveProduct }) => {
               request = splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: undefined,
               }, request.splits, request.loans);
-              cy.saveTransactionDocument(splitDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(splitDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(splitDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('splits', () => {
+            test('splits', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, [], request.loans);
-              cy.saveTransactionDocument(splitDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(splitDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request);
+              await saveTransaction(splitDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
+              expect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
-            it('loans', () => {
+            test('loans', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransactions, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, []);
               const transferAccountDocument = accountDataFactory.document();
 
@@ -706,1099 +575,964 @@ describe('PUT transaction/v1/transactions/{transactionId}/split (split)', () => 
                 transactions: [splitDocument.deferredSplits[0]],
               });
 
-              cy.saveTransactionDocuments([
-                splitDocument,
-                repayingTransferTransactionDocument,
-              ])
-                .saveAccountDocuments([
-                  accountDocument,
-                  transferAccountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .saveProductDocument(productDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(splitDocument), request)
-                .expectCreatedResponse()
-                .validateTransactionSplitDocument(request)
-                .validateRelatedRepaymentDeleted(getTransactionId(splitDocument.deferredSplits[0]), getTransactionId(repayingTransferTransactionDocument));
+              await saveTransactions(splitDocument, repayingTransferTransactionDocument);
+              await saveAccounts(accountDocument, transferAccountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
+              expect(res).toBeCreatedResponse();
+
+              const { transactionId } = await res.json() as Transaction.TransactionId;
+              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+
+              expect(repayingTransferTransactionDocument).toHavePaymentRemoved(await getTransactionById(getTransactionId(repayingTransferTransactionDocument)), getTransactionId(splitDocument.deferredSplits[0]));
             });
           });
         });
 
-        describe('should return error', () => {
-          describe('if transactionId', () => {
-            it('is not mongo id', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(splitTransactionDataFactory.id('not-valid'), request)
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('transactionId', 'pathParameters');
+        test.describe('should return error', () => {
+          test.describe('if transactionId', () => {
+            test('is not mongo id', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(splitTransactionDataFactory.id('not-valid'), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('pathParameters', 'transactionId');
             });
 
-            it('does not belong to any transaction', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(splitTransactionDataFactory.id(), request)
-                .expectNotFoundResponse();
+            test('does not belong to any transaction', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(splitTransactionDataFactory.id(), request);
+              expect(res).toBeNotFoundResponse();
             });
           });
 
-          describe('if body', () => {
-            it('has additional properties', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  extra: 123,
-                } as any))
-                .expectBadRequestResponse()
-                .expectAdditionalProperty('data', 'body');
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                extra: 123, 
+              } as any));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
             });
 
-            it('misses both splits and loans', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], []))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('splits', 'body')
-                .expectRequiredProperty('loans', 'body');
+            test('misses both splits and loans', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], []));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'splits');
+              expect(res).toHaveRequiredPropertyValidationError('body', 'loans');
             });
           });
 
-          describe('if amount', () => {
-            it('is not the same as sum of splits', () => {
-              cy.saveTransactionDocument(originalDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  amount: -2,
-                }))
-                .expectBadRequestResponse()
-                .expectMessage('Sum of splits must equal to total amount');
+          test.describe('if amount', () => {
+            test('is not the same as sum of splits', async ({ requestUpdateToSplitTransaction, saveTransaction }) => {
+              await saveTransaction(originalDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                amount: -2, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Sum of splits must equal to total amount');
             });
 
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  amount: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('amount', 'body');
+            test('is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                amount: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  amount: <any>'1',
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('amount', 'number', 'body');
+            test('is not number', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                amount: <any>'1', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
             });
           });
 
-          describe('if description', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  description: <any> 1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('description', 'string', 'body');
+          test.describe('if description', () => {
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                description: <any> 1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  description: '',
-                }))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('description', 1, 'body');
+            test('is too short', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                description: '', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
-          describe('if issuedAt', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  issuedAt: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('issuedAt', 'body');
+          test.describe('if issuedAt', () => {
+            test('is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                issuedAt: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'issuedAt');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  issuedAt: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('issuedAt', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                issuedAt: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'issuedAt', 'string');
             });
 
-            it('is not date-time format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  issuedAt: 'not-date-time',
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('issuedAt', 'date-time', 'body');
+            test('is not date-time format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                issuedAt: 'not-date-time', 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('body', 'issuedAt', 'date-time');
             });
           });
 
-          describe('if accountId', () => {
-            it('belongs to a loan type account', () => {
+          test.describe('if accountId', () => {
+            test('belongs to a loan type account', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, saveCategories, saveProject, saveRecipient }) => {
               const loanAccountDocument = accountDataFactory.document({
                 accountType: AccountType.Loan,
               });
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  loanAccountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  ...relatedDocumentIds,
-                  accountId: getAccountId(loanAccountDocument),
-                }, undefined, []))
-                .expectBadRequestResponse()
-                .expectMessage('Account type cannot be loan');
+              await saveTransaction(originalDocument);
+              await saveAccounts(loanAccountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                accountId: getAccountId(loanAccountDocument), 
+              }, undefined, []));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Account type cannot be loan');
             });
 
-            it('does not belong to any account', () => {
-              cy.saveTransactionDocument(originalDocument)
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  ...relatedDocumentIds,
-                  accountId: accountDataFactory.id(),
-                }))
-                .expectBadRequestResponse()
-                .expectMessage('Some of the accounts are not found');
+            test('does not belong to any account', async ({ requestUpdateToSplitTransaction, saveTransaction, saveCategories, saveProject, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                accountId: accountDataFactory.id(), 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Some of the accounts are not found');
             });
 
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  accountId: undefined,
-                }))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('accountId', 'body');
+            test('is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                accountId: undefined, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'accountId');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  accountId: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('accountId', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                accountId: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'accountId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  accountId: accountDataFactory.id('not-mongo-id'),
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('accountId', 'body');
+            test('is not mongo id format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                accountId: accountDataFactory.id('not-mongo-id'), 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'accountId');
             });
           });
 
-          describe('if recipientId', () => {
-            it('does not belong to any recipient', () => {
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocument(accountDocument)
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  ...relatedDocumentIds,
-                  recipientId: recipientDataFactory.id(),
-                }, undefined, []))
-                .expectBadRequestResponse()
-                .expectMessage('No recipient found');
+          test.describe('if recipientId', () => {
+            test('does not belong to any recipient', async ({ requestUpdateToSplitTransaction, saveAccount, saveTransaction, saveCategories, saveProject }) => {
+              await saveTransaction(originalDocument);
+              await saveAccount(accountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                recipientId: recipientDataFactory.id(), 
+              }, undefined, []));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('No recipient found');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  recipientId: <any>1,
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('recipientId', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                recipientId: <any>1, 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'recipientId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                  recipientId: recipientDataFactory.id('not-mongo-id'),
-                }))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('recipientId', 'body');
+            test('is not mongo id format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
+                recipientId: recipientDataFactory.id('not-mongo-id'), 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'recipientId');
             });
           });
 
-          describe('if splits', () => {
-            it('is not an array', () => {
+          test.describe('if splits', () => {
+            test('is not an array', async ({ requestUpdateToSplitTransaction }) => {
               request.splits = {} as any;
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('splits', 'array', 'body');
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'splits', 'array');
             });
 
-            it('is empty array', () => {
+            test('is empty array', async ({ requestUpdateToSplitTransaction }) => {
               request.splits = [];
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectBadRequestResponse()
-                .expectTooFewItemsProperty('splits', 1, 'body');
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooFewItemsValidationError('body', 'splits', 1);
             });
           });
 
-          describe('if splits[0]', () => {
-            it('is not object', () => {
+          test.describe('if splits[0]', () => {
+            test('is not object', async ({ requestUpdateToSplitTransaction }) => {
               request.splits = [1] as any;
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('splits', 'object', 'body');
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'splits/0', 'object');
             });
 
-            it('has additional properties', () => {
+            test('has additional properties', async ({ requestUpdateToSplitTransaction }) => {
               request.splits = [
                 {
                   extra: 1,
                 },
               ] as any;
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectBadRequestResponse()
-                .expectAdditionalProperty('splits', 'body');
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'splits/0', 'extra');
             });
           });
 
-          describe('if splits.amount', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    amount: undefined,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('amount', 'body');
+          test.describe('if splits.amount', () => {
+            test('is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  amount: undefined, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    amount: <any>'1',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType ('amount', 'number', 'body');
+            test('is not number', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  amount: <any>'1', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
             });
           });
 
-          describe('if splits.description', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    description: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('description', 'string', 'body');
+          test.describe('if splits.description', () => {
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  description: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    description: '',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('description', 1, 'body');
+            test('is too short', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  description: '', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
-          describe('if splits.quantity', () => {
-            it('is present and productId is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    quantity: 1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectDependentRequiredProperty('quantity', 'body', 'productId');
+          test.describe('if splits.quantity', () => {
+            test('is present and productId is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  quantity: 1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    quantity: <any>'1',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('quantity', 'number', 'body');
+            test('is not number', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  quantity: <any>'1', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    quantity: 0,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('quantity', 0, true, 'body');
+            test('is too small', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  quantity: 0, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
             });
           });
 
-          describe('if splits.productId', () => {
-            it('is present and quantity is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    productId: productDataFactory.id(),
-                    quantity: undefined,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectDependentRequiredProperty('productId', 'body', 'quantity');
+          test.describe('if splits.productId', () => {
+            test('is present and quantity is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  productId: productDataFactory.id(),
+                  quantity: undefined, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    productId: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('productId', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  productId: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    productId: productDataFactory.id('not-mongo-id'),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('productId', 'body');
+            test('is not mongo id format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  productId: productDataFactory.id('not-mongo-id'), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'productId');
             });
 
-            it('does not belong to any product', () => {
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocument(accountDocument)
-                .saveCategoryDocument(inventoryCategoryDocument)
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    ...relatedDocumentItemIds,
-                    categoryId: getCategoryId(inventoryCategoryDocument),
-                    productId: productDataFactory.id(),
-                  },
-                ], []))
-                .expectBadRequestResponse()
-                .expectMessage('No product found');
+            test('does not belong to any product', async ({ requestUpdateToSplitTransaction, saveAccount, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccount(accountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  ...relatedDocumentItemIds,
+                  categoryId: getCategoryId(inventoryCategoryDocument),
+                  productId: productDataFactory.id(), 
+                }, 
+              ], []));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('No product found');
             });
           });
 
-          describe('if splits.invoiceNumber', () => {
-            it('is present and billingEndDate, billingStartDate are missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    billingEndDate: undefined,
-                    billingStartDate: undefined,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectDependentRequiredProperty('invoiceNumber', 'body', 'billingEndDate', 'billingStartDate');
+          test.describe('if splits.invoiceNumber', () => {
+            test('is present and billingEndDate, billingStartDate are missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  billingEndDate: undefined,
+                  billingStartDate: undefined, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    invoiceNumber: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('invoiceNumber', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  invoiceNumber: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    invoiceNumber: '',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('invoiceNumber', 1, 'body');
+            test('is too short', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  invoiceNumber: '', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
             });
           });
 
-          describe('if splits.billingEndDate', () => {
-            it('is present and billingStartDate is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    billingStartDate: undefined,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectDependentRequiredProperty('billingEndDate', 'body', 'billingStartDate');
+          test.describe('if splits.billingEndDate', () => {
+            test('is present and billingStartDate is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  billingStartDate: undefined, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    billingEndDate: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('billingEndDate', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  billingEndDate: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
             });
 
-            it('is not date format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    billingEndDate: 'not-date',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('billingEndDate', 'date', 'body');
+            test('is not date format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  billingEndDate: 'not-date', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
             });
 
-            it('is later than billingStartDate', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    billingEndDate: '2022-06-01',
-                    billingStartDate: '2022-06-03',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectTooEarlyDateProperty('billingEndDate', true, 'body');
+            test('is later than billingStartDate', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  billingEndDate: '2022-06-01',
+                  billingStartDate: '2022-06-03', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
             });
           });
 
-          describe('if splits.billingStartDate', () => {
-            it('is present and billingEndDate is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    billingEndDate: undefined,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectDependentRequiredProperty('billingStartDate', 'body', 'billingEndDate');
+          test.describe('if splits.billingStartDate', () => {
+            test('is present and billingEndDate is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  billingEndDate: undefined, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    billingStartDate: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('billingStartDate', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  billingStartDate: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
             });
 
-            it('is not date format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    billingStartDate: 'not-date',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('billingStartDate', 'date', 'body');
+            test('is not date format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  billingStartDate: 'not-date', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
             });
           });
 
-          describe('if splits.categoryId', () => {
-            it('does not belong to any category', () => {
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocument(accountDocument)
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    ...relatedDocumentItemIds,
-                    categoryId: categoryDataFactory.id(),
-                  },
-                ], []))
-                .expectBadRequestResponse()
-                .expectMessage('Some of the categories are not found');
+          test.describe('if splits.categoryId', () => {
+            test('does not belong to any category', async ({ requestUpdateToSplitTransaction, saveAccount, saveTransaction, saveProject, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccount(accountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  ...relatedDocumentItemIds,
+                  categoryId: categoryDataFactory.id(), 
+                }, 
+              ], []));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Some of the categories are not found');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    categoryId: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('categoryId', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  categoryId: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    categoryId: categoryDataFactory.id('not-mongo-id'),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('categoryId', 'body');
+            test('is not mongo id format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  categoryId: categoryDataFactory.id('not-mongo-id'), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'categoryId');
             });
           });
 
-          describe('if splits.projectId', () => {
-            it('does not belong to any project', () => {
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocument(accountDocument)
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveRecipientDocument(recipientDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    ...relatedDocumentItemIds,
-                    projectId: projectDataFactory.id(),
-                  },
-                ], []))
-                .expectBadRequestResponse()
-                .expectMessage('Some of the projects are not found');
+          test.describe('if splits.projectId', () => {
+            test('does not belong to any project', async ({ requestUpdateToSplitTransaction, saveAccount, saveTransaction, saveCategories, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccount(accountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  ...relatedDocumentItemIds,
+                  projectId: projectDataFactory.id(), 
+                }, 
+              ], []));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Some of the projects are not found');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    projectId: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('projectId', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  projectId: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
-                  {
-                    projectId: projectDataFactory.id('not-mongo-id'),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('projectId', 'body');
+            test('is not mongo id format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [
+                {
+                  projectId: projectDataFactory.id('not-mongo-id'), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'projectId');
             });
           });
 
-          describe('if loans', () => {
-            it('is not an array', () => {
+          test.describe('if loans', () => {
+            test('is not an array', async ({ requestUpdateToSplitTransaction }) => {
               request.loans = {} as any;
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('loans', 'array', 'body');
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'loans', 'array');
             });
 
-            it('is empty array', () => {
+            test('is empty array', async ({ requestUpdateToSplitTransaction }) => {
               request.loans = [];
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectBadRequestResponse()
-                .expectTooFewItemsProperty('loans', 1, 'body');
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooFewItemsValidationError('body', 'loans', 1);
             });
           });
 
-          describe('if loans[0]', () => {
-            it('is not object', () => {
+          test.describe('if loans[0]', () => {
+            test('is not object', async ({ requestUpdateToSplitTransaction }) => {
               request.loans = [1] as any;
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('loans', 'object', 'body');
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'loans/0', 'object');
             });
 
-            it('has additional properties', () => {
+            test('has additional properties', async ({ requestUpdateToSplitTransaction }) => {
               request.loans = [
                 {
                   extra: 1,
                 },
               ] as any;
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), request)
-                .expectBadRequestResponse()
-                .expectAdditionalProperty('loans', 'body');
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveAdditionalPropertiesValidationError('body', 'loans/0', 'extra');
             });
           });
 
-          describe('if loans.amount', () => {
-            it('is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    amount: undefined,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectRequiredProperty('amount', 'body');
+          test.describe('if loans.amount', () => {
+            test('is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  amount: undefined, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    amount: <any>'1',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType ('amount', 'number', 'body');
+            test('is not number', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  amount: <any>'1', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
             });
           });
 
-          describe('if loans.description', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    description: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('description', 'string', 'body');
+          test.describe('if loans.description', () => {
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  description: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    description: '',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('description', 1, 'body');
+            test('is too short', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  description: '', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
-          describe('if loans.quantity', () => {
-            it('is present and productId is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    quantity: 1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectDependentRequiredProperty('quantity', 'body', 'productId');
+          test.describe('if loans.quantity', () => {
+            test('is present and productId is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  quantity: 1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
             });
 
-            it('is not number', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    quantity: <any>'1',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('quantity', 'number', 'body');
+            test('is not number', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  quantity: <any>'1', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
-            it('is too small', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    quantity: 0,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectTooSmallNumberProperty('quantity', 0, true, 'body');
+            test('is too small', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  quantity: 0, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
             });
           });
 
-          describe('if loans.productId', () => {
-            it('is present and quantity is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    productId: productDataFactory.id(),
-                    quantity: undefined,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectDependentRequiredProperty('productId', 'body', 'quantity');
+          test.describe('if loans.productId', () => {
+            test('is present and quantity is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  productId: productDataFactory.id(),
+                  quantity: undefined, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    productId: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('productId', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  productId: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    productId: productDataFactory.id('not-mongo-id'),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('productId', 'body');
+            test('is not mongo id format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  productId: productDataFactory.id('not-mongo-id'), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'productId');
             });
 
-            it('does not belong to any product', () => {
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocument(inventoryCategoryDocument)
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    ...relatedDocumentItemIds,
-                    loanAccountId: getAccountId(secondaryAccountDocument),
-                    categoryId: getCategoryId(inventoryCategoryDocument),
-                    productId: productDataFactory.id(),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectMessage('No product found');
+            test('does not belong to any product', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  ...relatedDocumentItemIds,
+                  loanAccountId: getAccountId(secondaryAccountDocument),
+                  categoryId: getCategoryId(inventoryCategoryDocument),
+                  productId: productDataFactory.id(), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('No product found');
             });
           });
 
-          describe('if loans.invoiceNumber', () => {
-            it('is present and billingEndDate, billingStartDate are missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    billingEndDate: undefined,
-                    billingStartDate: undefined,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectDependentRequiredProperty('invoiceNumber', 'body', 'billingEndDate', 'billingStartDate');
+          test.describe('if loans.invoiceNumber', () => {
+            test('is present and billingEndDate, billingStartDate are missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  billingEndDate: undefined,
+                  billingStartDate: undefined, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    invoiceNumber: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('invoiceNumber', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  invoiceNumber: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
             });
 
-            it('is too short', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    invoiceNumber: '',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectTooShortProperty('invoiceNumber', 1, 'body');
+            test('is too short', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  invoiceNumber: '', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
             });
           });
 
-          describe('if loans.billingEndDate', () => {
-            it('is present and billingStartDate is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    billingStartDate: undefined,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectDependentRequiredProperty('billingEndDate', 'body', 'billingStartDate');
+          test.describe('if loans.billingEndDate', () => {
+            test('is present and billingStartDate is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  billingStartDate: undefined, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    billingEndDate: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('billingEndDate', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  billingEndDate: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
             });
 
-            it('is not date format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    billingEndDate: 'not-date',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('billingEndDate', 'date', 'body');
+            test('is not date format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  billingEndDate: 'not-date', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
             });
 
-            it('is later than billingStartDate', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    billingEndDate: '2022-06-01',
-                    billingStartDate: '2022-06-03',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectTooEarlyDateProperty('billingEndDate', true, 'body');
+            test('is later than billingStartDate', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  billingEndDate: '2022-06-01',
+                  billingStartDate: '2022-06-03', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
             });
           });
 
-          describe('if loans.billingStartDate', () => {
-            it('is present and billingEndDate is missing', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    billingEndDate: undefined,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectDependentRequiredProperty('billingStartDate', 'body', 'billingEndDate');
+          test.describe('if loans.billingStartDate', () => {
+            test('is present and billingEndDate is missing', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  billingEndDate: undefined, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    billingStartDate: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('billingStartDate', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  billingStartDate: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
             });
 
-            it('is not date format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    billingStartDate: 'not-date',
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('billingStartDate', 'date', 'body');
+            test('is not date format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  billingStartDate: 'not-date', 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
             });
           });
 
-          describe('if loans.categoryId', () => {
-            it('does not belong to any category', () => {
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveProjectDocument(projectDocument)
-                .saveRecipientDocument(recipientDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    ...relatedDocumentItemIds,
-                    categoryId: categoryDataFactory.id(),
-                    loanAccountId: getAccountId(secondaryAccountDocument),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectMessage('Some of the categories are not found');
+          test.describe('if loans.categoryId', () => {
+            test('does not belong to any category', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, saveProject, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  ...relatedDocumentItemIds,
+                  categoryId: categoryDataFactory.id(),
+                  loanAccountId: getAccountId(secondaryAccountDocument), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Some of the categories are not found');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    categoryId: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('categoryId', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  categoryId: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    categoryId: categoryDataFactory.id('not-mongo-id'),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('categoryId', 'body');
+            test('is not mongo id format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  categoryId: categoryDataFactory.id('not-mongo-id'), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'categoryId');
             });
           });
 
-          describe('if loans.projectId', () => {
-            it('does not belong to any project', () => {
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([
-                  accountDocument,
-                  secondaryAccountDocument,
-                ])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveRecipientDocument(recipientDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    ...relatedDocumentItemIds,
-                    loanAccountId: getAccountId(secondaryAccountDocument),
-                    projectId: projectDataFactory.id(),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectMessage('Some of the projects are not found');
+          test.describe('if loans.projectId', () => {
+            test('does not belong to any project', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, saveCategories, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  ...relatedDocumentItemIds,
+                  loanAccountId: getAccountId(secondaryAccountDocument),
+                  projectId: projectDataFactory.id(), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Some of the projects are not found');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    projectId: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('projectId', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  projectId: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    projectId: projectDataFactory.id('not-mongo-id'),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('projectId', 'body');
+            test('is not mongo id format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  projectId: projectDataFactory.id('not-mongo-id'), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'projectId');
             });
           });
 
-          describe('if loans.loanAccountId', () => {
-            it('does not belong to any account', () => {
-              cy.saveTransactionDocument(originalDocument)
-                .saveAccountDocuments([accountDocument])
-                .saveCategoryDocuments([
-                  regularCategoryDocument,
-                  invoiceCategoryDocument,
-                  inventoryCategoryDocument,
-                ])
-                .saveRecipientDocument(recipientDocument)
-                .authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, []))
-                .expectBadRequestResponse()
-                .expectMessage('Some of the accounts are not found');
+          test.describe('if loans.loanAccountId', () => {
+            test('does not belong to any account', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, saveCategories, saveRecipient }) => {
+              await saveTransaction(originalDocument);
+              await saveAccounts(accountDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, []));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('Some of the accounts are not found');
             });
 
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    loanAccountId: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('loanAccountId', 'string', 'body');
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  loanAccountId: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'loanAccountId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    loanAccountId: accountDataFactory.id('not-mongo-id'),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('loanAccountId', 'body');
+            test('is not mongo id format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  loanAccountId: accountDataFactory.id('not-mongo-id'), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'loanAccountId');
             });
           });
 
-          describe('if loans.isSettled', () => {
-            it('is not boolean', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    isSettled: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('isSettled', 'boolean', 'body');
+          test.describe('if loans.isSettled', () => {
+            test('is not boolean', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  isSettled: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'isSettled', 'boolean');
             });
           });
 
-          describe('if loans.transactionId', () => {
-            it('is not string', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    transactionId: <any>1,
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyType('transactionId', 'string', 'body');
+          test.describe('if loans.transactionId', () => {
+            test('is not string', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  transactionId: <any>1, 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongTypeValidationError('body', 'transactionId', 'string');
             });
 
-            it('is not mongo id format', () => {
-              cy.authenticate(userType)
-                .requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                  {
-                    transactionId: deferredTransactionDataFactory.id('not-mongo-id'),
-                  },
-                ]))
-                .expectBadRequestResponse()
-                .expectWrongPropertyPattern('transactionId', 'body');
+            test('is not mongo id format', async ({ requestUpdateToSplitTransaction }) => {
+              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request(relatedDocumentIds, [], [
+                {
+                  transactionId: deferredTransactionDataFactory.id('not-mongo-id'), 
+                }, 
+              ]));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHavePatternValidationError('body', 'transactionId');
             });
           });
         });

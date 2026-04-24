@@ -1,11 +1,11 @@
 import { IDeleteAccountService, deleteAccountServiceFactory } from '@household/api/functions/delete-account/delete-account.service';
 import { createAccountId } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IAccountService } from '@household/shared/services/account-service';
 
 describe('Delete account service', () => {
   let service: IDeleteAccountService;
-  let mockAccountService: Mock<IAccountService>;
+  let mockAccountService: MockService<IAccountService>;
 
   beforeEach(() => {
     mockAccountService = createMockService('deleteAccount');

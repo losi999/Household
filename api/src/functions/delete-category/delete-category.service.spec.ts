@@ -1,11 +1,11 @@
 import { IDeleteCategoryService, deleteCategoryServiceFactory } from '@household/api/functions/delete-category/delete-category.service';
 import { createCategoryId } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICategoryService } from '@household/shared/services/category-service';
 
 describe('Delete category service', () => {
   let service: IDeleteCategoryService;
-  let mockCategoryService: Mock<ICategoryService>;
+  let mockCategoryService: MockService<ICategoryService>;
   beforeEach(() => {
     mockCategoryService = createMockService('deleteCategory');
 

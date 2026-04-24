@@ -1,20 +1,19 @@
 import { createCategoryDocument, createCategoryReport, createCategoryRequest, createCategoryResponse, createDocumentUpdate } from '@household/shared/common/test-data-factory';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverterFactory, ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
-import { advanceTo, clear } from 'jest-date-mock';
 
 describe('Category document converter', () => {
   let converter: ICategoryDocumentConverter;
   const now = new Date();
 
   beforeEach(() => {
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
 
     converter = categoryDocumentConverterFactory();
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const name = 'child';
@@ -82,14 +81,16 @@ describe('Category document converter', () => {
         parentCategory: queriedParentCategory,
       }, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
-        $set: {
-          ...body,
-          parentCategoryId: undefined,
-          ancestors: [
-            ...queriedParentCategory.ancestors,
-            queriedParentCategory,
-          ],
-          expiresAt: addSeconds(expiresIn, now),
+        update: {
+          $set: {
+            ...body,
+            parentCategoryId: undefined,
+            ancestors: [
+              ...queriedParentCategory.ancestors,
+              queriedParentCategory,
+            ],
+            expiresAt: addSeconds(expiresIn, now),
+          },
         },
       }));
     });
@@ -100,11 +101,13 @@ describe('Category document converter', () => {
         parentCategory: undefined,
       }, expiresIn);
       expect(result).toEqual(createDocumentUpdate({
-        $set: {
-          ...body,
-          parentCategoryId: undefined,
-          ancestors: [],
-          expiresAt: addSeconds(expiresIn, now),
+        update: {
+          $set: {
+            ...body,
+            parentCategoryId: undefined,
+            ancestors: [],
+            expiresAt: addSeconds(expiresIn, now),
+          },
         },
       }));
     });

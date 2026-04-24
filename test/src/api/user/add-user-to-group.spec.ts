@@ -1,27 +1,33 @@
 import { User } from '@household/shared/types/types';
-import { userDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { userDataFactory } from '@household/test/api/user/data-factory';
+import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
+import { test as identityTest } from '@household/test/fixtures/identity.fixture';
+import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+
+const expect = mergeExpects(userApiExpect, apiExpect);
+const test = mergeTests(identityTest, userApiTest);
 
 const permissionMap = allowUsers('editor') ;
 
-describe('POST /user/v1/users/{email}/groups/{group}', () => {
+test.describe('POST /user/v1/users/{email}/groups/{group}', () => {
   let viewerUser: User.Request & User.Group;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     viewerUser = userDataFactory.confirmedUser();
   });
 
-  afterEach(() => {
-    cy.deleteUser(viewerUser);
+  test.afterEach(async ({ deleteUser }) => {
+    await deleteUser(viewerUser);
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestAddUserToGroup(viewerUser.email, UserType.Editor)
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestAddUserToGroup }) => {
+      const res = await requestAddUserToGroup(viewerUser.email, UserType.Editor);
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -29,38 +35,38 @@ describe('POST /user/v1/users/{email}/groups/{group}', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestAddUserToGroup(viewerUser.email, UserType.Editor)
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestAddUserToGroup }) => {
+          const res = await requestAddUserToGroup(viewerUser.email, UserType.Editor);
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should add user to group', () => {
-          cy.createUser(viewerUser, undefined, true)
-            .authenticate(userType)
-            .requestAddUserToGroup(viewerUser.email, UserType.Editor)
-            .expectNoContentResponse()
-            .validateUserInGroup(viewerUser, UserType.Editor);
+        test('should add user to group', async ({ requestAddUserToGroup, createUser, listGroupsByUser }) => {
+          await createUser(viewerUser, undefined, true);
+          const res = await requestAddUserToGroup(viewerUser.email, UserType.Editor);
+          expect(res).toBeNoContentResponse();
+
+          expect(await listGroupsByUser(viewerUser.email)).toHaveBeenAddedToGroup(UserType.Editor);
         });
 
-        describe('should return error', () => {
-          describe('if email', () => {
-            it('is not email', () => {
-              cy.authenticate(userType)
-                .requestAddUserToGroup('not an email', UserType.Editor)
-                .expectBadRequestResponse()
-                .expectWrongPropertyFormat('email', 'email', 'pathParameters');
+        test.describe('should return error', () => {
+          test.describe('if email', () => {
+            test('is not email', async ({ requestAddUserToGroup }) => {
+              const res = await requestAddUserToGroup('not an email', UserType.Editor);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveWrongFormatValidationError('pathParameters', 'email', 'email');
             });
           });
 
-          describe('if group', () => {
-            it('is not a valid enum value', () => {
-              cy.authenticate(userType)
-                .requestAddUserToGroup(viewerUser.email, 'dummy' as any)
-                .expectBadRequestResponse()
-                .expectWrongEnumValue('group', 'pathParameters');
+          test.describe('if group', () => {
+            test('is not a valid enum value', async ({ requestAddUserToGroup }) => {
+              const res = await requestAddUserToGroup(viewerUser.email, 'dummy' as any);
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveEnumValidationError('pathParameters', 'group');
             });
           });
         });

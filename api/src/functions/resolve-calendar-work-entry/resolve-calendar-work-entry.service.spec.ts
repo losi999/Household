@@ -1,6 +1,6 @@
 import { IResolveCalendarWorkEntryService, resolveCalendarWorkEntryServiceFactory } from '@household/api/functions/resolve-calendar-work-entry/resolve-calendar-work-entry.service';
-import { createAccountDocument, createCategoryDocument, createDocumentUpdate2, createPaymentTransactionDocument, createSettingDocument, testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, Mock, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { createAccountDocument, createCategoryDocument, createDocumentUpdate, createPaymentTransactionDocument, createSettingDocument, testDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getCategoryId, getTransactionId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
@@ -12,12 +12,12 @@ import { ISettingService } from '@household/shared/services/setting-service';
 
 describe('Resolve calendar work entry service', () => {
   let service: IResolveCalendarWorkEntryService;
-  let mockCalendarEntryService: Mock<ICalendarEntryService>;
-  let mockPaymentTransactionDocumentConverter: Mock<IPaymentTransactionDocumentConverter>;
-  let mockSettingService: Mock<ISettingService>;
-  let mockAccountService: Mock<IAccountService>;
-  let mockCategoryService: Mock<ICategoryService>;
-  let mockCalendarEntryDocumentConverter: Mock<ICalendarEntryDocumentConverter>;
+  let mockCalendarEntryService: MockService<ICalendarEntryService>;
+  let mockPaymentTransactionDocumentConverter: MockService<IPaymentTransactionDocumentConverter>;
+  let mockSettingService: MockService<ISettingService>;
+  let mockAccountService: MockService<IAccountService>;
+  let mockCategoryService: MockService<ICategoryService>;
+  let mockCalendarEntryDocumentConverter: MockService<ICalendarEntryDocumentConverter>;
 
   beforeEach(() => {
     mockCalendarEntryService = createMockService('findCalendarEntryById', 'updateCalendarEntry', 'updateCalendarEntryWithPayment');
@@ -34,7 +34,7 @@ describe('Resolve calendar work entry service', () => {
   const queriedCalendarEntry = testDataFactory.calendar.entry.document({
     entryType: CalendarEntryType.Work,
   });
-  const documentUpdate = createDocumentUpdate2();
+  const documentUpdate = createDocumentUpdate();
   
   describe('payment type is transfer', () => {
     const body = testDataFactory.calendar.entry.resolution.request({
@@ -221,10 +221,7 @@ describe('Resolve calendar work entry service', () => {
         category: queriedCategory,
         amount,
       }, expiresIn);
-      validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
-        SettingKey.HairdressingIncomeAccount,
-        SettingKey.HairdressingIncomeCategory,
-      ]);
+      validateFunctionCall(mockSettingService.functions.listSettingsByKeys, SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory);
       validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
       validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
       expect.assertions(9);
@@ -245,10 +242,7 @@ describe('Resolve calendar work entry service', () => {
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
         validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
-        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
-          SettingKey.HairdressingIncomeAccount,
-          SettingKey.HairdressingIncomeCategory,
-        ]);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory);
         validateFunctionCall(mockAccountService.functions.findAccountById);
         validateFunctionCall(mockCategoryService.functions.findCategoryById);
         expect.assertions(10);
@@ -279,10 +273,7 @@ describe('Resolve calendar work entry service', () => {
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
         validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
-        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
-          SettingKey.HairdressingIncomeAccount,
-          SettingKey.HairdressingIncomeCategory,
-        ]);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory);
         validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
         validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
         expect.assertions(10);
@@ -313,10 +304,7 @@ describe('Resolve calendar work entry service', () => {
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntry);
         validateFunctionCall(mockCalendarEntryService.functions.updateCalendarEntryWithPayment);
         validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.createFromEntry);
-        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
-          SettingKey.HairdressingIncomeAccount,
-          SettingKey.HairdressingIncomeCategory,
-        ]);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory);
         validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
         validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
         expect.assertions(10);
@@ -358,10 +346,7 @@ describe('Resolve calendar work entry service', () => {
           category: queriedCategory,
           amount,
         }, expiresIn);
-        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, [
-          SettingKey.HairdressingIncomeAccount,
-          SettingKey.HairdressingIncomeCategory,
-        ]);
+        validateFunctionCall(mockSettingService.functions.listSettingsByKeys, SettingKey.HairdressingIncomeAccount, SettingKey.HairdressingIncomeCategory);
         validateFunctionCall(mockAccountService.functions.findAccountById, accountId);
         validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
         expect.assertions(10);

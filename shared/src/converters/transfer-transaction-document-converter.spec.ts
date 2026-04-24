@@ -1,28 +1,27 @@
 import { createAccountDocument, createAccountResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse, createDeferredTransactionDocument } from '@household/shared/common/test-data-factory';
 import { addSeconds, getTransactionId, toDictionary, getAccountId } from '@household/shared/common/utils';
-import { advanceTo, clear } from 'jest-date-mock';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
-import { createMockService, Mock, validateNthFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { Transaction } from '@household/shared/types/types';
 import { ITransferTransactionDocumentConverter, transferTransactionDocumentConverterFactory } from '@household/shared/converters/transfer-transaction-document-converter';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 
 describe('Transfer transaction document converter', () => {
   let converter: ITransferTransactionDocumentConverter;
-  let mockAccountDocumentConverter: Mock<IAccountDocumentConverter>;
-  let mockDeferredTransactionDocumentConverter: Mock<IDeferredTransactionDocumentConverter>;
+  let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
+  let mockDeferredTransactionDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
     mockAccountDocumentConverter = createMockService('toResponse');
     mockDeferredTransactionDocumentConverter = createMockService('toResponse');
 
-    advanceTo(now);
+    vi.useFakeTimers().setSystemTime(now);
     converter = transferTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockDeferredTransactionDocumentConverter.service);
   });
 
   afterEach(() => {
-    clear();
+    vi.useRealTimers();
   });
 
   const amount = 12000;

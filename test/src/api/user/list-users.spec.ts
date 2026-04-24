@@ -1,19 +1,27 @@
-import { default as schema } from '@household/test/api/schemas/user-response-list';
-import { User } from '@household/shared/types/types';
-import { userDataFactory } from './data-factory';
-import { allowUsers } from '@household/test/api/utils';
+import { default as schema } from '@household/test/schemas/user-response-list';
+import { Auth, User } from '@household/shared/types/types';
+import { userDataFactory } from '@household/test/api/user/data-factory';
+import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
+import { test as identityTest } from '@household/test/fixtures/identity.fixture';
+import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { mergeExpects, mergeTests } from '@playwright/test';
+
+const expect = mergeExpects(userApiExpect, apiExpect);
+const test = mergeTests(identityTest, userApiTest);
+
 const permissionMap = allowUsers('editor') ;
 
-describe('GET /user/v1/users', () => {
+test.describe('GET /user/v1/users', () => {
   let pendingUser: User.Request;
-  let editorUser: User.Request & User.Group;
-  let viewerUser: User.Request & User.Group;
-  let hairdresserUser: User.Request & User.Group;
+  let editorUser: User.Request & User.Group & Auth.Password;
+  let viewerUser: User.Request & User.Group & Auth.Password;
+  let hairdresserUser: User.Request & User.Group & Auth.Password;
 
-  beforeEach(() => {
+  test.beforeEach(async () => {
     pendingUser = userDataFactory.request();
     editorUser = userDataFactory.confirmedUser({
       group: UserType.Editor,
@@ -24,18 +32,17 @@ describe('GET /user/v1/users', () => {
     });
   });
 
-  afterEach(() => {
-    cy.deleteUser(pendingUser)
-      .deleteUser(editorUser)
-      .deleteUser(viewerUser)
-      .deleteUser(hairdresserUser);
+  test.afterEach(async ({ deleteUser }) => {
+    await deleteUser(pendingUser);
+    await deleteUser(editorUser);
+    await deleteUser(viewerUser);
+    await deleteUser(hairdresserUser);
   });
 
-  describe('called as anonymous', () => {
-    it('should return unauthorized', () => {
-      cy.authenticate('anonymous')
-        .requestGetUserList()
-        .expectUnauthorizedResponse();
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestListUsers }) => {
+      const res = await requestListUsers();
+      expect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -43,30 +50,29 @@ describe('GET /user/v1/users', () => {
     userType,
     isAllowed,
   ]) => {
-    describe(`called as ${userType}`, () => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
       if (!isAllowed) {
-        it('should return forbidden', () => {
-          cy.authenticate(userType)
-            .requestGetUserList()
-            .expectForbiddenResponse();
+        test('should return forbidden', async ({ requestListUsers }) => {
+          const res = await requestListUsers();
+          expect(res).toBeForbiddenResponse();
         });
       } else {
-        it('should get a list of users', () => {
-          cy.createUser(pendingUser, undefined, true)
-            .createUser(editorUser, editorUser.group, true)
-            .createUser(viewerUser, viewerUser.group, true)
-            .createUser(hairdresserUser, hairdresserUser.group, true)
-            .authenticate(userType)
-            .requestGetUserList()
-            .expectOkResponse()
-            .expectValidResponseSchema(schema)
-            .validateUserListResponse([
-              pendingUser,
-              editorUser,
-              viewerUser,
-              hairdresserUser,
-            ]);
+        test('should get a list of users', async ({ requestListUsers, createUser }) => {
+          await createUser(pendingUser, undefined, true);
+          await createUser(editorUser, editorUser.group, true);
+          await createUser(viewerUser, viewerUser.group, true);
+          await createUser(hairdresserUser, hairdresserUser.group, true);
 
+          const res = await requestListUsers();
+          expect(res).toBeOkResponse();
+          expect(res).toMatchSchema(schema);
+          expect(res).toContainMatchingUser(pendingUser);
+          expect(res).toContainMatchingUser(editorUser);
+          expect(res).toContainMatchingUser(viewerUser);
+          expect(res).toContainMatchingUser(hairdresserUser);
         });
       }
     });
