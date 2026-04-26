@@ -71,6 +71,9 @@ export const customerSchema = new Schema<Customer.Document>({
     ],
     default: [],
   },
+  isArchived: {
+    type: Boolean,
+  },
   expiresAt: {
     type: Schema.Types.Date,
     index: {

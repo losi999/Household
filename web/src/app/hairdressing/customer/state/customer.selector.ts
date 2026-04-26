@@ -5,8 +5,8 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 const selectCustomers = createFeatureSelector<CustomerState>('customers');
 
-export const selectCustomerList = createSelector(selectCustomers, ({ customerList }) => {
-  return customerList;
+export const selectCustomerList = (showArchived: boolean) => createSelector(selectCustomers, ({ customerList }) => {
+  return showArchived ? customerList : customerList?.filter(c => !c.isArchived);
 });
 
 export const selectFilteredCustomers = (...excludedIds: Customer.Id[]) => createSelector(selectCustomers, ({ customerList }) => {

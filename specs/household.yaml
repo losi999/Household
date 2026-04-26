@@ -894,6 +894,12 @@ paths:
             application/json:
               schema:
                 $ref: "customer.yaml#/components/schemas/CustomerId"
+    delete:
+      tags:
+        - price
+      responses:
+        204:
+          description: Customer deleted
   /customer/v1/customers/{customerId}/works:
     parameters:
       - $ref: "#/components/parameters/Path.CustomerId"

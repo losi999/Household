@@ -200,6 +200,7 @@ export const validateCustomerResponse = (response: Customer.Response, document: 
   return new Comparer(response, [
     validateCustomerResponseBase(response, document),
     {
+      isArchived: document.isArchived ?? false,
       blacklistedCustomers: response.blacklistedCustomers.map((blacklistedCustomer, index) => {
         const doc = document.blacklistedCustomers[index];
 
@@ -280,6 +281,9 @@ export const expect = baseExpect.extend({
       compareCustomerBaseProperties(currentDocument, req),
       compareCustomerBlacklists(currentDocument, originalDocument?.blacklistedCustomers ?? []),
       compareCustomerJobs(currentDocument, originalDocument?.jobs ?? []),
+      {
+        isArchived: originalDocument?.isArchived ?? false,
+      },
     ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
     const errors = comparer.validate();
@@ -326,6 +330,9 @@ export const expect = baseExpect.extend({
         blacklistedCustomer,
       ]),
       compareCustomerJobs(currentDocument, originalDocument.jobs),
+      {
+        isArchived: originalDocument?.isArchived ?? false,
+      },
     ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
     const errors = comparer.validate();
@@ -340,6 +347,9 @@ export const expect = baseExpect.extend({
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers.filter(c => getCustomerId(c) !== getCustomerId(blacklistedCustomer))),
       compareCustomerJobs(currentDocument, originalDocument.jobs),
+      {
+        isArchived: originalDocument?.isArchived ?? false,
+      },
     ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
     const errors = comparer.validate();
@@ -354,6 +364,9 @@ export const expect = baseExpect.extend({
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
       compareCustomerJobs(currentDocument, originalDocument.jobs, req),
+      {
+        isArchived: originalDocument?.isArchived ?? false,
+      },
     ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
     const errors = comparer.validate();
@@ -368,6 +381,9 @@ export const expect = baseExpect.extend({
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
       compareCustomerJobs(currentDocument, originalDocument.jobs.filter(j => j.name !== jobName)),
+      {
+        isArchived: originalDocument?.isArchived ?? false,
+      },
     ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
     const errors = comparer.validate();
@@ -382,6 +398,9 @@ export const expect = baseExpect.extend({
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
       compareCustomerJobs(currentDocument, originalDocument.jobs, req, jobName),
+      {
+        isArchived: originalDocument?.isArchived ?? false,
+      },
     ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
     const errors = comparer.validate();

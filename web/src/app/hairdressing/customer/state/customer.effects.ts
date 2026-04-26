@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { CustomerDialogComponent, CustomerDialogData, CustomerDialogResult } from '@household/web/app/hairdressing/customer/customer-dialog/customer-dialog.component';
 import { CustomerJobDialogComponent, CustomerJobDialogData, CustomerJobDialogResult } from '@household/web/app/hairdressing/customer/customer-job-dialog/customer-job-dialog.component';
 import { CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData, CustomerAddToBlacklistDialogResult } from '@household/web/app/hairdressing/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog.component';
+import { dispatchIfConfirmed } from '@household/web/operators/dispatch-if-confirmed';
 
 @Injectable()
 export class CustomerEffects {
@@ -46,6 +47,22 @@ export class CustomerEffects {
                 ...request,
               });
             }));
+      }),
+    );
+  });
+    
+  openDeleteCustomerDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(customerActions.deleteCustomer),
+      exhaustMap(({ type, ...customer }) => {
+        return this.dialogService.openConfirmationDialog({
+          title: 'Törölni akarod ezt a vendéget?',
+          content: customer.name,
+        }).pipe(
+          dispatchIfConfirmed(customerApiActions.deleteCustomerInitiated({
+            customerId: customer.customerId,
+          })),
+        );
       }),
     );
   });
@@ -108,8 +125,7 @@ export class CustomerEffects {
           title: 'Törölni akarod ezt a munkát?', 
           content: name,
         }).pipe(
-          filter(confirmed => confirmed),
-          map(() => customerApiActions.deleteCustomerJobInitiated({
+          dispatchIfConfirmed(customerApiActions.deleteCustomerJobInitiated({
             customerId,
             jobName: name,
           })));
@@ -153,13 +169,13 @@ export class CustomerEffects {
               title: 'Törölni akarod a tiltást közöttük?',
               content: `${customer.name} és ${selectedCustomer.name}`,
             }).pipe(
-              filter(confirmed => confirmed),
-              map(() => customerApiActions.deleteCustomerFromBlacklistInitiated({
+              dispatchIfConfirmed(customerApiActions.deleteCustomerFromBlacklistInitiated({
                 customerIds: [
                   customer.customerId,
                   selectedCustomer.customerId,
                 ],
-              })));
+              })),
+            );
           }));
       }),
     );

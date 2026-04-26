@@ -13,10 +13,14 @@ const schema: StrictJSONSchema7<Customer.Response> = {
   required: [
     ...customerId.required,
     ...customer.required,
+    'isArchived',
   ],
   properties: {
     ...customerId.properties,
     ...customer.properties,
+    isArchived: {
+      type: 'boolean',
+    },
     jobs: {
       type: 'array',
       items: {

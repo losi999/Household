@@ -1,3 +1,4 @@
+import { getCustomerId } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Calendar, Customer, Transaction } from '@household/shared/types/types';
@@ -34,13 +35,23 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
 
   const instance: ICalendarEntryService = {
     saveCalendarEntry: async (doc) => {
-      const [entry] = await mongodbService.calendarEntries((model, session) => {
-        return model.create([doc], {
+      return mongodbService.inTransaction(async ({ calendarEntries, customers }, session) => {
+        const [entry] = await calendarEntries.create([doc], {
           session,
         });
+
+        if (doc.customer?.isArchived) {
+          await customers.findByIdAndUpdate(getCustomerId(doc.customer), {
+            $set: {
+              isArchived: false,
+            },
+          }, {
+            session,
+          });
+        }
+
+        return entry;
       });
-      
-      return entry;
     },
     findCalendarEntryById: async (calendarEntryId) => {
       if (calendarEntryId) {
@@ -76,12 +87,12 @@ export const calendarEntryServiceFactory = (mongodbService: IMongodbService): IC
       });
     },
     updateCalendarEntryWithPayment: async (calendarEntryId, { update }) => {
-      return mongodbService.inTransaction(async (models, session) => {
-        const [transaction] = await models.transactions.create([update.$set.transaction], {
+      return mongodbService.inTransaction(async ({ transactions, calendarEntries }, session) => {
+        const [transaction] = await transactions.create([update.$set.transaction], {
           session,
         });
 
-        await models.calendarEntries.findByIdAndUpdate(calendarEntryId, update).session(session);
+        await calendarEntries.findByIdAndUpdate(calendarEntryId, update).session(session);
 
         return transaction;
       });

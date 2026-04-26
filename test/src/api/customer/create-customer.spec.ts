@@ -50,6 +50,24 @@ test.describe('POST customer/v1/customers', () => {
           expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId));
         });
 
+        test('should reactivate archived customer', async ({ requestCreateCustomer, saveCustomer, findCustomerById }) => {
+          const archivedCustomerDocument = {
+            ...customerDataFactory.document({
+              body: {
+                name: request.name,
+              },
+            }),
+            isArchived: true,
+          };
+        
+          await saveCustomer(archivedCustomerDocument);
+          const res = await requestCreateCustomer(request);
+          expect(res).toBeCreatedResponse();
+        
+          const { customerId } = (await res.json()) as Customer.CustomerId;
+          expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId));
+        });
+
         test.describe('should return error', () => {
           test.describe('if body', () => {
             test('has additional properties', async ({ requestCreateCustomer }) => {
