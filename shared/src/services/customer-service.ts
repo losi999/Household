@@ -28,18 +28,21 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
             throw error;
           }
 
-          const { _id, ...restOfDoc } = doc;
-        
-          const res = await model.findOneAndReplace({
-            ...error.keyValue,
-            isArchived: true,
-          }, restOfDoc).session(session);
+          const name = error.keyValue.name;
 
-          if (!res) {
-            throw error;
-          }
+          await model.findOneAndUpdate({
+            name,
+          }, {
+            $set: {
+              name: `${name} (Régi vendég)`,
+            },
+          }, {
+            session,
+          });
 
-          return [res];
+          return model.create([doc], {
+            session,
+          });
         }
       });
         
