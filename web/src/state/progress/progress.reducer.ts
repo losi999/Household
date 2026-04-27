@@ -1,4 +1,4 @@
-import { Account, Category, File, Price, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Category, Customer, File, Price, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { categoryApiActions } from '@household/web/state/category/category.actions';
 import { progressActions } from '@household/web/state/progress/progress.actions';
@@ -10,6 +10,7 @@ import { transactionApiActions } from '@household/web/state/transaction/transact
 import { fileApiActions } from '@household/web/state/file/file.actions';
 import { userApiActions } from '@household/web/state/user/user.actions';
 import { priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
+import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 
 export type ProgressState = {
   counter: number;
@@ -21,6 +22,7 @@ export type ProgressState = {
   inProgressAccounts: Account.Id[];
   inProgressTransactions: Transaction.Id[];
   inProgressFiles: File.Id[];
+  inProgressCustomers: Customer.Id[];
   inProgressUserGroups: string[];
 };
 
@@ -35,6 +37,7 @@ export const progressReducer = createReducer<ProgressState>({
   inProgressTransactions: [],
   inProgressFiles: [],
   inProgressUserGroups: [],
+  inProgressCustomers: [],
 },
 on(progressActions.processStarted, (_state) => {
   return {
@@ -272,6 +275,22 @@ on(priceApiActions.deletePriceCompleted, priceApiActions.deletePriceFailed, (_st
   return {
     ..._state,
     inProgressPrices: _state.inProgressPrices.filter(p => p !== priceId),
+  };
+}),
+
+on(customerApiActions.deleteCustomerInitiated, (_state, { customerId }) => {
+  return {
+    ..._state,
+    inProgressCustomers: [
+      ..._state.inProgressCustomers,
+      customerId,
+    ],
+  };
+}),
+on(customerApiActions.deleteCustomerCompleted, customerApiActions.deleteCustomerFailed, (_state, { customerId }) => {
+  return {
+    ..._state,
+    inProgressCustomers: _state.inProgressCustomers.filter(c => c !== customerId),
   };
 }),
 );

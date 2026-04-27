@@ -22,7 +22,7 @@
 <button class="pending" [style.grid-row]="(p.start + 1) + ' / ' + (p.end + 1)" [style.grid-column]="column" (click)="onProposalClick(p)">{{p.start | timeSlotToTime}} - {{p.end | timeSlotToTime}}</button>
 }
 @for (e of day.entries; track $index) {
-<button [ngClass]="e.entryType" [style.grid-row]="(e.start + 1) + ' / ' + (e.end + 1)" [style.grid-column]="column" [style.text-decoration]="e.resolution?.status === 'noShow' ? 'line-through 2px' : 'none'" (click)="onEntryClick(e)">
+<button [ngClass]="e.entryType" [class.no-show]="e.resolution?.status === 'noShow'" [style.grid-row]="(e.start + 1) + ' / ' + (e.end + 1)" [style.grid-column]="column" (click)="onEntryClick(e)">
   @if (e.entryType === 'work' && isInThePast && !e.resolution) {
   <mat-icon class="badge">attach_money</mat-icon>
   }

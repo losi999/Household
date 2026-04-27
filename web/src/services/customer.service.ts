@@ -26,6 +26,10 @@ export class CustomerService {
     return this.httpClient.put<Customer.CustomerId>(`${environment.apiUrl}/customer/v1/customers/${customerId}`, body);
   }
 
+  deleteCustomer(customerId: Customer.Id) {
+    return this.httpClient.delete(`${environment.apiUrl}/customer/v1/customers/${customerId}`);
+  }
+
   createCustomerJob(customerId: Customer.Id, body: Customer.Job.Request) {
     return this.httpClient.post(`${environment.apiUrl}/customer/v1/customers/${customerId}/jobs`, body);
   }

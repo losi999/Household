@@ -15,27 +15,29 @@ export interface IPriceService {
 export const priceServiceFactory = (mongodbService: IMongodbService): IPriceService => {
   return {
     savePrice: async(doc) => {
-      const [price] = await mongodbService.prices((model, session) => {
-        return model.create([doc], {
-          session,
-        }).catch(async (error) => {
+      const [price] = await mongodbService.prices(async(model, session) => {
+        try {
+          return await model.create([doc], {
+            session,
+          });
+        } catch (error) {
           if (error.code !== 11000) { 
             throw error;
           }
-
+  
           const { _id, ...restOfDoc } = doc;
-        
+          
           const res = await model.findOneAndReplace({
             ...error.keyValue,
             isArchived: true,
           }, restOfDoc).session(session);
-
+  
           if (!res) {
             throw error;
           }
-
+  
           return [res];
-        });
+        }
       });
       return price;
     },

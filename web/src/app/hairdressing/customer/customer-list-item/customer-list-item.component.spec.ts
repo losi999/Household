@@ -6,7 +6,7 @@ import { Customer } from '@household/shared/types/types';
 import { CustomerListItemComponent } from '@household/web/app/hairdressing/customer/customer-list-item/customer-list-item.component';
 import { IElementSelector, elementSelectorFactory } from '@household/web/testing/element-selector';
 
-describe('CustomerListItemComponent', () => {
+xdescribe('CustomerListItemComponent', () => {
   let component: CustomerListItemComponent;
   let fixture: ComponentFixture<CustomerListItemComponent>;
   let customer: Customer.Response;

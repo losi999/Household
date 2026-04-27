@@ -1,4 +1,4 @@
-<mat-card>
+<mat-card [ngClass]="{'archived': customer.isArchived}">
   <mat-card-header>
     <mat-card-title>
       {{customer.name}}
@@ -9,15 +9,15 @@
   </mat-card-header>
   <mat-card-content>
     <mat-divider />
-    @if(customer.jobs?.length > 0) {
+    @if (customer.jobs?.length > 0) {
     <div class="job-list">
       <household-icon-text icon="content_cut" size="small" text="Munkák" />
       <mat-nav-list>
         @for (job of customer.jobs; track $index) {
-        <a mat-list-item [routerLink]="['/hairdressing', 'calendar']" [queryParams]="{customerId: customer.customerId, jobName: job.name}">
+        <a mat-list-item [routerLink]="['/hairdressing', 'calendar']" [queryParams]="{customerId: customer.customerId, jobName: job.name}" [disabled]="isDisabled | async">
           <span matListItemTitle>{{job.name}}</span>
           <span matListItemLine>{{job.duration | timeSlotToTime}} óra</span>
-          <button matIconButton matListItemMeta>
+          <button matIconButton matListItemMeta color="primary">
             <mat-icon>calendar_add_on</mat-icon>
           </button>
         </a>
@@ -27,6 +27,11 @@
     }
   </mat-card-content>
   <mat-card-actions>
-    <a mat-button [routerLink]="[customer.customerId]">Részletek</a>
+    <a mat-button [routerLink]="[customer.customerId]" [disabled]="isDisabled | async">Részletek</a>
+    @if (!customer.isArchived) {
+    <button mat-icon-button color="warn" style="margin-left: auto;" (click)="onDelete()" [disabled]="isDisabled | async">
+      <mat-icon>person_off</mat-icon>
+    </button>
+    }
   </mat-card-actions>
 </mat-card>
