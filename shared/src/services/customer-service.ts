@@ -30,7 +30,8 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
 
           const name = error.keyValue.name;
 
-          await model.findOneAndUpdate({
+          const res = await model.findOneAndUpdate({
+            isArchived: true,
             name,
           }, {
             $set: {
@@ -39,6 +40,10 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
           }, {
             session,
           });
+
+          if (!res) {
+            throw error;
+          }
 
           return model.create([doc], {
             session,
