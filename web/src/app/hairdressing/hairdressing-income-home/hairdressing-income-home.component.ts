@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { MatDatepicker } from '@angular/material/datepicker';
 import { MatDateFormats, MAT_DATE_FORMATS, DateAdapter } from '@angular/material/core';
 import { MomentDateAdapter } from '@angular/material-moment-adapter';
-// import 'moment/locale/hu';
+import 'moment/locale/hu';
 import { map, Observable, startWith, tap } from 'rxjs';
 import moment, { Moment } from 'moment';
 import { Store } from '@ngrx/store';
