@@ -10,7 +10,7 @@ export const selectCustomerList = (showArchived: boolean) => createSelector(sele
 });
 
 export const selectFilteredCustomers = (...excludedIds: Customer.Id[]) => createSelector(selectCustomers, ({ customerList }) => {
-  return customerList?.filter(c => !excludedIds?.includes(c.customerId));
+  return customerList?.filter(c => !excludedIds?.includes(c.customerId) && !c.isArchived);
 });
 
 export const selectCustomerById = (customerId: Customer.Id) => createSelector(selectCustomers, ({ customerList }) => {

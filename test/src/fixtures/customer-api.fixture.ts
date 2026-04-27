@@ -9,6 +9,7 @@ import { APIResponse } from '@playwright/test';
 type CustomerApiFixture = {
   requestCreateCustomer(customer: Customer.Request): Promise<APIResponse>;
   requestUpdateCustomer(customerId: Customer.Id, customer: Customer.Request): Promise<APIResponse>;
+  requestDeleteCustomer(customerId: Customer.Id): Promise<APIResponse>;
   requestGetCustomer(customerId: Customer.Id): Promise<APIResponse>;
   requestListCustomers(): Promise<APIResponse>;
   requestListCustomerWorks(customerId: Customer.Id): Promise<APIResponse>;
@@ -49,6 +50,19 @@ export const test = baseTest.extend<CustomerApiFixture>({
     };
 
     await use(requestUpdateCustomer);
+  },
+  requestDeleteCustomer: async ({ authenticate, loggedRequest, userType }, use) => {
+    const authToken = userType ? await authenticate(userType) : undefined;
+
+    const requestDeleteCustomer = async (customerId: Customer.Id) => {
+      return loggedRequest.delete(`${process.env.BASE_URL}/customer/v1/customers/${customerId}`, {
+        headers: {
+          Authorization: authToken,
+        },
+      });
+    };
+
+    await use(requestDeleteCustomer);
   },
   requestGetCustomer: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
@@ -293,6 +307,13 @@ export const expect = baseExpect.extend({
       message: () => `Expected customer to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
+
+  toHaveBeenDeletedFromDatabase(document: Customer.Document) {
+    return {
+      pass: !document,
+      message: () => `Expected customer to be deleted from database, but it was found with id ${getCustomerId(document)}`,
+    };
+  },
   async toMatchCustomerDocument(received: APIResponse, document: Customer.Document) {
     const response = await received.json() as Customer.Response;
   
@@ -322,6 +343,58 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match customer document, but it did not:\n${errors.join('\n')}`,
     };
   }, 
+  toHaveBeenRenamed(originalDocument: Customer.Document, currentDocument: Customer.Document) {
+    const comparer = new Comparer(currentDocument, [
+      compareCustomerBaseProperties(currentDocument, originalDocument),
+      compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
+      compareCustomerJobs(currentDocument, originalDocument.jobs),
+      {
+        name: `${originalDocument?.name} (Régi vendég)`,
+        isArchived: true,
+      },
+    ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
+
+    const errors = comparer.validate();
+  
+    return {
+      pass: errors.length === 0,
+      message: () => `Expected customer to be renamed, but it was not:\n${errors.join('\n')}`,
+    };
+  },
+  toHaveBeenArchived(originalDocument: Customer.Document, currentDocument: Customer.Document) {
+    const comparer = new Comparer(currentDocument, [
+      compareCustomerBaseProperties(currentDocument, originalDocument),
+      compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
+      compareCustomerJobs(currentDocument, originalDocument.jobs),
+      {
+        isArchived: true,
+      },
+    ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
+
+    const errors = comparer.validate();
+  
+    return {
+      pass: errors.length === 0,
+      message: () => `Expected customer to be archived, but it was not:\n${errors.join('\n')}`,
+    };
+  },
+  toHaveBeenActivated(originalDocument: Customer.Document, currentDocument: Customer.Document) {
+    const comparer = new Comparer(currentDocument, [
+      compareCustomerBaseProperties(currentDocument, originalDocument),
+      compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
+      compareCustomerJobs(currentDocument, originalDocument.jobs),
+      {
+        isArchived: false,
+      },
+    ], '_id', 'createdAt', 'expiresAt', 'updatedAt');
+
+    const errors = comparer.validate();
+  
+    return {
+      pass: errors.length === 0,
+      message: () => `Expected customer to be activated, but it was not:\n${errors.join('\n')}`,
+    };
+  },
   toHaveBeenAddedToBlacklist(blacklistedCustomer: Customer.Document, originalDocument: Customer.Document, currentDocument: Customer.Document) {
     const comparer = new Comparer(currentDocument, [
       compareCustomerBaseProperties(currentDocument, originalDocument),

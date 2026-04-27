@@ -1,4 +1,4 @@
-<mat-card>
+<mat-card [ngClass]="{'archived': customer.isArchived}">
   <mat-card-header>
     <mat-card-title>
       {{customer.name}}
@@ -9,7 +9,7 @@
   </mat-card-header>
   <mat-card-content>
     <mat-divider />
-    @if(customer.jobs?.length > 0) {
+    @if (customer.jobs?.length > 0) {
     <div class="job-list">
       <household-icon-text icon="content_cut" size="small" text="Munkák" />
       <mat-nav-list>
@@ -28,7 +28,7 @@
   </mat-card-content>
   <mat-card-actions>
     <a mat-button [routerLink]="[customer.customerId]" [disabled]="isDisabled | async">Részletek</a>
-    @if(!customer.isArchived) {
+    @if (!customer.isArchived) {
     <button mat-icon-button color="warn" style="margin-left: auto;" (click)="onDelete()" [disabled]="isDisabled | async">
       <mat-icon>person_off</mat-icon>
     </button>

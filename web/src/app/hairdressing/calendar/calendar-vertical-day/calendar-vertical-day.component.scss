@@ -18,6 +18,11 @@
 .work {
   border-radius: 10px;
   color: #ffffff;
+
+  &.no-show {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+  }
 }
 
 .no-work {
