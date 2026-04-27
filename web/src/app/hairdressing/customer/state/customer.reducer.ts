@@ -32,6 +32,7 @@ export const customerReducer = createReducer<CustomerState>({},
         description,
         isGroup,
         rating,
+        isArchived: false,
         jobs: [],
         blacklistedCustomers: [],
       })
@@ -59,6 +60,29 @@ export const customerReducer = createReducer<CustomerState>({},
       }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
         sensitivity: 'base',
       })),
+    };
+  }),
+    
+  on(customerApiActions.deleteCustomerCompleted, (_state, { customerId }) => {
+    return {
+      ..._state,
+      customerList: _state.customerList.map((c) => {
+        if (c.customerId === customerId) {
+          return {
+            ...c,
+            isArchived: true,
+          };
+        }
+
+        if (c.blacklistedCustomers.some(bc => bc.customerId === customerId)) {
+          return {
+            ...c,
+            blacklistedCustomers: c.blacklistedCustomers.filter(bc => bc.customerId !== customerId),
+          };
+        }
+        
+        return c;
+      }),
     };
   }),
 

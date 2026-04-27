@@ -4,6 +4,7 @@
   </button>
 </household-toolbar>
 <div class="search mat-app-background">
+  <mat-slide-toggle color="primary" [(ngModel)]="showArchivedCustomers">{{showArchivedCustomers() ? 'Régi vendégek megjelenítve' : 'Régi vendégek elrejtve'}}</mat-slide-toggle>
   <household-clearable-input label="Keresés" [formControl]="search" />
 </div>
 <household-customer-list [customers]="filteredCustomers()" />

@@ -9,6 +9,10 @@ export namespace Internal {
     _id: Types.ObjectId;
   };
 
+  export type IsArchived = {
+    isArchived: boolean;
+  };
+
   export type Timestamps = {
     expiresAt: Date;
     createdAt?: Date;
@@ -828,6 +832,7 @@ export namespace Customer {
   export type Document = Internal.Id
   & Internal.Timestamps
   & Base
+  & Internal.IsArchived
   & {
     blacklistedCustomers: Document[];
     jobs: Job.Document[];
@@ -838,6 +843,7 @@ export namespace Customer {
   
   export type Response = ResponseBase
   & Jobs
+  & Internal.IsArchived
   & {
     blacklistedCustomers: ResponseBase[];
   };
@@ -865,9 +871,7 @@ export namespace Price {
   & Internal.Timestamps
   & Base
   & UnitOfMeasurement
-  & {
-    isArchived: boolean;
-  };
+  & Internal.IsArchived;
 
   export type Request = Base & UnitOfMeasurement;
 

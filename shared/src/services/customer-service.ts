@@ -6,6 +6,7 @@ export interface ICustomerService {
   saveCustomer(doc: Customer.Document): Promise<Customer.Document>;
   saveCustomers(...docs: Customer.Document[]): Promise<unknown>;
   findCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
+  deleteCustomer(customerId: Customer.Id): Promise<unknown>;
   getCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
   updateCustomer(customerId: Customer.Id, update: DocumentUpdate<Customer.Document>): Promise<unknown>;
   updateCustomers(ctx: {customerId: Customer.Id; update: DocumentUpdate<Customer.Document>}[]): Promise<unknown>;
@@ -17,12 +18,39 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
 
   const instance: ICustomerService = {
     saveCustomer: async (doc) => {
-      const [customer] = await mongodbService.customers((model, session) => {
-        return model.create([doc], {
-          session,
-        });
+      const [customer] = await mongodbService.customers(async (model, session) => {
+        try {
+          return await model.create([doc], {
+            session,
+          });
+        } catch (error) {
+          if (error.code !== 11000) { 
+            throw error;
+          }
+
+          const name = error.keyValue.name;
+
+          const res = await model.findOneAndUpdate({
+            isArchived: true,
+            name,
+          }, {
+            $set: {
+              name: `${name} (Régi vendég)`,
+            },
+          }, {
+            session,
+          });
+
+          if (!res) {
+            throw error;
+          }
+
+          return model.create([doc], {
+            session,
+          });
+        }
       });
-      
+        
       return customer;
     },
     saveCustomers: (...docs) => {
@@ -40,6 +68,36 @@ export const customerServiceFactory = (mongodbService: IMongodbService): ICustom
             .lean();
         });
       }        
+    },
+    deleteCustomer: async (customerId) => {
+      return mongodbService.inTransaction(async ({ calendarEntries, customers }, session) => {
+        const entries = await calendarEntries.find({
+          customer: customerId,
+        }).session(session);
+
+        if (entries.length === 0) {
+          await customers.findByIdAndDelete(customerId, {
+            session,
+          });           
+
+          await customers.updateMany({
+            blacklistedCustomers: customerId,
+          }, {
+            $pull: {
+              blacklistedCustomers: customerId,
+            },
+          }, {
+            session,
+          });
+
+        } else {
+          await customers.findByIdAndUpdate(customerId, {
+            isArchived: true,
+          }, {
+            session,
+          });
+        }
+      });
     },
     getCustomerById: async (customerId) => {
       if (customerId) {

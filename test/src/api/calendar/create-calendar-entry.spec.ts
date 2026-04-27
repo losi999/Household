@@ -11,8 +11,9 @@ import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
 
-const expect = mergeExpects(calendarApiExpect, apiExpect);
+const expect = mergeExpects(calendarApiExpect, apiExpect, customerApiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -108,6 +109,27 @@ test.describe('POST /calendar/v1/entries', () => {
             
             const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
             expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+          });
+
+          test('work entry for an archived customer', async ({ requestCreateCalendarEntry, saveCustomer, getCalendarEntryById, findCustomerById }) => {
+            customerDocument = {
+              ...customerDataFactory.document(),
+              isArchived: true,
+            };
+            await saveCustomer(customerDocument);
+
+            request = calendarEntryDataFactory.request.work({
+              body: {
+                customerId: getCustomerId(customerDocument),
+              },
+            });
+            
+            const res = await requestCreateCalendarEntry(request);
+            expect(res).toBeCreatedResponse();
+            
+            const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+            expect(customerDocument).toHaveBeenActivated(await findCustomerById(getCustomerId(customerDocument)));
           });
         });
 

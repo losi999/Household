@@ -1,7 +1,7 @@
 import { Customer } from '@household/shared/types/types';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/utils';
-import { entries } from '@household/shared/common/utils';
+import { entries, getCustomerId } from '@household/shared/common/utils';
 
 import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
@@ -48,6 +48,25 @@ test.describe('POST customer/v1/customers', () => {
 
           const { customerId } = (await res.json()) as Customer.CustomerId;
           expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId));
+        });
+
+        test('should rename archived customer if names collide', async ({ requestCreateCustomer, saveCustomer, findCustomerById }) => {
+          const archivedCustomerDocument = {
+            ...customerDataFactory.document({
+              body: {
+                name: request.name,
+              },
+            }),
+            isArchived: true,
+          };
+        
+          await saveCustomer(archivedCustomerDocument);
+          const res = await requestCreateCustomer(request);
+          expect(res).toBeCreatedResponse();
+        
+          const { customerId } = (await res.json()) as Customer.CustomerId;
+          expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId));
+          expect(archivedCustomerDocument).toHaveBeenRenamed(await findCustomerById(getCustomerId(archivedCustomerDocument)));
         });
 
         test.describe('should return error', () => {

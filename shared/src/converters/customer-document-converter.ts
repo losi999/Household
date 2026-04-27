@@ -42,6 +42,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
       return {
         ...body,
         description: body.description?.trim(),
+        isArchived: false,
         jobs: [],
         blacklistedCustomers: [],
         _id: generateId ? generateMongoId() : undefined,
@@ -137,6 +138,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
     toResponse: (customer) => {
       return {
         ...instance.toResponseBase(customer),
+        isArchived: customer.isArchived ?? false,
         jobs: customer.jobs?.map(({ name, description, duration, prices }) => {
           return {
             name,

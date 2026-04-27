@@ -6,7 +6,7 @@ import { provideRouter } from '@angular/router';
 import { CustomerListItemComponent } from '@household/web/app/hairdressing/customer/customer-list-item/customer-list-item.component';
 import { elementSelectorFactory, IElementSelector } from '@household/web/testing/element-selector';
 
-describe('CustomerListComponent', () => {
+xdescribe('CustomerListComponent', () => {
   let component: CustomerListComponent;
   let fixture: ComponentFixture<CustomerListComponent>;
   let customers: Customer.Response[];

@@ -6,6 +6,7 @@ export const customerActions = createActionGroup({
   events: {
     'Create customer': emptyProps(),
     'Update customer': props<Customer.CustomerId>(),
+    'Delete customer': props<Customer.Response>(),
     'Create customer job': props<Customer.CustomerId>(),
     'Update customer job': props<Customer.CustomerId & Customer.Job.Response>(),
     'Delete customer job': props<Customer.CustomerId & Customer.Job.Name>(),
@@ -23,6 +24,9 @@ export const customerApiActions = createActionGroup({
     'Create customer completed': props<Customer.CustomerId & Customer.Request>(),
     'Update customer initiated': props<Customer.CustomerId & Customer.Request>(),
     'Update customer completed': props<Customer.CustomerId & Customer.Request>(),
+    'Delete customer initiated': props<Customer.CustomerId>(),
+    'Delete customer completed': props<Customer.CustomerId>(),
+    'Delete customer failed': props<Customer.CustomerId>(),
     'Create customer job initiated': props<Customer.CustomerId & Customer.Job.Request>(),
     'Create customer job completed': props<Customer.CustomerId & Customer.Job.Request & {priceList: Price.Response[]}>(),
     'Update customer job initiated': props<Customer.CustomerId & {jobName: Customer.Job.Name['name']} & Customer.Job.Request>(),

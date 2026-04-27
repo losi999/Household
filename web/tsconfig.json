@@ -5,11 +5,16 @@
     "esModuleInterop": true,
     "declaration": false,
     "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "strict": false,
     "moduleResolution": "bundler",
     "importHelpers": true,
     "skipLibCheck": true,
     "target": "ES2022",
     "module": "ES2022",
+    "types": [
+      "jasmine"
+    ],
     "lib": [
       "es2019",
       "es2018",

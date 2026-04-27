@@ -5,7 +5,7 @@ describe('Customer selector', () => {
   it('Select customer list should return customer list', () => {
     const customerResponse = testDataFactory.customer.response();
 
-    const result = selectCustomerList.projector({
+    const result = selectCustomerList(false).projector({
       customerList: [customerResponse],
     });
 

@@ -882,6 +882,7 @@ const createCustomerDocument = (ctx?: {
         ],
       };
     }) ?? [],
+    isArchived: false,
     blacklistedCustomers: ctx?.blacklistedCustomers ?? [],
     expiresAt: undefined,
     ...ctx?.body,
@@ -894,6 +895,7 @@ const createCustomerResponse: DataFactoryFunction<Customer.Response> = (resp) =>
     ...createCustomerRequest(),
     jobs: [createCustomerJobResponse()],
     blacklistedCustomers: [],
+    isArchived: false,
     ...resp,
   };
 };
