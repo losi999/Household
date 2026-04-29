@@ -3,7 +3,8 @@
   "include": [
     "api/src",
     "shared/src",
-    "web/src",
+    "web_legacy/src",
+    "web/projects",
     "test",
     "./*.ts"
   ]
