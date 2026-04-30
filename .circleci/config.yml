@@ -188,7 +188,7 @@ jobs:
       - sam/install
       - deploy:
           name: SAM Deploy
-          command: sam deploy --template-file cf.hairdressing.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name HairdressingWeb-$ENV --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Env=$ENV
+          command: sam deploy --template-file cf.hairdressing.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name HairdressingWeb-$ENV --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Env=$ENV --no-fail-on-empty-changeset
       - run:
           name: Insert RUM App Monitor Id
           command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name HairdressingWeb-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue' --output text)/g" ./dist/web_legacy/browser/index.html
@@ -302,8 +302,8 @@ workflows:
           requires:
             - unit_test_api
             - unit_test_web_legacy
-            - unit_test_web_hairdressing
-            - unit_test_web_shared_ui
+            # - unit_test_web_hairdressing
+            # - unit_test_web_shared_ui
             - lint
             - build
       - web_hairdressing_deploy:

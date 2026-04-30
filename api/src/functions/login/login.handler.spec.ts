@@ -28,7 +28,7 @@ describe('Login handler', () => {
     const response = await apiHandler(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
 
     expect(response.statusCode).toEqual(statusCode);
-    expect(response.body).toEqual(message);
+    expect(JSON.parse(response.body).message).toEqual(message);
   });
 
   it('should respond with HTTP 200 and tokens if login executes successfully', async () => {

@@ -1,0 +1,10 @@
+<mat-toolbar>
+  <div class="wrapper">
+    @if (authService.isLoggedIn) {
+    <hairdressing-main-menu />
+    }
+    <span>{{title()}}</span>
+    <span class="spacer"></span>
+    <ng-content></ng-content>
+  </div>
+</mat-toolbar>

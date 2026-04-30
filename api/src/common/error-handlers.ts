@@ -1,5 +1,6 @@
+import { GroupType } from '@aws-sdk/client-cognito-identity-provider';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
-import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey } from '@household/shared/enums';
+import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey, UserType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
 import { Account, Calendar, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { UpdateQuery } from 'mongoose';
@@ -707,6 +708,16 @@ export const httpErrors = {
       throw httpError(statusCode, error.message);
     },
   },
+  auth: {
+    notAllowedUserType: (ctx: {requiredUserType: UserType,
+      userGroups: GroupType[]
+    }, statusCode = 403) => {
+      if (ctx.userGroups?.every(group => group.GroupName !== ctx.requiredUserType)) {
+        log('User does not have the required user type', ctx);
+        throw httpError(statusCode, 'User does not have the required user type');
+      }
+    },
+  },
   cognito: {
     createUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
       if (error.name === 'UsernameExistsException') {
@@ -736,6 +747,10 @@ export const httpErrors = {
       log('Listing users by group from cognito', undefined, error);
       throw httpError(statusCode, 'Error while listing users by group from cognito');
     },
+    listGroupsByUser: (statusCode = 500): CatchAndThrow => (error) => {
+      log('Listing groups by user from cognito', undefined, error);
+      throw httpError(statusCode, 'Error while listing groups by user from cognito');
+    },
     addUserToGroup: (statusCode = 500): CatchAndThrow => (error) => {
       log('Add user to group in cognito', undefined, error);
       throw httpError(statusCode, 'Error while adding user to group in cognito');
@@ -745,6 +760,10 @@ export const httpErrors = {
       throw httpError(statusCode, 'Error while removing user from group in cognito');
     },
     login: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+      if (error.name === 'NotAuthorizedException') {
+        log('Incorrect email or password', ctx, error);
+        throw httpError(401, 'Incorrect email or password');
+      }
       log('Login', ctx, error);
       throw httpError(statusCode, 'Error while logging in');
     },

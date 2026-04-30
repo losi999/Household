@@ -687,7 +687,10 @@ export namespace Auth {
 
   export namespace Login {
     export type Request = User.Email
-    & Password;
+    & Password
+    & {
+      requiredUserType?: Enum.UserType;
+    };
 
     export type Response = IdTokenResponse & {
       refreshToken: string;

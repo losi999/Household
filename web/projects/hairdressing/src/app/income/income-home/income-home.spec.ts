@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Shared } from './shared';
+import { IncomeHome } from './income-home';
 
-describe('Shared', () => {
-  let component: Shared;
-  let fixture: ComponentFixture<Shared>;
+describe('IncomeHome', () => {
+  let component: IncomeHome;
+  let fixture: ComponentFixture<IncomeHome>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Shared],
+      imports: [IncomeHome],
     })
       .compileComponents();
 
-    fixture = TestBed.createComponent(Shared);
+    fixture = TestBed.createComponent(IncomeHome);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

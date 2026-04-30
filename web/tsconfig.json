@@ -17,6 +17,9 @@
       ],
       "@household/shared/*": [
         "../shared/src/*"
+      ],
+      "@hairdressing/*": [
+        "./projects/hairdressing/src/*"
       ]
     },
     "importHelpers": true,
