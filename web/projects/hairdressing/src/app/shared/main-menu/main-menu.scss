@@ -1,12 +1,6 @@
 @use '@angular/material' as mat;
 
 button {
-  @include mat.icon-button-overrides(
-    (
-      icon-color: var(--mat-sys-on-primary),
-    )
-  );
-
   @include mat.menu-overrides(
     (
       item-label-text-size: 16px,

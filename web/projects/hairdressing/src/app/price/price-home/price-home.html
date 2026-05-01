@@ -1,2 +1,6 @@
-<hairdressing-toolbar title="Árlista"></hairdressing-toolbar>
-<img src="./bear.gif" alt="" style="width: 400px">
+<hairdressing-toolbar title="Árlista">
+  <button matIconButton type="button" (click)="onCreate()">
+    <mat-icon>add</mat-icon>
+  </button>
+</hairdressing-toolbar>
+<hairdressing-price-list [prices]="prices()" />

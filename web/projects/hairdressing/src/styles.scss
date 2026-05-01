@@ -23,6 +23,14 @@ html {
   );
 }
 
+div[mat-dialog-content] {
+  @include mat.dialog-overrides(
+    (
+      content-padding: 200px 24px,
+    )
+  );
+}
+
 button,
 a {
   @include mat.button-overrides(

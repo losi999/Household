@@ -1,0 +1,19 @@
+<div mat-dialog-title>{{price ? 'Szerkesztés' : 'Új'}}</div>
+<div mat-dialog-content>
+  <shared-clearable-input label="Név" [formField]="priceForm.name" />
+  <shared-clearable-input label="Ár" type="number" [formField]="priceForm.amount" />
+  <mat-form-field appearance="fill">
+    <mat-label>Mértékegység</mat-label>
+    <mat-select [formField]="priceForm.unitOfMeasurement">
+      @for (u of unitsOfMeasurement; track $index) {
+      <mat-option [value]="u">
+        {{u}}
+      </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial (click)="onSave()">Mentés</button>
+  <button matButton="text" type="button" mat-dialog-close>Mégse</button>
+</div>
