@@ -16,4 +16,5 @@ export * from './lib/interceptors/auth-interceptor';
 export * from './lib/services/dialog-service';
 export * from './lib/services/bottom-sheet-service';
 export * from './lib/clearable-input/clearable-input';
+export * from './lib/amount-input/amount-input';
 export * from './lib/validators/exclusive-min';

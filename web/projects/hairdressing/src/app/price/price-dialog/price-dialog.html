@@ -1,7 +1,7 @@
 <div mat-dialog-title>{{price ? 'Szerkesztés' : 'Új'}}</div>
 <div mat-dialog-content>
   <shared-clearable-input label="Név" [formField]="priceForm.name" />
-  <shared-clearable-input label="Ár" type="number" [formField]="priceForm.amount" />
+  <shared-amount-input label="Ár" type="number" currency="Ft" [formField]="priceForm.amount" [signHidden]="true" />
   <mat-form-field appearance="fill">
     <mat-label>Mértékegység</mat-label>
     <mat-select [formField]="priceForm.unitOfMeasurement">

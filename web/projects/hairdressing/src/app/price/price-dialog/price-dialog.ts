@@ -3,7 +3,7 @@ import { form, required, FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { ClearableInput } from '@household/shared-ui';
+import { AmountInput, ClearableInput } from '@household/shared-ui';
 import { Price } from '@household/shared/types/types';
 import { MatSelectModule } from '@angular/material/select';
 import { priceUnitsOfMeasurement } from '@household/shared/constants';
@@ -20,6 +20,7 @@ export type PriceDialogResult = Price.Request;
     MatFormFieldModule,
     MatSelectModule,
     ClearableInput,
+    AmountInput,
     FormField,
   ],
   templateUrl: './price-dialog.html',
