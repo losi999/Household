@@ -1,5 +1,4 @@
-<!-- <button mat-list-item (click)="onShowMenu()" [disabled]="isDisabled | async"> -->
-<button mat-list-item (click)="onShowMenu()">
+<button mat-list-item (click)="onShowMenu()" [disabled]="isDisabled()">
   <div matListItemTitle>{{price().name}}</div>
   <div matListItemLine>{{price().amount}} Ft
     @if (price().unitOfMeasurement !== 'db') {

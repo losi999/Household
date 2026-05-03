@@ -1,9 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, exhaustMap, groupBy, map, mergeMap, of } from 'rxjs';
-// import { progressActions } from '@household/web/state/progress/progress.actions';
-// import { notificationActions } from '@household/web/state/notification/notification.actions';
-// import { priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
 import { PriceService } from '@hairdressing/services/price-service';
 import { priceApiActions } from '@hairdressing/state/price/price-actions';
 import { notificationActions } from '@household/shared-ui';
@@ -23,7 +20,6 @@ export class PriceApiEffects {
           })),
           catchError(() => {
             return of(
-              // progressActions.processFinished(),
               notificationActions.showMessage({
                 message: 'Hiba történt',
               }),
@@ -54,7 +50,6 @@ export class PriceApiEffects {
               }
             }
             return of(
-              // progressActions.processFinished(),
               notificationActions.showMessage({
                 message: errorMessage,
               }),
@@ -87,7 +82,9 @@ export class PriceApiEffects {
                 }
               }
               return of(
-                // progressActions.processFinished(),
+                priceApiActions.updatePriceFailed({
+                  priceId,
+                }),
                 notificationActions.showMessage({
                   message: errorMessage,
                 }),
@@ -112,7 +109,6 @@ export class PriceApiEffects {
             return of(priceApiActions.deletePriceFailed({
               priceId,
             }), 
-            // progressActions.processFinished(),
             notificationActions.showMessage({
               message: 'Hiba történt',
             }),

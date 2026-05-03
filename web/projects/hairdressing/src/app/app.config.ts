@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideEffects } from '@ngrx/effects';
-import { AuthEffects, authInterceptor, NavigationEffects, NotificationEffects } from '@household/shared-ui';
+import { AuthEffects, authInterceptor, NavigationEffects, NotificationEffects, progressInterceptor, progressReducer } from '@household/shared-ui';
 import { priceReducer } from '@hairdressing/state/price/price-reducer';
 import { PriceApiEffects } from '@hairdressing/state/price/price-api-effects';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -13,11 +13,15 @@ import { PriceEffects } from '@hairdressing/state/price/price-effects';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([
+      authInterceptor,
+      progressInterceptor,
+    ])),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideStore({
-      prices: priceReducer,
+      price: priceReducer,
+      progress: progressReducer,
     }),
     provideStoreDevtools({
       maxAge: 25,

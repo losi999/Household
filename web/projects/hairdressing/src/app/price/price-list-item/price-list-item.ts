@@ -1,7 +1,8 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, OnChanges, Signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { priceActions } from '@hairdressing/state/price/price-actions';
+import { selectPriceIsInProgress } from '@hairdressing/state/price/price-selector';
 import { Price } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 
@@ -14,11 +15,17 @@ import { Store } from '@ngrx/store';
   templateUrl: './price-list-item.html',
   styleUrl: './price-list-item.scss',
 })
-export class PriceListItem {
+export class PriceListItem implements OnChanges {
   price = input.required<Price.Response>();
-
+  
   private store = inject(Store);
-
+  
+  isDisabled: Signal<boolean>;
+  
+  ngOnChanges(): void {
+    this.isDisabled = this.store.selectSignal(selectPriceIsInProgress(this.price().priceId));
+  }
+  
   onShowMenu() {
     this.store.dispatch(priceActions.openPriceListItemSubmenu(this.price()));
   }

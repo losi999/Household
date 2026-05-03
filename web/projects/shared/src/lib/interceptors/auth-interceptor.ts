@@ -1,12 +1,10 @@
 import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from '@household/shared-ui';
-import { Store } from '@ngrx/store';
 import { catchError, Observable, Subject, switchMap, tap, throwError } from 'rxjs';
 
 const createAuthInterceptor = (): HttpInterceptorFn => {
   const authService = inject(AuthService);
-  const store = inject(Store);
 
   let refreshTokenInProgress = false;
   const tokenRefreshedSource = new Subject();
@@ -54,7 +52,6 @@ const createAuthInterceptor = (): HttpInterceptorFn => {
         catchError((error: HttpErrorResponse) => {
           if (error.status === 401) {
             if (error.error.message === 'The incoming token has expired') {
-            // store.dispatch(progressActions.processFinished());
               return refreshToken().pipe(
                 switchMap(() => {
                   return next(addAuthHeaders(request));

@@ -20,6 +20,7 @@ export const priceApiActions = createActionGroup({
     'Create price completed': props<Price.PriceId & Price.Request>(),
     'Update price initiated': props<Price.PriceId & Price.Request>(),
     'Update price completed': props<Price.PriceId & Price.Request>(),
+    'Update price failed': props<Price.PriceId>(),
     'Delete price initiated': props<Price.PriceId>(),
     'Delete price completed': props<Price.PriceId>(),
     'Delete price failed': props<Price.PriceId>(),
