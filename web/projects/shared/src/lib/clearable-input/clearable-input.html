@@ -5,13 +5,13 @@
   }
   @switch (type()) {
   @case('text') {
-  <input matInput [ngModel]="value()" (ngModelChange)="value.set($event)" [required]="required()" [errorStateMatcher]="matcher" />
+  <input matInput [(ngModel)]="value" [required]="required()" [errorStateMatcher]="matcher" />
   }
   @case('number') {
-  <input matInput type="number" [ngModel]="value()" (ngModelChange)="value.set($event)" [required]="required()" [errorStateMatcher]="matcher" />
+  <input matInput type="number" [(ngModel)]="value" [required]="required()" [errorStateMatcher]="matcher" />
   }
   @case('area') {
-  <textarea matInput [ngModel]="value()" (ngModelChange)="value.set($event)" [required]="required()" [errorStateMatcher]="matcher"></textarea>
+  <textarea matInput [(ngModel)]="value" [required]="required()" [errorStateMatcher]="matcher"></textarea>
   }
   }
   <button matIconButton matSuffix type="button" (click)="onClearValue($event)" tabindex="-1">

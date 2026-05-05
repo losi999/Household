@@ -8,6 +8,7 @@ import { customerActions, customerApiActions } from '@hairdressing/state/custome
 import { CustomerDialog, CustomerDialogData, CustomerDialogResult } from '@hairdressing/app/customer/customer-dialog/customer-dialog';
 import { selectCustomerById } from '@hairdressing/state/customer/customer.selector';
 import { CustomerJobDialog, CustomerJobDialogData, CustomerJobDialogResult } from '@hairdressing/app/customer/customer-job-dialog/customer-job-dialog';
+import { CustomerAddToBlacklistDialog, CustomerAddToBlacklistDialogData, CustomerAddToBlacklistDialogResult } from '@hairdressing/app/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog';
 
 @Injectable()
 export class CustomerEffects {
@@ -134,30 +135,30 @@ export class CustomerEffects {
     );
   });
   
-  // openAddCustomerToBlacklistDialog = createEffect(() => {
-  //   return this.actions.pipe(
-  //     ofType(customerActions.addCustomerToBlacklist),
-  //     switchMap(({ customerId }) => this.store.select(selectCustomerById(customerId)).pipe(takeFirstDefined())), 
-  //     exhaustMap((customer) => {
-  //       return this.dialog.open<CustomerAddToBlacklistDialogComponent, CustomerAddToBlacklistDialogData, CustomerAddToBlacklistDialogResult>(CustomerAddToBlacklistDialogComponent, {
-  //         data: {
-  //           customer,
-  //           excludedCustomerIds: [
-  //             customer.customerId,
-  //             ...customer.blacklistedCustomers.map(c => c.customerId),
-  //           ],
-  //         },
-  //         disableClose: true,
-  //       }).afterClosed();
-  //     }),
-  //     filter(req => !!req),
-  //     map((customers) => {
-  //       return customerApiActions.addCustomerToBlacklistInitiated({
-  //         customers,
-  //       });
-  //     }),
-  //   );
-  // });
+  openAddCustomerToBlacklistDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(customerActions.addCustomerToBlacklist),
+      switchMap(({ customerId }) => this.store.select(selectCustomerById(customerId)).pipe(takeFirstDefined())), 
+      exhaustMap((customer) => {
+        return this.dialog.open<CustomerAddToBlacklistDialog, CustomerAddToBlacklistDialogData, CustomerAddToBlacklistDialogResult>(CustomerAddToBlacklistDialog, {
+          data: {
+            customer,
+            excludedCustomerIds: [
+              customer.customerId,
+              ...customer.blacklistedCustomers.map(c => c.customerId),
+            ],
+          },
+          disableClose: true,
+        }).afterClosed();
+      }),
+      filter(req => !!req),
+      map((customers) => {
+        return customerApiActions.addCustomerToBlacklistInitiated({
+          customers,
+        });
+      }),
+    );
+  });
   
   openDeleteCustomerFromBlacklistDialog = createEffect(() => {
     return this.actions.pipe(

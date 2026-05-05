@@ -206,37 +206,37 @@ on(customerApiActions.deleteCustomerJobCompleted, (_state, { customerId, jobName
   };
 }),
 
-// on(customerApiActions.addCustomerToBlacklistCompleted, (_state, { customers: [
-//   customerA,
-//   customerB,
-// ] }) => {
-//   return {
-//     ..._state,
-//     customerList: _state.customerList.map((customer) => {
-//       if (customer.customerId === customerA.customerId) {
-//         return {
-//           ...customer, 
-//           blacklistedCustomers: [
-//             ...customer.blacklistedCustomers,
-//             customerB,
-//           ],
-//         };
-//       }
+on(customerApiActions.addCustomerToBlacklistCompleted, (_state, { customers: [
+  customerA,
+  customerB,
+] }) => {
+  return {
+    ..._state,
+    customerList: _state.customerList.map((customer) => {
+      if (customer.customerId === customerA.customerId) {
+        return {
+          ...customer, 
+          blacklistedCustomers: [
+            ...customer.blacklistedCustomers,
+            customerB,
+          ],
+        };
+      }
 
-//       if (customer.customerId === customerB.customerId) {
-//         return {
-//           ...customer, 
-//           blacklistedCustomers: [
-//             ...customer.blacklistedCustomers,
-//             customerA,
-//           ],
-//         };
-//       }
+      if (customer.customerId === customerB.customerId) {
+        return {
+          ...customer, 
+          blacklistedCustomers: [
+            ...customer.blacklistedCustomers,
+            customerA,
+          ],
+        };
+      }
 
-//       return customer;
-//     }),
-//   };
-// }),
+      return customer;
+    }),
+  };
+}),
 
 on(customerApiActions.deleteCustomerFromBlacklistCompleted, (_state, { customerIds: [
   customerIdA,

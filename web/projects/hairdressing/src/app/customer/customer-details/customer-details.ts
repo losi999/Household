@@ -1,9 +1,9 @@
-import { Component, computed, effect, inject, Signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Toolbar } from '@hairdressing/app/shared/toolbar/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ActivatedRoute } from '@angular/router';
-import { select, Store } from '@ngrx/store';
+import { Store } from '@ngrx/store';
 import { Customer } from '@household/shared/types/types';
 import { customerActions, customerApiActions } from '@hairdressing/state/customer/customer.actions';
 import { priceApiActions } from '@hairdressing/state/price/price-actions';
@@ -74,9 +74,9 @@ export class CustomerDetails {
   }
 
   onAddToBlacklist() {
-    // this.store.dispatch(customerActions.addCustomerToBlacklist({
-    //   customerId: this.customer().customerId,
-    // }));
+    this.store.dispatch(customerActions.addCustomerToBlacklist({
+      customerId: this.customer().customerId,
+    }));
   }
 
   onRemoveFromBlacklist(customer: Customer.ResponseBase) {

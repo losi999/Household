@@ -5,7 +5,7 @@
   </button>
   }
   <mat-label>{{label()}}</mat-label>
-  <input type="number" matInput [ngModel]="value()" (ngModelChange)="value.set($event)" min="0" [required]="required()" [errorStateMatcher]="matcher">
+  <input type="number" matInput [(ngModel)]="value" min="0" [required]="required()" [errorStateMatcher]="matcher">
   <span matTextSuffix>{{currency()}}</span>
   @if (newBalance()) {
   <mat-hint>Új egyenleg: {{newBalance()}} {{currency()}}</mat-hint>

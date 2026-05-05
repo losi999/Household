@@ -242,28 +242,28 @@ export class CustomerApiEffects {
     );
   });
 
-  // addCustomerToBlacklist = createEffect(() => {
-  //   return this.actions.pipe(
-  //     ofType(customerApiActions.addCustomerToBlacklistInitiated),
-  //     groupBy(({ customers }) => customers),
-  //     mergeMap((value) => {
-  //       return value.pipe(exhaustMap(({ customers }) => {
-  //         return this.customerService.updateCustomerBlacklist(customers.map(c => c.customerId)).pipe(
-  //           map(() => customerApiActions.addCustomerToBlacklistCompleted({
-  //             customers,
-  //           })),
-  //           catchError(() => {
-  //             return of(progressActions.processFinished(),
-  //               notificationActions.showMessage({
-  //                 message: 'Hiba történt',
-  //               }),
-  //             );
-  //           }),
-  //         );
-  //       }));
-  //     }),
-  //   );
-  // });
+  addCustomerToBlacklist = createEffect(() => {
+    return this.actions.pipe(
+      ofType(customerApiActions.addCustomerToBlacklistInitiated),
+      groupBy(({ customers }) => customers),
+      mergeMap((value) => {
+        return value.pipe(exhaustMap(({ customers }) => {
+          return this.customerService.updateCustomerBlacklist(customers.map(c => c.customerId)).pipe(
+            map(() => customerApiActions.addCustomerToBlacklistCompleted({
+              customers,
+            })),
+            catchError(() => {
+              return of(
+                notificationActions.showMessage({
+                  message: 'Hiba történt',
+                }),
+              );
+            }),
+          );
+        }));
+      }),
+    );
+  });
 
   deleteCustomerFromBlacklist = createEffect(() => {
     return this.actions.pipe(
