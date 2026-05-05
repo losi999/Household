@@ -27,7 +27,7 @@ export type PriceDialogResult = Price.Request;
   styleUrls: ['./price-dialog.scss'],
 })
 export class PriceDialog {
-  private dialogRef = inject(MatDialogRef<PriceDialog, PriceDialog>);
+  private dialogRef = inject<MatDialogRef<PriceDialog, PriceDialogResult>>(MatDialogRef);
   public price = inject<PriceDialogData>(MAT_DIALOG_DATA);
 
   priceModel = signal<Price.Request>({

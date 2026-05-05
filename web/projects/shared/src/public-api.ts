@@ -20,4 +20,7 @@ export * from './lib/services/dialog-service';
 export * from './lib/services/bottom-sheet-service';
 export * from './lib/clearable-input/clearable-input';
 export * from './lib/amount-input/amount-input';
+export * from './lib/icon-text/icon-text';
 export * from './lib/validators/exclusive-min';
+export * from './lib/operators/dispatch-if-confirmed';
+export * from './lib/operators/take-first-defined';

@@ -7,7 +7,7 @@ const schema: StrictJSONSchema7<Customer.Job.Quantity> = {
   additionalProperties: false,
   properties: {
     quantity: {
-      type: 'integer',
+      type: 'number',
       exclusiveMinimum: 0,
     },
   },

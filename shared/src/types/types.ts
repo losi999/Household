@@ -813,14 +813,18 @@ export namespace Customer {
       quantity: number;
     };
 
-    // export type ListedPrice<P extends Price.PriceId | {price: Price.Document} | Price.Response> = P & Quantity;
+    export type ListedPriceRequest = Price.PriceId & Quantity;
+
+    export type ListedPriceDocument = {
+      price: Price.Document;
+    } & Quantity;
     
     export type Request = Base & {
-      prices: ((Price.PriceId & Quantity) | Price.Base)[]
+      prices: (ListedPriceRequest | Price.Base)[]
     };
 
     export type Document = Base & {
-      prices: (({price: Price.Document} & Quantity) | Price.Base)[]
+      prices: (ListedPriceDocument | Price.Base)[]
     };
 
     export type Response = Base & {

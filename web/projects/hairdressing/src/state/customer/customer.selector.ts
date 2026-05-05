@@ -1,0 +1,42 @@
+import { CustomerState } from '@hairdressing/state/customer/customer.reducer';
+import { Customer } from '@household/shared/types/types';
+// import { CustomerJob } from '@household/web/types/common';
+import { createFeatureSelector, createSelector } from '@ngrx/store';
+
+const selectCustomers = createFeatureSelector<CustomerState>('customer');
+
+export const selectCustomerList = createSelector(selectCustomers, ({ customerList }) => {
+  return customerList;
+});
+
+export const selectCustomerIsInProgress = (priceId: Customer.Id) => createSelector(
+  selectCustomers, ({ isInProgress }) => {
+    return isInProgress.includes(priceId);
+  },
+);  
+
+// export const selectFilteredCustomers = (...excludedIds: Customer.Id[]) => createSelector(selectCustomers, ({ customerList }) => {
+//   return customerList?.filter(c => !excludedIds?.includes(c.customerId) && !c.isArchived);
+// });
+
+export const selectCustomerById = (customerId: Customer.Id) => createSelector(selectCustomers, ({ customerList }) => {
+  return customerList?.find(c => c.customerId === customerId);
+});
+
+export const selectCustomerWorks = (customerId: Customer.Id) => createSelector(selectCustomers, ({ customerWorks }) => {
+  return customerWorks?.[customerId];
+});
+
+// export const selectCustomerJobByIdAndName = (customerId: Customer.Id, jobName: string) => createSelector<CustomerState, CustomerState, CustomerJob>(selectCustomers, ({ customerList }) => {
+//   const customer = customerList?.find(c => c.customerId === customerId);
+//   if(!customer) {
+//     return undefined;
+//   }
+  
+//   const job = customer.jobs.find(j => j.name === jobName);
+
+//   return {
+//     ...job,
+//     customer,
+//   };
+// });

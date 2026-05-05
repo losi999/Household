@@ -1,0 +1,30 @@
+<div mat-dialog-title>{{customer ? 'Szerkesztés' : 'Új'}}</div>
+<div mat-dialog-content>
+  <shared-clearable-input label="Név" [formField]="customerForm.name" />
+  <mat-checkbox [formField]="customerForm.isGroup">
+    Több személy tartozik ide?
+  </mat-checkbox>
+  <shared-clearable-input label="Megjegyzés" type="area" [formField]="customerForm.description" />
+  <div class="rating" data-testId="rating">
+    <button mat-mini-fab type="button" [class.selected]="customerForm.rating().value() === 1" (click)="onSetRating(1)">
+      <mat-icon>sentiment_stressed</mat-icon>
+    </button>
+    <button mat-mini-fab type="button" [class.selected]="customerForm.rating().value() === 2" (click)="onSetRating(2)">
+      <mat-icon>sentiment_dissatisfied</mat-icon>
+    </button>
+    <button mat-mini-fab type="button" [class.selected]="customerForm.rating().value() === 3" (click)="onSetRating(3)">
+      <mat-icon>sentiment_neutral</mat-icon>
+    </button>
+    <button mat-mini-fab type="button" [class.selected]="customerForm.rating().value() === 4" (click)="onSetRating(4)">
+      <mat-icon>sentiment_satisfied</mat-icon>
+    </button>
+    <button mat-mini-fab type="button" [class.selected]="customerForm.rating().value() === 5" (click)="onSetRating(5)">
+      <mat-icon>sentiment_excited</mat-icon>
+    </button>
+  </div>
+
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial (click)="onSave()">Mentés</button>
+  <button matButton="text" type="button" mat-dialog-close>Mégse</button>
+</div>

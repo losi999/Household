@@ -1,0 +1,37 @@
+@use '@angular/material' as mat;
+
+.price-list {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+
+  button {
+    @include mat.button-overrides(
+      (
+        outlined-container-height: 45px,
+        filled-container-height: 45px,
+      )
+    );
+  }
+}
+
+.detailed-price {
+  display: grid;
+  grid-template-columns: 1fr 48px 80px 48px 100px 48px;
+  grid-template-areas:
+    'name minus quantity plus amount remove'
+    'error error error error error error';
+  align-items: center;
+  text-align: right;
+
+  .error {
+    grid-area: error;
+    text-align: left;
+  }
+
+  .quantity {
+    text-align: center;
+    grid-area: quantity;
+  }
+}

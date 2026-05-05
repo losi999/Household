@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, isDevMode, LOCALE_ID } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -10,9 +10,25 @@ import { priceReducer } from '@hairdressing/state/price/price-reducer';
 import { PriceApiEffects } from '@hairdressing/state/price/price-api-effects';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { PriceEffects } from '@hairdressing/state/price/price-effects';
+import { CustomerApiEffects } from '@hairdressing/state/customer/customer-api.effects';
+import { customerReducer } from '@hairdressing/state/customer/customer.reducer';
+import { CustomerEffects } from '@hairdressing/state/customer/customer.effects';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { registerLocaleData } from '@angular/common';
+import localeHu from '@angular/common/locales/hu';
+
+registerLocaleData(localeHu);
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    {
+      provide: MAT_DATE_LOCALE,
+      useValue: 'hu-HU',
+    },
+    {
+      provide: LOCALE_ID,
+      useValue: 'hu-HU',
+    },
     provideHttpClient(withInterceptors([
       authInterceptor,
       progressInterceptor,
@@ -21,12 +37,13 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideStore({
       price: priceReducer,
+      customer: customerReducer,
       progress: progressReducer,
     }),
     provideStoreDevtools({
       maxAge: 25,
       logOnly: !isDevMode(), 
     }),
-    provideEffects(AuthEffects, NotificationEffects, NavigationEffects, PriceApiEffects, PriceEffects),
+    provideEffects(AuthEffects, NotificationEffects, NavigationEffects, PriceApiEffects, PriceEffects, CustomerApiEffects, CustomerEffects),
   ],
 };

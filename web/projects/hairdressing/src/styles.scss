@@ -21,18 +21,36 @@ html {
       density: 0,
     )
   );
-}
 
-div[mat-dialog-content] {
   @include mat.dialog-overrides(
     (
-      content-padding: 200px 24px,
+      container-max-width: var(--content-max-width),
     )
   );
 }
 
 button,
 a {
+  &.danger {
+    @include mat.button-overrides(
+      (
+        filled-container-color: var(--mat-sys-error),
+        protected-label-text-color: var(--mat-sys-error),
+        outlined-label-text-color: var(--mat-sys-error),
+        outlined-outline-color: var(--mat-sys-error),
+        tonal-container-color: var(--mat-sys-error-container),
+        tonal-label-text-color: var(--mat-sys-error),
+        text-label-text-color: var(--mat-sys-error),
+      )
+    );
+
+    @include mat.icon-button-overrides(
+      (
+        icon-color: var(--mat-sys-error),
+      )
+    );
+  }
+
   @include mat.button-overrides(
     (
       filled-container-shape: var(--mat-sys-corner-medium),

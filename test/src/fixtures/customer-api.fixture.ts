@@ -1,4 +1,4 @@
-import { hasPriceId, isPriceBase } from '@household/shared/common/type-guards';
+import { hasPriceId, isListedPrice, isListedPriceDocument } from '@household/shared/common/type-guards';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Customer, Price } from '@household/shared/types/types';
@@ -183,7 +183,7 @@ export const validateCustomerJobPriceResponse = (priceResponses: (Price.Response
   return priceResponses.map((priceResponse, index) => {
     const priceDocument = priceDocuments[index];
 
-    if (isPriceBase(priceDocument)) {
+    if (!isListedPriceDocument(priceDocument)) {
       return new Comparer(priceResponse, {
         name: priceDocument.name,
         amount: priceDocument.amount,
@@ -263,14 +263,14 @@ const compareCustomerJobs = (actual: Customer.Document, expectedCustomerJobs: Cu
         prices: actualJob.prices.map((actualPrice, priceIndex) => {
           const expectedPrice = expectedJob.prices[priceIndex];
 
-          if (isPriceBase(actualPrice) && isPriceBase(expectedPrice)) {
+          if (!isListedPriceDocument(actualPrice) && !isListedPrice(expectedPrice)) {
             return new Comparer(actualPrice, {
               name: expectedPrice.name,
               amount: expectedPrice.amount,
             });
           } 
 
-          if (!isPriceBase(actualPrice) && !isPriceBase(expectedPrice)) {
+          if (isListedPriceDocument(actualPrice) && isListedPrice(expectedPrice)) {
             return new Comparer(actualPrice, {
               price: hasPriceId(expectedPrice) ? expectedPrice.priceId : getPriceId(expectedPrice.price),
               quantity: expectedPrice.quantity,

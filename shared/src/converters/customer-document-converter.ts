@@ -1,4 +1,4 @@
-import { isPriceBase } from '@household/shared/common/type-guards';
+import { isListedPriceDocument, isListedPriceRequest } from '@household/shared/common/type-guards';
 import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { getPriceId } from '@household/shared/common/utils';
 import { addSeconds, getCustomerId } from '@household/shared/common/utils';
@@ -25,7 +25,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
   const instance: ICustomerDocumentConverter = {
     createJobPriceList: (prices, priceDocuments) => {
       return prices?.map((req) => {
-        if (isPriceBase(req)) {
+        if (!isListedPriceRequest(req)) {
           return {
             name: req.name,
             amount: req.amount,
@@ -155,7 +155,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
     toResponseList: (docs) => docs?.map(d => instance.toResponse(d)),
     toResponseJobPriceList: (docs) => {
       return docs?.map((p) => {
-        if (isPriceBase(p)) {
+        if (!isListedPriceDocument(p)) {
           return {
             amount: p.amount,
             name: p.name,

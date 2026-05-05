@@ -1,0 +1,55 @@
+<div class="price-list">
+  @for(p of prices(); track $index) {
+  <button matButton="outlined" type="button" (click)="onAddPrice(p)">{{p.name}}</button>
+  }
+  <button matButton="filled" color="primary" type="button" (click)="onAddAdditionalPrice()">Egyéb</button>
+</div>
+<div class="detailed-price">
+  @for(p of value();track $index) {
+  @if(p.price) {
+  <span [style.grid-area]="'name'" [style.grid-row]="$index + 1">{{p.price.name}}</span>
+  <button mat-icon-button type="button" [style.grid-area]="'minus'" [style.grid-row]="$index + 1" (click)="onRemoveQuantity($index)">
+    <mat-icon>remove</mat-icon>
+  </button>
+  @switch (p.price.unitOfMeasurement) {
+  @case ('db') {
+  <span class="quantity" [style.grid-area]="'quantity'" [style.grid-row]="$index + 1">{{p.quantity}}</span>
+  }
+  @case ('g') {
+  <span class="quantity" [style.grid-area]="'quantity'" [style.grid-row]="$index + 1">{{p.quantity}} g</span>
+  }
+  @case ('óra') {
+  <span class="quantity" [style.grid-area]="'quantity'" [style.grid-row]="$index + 1">{{p.quantity * 60 | minutesToHour}} óra</span>
+  }
+  }
+  <button mat-icon-button type="button" [style.grid-area]="'plus'" [style.grid-row]="$index + 1" (click)="onAddQuantity($index)">
+    <mat-icon>add</mat-icon>
+  </button>
+  <span [style.grid-area]="'amount'" [style.grid-row]="$index + 1">{{p.price.amount * p.quantity}} Ft</span>
+  <button matIconButton type="button" class="danger" [style.grid-area]="'remove'" [style.grid-row]="$index + 1" (click)="onRemovePrice($index)">
+    <mat-icon>delete</mat-icon>
+  </button>
+  } @else {
+  <shared-clearable-input label="Megnevezés" [style.grid-area]="'name'" [style.grid-row]="$index + 1" [(value)]="p.name" />
+  <button mat-icon-button type="button" [style.grid-area]="'minus'" [style.grid-row]="$index + 1" (click)="onRemoveAmount($index)">
+    <mat-icon>remove</mat-icon>
+  </button>
+
+  <button mat-icon-button type="button" [style.grid-area]="'plus'" [style.grid-row]="$index + 1" (click)="onAddAmount($index)">
+    <mat-icon>add</mat-icon>
+  </button>
+  <span [style.grid-area]="'amount'" [style.grid-row]="$index + 1">{{p.amount}} Ft</span>
+  <button mat-icon-button type="button" class="danger" [style.grid-area]="'remove'" [style.grid-row]="$index + 1" (click)="onRemovePrice($index)">
+    <mat-icon>delete</mat-icon>
+  </button>
+  }
+  }
+  <mat-divider [style.grid-row]="prices().length + 1" [style.grid-column]="'1 / 7'" />
+  <span [style.grid-area]="'name'" [style.grid-row]="value().length + 2">Összesen</span>
+  <span [style.grid-area]="'amount'" [style.grid-row]="value().length + 2">{{total()}} Ft</span>
+  @if (touched() || _touched()) {
+  @for(error of errors(); track $index) {
+  <mat-error class="error" [style.grid-row]="value().length + 3">{{error.message}}</mat-error>
+  }
+  }
+</div>

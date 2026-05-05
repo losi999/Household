@@ -1,2 +1,8 @@
-<hairdressing-toolbar title="Vendégek"></hairdressing-toolbar>
-<img src="./bear.gif" alt="" style="width: 400px">
+<hairdressing-toolbar title="Vendégek">
+  <button mat-icon-button (click)="onCreate()" type="button">
+    <mat-icon>add</mat-icon>
+  </button>
+</hairdressing-toolbar>
+<mat-slide-toggle color="primary" [(ngModel)]="showArchivedCustomers">{{showArchivedCustomers() ? 'Régi vendégek megjelenítve' : 'Régi vendégek elrejtve'}}</mat-slide-toggle>
+<shared-clearable-input label="Keresés" [(value)]="searchValue" />
+<hairdressing-customer-list [customers]="filteredCustomers()" />

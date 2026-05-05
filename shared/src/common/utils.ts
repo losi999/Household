@@ -150,10 +150,3 @@ export const toSearchTerms = (input: string): string[] => {
     lowercased.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
   ];
 };
-
-export const filterSearchable = (items: Searchable[], searchValue: string) => {
-  const terms = searchValue.trim().toLowerCase()
-    .split(' ');
-
-  return items?.filter(i => i.searchTerms?.some(s => terms.every(t => s.includes(t))));
-};

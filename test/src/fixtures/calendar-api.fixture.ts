@@ -1,4 +1,4 @@
-import { isPriceBase } from '@household/shared/common/type-guards';
+import { isListedPriceDocument, isListedPriceRequest } from '@household/shared/common/type-guards';
 import { getCalendarEntryId, getCustomerId, getPriceId, getTransactionId } from '@household/shared/common/utils';
 import { headerExpiresIn, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
@@ -185,14 +185,14 @@ const validateCalendarEntryDocuments = (originalDocument: Calendar.Entry.Documen
     prices: currentDocument.prices?.map((currentPrice, index) => {
       const originalPrice = originalDocument.prices[index];
 
-      if (isPriceBase(currentPrice) && isPriceBase(originalPrice)) {
+      if (!isListedPriceDocument(currentPrice) && !isListedPriceDocument(originalPrice)) {
         return new Comparer(currentPrice, {
           name: originalPrice.name,
           amount: originalPrice.amount,
         });
       }
 
-      if (!isPriceBase(currentPrice) && !isPriceBase(originalPrice)) {
+      if (isListedPriceDocument(currentPrice) && isListedPriceDocument(originalPrice)) {
         return new Comparer(currentPrice, {
           price: getPriceId(originalPrice.price),
           quantity: originalPrice.quantity,
@@ -236,14 +236,14 @@ export const expect = baseExpect.extend({
       prices: req.entryType === CalendarEntryType.Work ? document.prices?.map((priceDocument, index) => {
         const priceRequest = req.prices[index];
 
-        if (isPriceBase(priceDocument) && isPriceBase(priceRequest)) {
+        if (!isListedPriceDocument(priceDocument) && !isListedPriceRequest(priceRequest)) {
           return new Comparer(priceDocument, {
             name: priceRequest.name,
             amount: priceRequest.amount,
           });
         }
 
-        if (!isPriceBase(priceDocument) && !isPriceBase(priceRequest)) {
+        if (isListedPriceDocument(priceDocument) && isListedPriceRequest(priceRequest)) {
           return new Comparer(priceDocument, {
             price: priceRequest.priceId,
             quantity: priceRequest.quantity,

@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { exhaustMap, filter, map } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { priceActions, priceApiActions } from '@hairdressing/state/price/price-actions';
-import { BottomSheetService, DialogService } from '@household/shared-ui';
+import { BottomSheetService, DialogService, dispatchIfConfirmed } from '@household/shared-ui';
 import { PriceDialog, PriceDialogData, PriceDialogResult } from '@hairdressing/app/price/price-dialog/price-dialog';
 
 @Injectable()
@@ -55,10 +55,10 @@ export class PriceEffects {
           title: 'Törölni akarod ezt a tételt az árlistából?',
           content: price.name,
         }).pipe(
-          filter(confirmed => confirmed),
-          map(() => priceApiActions.deletePriceInitiated({
+          dispatchIfConfirmed(priceApiActions.deletePriceInitiated({
             priceId: price.priceId,
-          })));
+          })),
+        );
       }),
     );
   });

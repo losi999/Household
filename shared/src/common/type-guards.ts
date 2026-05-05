@@ -29,15 +29,18 @@ export const isInventoryCategory = (category: Category.Response): boolean => {
   return category?.categoryType === CategoryType.Inventory;
 };
 
-export const isPriceBase = (price: (Customer.Job.Request | Customer.Job.Document)['prices'][number]): price is Price.
-  Base => {
-  return !!(price as Price.Base).name;
-};
-
-export const hasPriceId = (price: Exclude<(Customer.Job.Request | Customer.Job.Document)['prices'][number], Price.Base>): price is (Price.PriceId & Customer.Job.Quantity) => {
+export const hasPriceId = (price: Customer.Job.ListedPriceRequest | Customer.Job.ListedPriceDocument): price is Customer.Job.ListedPriceRequest => {
   return !!(price as Price.PriceId).priceId;
 };
 
-// export const isListedPrice = (price: Customer.Job.Response['prices'][number]): price is Customer.Job.ListedPrice<Price.Response> => {
-//   return !!(price as Customer.Job.ListedPrice<Price.Response>).priceId;
-// };
+export const isListedPrice = (price: (Customer.Job.Request | Customer.Job.Document)['prices'][number]): price is (Customer.Job.ListedPriceRequest | Customer.Job.ListedPriceDocument) => {
+  return isListedPriceRequest(price as Customer.Job.ListedPriceRequest) || isListedPriceDocument(price as Customer.Job.ListedPriceDocument);
+};
+
+export const isListedPriceRequest = (price: Customer.Job.Request['prices'][number]): price is Customer.Job.ListedPriceRequest => {
+  return !!(price as Price.PriceId).priceId;
+};
+
+export const isListedPriceDocument = (price: Customer.Job.Document['prices'][number]): price is Customer.Job.ListedPriceDocument => {
+  return !!(price as Customer.Job.ListedPriceDocument).price;
+};

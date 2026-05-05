@@ -81,7 +81,7 @@ const workEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRequest>
           {
             type: 'object',
             additionalProperties: false,
-            required: [...priceBase.required],
+            required: ['amount'],
             properties: {
               ...priceBase.properties,
               amount: {
