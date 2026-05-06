@@ -8,10 +8,10 @@
     <hairdressing-job-price-summary [prices]="job().prices" />
   </mat-card-content>
   <mat-card-actions>
-    <button mat-flat-button color="primary" data-testId="search-button" [routerLink]="['/']" [queryParams]="{customerId: customerId, jobName: job().name}">
+    <button matButton="filled" data-testId="search-button" [routerLink]="['/']" [queryParams]="{customerId: customerId, jobName: job().name}">
       <mat-icon>calendar_add_on</mat-icon>
       Időpont keresése</button>
-    <button mat-icon-button data-testId="menu-button" [matMenuTriggerFor]="menu" color="primary">
+    <button matIconButton data-testId="menu-button" [matMenuTriggerFor]="menu" color="primary">
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">

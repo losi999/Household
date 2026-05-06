@@ -6,6 +6,7 @@ import { ClearableInput } from '@household/shared-ui';
 import { Customer } from '@household/shared/types/types';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { form, FormField, required } from '@angular/forms/signals';
+import { toUndefined } from '@household/shared/common/utils';
 
 export type CustomerDialogData = Customer.Response;
 export type CustomerDialogResult = Customer.Request;
@@ -51,8 +52,8 @@ export class CustomerDialog {
     if (this.customerForm().valid()) {
       this.dialogRef.close({
         name: this.customerForm.name().value(),
-        description: this.customerForm.description().value()
-          .trim() || undefined,
+        description: toUndefined(this.customerForm.description().value()
+          .trim()),
         isGroup: this.customerForm.isGroup().value(),
         rating: this.customerForm.rating().value(),
       });

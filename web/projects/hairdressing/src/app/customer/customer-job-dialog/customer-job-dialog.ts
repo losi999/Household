@@ -80,7 +80,8 @@ export class CustomerJobDialog {
     if (this.customerJobForm().valid()) {
       this.dialogRef.close({
         name: this.customerJobForm.name().value(),
-        description: toUndefined(this.customerJobForm.description().value()),
+        description: toUndefined(this.customerJobForm.description().value()
+          ?.trim()),
         duration: this.customerJobForm.duration().value(),
         prices: this.customerJobForm.prices().value()
           .map((p) => {

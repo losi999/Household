@@ -15,10 +15,6 @@ export const selectCustomerIsInProgress = (priceId: Customer.Id) => createSelect
   },
 );  
 
-// export const selectFilteredCustomers = (...excludedIds: Customer.Id[]) => createSelector(selectCustomers, ({ customerList }) => {
-//   return customerList?.filter(c => !excludedIds?.includes(c.customerId) && !c.isArchived);
-// });
-
 export const selectCustomerById = (customerId: Customer.Id) => createSelector(selectCustomers, ({ customerList }) => {
   return customerList?.find(c => c.customerId === customerId);
 });
