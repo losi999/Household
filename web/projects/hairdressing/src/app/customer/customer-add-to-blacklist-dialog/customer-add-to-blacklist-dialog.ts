@@ -5,10 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { CustomerAutocompleteInput } from '@hairdressing/app/customer/customer-autocomplete-input/customer-autocomplete-input';
 import { Customer } from '@household/shared/types/types';
 
-export type CustomerAddToBlacklistDialogData = {
-  customer: Customer.Response;
-  excludedCustomerIds: Customer.Id[];
-};
+export type CustomerAddToBlacklistDialogData = Customer.Response;
 
 export type CustomerAddToBlacklistDialogResult = Customer.Response[];
 
@@ -25,7 +22,7 @@ export type CustomerAddToBlacklistDialogResult = Customer.Response[];
 })
 export class CustomerAddToBlacklistDialog {
   dialogRef = inject<MatDialogRef<CustomerAddToBlacklistDialog, CustomerAddToBlacklistDialogResult>>(MatDialogRef);
-  data = inject<CustomerAddToBlacklistDialogData>(MAT_DIALOG_DATA);
+  customer = inject<CustomerAddToBlacklistDialogData>(MAT_DIALOG_DATA);
 
   blacklistModel = signal<Customer.Response>(null);
 
@@ -35,10 +32,15 @@ export class CustomerAddToBlacklistDialog {
     });
   });
 
+  excludedCustomerIds = [
+    this.customer.customerId,
+    ...this.customer.blacklistedCustomers.map(c => c.customerId),
+  ];
+
   onSave() {
     if (this.blacklistForm().valid()) {
       this.dialogRef.close([
-        this.data.customer,
+        this.customer,
         this.blacklistForm().value(),
       ]);
     }

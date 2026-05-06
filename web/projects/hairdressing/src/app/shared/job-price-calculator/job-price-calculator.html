@@ -1,8 +1,6 @@
-<div class="price-list">
-  @for(p of prices(); track $index) {
-  <button matButton="outlined" type="button" (click)="onAddPrice(p)">{{p.name}}</button>
-  }
-  <button matButton="filled" color="primary" type="button" (click)="onAddAdditionalPrice()">Egyéb</button>
+<div class="prices">
+  <hairdressing-price-autocomplete-input label="Ár kiválasztása" [exclude]="excludedPriceIds()" [(value)]="selectedPrice" />
+  <button matButton="filled" type="button" (click)="onAddPrice()" [disabled]="!selectedPrice()">Hozzáadás</button>
 </div>
 <div class="detailed-price">
   @for(p of value();track $index) {

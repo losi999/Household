@@ -1,6 +1,6 @@
 import { Calendar, Customer } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
-import { customerApiActions } from '@hairdressing/state/customer/customer.actions';
+import { customerApiActions } from '@hairdressing/state/customer/customer-actions';
 import { isListedPriceRequest } from '@household/shared/common/type-guards';
 import { Searchable } from '@household/shared/types/common';
 import { toSearchTerms } from '@household/shared/common/utils';

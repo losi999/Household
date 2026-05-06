@@ -4,9 +4,9 @@ import { exhaustMap, filter, map, mergeMap, switchMap } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService, dispatchIfConfirmed, takeFirstDefined } from '@household/shared-ui';
-import { customerActions, customerApiActions } from '@hairdressing/state/customer/customer.actions';
+import { customerActions, customerApiActions } from '@hairdressing/state/customer/customer-actions';
 import { CustomerDialog, CustomerDialogData, CustomerDialogResult } from '@hairdressing/app/customer/customer-dialog/customer-dialog';
-import { selectCustomerById } from '@hairdressing/state/customer/customer.selector';
+import { selectCustomerById } from '@hairdressing/state/customer/customer-selector';
 import { CustomerJobDialog, CustomerJobDialogData, CustomerJobDialogResult } from '@hairdressing/app/customer/customer-job-dialog/customer-job-dialog';
 import { CustomerAddToBlacklistDialog, CustomerAddToBlacklistDialogData, CustomerAddToBlacklistDialogResult } from '@hairdressing/app/customer/customer-add-to-blacklist-dialog/customer-add-to-blacklist-dialog';
 
@@ -141,13 +141,7 @@ export class CustomerEffects {
       switchMap(({ customerId }) => this.store.select(selectCustomerById(customerId)).pipe(takeFirstDefined())), 
       exhaustMap((customer) => {
         return this.dialog.open<CustomerAddToBlacklistDialog, CustomerAddToBlacklistDialogData, CustomerAddToBlacklistDialogResult>(CustomerAddToBlacklistDialog, {
-          data: {
-            customer,
-            excludedCustomerIds: [
-              customer.customerId,
-              ...customer.blacklistedCustomers.map(c => c.customerId),
-            ],
-          },
+          data: customer,
           disableClose: true,
         }).afterClosed();
       }),

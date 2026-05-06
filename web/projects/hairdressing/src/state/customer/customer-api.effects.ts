@@ -3,7 +3,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, exhaustMap, groupBy, map, mergeMap, of, withLatestFrom } from 'rxjs';
 import { Store } from '@ngrx/store';
 import { CustomerService } from '@hairdressing/services/customer-service';
-import { customerApiActions } from '@hairdressing/state/customer/customer.actions';
+import { customerApiActions } from '@hairdressing/state/customer/customer-actions';
 import { notificationActions } from '@household/shared-ui';
 import { selectPriceList } from '@hairdressing/state/price/price-selector';
 

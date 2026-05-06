@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Store } from '@ngrx/store';
-import { customerActions, customerApiActions } from '@hairdressing/state/customer/customer.actions';
-import { selectCustomerList } from '@hairdressing/state/customer/customer.selector';
+import { customerActions, customerApiActions } from '@hairdressing/state/customer/customer-actions';
+import { selectCustomerList } from '@hairdressing/state/customer/customer-selector';
 import { ClearableInput } from '@household/shared-ui';
 import { CustomerList } from '../customer-list/customer-list';
 

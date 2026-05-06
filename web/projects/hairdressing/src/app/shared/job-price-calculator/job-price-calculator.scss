@@ -1,15 +1,14 @@
 @use '@angular/material' as mat;
 
-.price-list {
+.prices {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 5px;
-  margin-bottom: 10px;
+  grid-template-columns: 2fr 1fr;
+  align-items: center;
+  gap: 10px;
 
   button {
     @include mat.button-overrides(
       (
-        outlined-container-height: 45px,
         filled-container-height: 45px,
       )
     );

@@ -1,4 +1,4 @@
-import { CustomerState } from '@hairdressing/state/customer/customer.reducer';
+import { CustomerState } from '@hairdressing/state/customer/customer-reducer';
 import { Customer } from '@household/shared/types/types';
 // import { CustomerJob } from '@household/web/types/common';
 import { createFeatureSelector, createSelector } from '@ngrx/store';

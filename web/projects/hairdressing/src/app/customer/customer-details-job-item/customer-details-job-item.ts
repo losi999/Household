@@ -8,7 +8,7 @@ import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pi
 import { Customer } from '@household/shared/types/types';
 import { Store } from '@ngrx/store';
 import { JobPriceSummary } from '@hairdressing/app/shared/job-price-summary/job-price-summary';
-import { customerActions } from '@hairdressing/state/customer/customer.actions';
+import { customerActions } from '@hairdressing/state/customer/customer-actions';
 
 @Component({
   selector: 'hairdressing-customer-details-job-item',

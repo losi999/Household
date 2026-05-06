@@ -144,9 +144,14 @@ export const createWorkEntryTitle = (customer: Customer.Response, job?: Customer
 };
 
 export const toSearchTerms = (input: string): string[] => {
-  const lowercased = input.toLowerCase();
+  const lowercased = input.toLowerCase().split(' ');
+
   return [
-    lowercased,
-    lowercased.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+    ...new Set(lowercased.flatMap(term => {
+      return [
+        term,
+        term.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+      ];
+    })),
   ];
 };

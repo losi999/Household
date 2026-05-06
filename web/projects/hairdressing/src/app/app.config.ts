@@ -11,11 +11,12 @@ import { PriceApiEffects } from '@hairdressing/state/price/price-api-effects';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { PriceEffects } from '@hairdressing/state/price/price-effects';
 import { CustomerApiEffects } from '@hairdressing/state/customer/customer-api.effects';
-import { customerReducer } from '@hairdressing/state/customer/customer.reducer';
-import { CustomerEffects } from '@hairdressing/state/customer/customer.effects';
+import { customerReducer } from '@hairdressing/state/customer/customer-reducer';
+import { CustomerEffects } from '@hairdressing/state/customer/customer-effects';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 
 registerLocaleData(localeHu);
 
@@ -28,6 +29,13 @@ export const appConfig: ApplicationConfig = {
     {
       provide: LOCALE_ID,
       useValue: 'hu-HU',
+    },
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: {
+        subscriptSizing: 'dynamic',
+        appearance: 'fill',
+      },
     },
     provideHttpClient(withInterceptors([
       authInterceptor,

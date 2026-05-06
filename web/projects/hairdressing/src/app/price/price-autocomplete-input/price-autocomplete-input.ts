@@ -5,14 +5,14 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Store } from '@ngrx/store';
-import { Customer } from '@household/shared/types/types';
-import { selectCustomerList } from '@hairdressing/state/customer/customer-selector';
+import { Price } from '@household/shared/types/types';
+import { selectPriceList } from '@hairdressing/state/price/price-selector';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 import { FormsModule } from '@angular/forms';
-import { customerActions } from '@hairdressing/state/customer/customer-actions';
+import { priceActions } from '@hairdressing/state/price/price-actions';
 
 @Component({
-  selector: 'hairdressing-customer-autocomplete-input',
+  selector: 'hairdressing-price-autocomplete-input',
   imports: [
     MatFormFieldModule,
     MatInputModule,
@@ -21,25 +21,25 @@ import { customerActions } from '@hairdressing/state/customer/customer-actions';
     MatAutocompleteModule,
     FormsModule,
   ],
-  templateUrl: './customer-autocomplete-input.html',
-  styleUrl: './customer-autocomplete-input.scss',
+  templateUrl: './price-autocomplete-input.html',
+  styleUrl: './price-autocomplete-input.scss',
 })
-export class CustomerAutocompleteInput implements FormValueControl<Customer.Response> {
-  value = model<Customer.Response>();
+export class PriceAutocompleteInput implements FormValueControl<Price.Response> {
+  value = model<Price.Response>();
 
   required = input(false);
   errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
   label = input.required<string>();
-  exclude = input<Customer.Id[]>([]);
+  exclude = input<Price.Id[]>([]);
 
   private store = inject(Store);
 
-  private customers = this.store.selectSignal(selectCustomerList);
+  private prices = this.store.selectSignal(selectPriceList);
 
   filterValue = signal<string>('');
 
-  filteredCustomers = signal<Customer.Response[]>([]);
+  filteredPrices = signal<Price.Response[]>([]);
 
   constructor() {
     effect(() => {
@@ -47,12 +47,8 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
     });
     
     effect(() => {
-      const filteredCustomers = this.customers()?.filter((c) => {
-        if (c.isArchived) {
-          return false;
-        }
-        
-        if (this.exclude()?.includes(c.customerId)) {
+      const filteredPrices = this.prices()?.filter((c) => {        
+        if (this.exclude()?.includes(c.priceId)) {
           return false;
         }
         const terms = this.filterValue().toLowerCase()
@@ -65,7 +61,7 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
         return false;
         
       }) ?? [];
-      this.filteredCustomers.set(filteredCustomers);
+      this.filteredPrices.set(filteredPrices);
     
     });
   }
@@ -73,7 +69,7 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
   clearValue(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.value.set(null);
+    this.value.set(undefined);
   }
 
   optionSelected(input: HTMLInputElement) {
@@ -82,12 +78,12 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
 
   onBlur() {
     if (this.value()?.name !== this.filterValue()) {
-      this.value.set(null);
+      this.value.set(undefined);
     }
   }
 
   create(event: MouseEvent) {
-    this.store.dispatch(customerActions.createCustomer());
+    this.store.dispatch(priceActions.createPrice());
     event.stopPropagation();
   }
 }

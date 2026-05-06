@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { form, FormField, minLength, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { PriceAutocompleteInput } from '@hairdressing/app/price/price-autocomplete-input/price-autocomplete-input';
 import { DurationStepper } from '@hairdressing/app/shared/duration-stepper/duration-stepper';
 import { JobPriceCalculator, JobPriceCalculatorValue } from '@hairdressing/app/shared/job-price-calculator/job-price-calculator';
 import { selectPriceList } from '@hairdressing/state/price/price-selector';

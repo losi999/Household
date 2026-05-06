@@ -1,10 +1,16 @@
 <div mat-dialog-title>{{customer ? 'Szerkesztés' : 'Új'}}</div>
 <div mat-dialog-content>
-  <shared-clearable-input label="Név" [formField]="customerForm.name" />
-  <mat-checkbox [formField]="customerForm.isGroup">
-    Több személy tartozik ide?
-  </mat-checkbox>
-  <shared-clearable-input label="Megjegyzés" type="area" [formField]="customerForm.description" />
+  <div>
+    <shared-clearable-input label="Név" [formField]="customerForm.name" />
+  </div>
+  <div>
+    <mat-checkbox [formField]="customerForm.isGroup">
+      Több személy tartozik ide?
+    </mat-checkbox>
+  </div>
+  <div>
+    <shared-clearable-input label="Megjegyzés" type="area" [formField]="customerForm.description" />
+  </div>
   <div class="rating" data-testId="rating">
     <button matMiniFab type="button" [class.selected]="customerForm.rating().value() === 1" (click)="onSetRating(1)">
       <mat-icon>sentiment_stressed</mat-icon>

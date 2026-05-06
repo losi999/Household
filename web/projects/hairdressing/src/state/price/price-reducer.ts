@@ -1,9 +1,11 @@
 import { Price } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { priceApiActions } from '@hairdressing/state/price/price-actions';
+import { Searchable } from '@household/shared/types/common';
+import { toSearchTerms } from '@household/shared/common/utils';
 
 export type PriceState = {
-  priceList: Price.Response[];
+  priceList: Searchable<Price.Response>[];
   isInProgress: Price.Id[];
 };
 
@@ -14,7 +16,12 @@ export const priceReducer = createReducer<PriceState>({
 on(priceApiActions.listPricesCompleted, (state, { prices }) => {
   return {
     ...state,
-    priceList: prices,
+    priceList: prices.map(p => {
+      return {
+        ...p,
+        searchTerms: toSearchTerms(p.name),
+      };
+    }),
   };
 }),
 

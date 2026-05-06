@@ -1,10 +1,11 @@
-import { Component, computed, inject, input, model, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, model, signal } from '@angular/core';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MinutesToHourPipe } from '@hairdressing/app/pipes/minutes-to-hour-pipe';
+import { PriceAutocompleteInput } from '@hairdressing/app/price/price-autocomplete-input/price-autocomplete-input';
 import { selectPriceList } from '@hairdressing/state/price/price-selector';
 import { ClearableInput } from '@household/shared-ui';
 import { Price } from '@household/shared/types/types';
@@ -26,6 +27,7 @@ export type JobPriceCalculatorValue = {
     ClearableInput,
     MatDividerModule,
     MatFormFieldModule,
+    PriceAutocompleteInput,
   ],
   templateUrl: './job-price-calculator.html',
   styleUrl: './job-price-calculator.scss',
@@ -39,6 +41,15 @@ export class JobPriceCalculator implements FormValueControl<JobPriceCalculatorVa
   private store = inject(Store);
 
   prices = this.store.selectSignal(selectPriceList);
+
+  excludedPriceIds = computed(() => {
+    return this.value()
+      .map(p => p.price?.priceId)
+      .filter(p => p);
+  });
+
+  selectedPrice = model<Price.Response>();
+
   total = computed(() => {
     return this.value().reduce((accumulator, currentValue) => {
       if (currentValue.price) {
@@ -47,9 +58,15 @@ export class JobPriceCalculator implements FormValueControl<JobPriceCalculatorVa
       return accumulator + currentValue.amount;
     }, 0);
   });
+  
+  onAddPrice() {
+    const price = this.selectedPrice();
+    if (!price) {
+      return;
+    }
 
-  onAddPrice(price: Price.Response) {
     this._touched.set(true);
+    this.selectedPrice.set(undefined);
     const existingGroup = this.value().find(c => c.price?.priceId === price.priceId);
 
     if (existingGroup) {
@@ -106,7 +123,7 @@ export class JobPriceCalculator implements FormValueControl<JobPriceCalculatorVa
           };
         }
         return priceValue;
-      }).filter(pv => pv.quantity > 0);
+      }).filter(pv => pv.quantity > 0 || pv.amount > 0);
     });
   }
 
