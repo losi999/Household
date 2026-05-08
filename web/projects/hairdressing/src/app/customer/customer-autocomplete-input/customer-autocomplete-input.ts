@@ -73,7 +73,7 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
   clearValue(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.value.set(null);
+    this.value.set(undefined);
   }
 
   optionSelected(input: HTMLInputElement) {
@@ -82,7 +82,7 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
 
   onBlur() {
     if (this.value()?.name !== this.filterValue()) {
-      this.value.set(null);
+      this.value.set(undefined);
     }
   }
 

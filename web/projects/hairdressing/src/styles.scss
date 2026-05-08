@@ -4,9 +4,18 @@
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+@use 'sass:map';
 
 :root {
   --content-max-width: 1024px;
+  --work-entry-container: #{map.get(mat.$azure-palette, 40)}; //--mat-sys-primary
+  --pending-work-entry-container: #{map.get(mat.$azure-palette, 90)}; //--mat-sys-primary-container
+  --pending-work-entry-on-container: #{map.get(mat.$azure-palette, 10)}; //--mat-sys-on-primary-container
+  --personal-entry-container: #{map.get(mat.$spring-green-palette, 40)}; //--mat-sys-primary
+  --issue-entry-container: #{map.get(mat.$orange-palette, 90)}; //--mat-sys-primary-fixed
+  --issue-entry-on-container: #{map.get(mat.$orange-palette, 10)}; //--mat-sys-on-primary-fixed
+  --holiday-day-container: #{map.get(mat.$red-palette, 80)}; //--mat-sys-primary-fixed-dim
+  --vacation-day-container: #{map.get(mat.$spring-green-palette, 80)}; //--mat-sys-primary-fixed-dim
 }
 
 html {
@@ -62,6 +71,34 @@ a {
   );
 }
 
+button {
+  &.work {
+    @include mat.button-overrides(
+      (
+        filled-container-color: var(--work-entry-container),
+      )
+    );
+  }
+
+  &.personal {
+    @include mat.button-overrides(
+      (
+        filled-container-color: var(--personal-entry-container),
+      )
+    );
+  }
+
+  &.pending {
+    @include mat.button-overrides(
+      (
+        filled-container-color: var(--pending-work-entry-container),
+        filled-label-text-color: var(--pending-work-entry-on-container),
+      )
+    );
+    border: 2px solid var(--work-entry-container);
+  }
+}
+
 body {
   // Default the application to a light color theme. This can be changed to
   // `dark` to enable the dark color theme, or to `light dark` to defer to the
@@ -79,5 +116,4 @@ body {
   margin: 0;
   height: 100%;
 }
-
 /* You can add global styles to this file, and also import other style files */

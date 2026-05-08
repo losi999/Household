@@ -17,6 +17,11 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
 import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
+import { calendarReducer } from '@hairdressing/state/calendar/calendar-reducer';
+import { CalendarEffects } from '@hairdressing/state/calendar/calendar-effects';
+import { CalendarApiEffects } from '@hairdressing/state/calendar/calendar-api-effects';
+import { provideRouterStore, routerReducer, RouterState } from '@ngrx/router-store';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 
 registerLocaleData(localeHu);
 
@@ -37,6 +42,20 @@ export const appConfig: ApplicationConfig = {
         appearance: 'fill',
       },
     },
+    {
+      provide: MatPaginatorIntl,
+      useFactory: () => {
+        const customPaginatorIntl = new MatPaginatorIntl();
+
+        customPaginatorIntl.getRangeLabel = (page, pageSize, length) => {
+          const startIndex = page * pageSize;
+          const endIndex = Math.min(startIndex + pageSize, length);
+          return `${startIndex + 1} - ${endIndex} / ${length}`;
+        };
+
+        return customPaginatorIntl;
+      }, 
+    },
     provideHttpClient(withInterceptors([
       authInterceptor,
       progressInterceptor,
@@ -47,11 +66,16 @@ export const appConfig: ApplicationConfig = {
       price: priceReducer,
       customer: customerReducer,
       progress: progressReducer,
+      calendar: calendarReducer,
+      router: routerReducer,
     }),
     provideStoreDevtools({
       maxAge: 25,
-      logOnly: !isDevMode(), 
+      logOnly: !isDevMode(),
     }),
-    provideEffects(AuthEffects, NotificationEffects, NavigationEffects, PriceApiEffects, PriceEffects, CustomerApiEffects, CustomerEffects),
+    provideEffects(AuthEffects, NotificationEffects, NavigationEffects, PriceApiEffects, PriceEffects, CustomerApiEffects, CustomerEffects, CalendarEffects, CalendarApiEffects),
+    provideRouterStore({
+      routerState: RouterState.Minimal,
+    }),
   ],
 };

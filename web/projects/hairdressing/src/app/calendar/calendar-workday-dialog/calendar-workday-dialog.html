@@ -1,0 +1,27 @@
+<div mat-dialog-title>
+  Munkanap beállításai
+</div>
+<div mat-dialog-content>
+  <mat-button-toggle-group [(ngModel)]="dayType">
+    <mat-button-toggle value="workday">Munkanap</mat-button-toggle>
+    <mat-button-toggle [disabled]="day.dayType === 'weekend'" value="vacation">Szabadság</mat-button-toggle>
+  </mat-button-toggle-group>
+  <mat-divider />
+  @if (dayType() === 'workday') {
+  <mat-radio-group [(ngModel)]="shiftType">
+    <mat-radio-button value="morning">Délelőtt</mat-radio-button>
+    <mat-radio-button value="afternoon">Délután</mat-radio-button>
+    <mat-radio-button value="custom">Egyéni</mat-radio-button>
+  </mat-radio-group>
+  <mat-slider min="28" max="84" step="1">
+    <input [(ngModel)]="start" matSliderStartThumb>
+    <input [(ngModel)]="end" matSliderEndThumb>
+  </mat-slider>
+  {{start() | timeSlotToTime}} - {{end() | timeSlotToTime}} (időtartam: {{(end() - start()) | timeSlotToTime}} óra)
+  }
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial form="workday-form" (click)="onSubmit()">Mentés</button>
+  <button matButton="text" mat-dialog-close type="button">Mégse</button>
+  <button matButton="filled" class="danger" type="button" (click)="onDelete()">Alaphelyzetbe állítás</button>
+</div>

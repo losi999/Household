@@ -1,6 +1,8 @@
+import { Params } from '@angular/router';
 import { CustomerState } from '@hairdressing/state/customer/customer-reducer';
+import { selectQueryParams } from '@hairdressing/state/router/router-selector';
+import { CustomerJob } from '@hairdressing/types';
 import { Customer } from '@household/shared/types/types';
-// import { CustomerJob } from '@household/web/types/common';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 const selectCustomers = createFeatureSelector<CustomerState>('customer');
@@ -23,16 +25,15 @@ export const selectCustomerWorks = (customerId: Customer.Id) => createSelector(s
   return customerWorks?.[customerId];
 });
 
-// export const selectCustomerJobByIdAndName = (customerId: Customer.Id, jobName: string) => createSelector<CustomerState, CustomerState, CustomerJob>(selectCustomers, ({ customerList }) => {
-//   const customer = customerList?.find(c => c.customerId === customerId);
-//   if(!customer) {
-//     return undefined;
-//   }
+export const selectPendingCustomerJob = createSelector<CustomerState, CustomerState, Params, CustomerJob>(selectCustomers, selectQueryParams, ({ customerList }, { customerId, jobName }) => {
+  const customer = customerList?.find(c => c.customerId === customerId);
+  if(!customer) {
+    return undefined;
+  }
   
-//   const job = customer.jobs.find(j => j.name === jobName);
-
-//   return {
-//     ...job,
-//     customer,
-//   };
-// });
+  const job = customer.jobs.find(j => j.name === jobName);
+  return {
+    ...job,
+    customer,
+  };
+});

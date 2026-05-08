@@ -1,0 +1,86 @@
+@use '@angular/material' as mat;
+
+.personal,
+.work,
+.issue,
+.pending {
+  display: flex;
+  justify-content: start;
+  align-items: start;
+  text-align: left;
+  cursor: default;
+  padding: 2px;
+  @include mat.button-overrides(
+    (
+      filled-container-height: auto,
+      filled-container-shape: var(--mat-sys-corner-small),
+    )
+  );
+}
+
+.no-work {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--mat-sys-surface-container-highest),
+    var(--mat-sys-surface-container-highest) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.vacation {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--vacation-day-container),
+    var(--vacation-day-container) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.holiday {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--holiday-day-container),
+    var(--holiday-day-container) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.work {
+  position: relative;
+  margin: 0 5px;
+
+  & .badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
+    background: red;
+    border-radius: 50%;
+    padding: 2px;
+    z-index: 2;
+  }
+
+  &.no-show {
+    text-decoration: line-through;
+    text-decoration-thickness: 2px;
+  }
+}
+
+.issue {
+  @include mat.button-overrides(
+    (
+      filled-container-color: none,
+      filled-label-text-color: var(--issue-entry-on-container),
+    )
+  );
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--issue-entry-container),
+    var(--issue-entry-container) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}

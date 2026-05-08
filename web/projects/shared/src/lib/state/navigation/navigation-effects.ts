@@ -10,23 +10,21 @@ export class NavigationEffects {
   private router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
 
-  // changeCalendarWeek = createEffect(() => {
-  //   return this.actions.pipe(
-  //     ofType(navigationActions.changeCalendarWeek),
-  //     tap(({ weekStart }) => {
-  //       this.router.navigate([], {
-  //         relativeTo: this.activatedRoute,
-  //         queryParams: {
-  //           weekStart, 
-  //         },
-  //         queryParamsHandling: 'merge',
-  //         replaceUrl: true,
-  //       });
-  //     }),
-  //   );
-  // }, {
-  //   dispatch: false,
-  // });
+  changeCalendarWeek = createEffect(() => {
+    return this.actions.pipe(
+      ofType(navigationActions.changeCalendarWeek),
+      tap(({ type, ...params }) => {
+        this.router.navigate([], {
+          relativeTo: this.activatedRoute,
+          queryParams: params,
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }),
+    );
+  }, {
+    dispatch: false,
+  });
 
   navigateToLoggedInHomepage = createEffect(() => {
     return this.actions.pipe(
