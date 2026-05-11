@@ -13,7 +13,7 @@ import { PriceEffects } from '@hairdressing/state/price/price-effects';
 import { CustomerApiEffects } from '@hairdressing/state/customer/customer-api.effects';
 import { customerReducer } from '@hairdressing/state/customer/customer-reducer';
 import { CustomerEffects } from '@hairdressing/state/customer/customer-effects';
-import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
 import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
@@ -77,5 +77,6 @@ export const appConfig: ApplicationConfig = {
     provideRouterStore({
       routerState: RouterState.Minimal,
     }),
+    provideNativeDateAdapter(),
   ],
 };

@@ -15,6 +15,7 @@ import { getISOWeek, startOfISOWeek, setISOWeek, startOfYear, endOfISOWeek, last
 import { CalendarWorkdayDialog, CalendarWorkdayDialogData, CalendarWorkdayDialogResult } from '@hairdressing/app/calendar/calendar-workday-dialog/calendar-workday-dialog';
 import { CalendarEntryDetailsDialog, CalendarEntryDetailsDialogData, CalendarEntryDetailsDialogResult } from '@hairdressing/app/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog';
 import { CalendarEntryPayingDialog, CalendarEntryPayingDialogData, CalendarEntryPayingDialogResult } from '@hairdressing/app/calendar/calendar-entry-paying-dialog/calendar-entry-paying-dialog';
+import { CalendarEntryEditDialog, CalendarEntryEditDialogData, CalendarEntryEditDialogResult } from '@hairdressing/app/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog';
 // import { CalendarEntryDetailsDialog, CalendarEntryDetailsDialogData, CalendarEntryDetailsDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
 // import { CalendarEntryEditDialog, CalendarEntryEditDialogData, CalendarEntryEditDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
 // import { CalendarEntryPayingDialog, CalendarEntryPayingDialogData, CalendarEntryPayingDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
@@ -134,44 +135,44 @@ export class CalendarEffects {
     );
   });
 
-  // openCreateCalendarEntryDialog = createEffect(() => {
-  //   return this.actions.pipe(
-  //     ofType(calendarActions.createCalendarEntry),
-  //     exhaustMap(({ entryType }) => {
-  //       return this.dialog.open<CalendarEntryEditDialog, CalendarEntryEditDialogData, CalendarEntryEditDialogResult>(CalendarEntryEditDialog, {
-  //         data: {
-  //           entryType,
-  //         },
-  //         width: '900px',
-  //         disableClose: true,
-  //       }).afterClosed();
-  //     }),
-  //     filter(req => !!req),
-  //     map((request) => {
-  //       return calendarApiActions.createCalendarEntryInitiated(request);
-  //     }),
-  //   );
-  // });
+  openCreateCalendarEntryDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarActions.createCalendarEntry),
+      exhaustMap(({ entryType }) => {
+        return this.dialog.open<CalendarEntryEditDialog, CalendarEntryEditDialogData, CalendarEntryEditDialogResult>(CalendarEntryEditDialog, {
+          data: {
+            entryType,
+          },
+          width: '900px',
+          disableClose: true,
+        }).afterClosed();
+      }),
+      filter(req => !!req),
+      map((request) => {
+        return calendarApiActions.createCalendarEntryInitiated(request);
+      }),
+    );
+  });
 
-  // openUpdateCalendarEntryDialog = createEffect(() => {
-  //   return this.actions.pipe(
-  //     ofType(calendarActions.updateCalendarEntry),
-  //     exhaustMap(({ type, ...entry }) => {
-  //       return this.dialog.open<CalendarEntryEditDialog, CalendarEntryEditDialogData, CalendarEntryEditDialogResult>(CalendarEntryEditDialog, {
-  //         data: entry,
-  //         width: '900px',
-  //         disableClose: true,
-  //       }).afterClosed()
-  //         .pipe(filter(req => !!req),
-  //           map((request) => {
-  //             return calendarApiActions.updateCalendarEntryInitiated({
-  //               calendarEntryId: entry.calendarEntryId,
-  //               ...request,
-  //             });
-  //           }));
-  //     }),
-  //   );
-  // });
+  openUpdateCalendarEntryDialog = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarActions.updateCalendarEntry),
+      exhaustMap(({ type, ...entry }) => {
+        return this.dialog.open<CalendarEntryEditDialog, CalendarEntryEditDialogData, CalendarEntryEditDialogResult>(CalendarEntryEditDialog, {
+          data: entry,
+          width: '900px',
+          disableClose: true,
+        }).afterClosed()
+          .pipe(filter(req => !!req),
+            map((request) => {
+              return calendarApiActions.updateCalendarEntryInitiated({
+                calendarEntryId: entry.calendarEntryId,
+                ...request,
+              });
+            }));
+      }),
+    );
+  });
   
   openDeleteCalendarEntryDialog = createEffect(() => {
     return this.actions.pipe(

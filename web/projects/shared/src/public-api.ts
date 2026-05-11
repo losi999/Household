@@ -24,3 +24,4 @@ export * from './lib/icon-text/icon-text';
 export * from './lib/validators/exclusive-min';
 export * from './lib/operators/dispatch-if-confirmed';
 export * from './lib/operators/take-first-defined';
+export * from './lib/utils/signal-error-state-matcher';

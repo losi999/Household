@@ -1,11 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, map, mergeMap, of, withLatestFrom } from 'rxjs';
-// import { progressActions } from '@household/web/state/progress/progress.actions';
-// import { notificationActions } from '@household/web/state/notification/notification.actions';
-// import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { Store } from '@ngrx/store';
-// import { selectCustomerById } from '@household/web/app/hairdressing/customer/state/customer.selector';
 import { CalendarEntryType } from '@household/shared/enums';
 import { CalendarService } from '@hairdressing/services/calendar.service';
 import { calendarApiActions } from '@hairdressing/state/calendar/calendar-actions';
@@ -107,31 +103,31 @@ export class CalendarApiEffects {
     );
   });
   
-  // updateCalendarEntry = createEffect(() => {
-  //   return this.actions.pipe(
-  //     ofType(calendarApiActions.updateCalendarEntryInitiated),
-  //     mergeMap(({ type, calendarEntryId, ...request }) => {
-  //       return this.calendarService.updateCalendarEntry(calendarEntryId, request).pipe(
-  //         withLatestFrom(request.entryType === CalendarEntryType.Work ? this.store.select(selectCustomerById(request.customerId)) : of(undefined)), 
-  //         map(([
-  //           { calendarEntryId },
-  //           customer,
-  //         ]) => calendarApiActions.updateCalendarEntryCompleted({
-  //           calendarEntryId,
-  //           ...request,
-  //           customer,
-  //         })),
-  //         catchError(() => {
-  //           return of(progressActions.processFinished(),
-  //             notificationActions.showMessage({
-  //               message: 'Hiba történt',
-  //             }),
-  //           );
-  //         }),
-  //       );
-  //     }),
-  //   );
-  // });
+  updateCalendarEntry = createEffect(() => {
+    return this.actions.pipe(
+      ofType(calendarApiActions.updateCalendarEntryInitiated),
+      mergeMap(({ type, calendarEntryId, ...request }) => {
+        return this.calendarService.updateCalendarEntry(calendarEntryId, request).pipe(
+          withLatestFrom(request.entryType === CalendarEntryType.Work ? this.store.select(selectCustomerById(request.customerId)) : of(undefined)), 
+          map(([
+            { calendarEntryId },
+            customer,
+          ]) => calendarApiActions.updateCalendarEntryCompleted({
+            calendarEntryId,
+            ...request,
+            customer,
+          })),
+          catchError(() => {
+            return of(
+              notificationActions.showMessage({
+                message: 'Hiba történt',
+              }),
+            );
+          }),
+        );
+      }),
+    );
+  });
   
   deleteCalendarEntry = createEffect(() => {
     return this.actions.pipe(

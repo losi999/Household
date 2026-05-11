@@ -1,6 +1,5 @@
 import { Calendar, Customer } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
-// import { calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { calculateWorkdayLimits } from '@household/shared/common/utils';
@@ -146,49 +145,49 @@ export const calendarReducer = createReducer<CalendarState>({},
     };
   }),
 
-  // on(calendarApiActions.updateCalendarEntryCompleted, (_state, { type, calendarEntryId, customer, ...request }) => {
-  //   return Object.entries(_state).reduce<CalendarState>((accumulator, [
-  //     date,
-  //     dayResponse,
-  //   ]) => {
-  //     const index = dayResponse.entries.findIndex(e => e.calendarEntryId === calendarEntryId);
+  on(calendarApiActions.updateCalendarEntryCompleted, (_state, { type, calendarEntryId, customer, ...request }) => {
+    return Object.entries(_state).reduce<CalendarState>((accumulator, [
+      date,
+      dayResponse,
+    ]) => {
+      const index = dayResponse.entries.findIndex(e => e.calendarEntryId === calendarEntryId);
 
-  //     let isAffectedDay = false;
-  //     let entries = dayResponse.entries;
-  //     if (index >= 0) {
-  //       entries = entries.toSpliced(index, 1);
-  //       isAffectedDay = true;
-  //     }
+      let isAffectedDay = false;
+      let entries = dayResponse.entries;
+      if (index >= 0) {
+        entries = entries.toSpliced(index, 1);
+        isAffectedDay = true;
+      }
 
-  //     if (date === request.day) {
-  //       entries = entries.concat(createCalendarEntryResponseFromRequest(calendarEntryId, request, customer)).toSorted((a, b) => a.start > b.start ? 1 : -1);
-  //       isAffectedDay = true;
-  //     }
+      if (date === request.day) {
+        entries = entries.concat(createCalendarEntryResponseFromRequest(calendarEntryId, request, customer)).toSorted((a, b) => a.start > b.start ? 1 : -1);
+        isAffectedDay = true;
+      }
 
-  //     if (!isAffectedDay) {
-  //       return {
-  //         ...accumulator,
-  //         [date]: dayResponse,
-  //       };
-  //     }
+      if (!isAffectedDay) {
+        return {
+          ...accumulator,
+          [date]: dayResponse,
+        };
+      }
 
-  //     const newDay: LimitedCalendarDay = {
-  //       ...dayResponse,
-  //       entries,
-  //     };
+      const newDay: LimitedCalendarDay = {
+        ...dayResponse,
+        entries,
+      };
 
-  //     const { start, end } = calculateWorkdayLimits(newDay);
+      const { start, end } = calculateWorkdayLimits(newDay);
 
-  //     return {
-  //       ...accumulator,
-  //       [date]: {
-  //         ...newDay,
-  //         calculatedStart: start,
-  //         calculatedEnd: end,
-  //       },
-  //     };
-  //   }, {});
-  // }),
+      return {
+        ...accumulator,
+        [date]: {
+          ...newDay,
+          calculatedStart: start,
+          calculatedEnd: end,
+        },
+      };
+    }, {});
+  }),
 
   on(calendarApiActions.deleteCalendarEntryCompleted, (_state, { calendarEntryId }) => {
     return Object.entries(_state).reduce<CalendarState>((accumulator, [
