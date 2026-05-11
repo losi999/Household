@@ -1,5 +1,5 @@
 <div class="prices">
-  @for(p of prices(); track $index) {
+  @for(p of cost().prices; track $index) {
   <div [style.grid-area]="'name'" [style.grid-row]="$index + 1">
     {{p.name}}
   </div>
@@ -20,8 +20,16 @@
     {{p.amount * (p.quantity ?? 1)}} Ft
   </div>
   }
-  <mat-divider [style.grid-column]="'span 3'" [style.grid-row]="prices().length + 1" />
-  <div [style.grid-area]="'amount'" [style.grid-row]="prices().length + 2">
+  @if(cost().additionalPrice) {
+  <div [style.grid-area]="'name'" [style.grid-row]="cost().prices.length + 1">
+    Egyéni
+  </div>
+  <div [style.grid-area]="'amount'" [style.grid-row]="cost().prices.length + 1">
+    {{cost().additionalPrice}} Ft
+  </div>
+  }
+  <mat-divider [style.grid-column]="'span 3'" [style.grid-row]="cost().prices.length + 2" />
+  <div [style.grid-area]="'amount'" [style.grid-row]="cost().prices.length + 3">
     {{total()}} Ft
   </div>
 </div>

@@ -17,6 +17,7 @@ const createCalendarEntryResponseFromRequest = (calendarEntryId: Calendar.Entry.
       description: request.description,
       entryType: request.entryType,
       day: request.day,
+      additionalPrice: request.additionalPrice,
       prices: customer?.jobs.find(j => request.title.endsWith(j.name))?.prices,
       customer,
       resolution: undefined,

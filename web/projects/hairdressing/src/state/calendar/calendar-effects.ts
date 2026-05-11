@@ -264,17 +264,11 @@ export class CalendarEffects {
               start: timeInterval.start,
               end: timeInterval.end,
               description: job.description,
+              additionalPrice: job.additionalPrice,
               prices: job.prices.map((p) => {
-                if (p.priceId) {
-                  return {
-                    priceId: p.priceId,
-                    quantity: p.quantity,
-                  };
-                }
-              
                 return {
-                  name: p.name,
-                  amount: p.amount,
+                  priceId: p.priceId,
+                  quantity: p.quantity,
                 };
               }),
               customerId: customer.customerId,

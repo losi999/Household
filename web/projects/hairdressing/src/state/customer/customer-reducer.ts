@@ -1,7 +1,6 @@
 import { Calendar, Customer } from '@household/shared/types/types';
 import { createReducer, on } from '@ngrx/store';
 import { customerApiActions } from '@hairdressing/state/customer/customer-actions';
-import { isListedPriceRequest } from '@household/shared/common/type-guards';
 import { Searchable } from '@household/shared/types/common';
 import { toSearchTerms } from '@household/shared/common/utils';
 
@@ -105,7 +104,7 @@ on(customerApiActions.deleteCustomerCompleted, (_state, { customerId }) => {
   };
 }),
 
-on(customerApiActions.createCustomerJobCompleted, (_state, { customerId, duration, name, prices, description, priceList }) => {
+on(customerApiActions.createCustomerJobCompleted, (_state, { customerId, duration, name, prices, description, additionalPrice, priceList }) => {
   return {
     ..._state,
     customerList: _state.customerList.map((c) => {
@@ -118,16 +117,6 @@ on(customerApiActions.createCustomerJobCompleted, (_state, { customerId, duratio
         jobs: c.jobs.concat({
           name,
           prices: prices.map((p) => {
-            if (!isListedPriceRequest(p)) {
-              return {
-                amount: p.amount,
-                name: p.name,
-                priceId: undefined,
-                quantity: undefined,
-                unitOfMeasurement: undefined,
-              };
-            }
-
             const price = priceList.find(x => x.priceId === p.priceId);
             return {
               ...price,
@@ -136,6 +125,7 @@ on(customerApiActions.createCustomerJobCompleted, (_state, { customerId, duratio
           }),
           duration,
           description,
+          additionalPrice,
         })
           .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
             sensitivity: 'base',
@@ -145,7 +135,7 @@ on(customerApiActions.createCustomerJobCompleted, (_state, { customerId, duratio
   };
 }),
 
-on(customerApiActions.updateCustomerJobCompleted, (_state, { customerId, jobName, description, duration, name, prices, priceList }) => {
+on(customerApiActions.updateCustomerJobCompleted, (_state, { customerId, jobName, description, duration, name, additionalPrice, prices, priceList }) => {
   return {
     ..._state,
     customerList: _state.customerList.map((c) => {
@@ -163,16 +153,6 @@ on(customerApiActions.updateCustomerJobCompleted, (_state, { customerId, jobName
           return {
             name,
             prices: prices.map((p) => {
-              if (!isListedPriceRequest(p)) {
-                return {
-                  amount: p.amount,
-                  name: p.name,
-                  priceId: undefined,
-                  quantity: undefined,
-                  unitOfMeasurement: undefined,
-                };
-              }
-
               const price = priceList.find(x => x.priceId === p.priceId);
               return {
                 ...price,
@@ -181,6 +161,7 @@ on(customerApiActions.updateCustomerJobCompleted, (_state, { customerId, jobName
             }),
             duration,
             description,
+            additionalPrice,
           };
         }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
           sensitivity: 'base',

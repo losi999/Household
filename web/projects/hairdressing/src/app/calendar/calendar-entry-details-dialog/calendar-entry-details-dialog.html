@@ -9,7 +9,7 @@
   </div>
   }
   @if (entry.entryType === 'work' && entry.prices?.length > 0) {
-  <hairdressing-job-price-summary [prices]="entry.prices" />
+  <hairdressing-job-price-summary [cost]="entry" />
   }
 </div>
 

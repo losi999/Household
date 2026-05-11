@@ -3,7 +3,7 @@
   <shared-clearable-input data-testId="name" label="Munka neve" [formField]="customerJobForm.name" />
   <shared-clearable-input data-testId="description" type="area" label="Megjegyzés" [formField]="customerJobForm.description" />
   <hairdressing-duration-stepper [formField]="customerJobForm.duration" />
-  <hairdressing-job-price-calculator [formField]="customerJobForm.prices" />
+  <hairdressing-job-price-calculator [formField]="customerJobForm.cost" />
 </div>
 <div mat-dialog-actions>
   <button matButton="filled" cdkFocusInitial (click)="onSave()">Mentés</button>

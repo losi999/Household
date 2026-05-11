@@ -46,24 +46,16 @@ export class CalendarEntryPayingDialog {
     });
   });
 
-  prices = model<JobPriceCalculatorValue[]>(this.entry.prices?.map((priceResponse) => {
-    if (priceResponse.priceId) {
+  cost = model<JobPriceCalculatorValue>({
+    additionalPrice: this.entry.additionalPrice,
+    prices: this.entry.prices?.map((priceResponse) => {
       const { quantity, ...price } = priceResponse;
       return {
         price,
         quantity,
-        amount: null,
-        name: null,
       };
-    }
-
-    return {
-      price: null,
-      quantity: null,
-      amount: priceResponse.amount,
-      name: priceResponse.name,
-    };
-  }) ?? []);
+    }) ?? [],
+  });
 
   onSubmit() {
     if (this.paymentType() === 'cash') {

@@ -13,11 +13,11 @@ import { Customer } from '@household/shared/types/types';
   styleUrl: './job-price-summary.scss',
 })
 export class JobPriceSummary {
-  prices = input<Customer.Job.Response['prices']>();
+  cost = input<Customer.Job.CostResponse>();
   
   total = computed<number>(() => {
-    return this.prices().reduce((accumulator, currentValue) => {
-      return accumulator + currentValue.amount * (currentValue.priceId ? currentValue.quantity : 1);
-    }, 0);
+    return this.cost().prices.reduce((accumulator, currentValue) => {
+      return accumulator + currentValue.amount * currentValue.quantity;
+    }, 0) + (this.cost().additionalPrice ?? 0);
   });
 }

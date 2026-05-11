@@ -24,6 +24,21 @@
   align-items: center;
   text-align: right;
 
+  .additional-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    button {
+      @include mat.button-overrides(
+        (
+          tonal-horizontal-padding: 0px,
+          tonal-container-height: 35px,
+        )
+      );
+    }
+  }
+
   .error {
     grid-area: error;
     text-align: left;
