@@ -51,61 +51,55 @@ components:
 
     Quantity:
       type: object
+      required:
+        - quantity
       properties:
         quantity:
           type: integer
           exclusiveMinimum: 0
 
-    Quantity.Required:
-      type: object
-      required:
-        - quantity
-
-    Prices.Request.Required:
+    Cost.Required:
       type: object
       required:
         - prices
 
-    Prices.Request:
+    Cost.Request:
       type: object
       properties:
-        prices:
-          type: array
-          minItems: 1
-          items:
-            oneOf:
-              - allOf:
-                  - $ref: "price.yaml#/components/schemas/PriceId"
-                  - $ref: "price.yaml#/components/schemas/PriceId.Required"
-                  - $ref: "#/components/schemas/Quantity"
-                  - $ref: "#/components/schemas/Quantity.Required"
-              - $ref: "price.yaml#/components/schemas/Base"
-
-    Prices.Response:
-      type: object
-      required:
-        - prices
-      properties:
+        additionalPrice:
+          type: integer
         prices:
           type: array
           minItems: 1
           items:
             allOf:
               - $ref: "price.yaml#/components/schemas/PriceId"
-              - $ref: "price.yaml#/components/schemas/Base"
-              - $ref: "price.yaml#/components/schemas/UnitOfMeasurement"
+              - $ref: "#/components/schemas/Quantity"
+
+    Cost.Response:
+      type: object
+      properties:
+        additionalPrice:
+          type: integer
+        prices:
+          type: array
+          minItems: 1
+          items:
+            allOf:
+              - $ref: "price.yaml#/components/schemas/Response"
               - $ref: "#/components/schemas/Quantity"
 
     Job.Request:
       allOf:
         - $ref: "#/components/schemas/Job.Base"
-        - $ref: "#/components/schemas/Prices.Request"
-        - $ref: "#/components/schemas/Prices.Request.Required"
+        - $ref: "#/components/schemas/Cost.Request"
+        - $ref: "#/components/schemas/Cost.Required"
 
     Job.Response:
       allOf:
         - $ref: "#/components/schemas/Job.Base"
-        - $ref: "#/components/schemas/Prices.Response"
+        - $ref: "#/components/schemas/Cost.Response"
+        - $ref: "#/components/schemas/Cost.Required"
 
     Jobs:
       type: object

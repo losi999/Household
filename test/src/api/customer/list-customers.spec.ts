@@ -31,14 +31,11 @@ test.describe('GET /customer/v1/customers', () => {
       blacklistedCustomers: [blacklistedCustomer],
       jobs: [
         {
-          prices: {
-            custom: [{}],
-            listed: [
-              {
-                price: priceDocument,
-              },
-            ],
-          },
+          prices: [
+            {
+              price: priceDocument,
+            },
+          ],
         },
       ],
     });
@@ -46,14 +43,11 @@ test.describe('GET /customer/v1/customers', () => {
       blacklistedCustomers: [blacklistedCustomer],
       jobs: [
         {
-          prices: {
-            custom: [{}],
-            listed: [
-              {
-                price: priceDocument,
-              },
-            ],
-          },
+          prices: [
+            {
+              price: priceDocument,
+            },
+          ],
         },
       ],
     });

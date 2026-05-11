@@ -8,10 +8,7 @@ export const customerDataFactory = (() => {
     body?: Partial<Customer.Request>
     jobs?: {
       body?: Partial<Omit<Customer.Job.Request, 'prices'>>;
-      prices?: {
-        custom?: Partial<Price.Base>[];
-        listed?: (Partial<Customer.Job.Quantity> & {price: Price.Document})[];
-      }; 
+      prices?: (Partial<Customer.Job.Quantity> & {price: Price.Document})[];
     }[];
     blacklistedCustomers?: Customer.Document[];
   }): Customer.Document => {
@@ -20,16 +17,13 @@ export const customerDataFactory = (() => {
     const jobs = ctx?.jobs?.map<Customer.Job.Document>((j) => {
       const jobUpdate = customerDocumentConverter.addJob(testDataFactory.customer.job.request({
         body: j.body,
-        prices: {
-          custom: j.prices?.custom,
-          listed: j.prices?.listed?.map(({ price, ...rest }) => {
-            return {
-              priceId: getPriceId(price),
-              ...rest,
-            };
-          }),
-        },
-      }), j.prices?.listed?.map((p) => p.price) ?? []);
+        prices: j.prices?.map(({ price, ...rest }) => {
+          return {
+            priceId: getPriceId(price),
+            ...rest,
+          };
+        }),
+      }), j.prices?.map((p) => p.price) ?? []);
 
       return jobUpdate.update.$push.jobs;
     }) ?? defaultCustomerDocument.jobs;

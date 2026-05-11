@@ -775,20 +775,13 @@ export const createUserResponse: DataFactoryFunction<User.Response> = (resp) => 
 
 const createPriceId = createId<Price.Id>;
 
-const createPriceBase: DataFactoryFunction<Price.Base> = (req) => {
+const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
   return {
     name: `${faker.commerce.department()} ${faker.string.uuid()}`,
     amount: faker.number.int({
       min: 1,
       max: 10000,
     }),
-    ...req,
-  };
-};
-
-const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
-  return {
-    ...createPriceBase(),
     unitOfMeasurement: faker.helpers.arrayElement(priceUnitsOfMeasurement),
     ...req,
   };
@@ -836,10 +829,7 @@ const createCustomerDocument = (ctx?: {
   body?: Partial<Customer.Request>
   jobs?: {
     body?: Partial<Omit<Customer.Job.Request, 'prices'>>;
-    prices?: {
-      custom?: Partial<Price.Base>[];
-      listed?: Partial<Customer.Job.Quantity & {price?: Price.Document}>[];
-    }; 
+    prices?: (Customer.Job.Quantity & {price?: Price.Document})[];
   }[];
   blacklistedCustomers?: Customer.Document[];
 }): Customer.Document => {
@@ -850,34 +840,22 @@ const createCustomerDocument = (ctx?: {
       return {
         ...createCustomerJobRequest(),
         ...j.body,
-        prices: (j.prices?.custom || j.prices?.listed) ? [
-          ...j.prices.custom?.map((p) => {
-            return {
-              name: faker.commerce.product(),
-              amount: faker.number.int({
-                min: 1,
-                max: 10000,
-              }), 
-              ...p,
-            };
-          }) ?? [],
-          ...j.prices.listed?.map((p) => {
-            return {
-              price: createPriceDocument(),
-              quantity: faker.number.int({
-                min: 1,
-                max: 5,
-              }),
-              ...p,
-            };
-          }) ?? [],
-        ] : [
-          {
-            name: faker.commerce.product(),
-            amount: faker.number.int({
+        prices: j.prices?.map((p) => {
+          return {
+            price: createPriceDocument(),
+            quantity: faker.number.int({
               min: 1,
-              max: 10000,
-            }), 
+              max: 5,
+            }),
+            ...p,
+          };
+        }) ?? [
+          {
+            price: createPriceDocument(),
+            quantity: faker.number.int({
+              min: 1,
+              max: 5,
+            }),
           },
         ],
       };
@@ -902,10 +880,7 @@ const createCustomerResponse: DataFactoryFunction<Customer.Response> = (resp) =>
 
 const createCustomerJobRequest = (ctx?: {
   body?: Partial<Omit<Customer.Job.Request, 'prices'>>;
-  prices?: {
-    custom?: Partial<Price.Base>[];
-    listed?: Partial<Price.PriceId & Customer.Job.Quantity>[];
-  };
+  prices?: Partial<Price.PriceId & Customer.Job.Quantity>[];
 }): Customer.Job.Request => {
   return {
     name: `${faker.company.buzzVerb()} ${faker.string.uuid()}`,
@@ -919,34 +894,26 @@ const createCustomerJobRequest = (ctx?: {
       min: 1,
       max: 96,
     }),
-    prices: (ctx?.prices?.custom || ctx?.prices?.listed) ? [
-      ...ctx?.prices.custom?.map((p) => {
-        return {
-          name: faker.commerce.product(),
-          amount: faker.number.int({
-            min: 1,
-            max: 10000,
-          }), 
-          ...p,
-        };
-      }) ?? [],
-      ...ctx?.prices.listed?.map((p) => {
-        return {
-          priceId: createPriceId(),
-          quantity: faker.number.int({
-            min: 1,
-            max: 5,
-          }),
-          ...p,
-        };
-      }) ?? [],
-    ] : [
-      {
-        name: faker.commerce.product(),
-        amount: faker.number.int({
+    additionalPrice: faker.number.int({
+      min: -5000,
+      max: 5000,
+    }),
+    prices: ctx?.prices?.map((p) => {
+      return {
+        priceId: createPriceId(),
+        quantity: faker.number.int({
           min: 1,
-          max: 10000,
-        }), 
+          max: 5,
+        }),
+        ...p,
+      };
+    }) ?? [
+      {
+        priceId: createPriceId(),
+        quantity: faker.number.int({
+          min: 1,
+          max: 5,
+        }),
       },
     ],
     ...ctx?.body,
@@ -959,6 +926,10 @@ const createCustomerJobResponse: DataFactoryFunction<Customer.Job.Response> = (d
     duration: faker.number.int({
       min: 1,
       max: 96,
+    }),
+    additionalPrice: faker.number.int({
+      min: -5000,
+      max: 5000,
     }),
     prices: [
       {
@@ -1082,10 +1053,7 @@ const createCalendarIssueEntryRequest: DataFactoryFunction<Calendar.Entry.IssueE
 
 const createCalendarWorkEntryRequest = (ctx?: {
   body?: Partial<Omit<Calendar.Entry.WorkEntryRequest, 'prices'>>;
-  prices?: {
-    custom?: Partial<Price.Base>[];
-    listed?: Partial<Price.PriceId & Customer.Job.Quantity>[];
-  }
+  prices?: Partial<Price.PriceId & Customer.Job.Quantity>[];
 }): Calendar.Entry.WorkEntryRequest => {
   const start = faker.number.int({
     min: WORKDAY_START,
@@ -1108,24 +1076,20 @@ const createCalendarWorkEntryRequest = (ctx?: {
     entryType: CalendarEntryType.Work,
     title: faker.company.buzzVerb(),
     customerId: createCustomerId(),
-    prices: (ctx?.prices?.custom || ctx?.prices?.listed) ? [
-      ...ctx?.prices.custom?.map((p) => {
-        return {
-          ...createPriceBase(),
-          ...p,
-        };
-      }) ?? [],
-      ...ctx?.prices.listed?.map((p) => {
-        return {
-          priceId: createPriceId(),
-          quantity: faker.number.int({
-            min: 1,
-            max: 5,
-          }),
-          ...p,
-        };
-      }) ?? [],
-    ] : undefined,
+    additionalPrice: faker.number.int({
+      min: -5000,
+      max: 5000,
+    }),
+    prices: ctx?.prices?.map((p) => {
+      return {
+        priceId: createPriceId(),
+        quantity: faker.number.int({
+          min: 1,
+          max: 5,
+        }),
+        ...p,
+      };
+    }),
     ...ctx?.body,
   };
 };
@@ -1140,6 +1104,7 @@ const createCalendarEntryDocument: DataFactoryFunction<Calendar.Entry.Document> 
     resolution: undefined,
     prices: undefined,
     transaction: undefined,
+    additionalPrice: undefined,
     ...data,
   };
 };
@@ -1280,7 +1245,6 @@ const createCalendarHolidayResponse: DataFactoryFunction<Calendar.Day.HolidayRes
 export const testDataFactory = {
   price: {
     id: createPriceId,
-    base: createPriceBase,
     request: createPriceRequest,
     document: createPriceDocument,
     response: createPriceResponse,

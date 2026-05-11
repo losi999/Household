@@ -30,14 +30,11 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
     customerDocument = customerDataFactory.document({
       jobs: [
         {
-          prices: {
-            custom: [{}],
-            listed: [
-              {
-                price: priceDocument,
-              },
-            ],
-          },
+          prices: [
+            {
+              price: priceDocument,
+            },
+          ],
         },
       ],
       blacklistedCustomers: [blacklistedCustomer],

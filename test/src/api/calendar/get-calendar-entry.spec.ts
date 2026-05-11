@@ -35,13 +35,11 @@ test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
       blacklistedCustomers: [blacklistedCustomerDocument],
       jobs: [
         {
-          prices: {
-            listed: [
-              {
-                price: priceDocument,
-              },
-            ],
-          },
+          prices: [
+            {
+              price: priceDocument,
+            },
+          ],
         },
       ],
     });
@@ -52,14 +50,11 @@ test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
 
     calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
       customer: customerDocument,
-      prices: {
-        custom: [{}],
-        listed: [
-          {
-            price: priceDocument,
-          },
-        ],
-      },
+      prices: [
+        {
+          price: priceDocument,
+        },
+      ],
       resolution: { 
         status: CalendarEntryResolutionStatus.Paid,
         delay: 30,

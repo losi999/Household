@@ -1,4 +1,3 @@
-import { isListedPriceDocument, isListedPriceRequest } from '@household/shared/common/type-guards';
 import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { getPriceId } from '@household/shared/common/utils';
 import { addSeconds, getCustomerId } from '@household/shared/common/utils';
@@ -25,13 +24,6 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
   const instance: ICustomerDocumentConverter = {
     createJobPriceList: (prices, priceDocuments) => {
       return prices?.map((req) => {
-        if (!isListedPriceRequest(req)) {
-          return {
-            name: req.name,
-            amount: req.amount,
-          };
-        }
-
         return {
           price: priceDocuments.find(p => getPriceId(p) === req.priceId),
           quantity: req.quantity,
@@ -82,31 +74,42 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
         },
       };
     },
-    addJob: ({ description, duration, name, prices }, priceDocuments) => {
+    addJob: ({ description, duration, name, prices, additionalPrice }, priceDocuments) => {
+      const job: Customer.Job.Document = {
+        name,
+        duration,
+        description,
+        additionalPrice,
+        prices: instance.createJobPriceList(prices, priceDocuments),
+      };
+
       return {
         update: {
           $push: {
-            jobs: {
-              name,
-              duration,
-              description,
-              prices: instance.createJobPriceList(prices, priceDocuments),
-            },
+            jobs: job,
           },
         },
       };
     },
-    updateJob: (jobName, { description, duration, name, prices }, priceDocuments) => {
+    updateJob: (jobName, { description, duration, name, prices, additionalPrice }, priceDocuments) => {
+      const job: Customer.Job.Document = {
+        name,
+        duration,
+        description,
+        additionalPrice,
+        prices: instance.createJobPriceList(prices, priceDocuments),
+      };
+
       return {
         update: {
           $set: {
-            'jobs.$[job]': {
-              name,
-              duration,
-              description,
-              prices: instance.createJobPriceList(prices, priceDocuments),
-            },
+            'jobs.$[job]': job,
           },
+          ...(!additionalPrice ? {
+            $unset: {
+              additionalPrice: true,
+            },
+          } : {}),
         },
         arrayFilters: [
           {
@@ -139,11 +142,12 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
       return {
         ...instance.toResponseBase(customer),
         isArchived: customer.isArchived ?? false,
-        jobs: customer.jobs?.map(({ name, description, duration, prices }) => {
+        jobs: customer.jobs?.map(({ name, description, duration, prices, additionalPrice }) => {
           return {
             name,
             description, 
             duration,
+            additionalPrice,
             prices: instance.toResponseJobPriceList(prices),
           };
         }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
@@ -155,16 +159,6 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
     toResponseList: (docs) => docs?.map(d => instance.toResponse(d)),
     toResponseJobPriceList: (docs) => {
       return docs?.map((p) => {
-        if (!isListedPriceDocument(p)) {
-          return {
-            amount: p.amount,
-            name: p.name,
-            priceId: undefined,
-            quantity: undefined,
-            unitOfMeasurement: undefined,
-          };
-        }
-
         return {
           quantity: p.quantity,
           ...priceDocumentConverter.toResponse(p.price),

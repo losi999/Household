@@ -2,7 +2,6 @@ import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
 import { default as quantity } from '@household/shared/schemas/partials/customer-job-quantity';
 import { default as price } from '@household/test/schemas/price-response';
-import { default as priceBase } from '@household/shared/schemas/partials/price-base';
 import { default as customer } from '@household/test/schemas/customer-response';
 import { default as calendarEntryId } from '@household/shared/schemas/calendar-entry-id';
 import { default as day } from '@household/shared/schemas/calendar-day';
@@ -101,36 +100,23 @@ const workEntryResponseSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRespons
         },
       ],
     },
+    additionalPrice: {
+      type: 'integer',
+    },
     prices: {
       type: 'array',
       minItems: 1,
       items: {
-        oneOf: [
-          {
-            type: 'object',
-            additionalProperties: false,
-            required: [
-              ...price.required,
-              ...quantity.required,
-            ],
-            properties: {
-              ...price.properties,
-              ...quantity.properties,
-            },
-          },
-          {
-            type: 'object',
-            additionalProperties: false,
-            required: ['amount'],
-            properties: {
-              ...priceBase.properties,
-              amount: {
-                ...priceBase.properties.amount,
-                exclusiveMinimum: undefined,
-              },
-            },
-          },
+        type: 'object',
+        additionalProperties: false,
+        required: [
+          ...price.required,
+          ...quantity.required,
         ],
+        properties: {
+          ...price.properties,
+          ...quantity.properties,
+        },
       },
     },
   },

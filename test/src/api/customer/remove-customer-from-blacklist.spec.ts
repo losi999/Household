@@ -34,14 +34,11 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
       blacklistedCustomers: [customerDocumentB],
       jobs: [
         {
-          prices: {
-            custom: [{}],
-            listed: [
-              {
-                price: priceDocument,
-              },
-            ],
-          },
+          prices: [
+            {
+              price: priceDocument,
+            },
+          ],
         },
       ],
     });

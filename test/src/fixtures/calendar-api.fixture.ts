@@ -1,4 +1,3 @@
-import { isListedPriceDocument, isListedPriceRequest } from '@household/shared/common/type-guards';
 import { getCalendarEntryId, getCustomerId, getPriceId, getTransactionId } from '@household/shared/common/utils';
 import { headerExpiresIn, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
@@ -166,6 +165,7 @@ const validateCalendarEntryResponse = (response: Calendar.Entry.Response, docume
           delay: document.resolution.delay,
         }),
         prices: validateCustomerJobPriceResponse(response.prices, document.prices),
+        additionalPrice: document.additionalPrice,
       },
     ]);
   }
@@ -182,22 +182,14 @@ const validateCalendarEntryDocuments = (originalDocument: Calendar.Entry.Documen
     title: originalDocument.title,
     entryType: originalDocument.entryType,  
     customer: getCustomerId(originalDocument.customer),
+    additionalPrice: originalDocument.additionalPrice,
     prices: currentDocument.prices?.map((currentPrice, index) => {
       const originalPrice = originalDocument.prices[index];
 
-      if (!isListedPriceDocument(currentPrice) && !isListedPriceDocument(originalPrice)) {
-        return new Comparer(currentPrice, {
-          name: originalPrice.name,
-          amount: originalPrice.amount,
-        });
-      }
-
-      if (isListedPriceDocument(currentPrice) && isListedPriceDocument(originalPrice)) {
-        return new Comparer(currentPrice, {
-          price: getPriceId(originalPrice.price),
-          quantity: originalPrice.quantity,
-        });
-      }
+      return new Comparer(currentPrice, {
+        price: getPriceId(originalPrice.price),
+        quantity: originalPrice.quantity,
+      });    
     }),
     resolution: new Comparer(currentDocument.resolution, {
       delay: originalDocument.resolution?.delay,
@@ -233,22 +225,14 @@ export const expect = baseExpect.extend({
       resolution: undefined,
       transaction: undefined,
       customer: req.entryType === CalendarEntryType.Work ? req.customerId : undefined,
+      additionalPrice: req.entryType === CalendarEntryType.Work ? req.additionalPrice : undefined,
       prices: req.entryType === CalendarEntryType.Work ? document.prices?.map((priceDocument, index) => {
         const priceRequest = req.prices[index];
 
-        if (!isListedPriceDocument(priceDocument) && !isListedPriceRequest(priceRequest)) {
-          return new Comparer(priceDocument, {
-            name: priceRequest.name,
-            amount: priceRequest.amount,
-          });
-        }
-
-        if (isListedPriceDocument(priceDocument) && isListedPriceRequest(priceRequest)) {
-          return new Comparer(priceDocument, {
-            price: priceRequest.priceId,
-            quantity: priceRequest.quantity,
-          });
-        }
+        return new Comparer(priceDocument, {
+          price: priceRequest.priceId,
+          quantity: priceRequest.quantity,
+        });
       }) : undefined,
     }, '_id', 'createdAt', 'updatedAt', 'expiresAt');
 
@@ -256,7 +240,7 @@ export const expect = baseExpect.extend({
 
     return {
       pass: errors.length === 0,
-      message: () => `Expected document to be saved as calendar day document, but it was not:\n${errors.join('\n')}`,
+      message: () => `Expected document to be saved as calendar entry document, but it was not:\n${errors.join('\n')}`,
     };
   },
   toHaveBeenDeletedFromDatabase(document: Calendar.Day.Document | Calendar.Entry.Document) {

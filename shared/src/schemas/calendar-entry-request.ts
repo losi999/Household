@@ -2,7 +2,6 @@ import { CalendarEntryType } from '@household/shared/enums';
 import { default as quantity } from '@household/shared/schemas/partials/customer-job-quantity';
 import { default as priceId } from '@household/shared/schemas/price-id';
 import { default as customerId } from '@household/shared/schemas/customer-id';
-import { default as priceBase } from '@household/shared/schemas/partials/price-base';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
 import { default as day } from '@household/shared/schemas/calendar-day';
@@ -65,33 +64,20 @@ const workEntryRequestSchema: StrictJSONSchema7<Calendar.Entry.WorkEntryRequest>
       type: 'array',
       minItems: 1,
       items: {
-        oneOf: [
-          {
-            type: 'object',
-            additionalProperties: false,
-            required: [
-              ...priceId.required,
-              ...quantity.required,
-            ],
-            properties: {
-              ...priceId.properties,
-              ...quantity.properties,
-            },
-          }, 
-          {
-            type: 'object',
-            additionalProperties: false,
-            required: ['amount'],
-            properties: {
-              ...priceBase.properties,
-              amount: {
-                ...priceBase.properties.amount,
-                exclusiveMinimum: undefined,
-              },
-            },
-          },
+        type: 'object',
+        additionalProperties: false,
+        required: [
+          ...priceId.required,
+          ...quantity.required,
         ],
-      },
+        properties: {
+          ...priceId.properties,
+          ...quantity.properties,
+        },
+      }, 
+    },
+    additionalPrice: {
+      type: 'integer',
     },
   },
 };

@@ -1,12 +1,11 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { isListedPriceRequest } from '@household/shared/common/type-guards';
 import { getCalendarEntryId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { CalendarEntryType } from '@household/shared/enums';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
-import { Calendar, Price } from '@household/shared/types/types';
+import { Calendar } from '@household/shared/types/types';
 
 export interface ICreateCalendarEntryService {
   (ctx: {
@@ -33,16 +32,7 @@ export const createCalendarEntryServiceFactory = (
         customerId: body.customerId,
       }, 400);
 
-      const priceIds = body.prices?.reduce<Price.Id[]>((accumulator, currentValue) => {
-        if (isListedPriceRequest(currentValue)) {
-          return [
-            ...accumulator,
-            currentValue.priceId,
-          ];
-        }
-      
-        return accumulator;
-      }, []) ?? [];
+      const priceIds = body.prices?.map(p => p.priceId) ?? [];
 
       const prices = await priceService.findPricesByIds(priceIds).catch(httpErrors.price.listByIds(priceIds));
       

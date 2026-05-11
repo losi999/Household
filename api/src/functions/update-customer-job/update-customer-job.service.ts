@@ -1,9 +1,8 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { isListedPriceRequest } from '@household/shared/common/type-guards';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
-import { Customer, Price } from '@household/shared/types/types';
+import { Customer } from '@household/shared/types/types';
 
 export interface IUpdateCustomerJobService {
   (ctx: {
@@ -36,16 +35,7 @@ export const updateCustomerJobServiceFactory = (
       jobName: name,
     });
 
-    const priceIds = body.prices.reduce<Price.Id[]>((accumulator, currentValue) => {
-      if (isListedPriceRequest(currentValue)) {
-        return [
-          ...accumulator,
-          currentValue.priceId,
-        ];
-      }
-    
-      return accumulator;
-    }, []);
+    const priceIds = body.prices?.map(p => p.priceId) ?? [];
 
     const priceDocuments = await priceService.findPricesByIds(priceIds).catch(httpErrors.price.listByIds(priceIds));
 

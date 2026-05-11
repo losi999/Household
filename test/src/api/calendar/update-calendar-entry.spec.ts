@@ -63,67 +63,142 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
         });
       } else {
         test.describe('should update calendar', () => {
-          test('personal entry', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
-            request = calendarEntryDataFactory.request.personal();
-
-            await saveCalendarEntry(calendarPersonalEntryDocument);
-            const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
-            expect(res).toBeCreatedResponse();
-
-            const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
-          });
-
-          test('issue entry', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {            
-            request = calendarEntryDataFactory.request.issue();
-            
-            await saveCalendarEntry(calendarIssueEntryDocument);
-            const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
-            expect(res).toBeCreatedResponse();
-
-            const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
-          });
-
-          test('work entry without prices', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {          
-            request = calendarEntryDataFactory.request.work({
-              body: {
-                customerId: getCustomerId(customerDocument),
-              },
+          test.describe('personal entry', () => {
+            test('with full body', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
+              request = calendarEntryDataFactory.request.personal();
+  
+              await saveCalendarEntry(calendarPersonalEntryDocument);
+              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
+              expect(res).toBeCreatedResponse();
+  
+              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
             });
-            
-            await saveCalendarEntry(calendarWorkEntryDocument);
-            await saveCustomer(customerDocument);
-            const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-            expect(res).toBeCreatedResponse();
 
-            const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId; 
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+            test('unsetting description', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
+              request = calendarEntryDataFactory.request.personal({
+                description: undefined,
+              });
+  
+              await saveCalendarEntry(calendarPersonalEntryDocument);
+              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
+              expect(res).toBeCreatedResponse();
+  
+              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+            });
           });
 
-          test('work entry with prices', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {     
-            request = calendarEntryDataFactory.request.work({
-              body: {
-                customerId: getCustomerId(customerDocument),
-              },
-              prices: {
-                listed: [
+          test.describe('issue entry', () => {
+            test('with full body', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
+              request = calendarEntryDataFactory.request.issue();
+  
+              await saveCalendarEntry(calendarIssueEntryDocument);
+              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
+              expect(res).toBeCreatedResponse();
+  
+              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+            });
+
+            test('unsetting description', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
+              request = calendarEntryDataFactory.request.issue({
+                description: undefined,
+              });
+  
+              await saveCalendarEntry(calendarIssueEntryDocument);
+              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
+              expect(res).toBeCreatedResponse();
+  
+              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+            });
+          });
+
+          test.describe('work entry', () => {        
+            test('with full body', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {     
+              request = calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: getCustomerId(customerDocument),
+                },
+                prices: [
                   {
                     priceId: getPriceId(priceDocument),
                   },
                 ],
-                custom: [{}],
-              },
+              });
+              
+              await saveCalendarEntry(calendarWorkEntryDocument);
+              await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
+              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
+              expect(res).toBeCreatedResponse();
+  
+              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId; 
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
             });
-            
-            await saveCalendarEntry(calendarWorkEntryDocument);
-            await saveCustomer(customerDocument);
-            await savePrice(priceDocument);
-            const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-            expect(res).toBeCreatedResponse();
+               
+            test('unsetting description', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {     
+              request = calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: getCustomerId(customerDocument),
+                  description: undefined,
+                },
+                prices: [
+                  {
+                    priceId: getPriceId(priceDocument),
+                  },
+                ],
+              });
+              
+              await saveCalendarEntry(calendarWorkEntryDocument);
+              await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
+              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
+              expect(res).toBeCreatedResponse();
+  
+              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId; 
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+            });
+               
+            test('unsetting additionalPrice', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {     
+              request = calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: getCustomerId(customerDocument),
+                  additionalPrice: undefined,
+                },
+                prices: [
+                  {
+                    priceId: getPriceId(priceDocument),
+                  },
+                ],
+              });
+              
+              await saveCalendarEntry(calendarWorkEntryDocument);
+              await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
+              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
+              expect(res).toBeCreatedResponse();
+  
+              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId; 
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+            });
 
-            const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId; 
-            expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+            test('unsetting prices', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {          
+              request = calendarEntryDataFactory.request.work({
+                body: {
+                  customerId: getCustomerId(customerDocument),
+                },
+              });
+              
+              await saveCalendarEntry(calendarWorkEntryDocument);
+              await saveCustomer(customerDocument);
+              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
+              expect(res).toBeCreatedResponse();
+  
+              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId; 
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+            });
           });
         });
 
@@ -504,13 +579,11 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           test.describe('if prices[0].priceId', () => {
             test('is missing', async ({ requestUpdateCalendarEntry }) => {
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  listed: [
-                    {
-                      priceId: undefined, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: undefined, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('body', 'priceId');
@@ -518,13 +591,11 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             test('is not string', async ({ requestUpdateCalendarEntry }) => {
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  listed: [
-                    {
-                      priceId: <any>1, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: <any>1, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'priceId', 'string');
@@ -532,13 +603,11 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
 
             test('is not mongo id', async ({ requestUpdateCalendarEntry }) => {
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  listed: [
-                    {
-                      priceId: priceDataFactory.id('not mongo id'), 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: priceDataFactory.id('not mongo id'), 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'priceId');
@@ -552,13 +621,11 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                 body: {
                   customerId: getCustomerId(customerDocument), 
                 },
-                prices: {
-                  listed: [
-                    {
-                      priceId: priceDataFactory.id(), 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: priceDataFactory.id(), 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Some of the prices are not found');
@@ -568,118 +635,38 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
           test.describe('if prices[0].quantity', () => {
             test('is missing', async ({ requestUpdateCalendarEntry }) => {
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  listed: [
-                    {
-                      quantity: undefined, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    quantity: undefined, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('body', 'quantity');
             });
 
-            test('is not integer', async ({ requestUpdateCalendarEntry }) => {
+            test('is not number', async ({ requestUpdateCalendarEntry }) => {
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  listed: [
-                    {
-                      quantity: <any>1.1, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    quantity: <any>'1', 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'integer');
+              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
             test('is too small', async ({ requestUpdateCalendarEntry }) => {
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  listed: [
-                    {
-                      quantity: 0, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    quantity: 0, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
-            });
-          });
-
-          test.describe('if prices[0].name', () => {
-            test('is missing', async ({ requestUpdateCalendarEntry }) => {
-              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  custom: [
-                    {
-                      name: undefined, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
-            });
-
-            test('is not string', async ({ requestUpdateCalendarEntry }) => {
-              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  custom: [
-                    {
-                      name: <any>1, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
-            });
-
-            test('is too short', async ({ requestUpdateCalendarEntry }) => {
-              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  custom: [
-                    {
-                      name: '', 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'name', 1);
-            });
-          });
-
-          test.describe('if prices[0].amount', () => {
-            test('is missing', async ({ requestUpdateCalendarEntry }) => {
-              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  custom: [
-                    {
-                      amount: undefined, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
-            });
-
-            test('is not integer', async ({ requestUpdateCalendarEntry }) => {
-              const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.request.work({
-                prices: {
-                  custom: [
-                    {
-                      amount: <any>1.1, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'integer');
             });
           });
 

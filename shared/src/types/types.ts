@@ -813,23 +813,28 @@ export namespace Customer {
       quantity: number;
     };
 
-    export type ListedPriceRequest = Price.PriceId & Quantity;
-
-    export type ListedPriceDocument = {
-      price: Price.Document;
-    } & Quantity;
-    
-    export type Request = Base & {
-      prices: (ListedPriceRequest | Price.Base)[]
+    export type CostRequest = {
+      additionalPrice: number;
+      prices: (Price.PriceId & Quantity)[];
     };
 
-    export type Document = Base & {
-      prices: (ListedPriceDocument | Price.Base)[]
+    export type CostDocument = {
+      additionalPrice: number;
+      prices: ({
+        price: Price.Document;
+      } & Quantity)[];
     };
 
-    export type Response = Base & {
+    export type CostResponse = {
+      additionalPrice: number;
       prices: (Price.Response & Quantity)[];
     };
+    
+    export type Request = Base & CostRequest;
+
+    export type Document = Base & CostDocument;
+
+    export type Response = Base & CostResponse;
   }
 
   type Jobs = {
@@ -864,25 +869,21 @@ export namespace Price {
   export type PriceId = {
     priceId: Id;
   };
-
-  type UnitOfMeasurement = {
-    unitOfMeasurement: typeof priceUnitsOfMeasurement[number];
-  };
-
-  export type Base = {
+  
+  type Base = {
     name: string;
     amount: number;
+    unitOfMeasurement: typeof priceUnitsOfMeasurement[number];
   };
 
   export type Document = Internal.Id
   & Internal.Timestamps
   & Base
-  & UnitOfMeasurement
   & Internal.IsArchived;
 
-  export type Request = Base & UnitOfMeasurement;
+  export type Request = Base;
 
-  export type Response = PriceId & Base & UnitOfMeasurement;
+  export type Response = PriceId & Base;
 }
 
 export namespace Calendar {
@@ -956,7 +957,7 @@ export namespace Calendar {
     export type WorkEntryRequest = Base 
     & DayProp 
     & Customer.CustomerId 
-    & Pick<Customer.Job.Request, 'prices'>
+    & Customer.Job.CostRequest
     & EntryType<Enum.CalendarEntryType.Work>;
 
     export type Request = IssueEntryRequest | PersonalEntryRequest | WorkEntryRequest;
@@ -971,7 +972,7 @@ export namespace Calendar {
       transaction: Transaction.PaymentDocument;
       customer: Customer.Document;
     }
-    & Pick<Customer.Job.Document, 'prices'>;
+    & Customer.Job.CostDocument;
 
     export type ResponseBase = Base 
     & DayProp
@@ -988,7 +989,7 @@ export namespace Calendar {
     & EntryType<Enum.CalendarEntryType.Issue>; 
 
     export type WorkEntryResponse = WorkEntryResponseBase
-    & Pick<Customer.Job.Response, 'prices'>   
+    & Customer.Job.CostResponse
     & {
       customer: Customer.Response;
     }
