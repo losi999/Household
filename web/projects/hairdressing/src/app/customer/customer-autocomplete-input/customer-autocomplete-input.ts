@@ -10,6 +10,7 @@ import { selectCustomerList } from '@hairdressing/state/customer/customer-select
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 import { FormsModule } from '@angular/forms';
 import { customerActions } from '@hairdressing/state/customer/customer-actions';
+import { SignalErrorStateMatcher } from '@household/shared-ui';
 
 @Component({
   selector: 'hairdressing-customer-autocomplete-input',
@@ -27,11 +28,15 @@ import { customerActions } from '@hairdressing/state/customer/customer-actions';
 export class CustomerAutocompleteInput implements FormValueControl<Customer.Response> {
   value = model<Customer.Response>();
 
+  touched = model<boolean>(false);
+
   required = input(false);
   errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
   label = input.required<string>();
   exclude = input<Customer.Id[]>([]);
+    
+  matcher = new SignalErrorStateMatcher(this.touched);
 
   private store = inject(Store);
 
@@ -42,6 +47,10 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
   filteredCustomers = signal<Customer.Response[]>([]);
 
   constructor() {
+    effect(() => {
+      this.matcher.showError.set(this.errors().length > 0);
+    });
+
     effect(() => {
       this.filterValue.set(this.value()?.name ?? '');
     });
@@ -73,7 +82,7 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
   clearValue(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.value.set(undefined);
+    this.value.set(null);
   }
 
   optionSelected(input: HTMLInputElement) {
@@ -82,7 +91,7 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
 
   onBlur() {
     if (this.value()?.name !== this.filterValue()) {
-      this.value.set(undefined);
+      this.value.set(null);
     }
   }
 

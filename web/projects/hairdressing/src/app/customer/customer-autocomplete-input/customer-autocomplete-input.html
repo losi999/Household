@@ -3,7 +3,7 @@
     <mat-icon>library_add</mat-icon>
   </button>
   <mat-label>{{label()}}</mat-label>
-  <input type="text" #inp matInput [matAutocomplete]="autocomplete" [(ngModel)]="value" [required]="required()" (input)="filterValue.set(inp.value)" (blur)="onBlur()">
+  <input type="text" #inp matInput [matAutocomplete]="autocomplete" [(ngModel)]="value" [required]="required()" (input)="filterValue.set(inp.value)" (blur)="onBlur()" [errorStateMatcher]="matcher">
   <mat-autocomplete #autocomplete="matAutocomplete" requireSelection [displayWith]="(item) => item?.name" (optionSelected)="optionSelected(inp)">
     @for(customer of filteredCustomers(); track $index) {
     <mat-option [value]="customer">{{customer?.name}}</mat-option>

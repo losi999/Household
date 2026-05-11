@@ -10,6 +10,7 @@ import { selectPriceList } from '@hairdressing/state/price/price-selector';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 import { FormsModule } from '@angular/forms';
 import { priceActions } from '@hairdressing/state/price/price-actions';
+import { SignalErrorStateMatcher } from '@household/shared-ui';
 
 @Component({
   selector: 'hairdressing-price-autocomplete-input',
@@ -27,11 +28,15 @@ import { priceActions } from '@hairdressing/state/price/price-actions';
 export class PriceAutocompleteInput implements FormValueControl<Price.Response> {
   value = model<Price.Response>();
 
+  touched = model<boolean>(false);
+
   required = input(false);
   errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
   label = input.required<string>();
   exclude = input<Price.Id[]>([]);
+  
+  matcher = new SignalErrorStateMatcher(this.touched);
 
   private store = inject(Store);
 
@@ -42,6 +47,10 @@ export class PriceAutocompleteInput implements FormValueControl<Price.Response> 
   filteredPrices = signal<Price.Response[]>([]);
 
   constructor() {
+    effect(() => {
+      this.matcher.showError.set(this.errors().length > 0);
+    });
+    
     effect(() => {
       this.filterValue.set(this.value()?.name ?? '');
     });
@@ -69,7 +78,7 @@ export class PriceAutocompleteInput implements FormValueControl<Price.Response> 
   clearValue(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.value.set(undefined);
+    this.value.set(null);
   }
 
   optionSelected(input: HTMLInputElement) {
@@ -78,7 +87,7 @@ export class PriceAutocompleteInput implements FormValueControl<Price.Response> 
 
   onBlur() {
     if (this.value()?.name !== this.filterValue()) {
-      this.value.set(undefined);
+      this.value.set(null);
     }
   }
 

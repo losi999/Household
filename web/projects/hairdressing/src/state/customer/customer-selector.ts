@@ -8,7 +8,7 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 const selectCustomers = createFeatureSelector<CustomerState>('customer');
 
 export const selectCustomerList = createSelector(selectCustomers, ({ customerList }) => {
-  return customerList;
+  return structuredClone(customerList);
 });
 
 export const selectCustomerIsInProgress = (priceId: Customer.Id) => createSelector(

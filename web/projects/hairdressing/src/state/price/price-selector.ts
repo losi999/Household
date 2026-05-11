@@ -4,8 +4,8 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 const selectPrices = createFeatureSelector<PriceState>('price');
 
-export const selectPriceList = createSelector(selectPrices, (prices) => {
-  return prices.priceList;
+export const selectPriceList = createSelector(selectPrices, ({ priceList }) => {
+  return structuredClone(priceList);
 });
 
 export const selectPriceIsInProgress = (priceId: Price.Id) => createSelector(
