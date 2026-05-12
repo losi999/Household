@@ -1,1 +1,28 @@
-<p>calendar-horizontal-day works!</p>
+@if (calendarDay()) {
+<div class="day">
+  <div class="pending" [style.grid-column]="(pendingStart() + 1) + ' / ' + (pendingEnd() + 1)"></div>
+  @switch (calendarDay().dayType) {
+  @case ('weekend') {
+  @if (calendarDay().calculatedStart && calendarDay().calculatedEnd) {
+  <div class="no-work" [style.grid-column]="1 + '/ ' + (calendarDay().calculatedStart + 1)"></div>
+  <div class="no-work" [style.grid-column]="(calendarDay().calculatedEnd + 1) + '/ 97'"></div>
+  } @else {
+  <div class="no-work" [style.grid-column]="'1 / 97'"></div>
+  }
+  }
+  @case ('vacation') {
+  <div class="vacation" [style.grid-column]="'1 / 97'"></div>
+  }
+  @case ('holiday') {
+  <div class="holiday" [style.grid-column]="'1 / 97'"></div>
+  }
+  @default {
+  <div class="no-work" [style.grid-column]="1 + '/ ' + (calendarDay().calculatedStart + 1)"></div>
+  <div class="no-work" [style.grid-column]="(calendarDay().calculatedEnd + 1) + '/ 97'"></div>
+  }
+  }
+  @for (e of calendarDay().entries; track $index) {
+  <div [ngClass]="e.entryType" [style.grid-column]="(e.start + 1) + ' / ' + (e.end + 1)"></div>
+  }
+</div>
+}

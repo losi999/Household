@@ -1,24 +1,17 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { EMPTY, exhaustMap, filter, map, mergeMap, tap, withLatestFrom } from 'rxjs';
-// import { calendarActions, calendarApiActions } from '@household/web/app/hairdressing/calendar/state/calendar.actions';
+import { exhaustMap, filter, map } from 'rxjs';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
-import { addDays, createDate, createWorkEntryTitle, dateToISODateString, timeSlotToTimeString } from '@household/shared/common/utils';
-// import { CalendarWorkdayDialog, CalendarWorkdayDialogData, CalendarWorkdayDialogResult } from '@household/web/app/hairdressing/calendar/calendar-workday-dialog/calendar-workday-dialog.component';
+import { createWorkEntryTitle, dateToISODateString, timeSlotToTimeString } from '@household/shared/common/utils';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogService } from '@household/shared-ui';
 import { calendarActions, calendarApiActions } from '@hairdressing/state/calendar/calendar-actions';
-import { selectQueryParams } from '@hairdressing/state/router/router-selector';
-import { getRouterSelectors } from '@ngrx/router-store';
 import { Store } from '@ngrx/store';
-import { getISOWeek, startOfISOWeek, setISOWeek, startOfYear, endOfISOWeek, lastDayOfISOWeek, lastDayOfYear, lastDayOfISOWeekYear, startOfMonth, endOfMonth } from 'date-fns';
+import { startOfISOWeek, setISOWeek, endOfISOWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { CalendarWorkdayDialog, CalendarWorkdayDialogData, CalendarWorkdayDialogResult } from '@hairdressing/app/calendar/calendar-workday-dialog/calendar-workday-dialog';
 import { CalendarEntryDetailsDialog, CalendarEntryDetailsDialogData, CalendarEntryDetailsDialogResult } from '@hairdressing/app/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog';
 import { CalendarEntryPayingDialog, CalendarEntryPayingDialogData, CalendarEntryPayingDialogResult } from '@hairdressing/app/calendar/calendar-entry-paying-dialog/calendar-entry-paying-dialog';
 import { CalendarEntryEditDialog, CalendarEntryEditDialogData, CalendarEntryEditDialogResult } from '@hairdressing/app/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog';
-// import { CalendarEntryDetailsDialog, CalendarEntryDetailsDialogData, CalendarEntryDetailsDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-details-dialog/calendar-entry-details-dialog.component';
-// import { CalendarEntryEditDialog, CalendarEntryEditDialogData, CalendarEntryEditDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-edit-dialog/calendar-entry-edit-dialog.component';
-// import { CalendarEntryPayingDialog, CalendarEntryPayingDialogData, CalendarEntryPayingDialogResult } from '@household/web/app/hairdressing/calendar/calendar-entry-paying-dialog/calendar-entry-paying-dialog.component';
 
 @Injectable()
 export class CalendarEffects {
@@ -159,7 +152,7 @@ export class CalendarEffects {
       ofType(calendarActions.updateCalendarEntry),
       exhaustMap(({ type, ...entry }) => {
         return this.dialog.open<CalendarEntryEditDialog, CalendarEntryEditDialogData, CalendarEntryEditDialogResult>(CalendarEntryEditDialog, {
-          data: entry,
+          data: structuredClone(entry),
           width: '900px',
           disableClose: true,
         }).afterClosed()

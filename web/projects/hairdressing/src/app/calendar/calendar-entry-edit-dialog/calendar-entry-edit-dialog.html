@@ -11,10 +11,19 @@
       }
       <mat-option [value]="CUSTOM_JOB">Egyéb</mat-option>
     </mat-select>
+    @for (error of entryForm.job().errors(); track $index) {
+    <mat-error>
+      {{error.message}}
+    </mat-error>
+
+    }
   </mat-form-field>
   }
+  @if(entryForm.job().value()?.name === CUSTOM_JOB.name) {
+  <shared-clearable-input label="Megnevezés" [formField]="entryForm.title" />
+  <shared-clearable-input type="area" label="Leírás" [formField]="entryForm.description" />
   }
-  @if (entry.entryType !== 'work' || (entryForm.customer().value() && entryForm.job().value()?.name === CUSTOM_JOB.name)) {
+  } @else {
   <shared-clearable-input label="Megnevezés" [formField]="entryForm.title" />
   <shared-clearable-input type="area" label="Leírás" [formField]="entryForm.description" />
   }
@@ -28,22 +37,14 @@
   <hairdressing-duration-stepper [(value)]="duration" />
   <mat-slider min="0" [max]="96-duration()">
     <input matSliderThumb [(ngModel)]="start">
-  </mat-slider>{{start() | timeSlotToTime}} - {{start() + duration() | timeSlotToTime}}
-
-  <!-- <form [formGroup]="form" (ngSubmit)="onSubmit()" id="calendar-entry-form">
-
-
-    <mat-slider min="0" max="96">
-      <input formControlName="start" matSliderThumb>
-    </mat-slider>
-    {{form.value.start | timeSlotToTime}} - {{form.value.start + form.value.duration | timeSlotToTime}}
-    <household-calendar-horizontal-day [date]="form.value.day" [pendingStart]="form.value.start" [pendingEnd]="form.value.start + form.value.duration" [pendingCalendarEntryId]="entry.calendarEntryId" />
-    @for (e of form.value | entryWarnings: (calendarDay | async) : entry; track $index) {
-    <mat-error>
-      {{e}}
-    </mat-error>
-    }
-  </form> -->
+  </mat-slider>
+  {{start() | timeSlotToTime}} - {{start() + duration() | timeSlotToTime}}
+  <hairdressing-calendar-horizontal-day [pendingStart]="start()" [pendingEnd]="start() + duration()" [calendarDay]="calendarDay()" />
+  @for (e of entryWarnings(); track $index) {
+  <mat-error>
+    {{e}}
+  </mat-error>
+  }
 </div>
 <div mat-dialog-actions>
   <button matButton="filled" cdkFocusInitial form="calendar-entry-form" (click)="onSubmit()">Mentés</button>

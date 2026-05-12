@@ -1,18 +1,19 @@
-import { Component, inject, input } from '@angular/core';
-import { Calendar } from '@household/shared/types/types';
-import { Store } from '@ngrx/store';
+import { NgClass } from '@angular/common';
+import { Component, input } from '@angular/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { LimitedCalendarDay } from '@hairdressing/types';
 
 @Component({
   selector: 'hairdressing-calendar-horizontal-day',
-  imports: [],
+  imports: [
+    NgClass,
+    MatFormFieldModule,
+  ],
   templateUrl: './calendar-horizontal-day.html',
   styleUrl: './calendar-horizontal-day.scss',
 })
 export class CalendarHorizontalDay {
-  private store = inject(Store);
-
   pendingStart = input.required<number>();
   pendingEnd = input.required<number>();
-  date = input.required<Date>();
-  pendingCalendarEntryId = input.required<Calendar.Entry.Id>();
+  calendarDay = input.required<LimitedCalendarDay>();
 }

@@ -7,10 +7,10 @@ import { Params } from '@angular/router';
 import { selectQueryParams } from '@hairdressing/state/router/router-selector';
 import { getISOWeek, startOfISOWeek, setISOWeek } from 'date-fns';
 
-const selectCalendar = createFeatureSelector<CalendarState>('calendar');
+const calendarState = createFeatureSelector<CalendarState>('calendar');
 
-export const selectCalendarDay = (date: Date) => createSelector(selectCalendar, (calendarDays) => {
-  return calendarDays?.[dateToISODateString(date)];
+export const selectCalendar = createSelector(calendarState, (calendarDays) => {
+  return structuredClone(calendarDays);
 });
 
 export const selectCalendarWeek = createSelector<object, CalendarState, Params, CalendarWeek>(selectCalendar, selectQueryParams, (calendarDays, params) => {

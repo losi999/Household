@@ -8,9 +8,9 @@ describe('CalendarHorizontalDay', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CalendarHorizontalDay]
+      imports: [CalendarHorizontalDay],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(CalendarHorizontalDay);
     component = fixture.componentInstance;
