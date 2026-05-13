@@ -8,7 +8,7 @@ export const customerDataFactory = (() => {
     body?: Partial<Customer.Request>
     jobs?: {
       body?: Partial<Omit<Customer.Job.Request, 'prices'>>;
-      prices?: (Partial<Customer.Job.Quantity> & {price: Price.Document})[];
+      prices: (Partial<Customer.Job.Quantity> & {price: Price.Document})[];
     }[];
     blacklistedCustomers?: Customer.Document[];
   }): Customer.Document => {

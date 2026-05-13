@@ -9,6 +9,7 @@ import { fileService } from '@household/shared/dependencies/services/file-servic
 import { fileDocumentConverter } from '@household/shared/dependencies/converters/file-document-converter';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const createUploadUrlService = createUploadUrlServiceFactory(fileService, fileDocumentConverter, importStorageService);
 
@@ -20,5 +21,8 @@ export default index({
       body,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

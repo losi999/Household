@@ -142,18 +142,24 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different job on the same customer', async ({ requestCreateCustomerJob, saveCustomer }) => {
+            test('is already in use by a different job on the same customer', async ({ requestCreateCustomerJob, saveCustomer, savePrice }) => {
               const customerDocument = customerDataFactory.document({
                 jobs: [
                   {
                     body: {
                       name: request.name,
                     },
+                    prices: [
+                      {
+                        price: priceDocument,
+                      },
+                    ],
                   },
                 ],
               });
 
               await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
               const res = await requestCreateCustomerJob(getCustomerId(customerDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate customer job name');

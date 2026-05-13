@@ -41,6 +41,7 @@ export type IMongodbService = {
   inTransaction<T>(callback: (models: CollectionModels, session: ClientSession) => Promise<T>): Promise<T>;
   syncIndexes(): Promise<unknown>;
   dump(): Promise<{[K in keyof CollectionMapping]: CollectionMapping[K][]}>;
+  disconnect(): Promise<unknown>;
 };
 
 set('debug', !process.env.ENV ? (collectionName, methodName, ...methodArgs) => {
@@ -137,6 +138,9 @@ export const mongodbServiceFactory = async (mongodbConnectionString: string): Pr
       };
       session.endSession();
       return result;
+    },
+    disconnect: () => {
+      return mongoose.connection.close();
     },
     recipients: getModel('recipients'),
     projects: getModel('projects'),

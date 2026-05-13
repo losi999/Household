@@ -8,6 +8,7 @@ import { default as index } from '@household/api/handlers/index.handler';
 import { draftTransactionDocumentConverter } from '@household/shared/dependencies/converters/draft-transaction-document-converter';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const listTransactionsByFileService = listTransactionsByFileServiceFactory(transactionService, draftTransactionDocumentConverter);
 
@@ -19,5 +20,8 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

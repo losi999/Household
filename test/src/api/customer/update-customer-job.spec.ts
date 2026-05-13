@@ -30,7 +30,6 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
     customerDocument = customerDataFactory.document({
       blacklistedCustomers: [blacklistedCustomer],
       jobs: [
-        {},
         {
           prices: [
             {
@@ -150,29 +149,36 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different job on the same customer', async ({ requestUpdateCustomerJob, saveCustomer }) => {
-              const existingJobName = 'job name already used';
+            test('is already in use by a different job on the same customer', async ({ requestUpdateCustomerJob, saveCustomer, savePrice }) => {
+              const existingJobName = 'job to update';
               const customerDocument = customerDataFactory.document({
                 jobs: [
-                  {},
                   {
                     body: {
                       name: existingJobName,
                     },
+                    prices: [
+                      {
+                        price: priceDocument,
+                      },
+                    ],
+                  },
+                  {
+                    body: {
+                      name: request.name,
+                    },
+                    prices: [
+                      {
+                        price: priceDocument,
+                      },
+                    ],
                   },
                 ],
               });
 
-              jobName = customerDocument.jobs[0].name;
-
-              request = customerDataFactory.jobRequest({
-                body: {
-                  name: existingJobName,
-                },
-              });
-
               await saveCustomer(customerDocument);
-              const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), jobName, request);
+              await savePrice(priceDocument);
+              const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), existingJobName, request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate customer job name');
             });

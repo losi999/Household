@@ -8,6 +8,7 @@ import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
 import { addCustomerToBlacklistServiceFactory } from '@household/api/functions/add-customer-to-blacklist/add-customer-to-blacklist.service';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const addCustomerToBlacklistService = addCustomerToBlacklistServiceFactory(customerService, customerDocumentConverter);
 
@@ -19,5 +20,8 @@ export default index({
       body,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });
