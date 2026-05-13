@@ -8,9 +8,9 @@ describe('ClearableInput', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ClearableInput]
+      imports: [ClearableInput],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(ClearableInput);
     component = fixture.componentInstance;

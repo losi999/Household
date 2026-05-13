@@ -8,9 +8,9 @@ describe('CalendarEntryEditDialog', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CalendarEntryEditDialog]
+      imports: [CalendarEntryEditDialog],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(CalendarEntryEditDialog);
     component = fixture.componentInstance;

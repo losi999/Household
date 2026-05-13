@@ -8,9 +8,9 @@ describe('CustomerListItem', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CustomerListItem]
+      imports: [CustomerListItem],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(CustomerListItem);
     component = fixture.componentInstance;

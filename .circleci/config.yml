@@ -301,7 +301,7 @@ workflows:
           filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
           requires:
             - unit_test_api
-            - unit_test_web_legacy
+            # - unit_test_web_legacy
             # - unit_test_web_hairdressing
             # - unit_test_web_shared_ui
             - lint

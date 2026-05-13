@@ -8,9 +8,9 @@ describe('DurationStepper', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DurationStepper]
+      imports: [DurationStepper],
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(DurationStepper);
     component = fixture.componentInstance;
