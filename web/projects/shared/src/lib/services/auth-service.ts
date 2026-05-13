@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { UserType } from '@household/shared/enums';
 import { Router } from '@angular/router';
 import { map, Observable } from 'rxjs';
+import { API_URL } from '@household/shared-ui';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +13,7 @@ export class AuthService {
   userTypes: UserType[] = [];
   private httpClient = inject(HttpClient);
   private router = inject(Router);
+  private apiUrl = inject(API_URL);
 
   get idToken(): string {
     return localStorage.getItem('idToken') ?? '';
@@ -33,14 +35,14 @@ export class AuthService {
   }
 
   login(request: Auth.Login.Request) {
-    return this.httpClient.post<Auth.Login.Response>('https://local-householdapi.losi999.hu/user/v1/login', request);
+    return this.httpClient.post<Auth.Login.Response>(`${this.apiUrl}/user/v1/login`, request);
   }
 
   refreshToken(): Observable<unknown> {
     const request: Auth.RefreshToken.Request = {
       refreshToken: localStorage.getItem('refreshToken') ?? '',
     };
-    return this.httpClient.post<Auth.RefreshToken.Response>('https://local-householdapi.losi999.hu/user/v1/refreshToken', request).pipe(map((data) => {
+    return this.httpClient.post<Auth.RefreshToken.Response>(`${this.apiUrl}/user/v1/refreshToken`, request).pipe(map((data) => {
       localStorage.setItem('idToken', data.idToken);
     }));
   }

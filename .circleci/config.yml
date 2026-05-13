@@ -152,7 +152,7 @@ jobs:
 
       - run:
           name: Build Hairdressing Web
-          command: yarn build:hairdressing
+          command: yarn build:hairdressing -c $ENV
 
       - run:
           name: Build Web (Legacy)

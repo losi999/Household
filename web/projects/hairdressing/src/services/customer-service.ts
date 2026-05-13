@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { API_URL } from '@household/shared-ui';
 import { Calendar, Customer } from '@household/shared/types/types';
 
 @Injectable({
@@ -7,49 +8,50 @@ import { Calendar, Customer } from '@household/shared/types/types';
 })
 export class CustomerService {
   private httpClient = inject(HttpClient);
+  private apiUrl = inject(API_URL);
   
   listCustomers() {
-    return this.httpClient.get<Customer.Response[]>('https://local-householdapi.losi999.hu/customer/v1/customers');
+    return this.httpClient.get<Customer.Response[]>(`${this.apiUrl}/customer/v1/customers`);
   }
 
   createCustomer(body: Customer.Request) {
-    return this.httpClient.post<Customer.CustomerId>('https://local-householdapi.losi999.hu/customer/v1/customers', body);
+    return this.httpClient.post<Customer.CustomerId>(`${this.apiUrl}/customer/v1/customers`, body);
   }
 
   getCustomerById(customerId: Customer.Id) {
-    return this.httpClient.get<Customer.Response>(`https://local-householdapi.losi999.hu/customer/v1/customers/${customerId}`);
+    return this.httpClient.get<Customer.Response>(`${this.apiUrl}/customer/v1/customers/${customerId}`);
   }
 
   updateCustomer(customerId: Customer.Id, body: Customer.Request) {
-    return this.httpClient.put<Customer.CustomerId>(`https://local-householdapi.losi999.hu/customer/v1/customers/${customerId}`, body);
+    return this.httpClient.put<Customer.CustomerId>(`${this.apiUrl}/customer/v1/customers/${customerId}`, body);
   }
 
   deleteCustomer(customerId: Customer.Id) {
-    return this.httpClient.delete(`https://local-householdapi.losi999.hu/customer/v1/customers/${customerId}`);
+    return this.httpClient.delete(`${this.apiUrl}/customer/v1/customers/${customerId}`);
   }
 
   createCustomerJob(customerId: Customer.Id, body: Customer.Job.Request) {
-    return this.httpClient.post(`https://local-householdapi.losi999.hu/customer/v1/customers/${customerId}/jobs`, body);
+    return this.httpClient.post(`${this.apiUrl}/customer/v1/customers/${customerId}/jobs`, body);
   }
 
   updateCustomerJob(customerId: Customer.Id, jobName: Customer.Job.Name['name'], body: Customer.Job.Request) {
-    return this.httpClient.put(`https://local-householdapi.losi999.hu/customer/v1/customers/${customerId}/jobs/${jobName}`, body);
+    return this.httpClient.put(`${this.apiUrl}/customer/v1/customers/${customerId}/jobs/${jobName}`, body);
   }
 
   deleteCustomerJob(customerId: Customer.Id, jobName: Customer.Job.Name['name']) {
-    return this.httpClient.delete(`https://local-householdapi.losi999.hu/customer/v1/customers/${customerId}/jobs/${jobName}`);
+    return this.httpClient.delete(`${this.apiUrl}/customer/v1/customers/${customerId}/jobs/${jobName}`);
   }
 
   listCustomerWorks(customerId: Customer.Id) {
-    return this.httpClient.get<Calendar.Entry.ResponseBase[]>(`https://local-householdapi.losi999.hu/customer/v1/customers/${customerId}/works`);
+    return this.httpClient.get<Calendar.Entry.ResponseBase[]>(`${this.apiUrl}/customer/v1/customers/${customerId}/works`);
   }
 
   updateCustomerBlacklist(body: Customer.Id[]) {
-    return this.httpClient.put('https://local-householdapi.losi999.hu/customer/v1/customers/blacklist', body);
+    return this.httpClient.put(`${this.apiUrl}/customer/v1/customers/blacklist`, body);
   }
 
   deleteCustomerBlacklist(body: Customer.Id[]) {
-    return this.httpClient.delete('https://local-householdapi.losi999.hu/customer/v1/customers/blacklist', {
+    return this.httpClient.delete(`${this.apiUrl}/customer/v1/customers/blacklist`, {
       body,
     });
   }

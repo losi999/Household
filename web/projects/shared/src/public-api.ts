@@ -25,3 +25,4 @@ export * from './lib/validators/exclusive-min';
 export * from './lib/operators/dispatch-if-confirmed';
 export * from './lib/operators/take-first-defined';
 export * from './lib/utils/signal-error-state-matcher';
+export * from './lib/injection-tokens';

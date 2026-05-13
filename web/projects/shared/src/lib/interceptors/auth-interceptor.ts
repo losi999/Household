@@ -1,10 +1,11 @@
 import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from '@household/shared-ui';
+import { API_URL, AuthService } from '@household/shared-ui';
 import { catchError, Observable, Subject, switchMap, tap, throwError } from 'rxjs';
 
 const createAuthInterceptor = (): HttpInterceptorFn => {
   const authService = inject(AuthService);
+  const apiUrl = inject(API_URL);
 
   let refreshTokenInProgress = false;
   const tokenRefreshedSource = new Subject();
@@ -42,7 +43,7 @@ const createAuthInterceptor = (): HttpInterceptorFn => {
 
   return (request, next) => {
 
-    if (!request.url.includes('https://local-householdapi.losi999.hu')) { // TODO API URL should be in environment variable
+    if (!request.url.includes(apiUrl)) {
       return next(request);
     }
 
