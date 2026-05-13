@@ -1,8 +1,7 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, LOCALE_ID, provideEnvironmentInitializer, inject } from '@angular/core';
 import { provideRouter } from '@angular/router';
-
 import { routes } from './app.routes';
-import { authInterceptor, AuthStore, NavigationStore, progressInterceptor, ProgressStore } from '@household/shared-ui';
+import { API_URL, authInterceptor, AuthStore, NavigationStore, progressInterceptor, ProgressStore } from '@household/shared-ui';
 import { NotificationStore } from '@household/shared-ui';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
@@ -10,11 +9,16 @@ import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatPaginatorIntl } from '@angular/material/paginator';
+import { environment } from '@hairdressing/environments/environment';
 
 registerLocaleData(localeHu);
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    {
+      provide: API_URL,
+      useValue: environment.apiUrl,
+    },
     {
       provide: MAT_DATE_LOCALE,
       useValue: 'hu-HU',
