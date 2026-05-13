@@ -340,6 +340,8 @@ workflows:
                 - "transaction-deferred"
                 - "user"
                 - "transaction-draft"
+          requires:
+            - api_test_setup                
       # - test:
       #     serial-group: api-test1
       #     matrix:
