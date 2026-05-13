@@ -3,24 +3,28 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "strict": true,
+    "strict": false,
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
+    "noPropertyAccessFromIndexSignature": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
     "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
     "paths": {
       "@household/shared-ui": [
         "./projects/shared/src/public-api.ts"
       ],
       "@household/shared/*": [
         "../shared/src/*"
+      ],
+      "@hairdressing/*": [
+        "./projects/hairdressing/src/*"
       ]
     },
     "importHelpers": true,
-    "target": "ES2022",
+    "target": "ES2023",
     "module": "preserve"
   },
   "angularCompilerOptions": {

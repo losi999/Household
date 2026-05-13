@@ -59,13 +59,11 @@ test.describe('DELETE /price/v1/prices/{priceId}', () => {
             const customerDocument = customerDataFactory.document({
               jobs: [
                 {
-                  prices: {
-                    listed: [
-                      {
-                        price: priceDocument,
-                      },
-                    ],
-                  },
+                  prices: [
+                    {
+                      price: priceDocument,
+                    },
+                  ],
                 },
               ],
             });
@@ -82,13 +80,11 @@ test.describe('DELETE /price/v1/prices/{priceId}', () => {
             
             const calendarEntryDocument = calendarEntryDataFactory.document.work({
               customer: customerDocument,
-              prices: {
-                listed: [
-                  {
-                    price: priceDocument,
-                  },
-                ],
-              },
+              prices: [
+                {
+                  price: priceDocument,
+                },
+              ],
             });
             
             await savePrice (priceDocument);

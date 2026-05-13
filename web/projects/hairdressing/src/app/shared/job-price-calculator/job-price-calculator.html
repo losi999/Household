@@ -1,0 +1,49 @@
+<div class="prices">
+  <hairdressing-price-autocomplete-input label="Ár kiválasztása" [exclude]="excludedPriceIds()" [(value)]="selectedPrice" />
+  <button matButton="filled" type="button" (click)="onAddPrice()" [disabled]="!selectedPrice()">Hozzáadás</button>
+</div>
+<div class="detailed-price">
+  @for(p of value().prices;track $index) {
+  <span [style.grid-area]="'name'" [style.grid-row]="$index + 1">{{p.price.name}}</span>
+  <button mat-icon-button type="button" [style.grid-area]="'minus'" [style.grid-row]="$index + 1" (click)="onRemoveQuantity($index)">
+    <mat-icon>remove</mat-icon>
+  </button>
+  @switch (p.price.unitOfMeasurement) {
+  @case ('db') {
+  <span class="quantity" [style.grid-area]="'quantity'" [style.grid-row]="$index + 1">{{p.quantity}}</span>
+  }
+  @case ('g') {
+  <span class="quantity" [style.grid-area]="'quantity'" [style.grid-row]="$index + 1">{{p.quantity}} g</span>
+  }
+  @case ('óra') {
+  <span class="quantity" [style.grid-area]="'quantity'" [style.grid-row]="$index + 1">{{p.quantity * 60 | minutesToHour}} óra</span>
+  }
+  }
+  <button mat-icon-button type="button" [style.grid-area]="'plus'" [style.grid-row]="$index + 1" (click)="onAddQuantity($index)">
+    <mat-icon>add</mat-icon>
+  </button>
+  <span [style.grid-area]="'amount'" [style.grid-row]="$index + 1">{{p.price.amount * p.quantity}} Ft</span>
+  <button matIconButton type="button" class="danger" [style.grid-area]="'remove'" [style.grid-row]="$index + 1" (click)="onRemovePrice($index)">
+    <mat-icon>delete</mat-icon>
+  </button>
+  }
+  <div class="additional-price" [style.grid-row]="value().prices.length + 1" [style.grid-column]="'1 / 5'">
+    Egyéni
+    @for(inc of additionalPriceIncrements(); track $index) {
+    <button matButton="tonal" [class.danger]="inc < 0" (click)="onAddAmount(inc)">{{inc < 0 ? inc : '+' + inc}} Ft</button>
+        }
+  </div>
+
+  <span [style.grid-area]="'amount'" [style.grid-row]="value().prices.length + 1">{{value().additionalPrice}} Ft</span>
+  <button mat-icon-button type="button" class="danger" [style.grid-area]="'remove'" [style.grid-row]="value().prices.length + 1" (click)="onAddAmount(value().additionalPrice * -1)">
+    <mat-icon>delete</mat-icon>
+  </button>
+  <mat-divider [style.grid-row]="value().prices.length + 2" [style.grid-column]="'1 / 7'" />
+  <span [style.grid-area]="'name'" [style.grid-row]="value().prices.length + 3">Összesen</span>
+  <span [style.grid-area]="'amount'" [style.grid-row]="value().prices.length + 3">{{total()}} Ft</span>
+  @if (touched() || _touched()) {
+  @for(error of errors(); track $index) {
+  <mat-error class="error" [style.grid-row]="value().prices.length + 4">{{error.message}}</mat-error>
+  }
+  }
+</div>

@@ -15,6 +15,7 @@ import { reimbursementTransactionDocumentConverter } from '@household/shared/dep
 import { deferredTransactionDocumentConverter } from '@household/shared/dependencies/converters/deferred-transaction-document-converter';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const createPaymentTransactionService = createPaymentTransactionServiceFactory(accountService, projectService, categoryService, recipientService, productService, transactionService, paymentTransactionDocumentConverter, reimbursementTransactionDocumentConverter, deferredTransactionDocumentConverter);
 
@@ -26,5 +27,8 @@ export default index({
       body,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

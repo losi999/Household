@@ -1,0 +1,23 @@
+<div mat-dialog-title>{{entry.title}}</div>
+<div mat-dialog-content>
+  <shared-icon-text icon="calendar_month" [text]="entry.day | date: 'yyyy. MMMM d.'" size="medium" />
+  <shared-icon-text icon="alarm" [text]="(entry.start | timeSlotToTime) + ' - ' + (entry.end | timeSlotToTime)" size="medium" />
+  @if (entry.description) {
+  <div>
+    {{entry.description}}
+  </div>
+  }
+  <hairdressing-job-price-calculator [(value)]="cost" />
+  <mat-button-toggle-group [(ngModel)]="paymentType">
+    <mat-button-toggle value="cash">Készpénz</mat-button-toggle>
+    <mat-button-toggle value="transfer">Utalás</mat-button-toggle>
+  </mat-button-toggle-group>
+  @if (paymentType() === 'cash') {
+  <shared-amount-input label="Kapott összeg" currency="Ft" [formField]="amountForm" [signHidden]="true" />
+  }
+</div>
+
+<div mat-dialog-actions>
+  <button matButton="filled" color="primary" cdkFocusInitial form="calendar-entry-paying" (click)="onSubmit()">Mentés</button>
+  <button matButton="text" mat-dialog-close type="button">Mégse</button>
+</div>

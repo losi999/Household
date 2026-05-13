@@ -1,12 +1,11 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { isPriceBase } from '@household/shared/common/type-guards';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { CalendarEntryType } from '@household/shared/enums';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar, Price } from '@household/shared/types/types';
+import { Calendar } from '@household/shared/types/types';
 
 export interface IUpdateCalendarEntryService {
   (ctx: {
@@ -49,17 +48,8 @@ export const updateCalendarEntryServiceFactory = (
         customer,
         customerId: body.customerId,
       }, 400);
-
-      const priceIds = body.prices?.reduce<Price.Id[]>((accumulator, currentValue) => {
-        if (!isPriceBase(currentValue)) {
-          return [
-            ...accumulator,
-            currentValue.priceId,
-          ];
-        }
-      
-        return accumulator;
-      }, []) ?? [];
+     
+      const priceIds = body.prices?.map(p => p.priceId) ?? [];
 
       const prices = await priceService.findPricesByIds(priceIds).catch(httpErrors.price.listByIds(priceIds));
 

@@ -6,6 +6,7 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { default as pathParameters } from '@household/shared/schemas/account-id';
 import { accountService } from '@household/shared/dependencies/services/account-service';
 import { default as index } from '@household/api/handlers/index.handler';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const getAccountService = getAccountServiceFactory(accountService, accountDocumentConverter);
 
@@ -16,5 +17,8 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

@@ -8,6 +8,7 @@ import { projectService } from '@household/shared/dependencies/services/project-
 import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const createProjectService = createProjectServiceFactory(projectService, projectDocumentConverter);
 
@@ -19,5 +20,8 @@ export default index({
       body,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

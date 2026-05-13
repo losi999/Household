@@ -30,14 +30,11 @@ test.describe('GET /customer/v1/customers/{customerId}', () => {
       blacklistedCustomers: [blacklistedCustomer],
       jobs: [
         {
-          prices: {
-            custom: [{}],
-            listed: [
-              {
-                price: priceDocument,
-              },
-            ],
-          },
+          prices: [
+            {
+              price: priceDocument,
+            },
+          ],
         },
       ],
     });

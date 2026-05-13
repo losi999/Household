@@ -1,5 +1,5 @@
 import { CategoryType } from '@household/shared/enums';
-import { Category, Customer, Price, Transaction } from '@household/shared/types/types';
+import { Category, Price, Transaction } from '@household/shared/types/types';
 
 export const isSplitTransaction = (transaction: Transaction.Response): transaction is Transaction.SplitResponse => {
   return transaction?.transactionType === 'split';
@@ -29,15 +29,6 @@ export const isInventoryCategory = (category: Category.Response): boolean => {
   return category?.categoryType === CategoryType.Inventory;
 };
 
-export const isPriceBase = (price: (Customer.Job.Request | Customer.Job.Document)['prices'][number]): price is Price.
-  Base => {
-  return !!(price as Price.Base).name;
-};
-
-export const hasPriceId = (price: Exclude<(Customer.Job.Request | Customer.Job.Document)['prices'][number], Price.Base>): price is (Price.PriceId & Customer.Job.Quantity) => {
+export const hasPriceId = (price: {price: Price.Document;} | Price.PriceId): price is Price.PriceId => {
   return !!(price as Price.PriceId).priceId;
 };
-
-// export const isListedPrice = (price: Customer.Job.Response['prices'][number]): price is Customer.Job.ListedPrice<Price.Response> => {
-//   return !!(price as Customer.Job.ListedPrice<Price.Response>).priceId;
-// };

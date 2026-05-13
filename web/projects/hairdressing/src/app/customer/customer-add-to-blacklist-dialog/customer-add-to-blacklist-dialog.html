@@ -1,0 +1,8 @@
+<div mat-dialog-title>Hozzáadás tiltólistához</div>
+<div mat-dialog-content>
+  <hairdressing-customer-autocomplete-input label="Vendég" [formField]="blacklistForm" [exclude]="excludedCustomerIds" />
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial data-testId="submit-button" (click)="onSave()">Mentés</button>
+  <button matButton="text" mat-dialog-close type="button">Mégse</button>
+</div>

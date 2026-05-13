@@ -93,7 +93,7 @@ components:
     WorkEntry.Response:
       allOf:
         - $ref: "#/components/schemas/Entry.ResponseBase"
-        - $ref: "customer.yaml#/components/schemas/Prices.Response"
+        - $ref: "customer.yaml#/components/schemas/Cost.Response"
         - type: object
           required:
             - entryType
@@ -173,7 +173,7 @@ components:
         - $ref: "#/components/schemas/Entry.Base"
         - $ref: "#/components/schemas/Day"
         - $ref: "customer.yaml#/components/schemas/CustomerId"
-        - $ref: "customer.yaml#/components/schemas/Prices.Request"
+        - $ref: "customer.yaml#/components/schemas/Cost.Request"
         - type: object
           required:
             - entryType

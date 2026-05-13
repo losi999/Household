@@ -31,15 +31,12 @@ test.describe('DELETE customer/v1/customers/{customerId}/jobs/{jobName}', () => 
       jobs: [
         {},
         {
-          prices: {
-            custom: [{}],
-            listed: [
-              {
-                price: priceDocument,
-                quantity: 1,
-              },
-            ],
-          },
+          prices: [
+            {
+              price: priceDocument,
+              quantity: 1,
+            },
+          ],
         },
       ],
     });

@@ -7,6 +7,7 @@ import { listTransactionsByAccountServiceFactory } from '@household/api/function
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const listTransactionsByAccountService = listTransactionsByAccountServiceFactory(transactionService, transactionDocumentConverter);
 
@@ -18,5 +19,8 @@ export default index({
       queryStringParameters,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

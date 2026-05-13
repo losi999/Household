@@ -7,12 +7,13 @@ import { excelParserService } from '@household/shared/dependencies/services/exce
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { fileDocumentConverter } from '@household/shared/dependencies/converters/file-document-converter';
 import { draftTransactionDocumentConverter } from '@household/shared/dependencies/converters/draft-transaction-document-converter';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const bulkTransactionImporterService = bulkTransactionImporterServiceFactory(fileService, fileDocumentConverter, storageService, excelParserService, draftTransactionDocumentConverter, transactionService);
 
 export default index({
   handler: handler(bulkTransactionImporterService),
   before: [],
-  after: [],
+  after: [mongoDisconnect],
 });
 

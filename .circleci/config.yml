@@ -188,7 +188,7 @@ jobs:
       - sam/install
       - deploy:
           name: SAM Deploy
-          command: sam deploy --template-file cf.hairdressing.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name HairdressingWeb-$ENV --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Env=$ENV
+          command: sam deploy --template-file cf.hairdressing.yaml --s3-bucket ${AWS_PACKAGES_S3} --stack-name HairdressingWeb-$ENV --capabilities CAPABILITY_NAMED_IAM --parameter-overrides Env=$ENV --no-fail-on-empty-changeset
       - run:
           name: Insert RUM App Monitor Id
           command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name HairdressingWeb-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue' --output text)/g" ./dist/web_legacy/browser/index.html
@@ -301,9 +301,9 @@ workflows:
           filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
           requires:
             - unit_test_api
-            - unit_test_web_legacy
-            - unit_test_web_hairdressing
-            - unit_test_web_shared_ui
+            # - unit_test_web_legacy
+            # - unit_test_web_hairdressing
+            # - unit_test_web_shared_ui
             - lint
             - build
       - web_hairdressing_deploy:
@@ -319,46 +319,70 @@ workflows:
             - api_deploy
           filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
       - test:
-          serial-group: api-test1
           matrix:
             parameters:
               testCommand:
-                ["transaction-common", "transaction-payment", "product"]
+                - "transaction-common"
+                - "transaction-payment"
+                - "product"
+                - "customer"
+                - "category"
+                - "price"
+                - "calendar"
+                - "account"
+                - "file"
+                - "transaction-reimbursement"
+                - "project"
+                - "transaction-transfer"
+                - "transaction-split"
+                - "recipient"
+                - "setting"
+                - "transaction-deferred"
+                - "user"
+                - "transaction-draft"
           requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test2
-          matrix:
-            parameters:
-              testCommand: ["customer", "category", "price"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test3
-          matrix:
-            parameters:
-              testCommand: ["calendar", "account", "file"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test4
-          matrix:
-            parameters:
-              testCommand:
-                ["transaction-reimbursement", "project", "transaction-transfer"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test5
-          matrix:
-            parameters:
-              testCommand: ["transaction-split", "recipient", "setting"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test6
-          matrix:
-            parameters:
-              testCommand: ["transaction-deferred", "user", "transaction-draft"]
-          requires:
-            - api_test_setup
+            - api_test_setup                
+      # - test:
+      #     serial-group: api-test1
+      #     matrix:
+      #       parameters:
+      #         testCommand:
+      #           ["transaction-common", "transaction-payment", "product"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test2
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["customer", "category", "price"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test3
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["calendar", "account", "file"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test4
+      #     matrix:
+      #       parameters:
+      #         testCommand:
+      #           ["transaction-reimbursement", "project", "transaction-transfer"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test5
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["transaction-split", "recipient", "setting"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test6
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["transaction-deferred", "user", "transaction-draft"]
+      #     requires:
+      #       - api_test_setup

@@ -9,6 +9,7 @@ import { authorizer } from '@household/api/dependencies/handlers/authorizer.hand
 import { UserType } from '@household/shared/enums';
 import { calendarEntryService } from '@household/shared/dependencies/services/calendar-entry-service';
 import { calendarEntryDocumentConverter } from '@household/shared/dependencies/converters/calendar-entry-document-converter';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const listCustomerWorksService = listCustomerWorksServiceFactory(customerService, calendarEntryService, calendarEntryDocumentConverter);
 
@@ -20,5 +21,8 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

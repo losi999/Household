@@ -1,0 +1,30 @@
+<div mat-dialog-title>{{entry.title}}</div>
+
+<div mat-dialog-content>
+  <shared-icon-text icon="calendar_month" [text]="entry.day | date: 'yyyy. MMMM d., EEEE'" size="medium" />
+  <shared-icon-text icon="alarm" [text]="(entry.start | timeSlotToTime) + ' - ' + (entry.end | timeSlotToTime)" size="medium" />
+  @if (entry.description) {
+  <div>
+    {{entry.description}}
+  </div>
+  }
+  @if (entry.entryType === 'work' && entry.prices?.length > 0) {
+  <hairdressing-job-price-summary [cost]="entry" />
+  }
+</div>
+
+<div mat-dialog-actions>
+  @if (entry.entryType === 'work' && !entry.resolution) {
+  @if(isInThePast()) {
+  <button matButton="filled" mat-dialog-close="pay" class="work" type="button">Fizetés</button>
+  <button matButton="filled" mat-dialog-close="noShow" class="danger" type="button">Nem jött el</button>
+  }
+  <button matButton="filled" mat-dialog-close="delete" type="button">Lemondta</button>
+  <button matButton="filled" mat-dialog-close="edit" style="margin-left: auto;" type="button">Szerkesztés</button>
+  }
+  @if (entry.entryType !== 'work' ) {
+  <button matButton="filled" mat-dialog-close="delete" class="danger" type="button">Törlés</button>
+  <button matButton="filled" mat-dialog-close="edit" style="margin-left: auto;" type="button">Szerkesztés</button>
+  }
+  <button matButton="text" mat-dialog-close type="button">Bezárás</button>
+</div>

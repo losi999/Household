@@ -8,6 +8,7 @@ import { priceService } from '@household/shared/dependencies/services/price-serv
 import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const createPriceService = createPriceServiceFactory(priceService, priceDocumentConverter);
 
@@ -19,5 +20,8 @@ export default index({
       body,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

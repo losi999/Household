@@ -1,5 +1,4 @@
 import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
-import { jobPriceSchema } from '@household/shared/mongodb-schemas/customer.schema';
 import { Calendar } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
 
@@ -48,8 +47,22 @@ export const calendarEntrySchema = new Schema<Calendar.Entry.Document>({
     ref: 'customers',
   },
   prices: {
-    type: [jobPriceSchema],
+    type: [
+      {
+        price: {
+          type: Schema.Types.ObjectId,
+          ref: 'prices',
+        },
+        quantity: {
+          type: Number,
+        },
+      },
+    ],
     default: undefined,
+    _id: false,
+  },
+  additionalPrice: {
+    type: Number,
   },
   expiresAt: {
     type: Schema.Types.Date,

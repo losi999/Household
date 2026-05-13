@@ -22,7 +22,6 @@ describe('Customer document converter', () => {
 
   describe('createJobPriceList', () => {
     it('should return document', () => {
-      const priceBase = testDataFactory.price.base();
       const priceDocument = testDataFactory.price.document();
       const quantity = 1;
 
@@ -31,14 +30,12 @@ describe('Customer document converter', () => {
           priceId: getPriceId(priceDocument),
           quantity,
         },
-        priceBase,
       ], [priceDocument]);
       expect(result).toEqual([
         {
           price: priceDocument,
           quantity,
         },
-        priceBase,
       ]);
     });
   });
@@ -136,23 +133,13 @@ describe('Customer document converter', () => {
     const priceDocument = testDataFactory.price.document();
     const priceId = getPriceId(priceDocument);
     const quantity = 1;
-    const priceName = 'price name';
-    const amount = 3000;
     const job = testDataFactory.customer.job.request({
-      prices: {
-        custom: [
-          {
-            name: priceName,
-            amount,
-          },
-        ],
-        listed: [
-          {
-            priceId,
-            quantity,
-          },
-        ],
-      },
+      prices: [
+        {
+          priceId,
+          quantity,
+        },
+      ],
     });
 
     it('should return update', () => {
@@ -163,10 +150,6 @@ describe('Customer document converter', () => {
             jobs: {
               ...job,
               prices: [
-                {
-                  name: priceName,
-                  amount,
-                },
                 {
                   price: priceDocument,
                   quantity,
@@ -183,26 +166,17 @@ describe('Customer document converter', () => {
     const priceDocument = testDataFactory.price.document();
     const priceId = getPriceId(priceDocument);
     const quantity = 1;
-    const priceName = 'price name';
-    const amount = 3000;
-    const job = testDataFactory.customer.job.request({
-      prices: {
-        custom: [
-          {
-            name: priceName,
-            amount,
-          },
-        ],
-        listed: [
+
+    it('should return update', () => {
+      const job = testDataFactory.customer.job.request({
+        prices: [
           {
             priceId,
             quantity,
           },
         ],
-      },
-    });
+      });
 
-    it('should return update', () => {
       const result = converter.updateJob(job.name, job, [priceDocument]);
       expect(result).toEqual(createDocumentUpdate({
         update: {
@@ -211,9 +185,38 @@ describe('Customer document converter', () => {
               ...job,
               prices: [
                 {
-                  name: priceName,
-                  amount,
+                  price: priceDocument,
+                  quantity,
                 },
+              ],
+            },
+          },
+        },
+        arrayFilters: [
+          {
+            'job.name': job.name,
+          },
+        ],
+      }));
+    });
+
+    it('should unset additionalPrice', () => {
+      const job = testDataFactory.customer.job.request({
+        prices: [
+          {
+            priceId,
+            quantity,
+          },
+        ],
+      });
+      delete job.additionalPrice; 
+      const result = converter.updateJob(job.name, job, [priceDocument]);
+      expect(result).toEqual(createDocumentUpdate({
+        update: {
+          $set: {
+            'jobs.$[job]': {
+              ...job,
+              prices: [
                 {
                   price: priceDocument,
                   quantity,
@@ -221,6 +224,9 @@ describe('Customer document converter', () => {
               ],
             },
           },
+          $unset: {
+            additionalPrice: true,
+          },          
         },
         arrayFilters: [
           {
@@ -250,7 +256,6 @@ describe('Customer document converter', () => {
   describe('toResponseJobPriceList', () => {
     it('should return response', () => {
       const quantity = 1;
-      const priceBase = testDataFactory.price.base();
       const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
 
@@ -259,50 +264,36 @@ describe('Customer document converter', () => {
           price: testDataFactory.price.document(),
           quantity,
         },
-        priceBase,
       ]);
       expect(result).toEqual([
         {
           quantity,
           ...priceResponse,
         },
-        priceBase,
       ]);
     });
   });
 
   describe('toResponse', () => {
     it('should return response', () => {
-      const priceBase = testDataFactory.price.base();
       const quantity = 1;
       const blacklistedCustomer = testDataFactory.customer.document();
       const doc = testDataFactory.customer.document({
         jobs: [
           {
             body: {
-              name: 'B',
-            },
-            prices: {
-              custom: [priceBase],
-            },
-          },
-          {
-            body: {
               name: 'A',
             },
-            prices: {
-              listed: [
-                {
-                  quantity,
-                },
-              ],
-            },
+            prices: [
+              {
+                quantity,
+              },
+            ],
           },
         ],
         blacklistedCustomers: [blacklistedCustomer],
       });
-      const jobB = doc.jobs[0];
-      const jobA = doc.jobs[1];
+      const job = doc.jobs[0];
       const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
 
@@ -326,26 +317,14 @@ describe('Customer document converter', () => {
         ],
         jobs: [
           {
-            name: jobA.name,
-            description: jobA.description,
-            duration: jobA.duration,
+            name: job.name,
+            description: job.description,
+            duration: job.duration,
+            additionalPrice: job.additionalPrice,
             prices: [
               {
                 ...priceResponse,
                 quantity,
-              },
-            ],
-          },
-          {
-            name: jobB.name,
-            description: jobB.description,
-            duration: jobB.duration,
-            prices: [
-              {
-                ...priceBase,
-                quantity: undefined,
-                unitOfMeasurement: undefined,
-                priceId: undefined,
               },
             ],
           },
@@ -356,36 +335,24 @@ describe('Customer document converter', () => {
 
   describe('toResponseList', () => {
     it('should return response', () => {
-      const priceBase = testDataFactory.price.base();   
       const quantity = 1;   
       const blacklistedCustomer = testDataFactory.customer.document();
       const doc = testDataFactory.customer.document({
         jobs: [
           {
             body: {
-              name: 'B',
-            },
-            prices: {
-              custom: [priceBase],
-            },
-          },
-          {
-            body: {
               name: 'A',
             },
-            prices: {
-              listed: [
-                {
-                  quantity,
-                },
-              ],
-            },
+            prices: [
+              {
+                quantity,
+              },
+            ],
           },
         ],
         blacklistedCustomers: [blacklistedCustomer],
       });
-      const jobB = doc.jobs[0];
-      const jobA = doc.jobs[1];
+      const job = doc.jobs[0];
       const priceResponse = testDataFactory.price.response();
       mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
 
@@ -410,9 +377,10 @@ describe('Customer document converter', () => {
           ],
           jobs: [
             {
-              name: jobA.name,
-              description: jobA.description,
-              duration: jobA.duration,
+              name: job.name,
+              description: job.description,
+              duration: job.duration,
+              additionalPrice: job.additionalPrice,
               prices: [
                 {
                   ...priceResponse,
@@ -420,19 +388,7 @@ describe('Customer document converter', () => {
                 },
               ],
             },
-            {
-              name: jobB.name,
-              description: jobB.description,
-              duration: jobB.duration,
-              prices: [
-                {
-                  ...priceBase,
-                  quantity: undefined,
-                  unitOfMeasurement: undefined,
-                  priceId: undefined,
-                },
-              ],
-            },
+  
           ],
         }),
       ]);

@@ -1,0 +1,25 @@
+<mat-form-field appearance="fill">
+  <mat-label>{{label()}}</mat-label>
+  @if (prefix()) {
+  <span matTextPrefix>{{prefix()}} &nbsp;</span>
+  }
+  @switch (type()) {
+  @case('text') {
+  <input matInput [(ngModel)]="value" [required]="required()" [errorStateMatcher]="matcher" />
+  }
+  @case('number') {
+  <input matInput type="number" [(ngModel)]="value" [required]="required()" [errorStateMatcher]="matcher" />
+  }
+  @case('area') {
+  <textarea matInput [(ngModel)]="value" [required]="required()" [errorStateMatcher]="matcher"></textarea>
+  }
+  }
+  <button matIconButton matSuffix type="button" (click)="onClearValue($event)" tabindex="-1">
+    <mat-icon>close</mat-icon>
+  </button>
+  @for (error of errors(); track $index) {
+  <mat-error>
+    {{error.message}}
+  </mat-error>
+  }
+</mat-form-field>

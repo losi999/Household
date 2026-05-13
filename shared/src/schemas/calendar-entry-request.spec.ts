@@ -7,6 +7,9 @@ import { CalendarEntryType } from '@household/shared/enums';
 describe('Calendar personal entry request schema', () => {
   const tester = jsonSchemaTesterFactory<Calendar.Entry.PersonalEntryRequest>(schema);
   tester.validateSuccess(testDataFactory.calendar.entry.request.personal());
+  tester.validateSuccess(testDataFactory.calendar.entry.request.personal({
+    description: undefined,
+  }), 'without description');
 
   describe('should deny', () => {
     describe('if data', () => {
@@ -110,6 +113,9 @@ describe('Calendar personal entry request schema', () => {
 describe('Calendar issue entry request schema', () => {
   const tester = jsonSchemaTesterFactory<Calendar.Entry.IssueEntryRequest>(schema);
   tester.validateSuccess(testDataFactory.calendar.entry.request.issue());
+  tester.validateSuccess(testDataFactory.calendar.entry.request.issue({
+    description: undefined,
+  }), 'without description');
 
   describe('should deny', () => {
     describe('if data', () => {
@@ -213,12 +219,20 @@ describe('Calendar issue entry request schema', () => {
 describe('Calendar work entry request schema', () => {
   const tester = jsonSchemaTesterFactory<Calendar.Entry.WorkEntryRequest>(schema);
   tester.validateSuccess(testDataFactory.calendar.entry.request.work({
-    prices: {
-      custom: [{}],
-      listed: [{}],
-    },
+    prices: [{}],
   }));
+  tester.validateSuccess(testDataFactory.calendar.entry.request.work({
+    body: {
+      description: undefined,
+    },
+    prices: [{}],
+  }), 'without description');
   tester.validateSuccess(testDataFactory.calendar.entry.request.work(), 'without prices');
+  tester.validateSuccess(testDataFactory.calendar.entry.request.work({
+    body: {
+      additionalPrice: undefined,
+    },
+  }), 'without additional price');
 
   describe('should deny', () => {
     describe('if data', () => {
@@ -369,6 +383,14 @@ describe('Calendar work entry request schema', () => {
       }), 'customerId');
     });
 
+    describe('if data.additionalPrice', () => {
+      tester.type(testDataFactory.calendar.entry.request.work({
+        body: {
+          additionalPrice: '1' as any,
+        },
+      }), 'additionalPrice', 'integer');
+    });
+
     describe('if data.prices', () => {
       tester.type({
         ...testDataFactory.calendar.entry.request.work(),
@@ -401,120 +423,54 @@ describe('Calendar work entry request schema', () => {
 
     describe('if data.prices[0].priceId', () => {      
       tester.required(testDataFactory.calendar.entry.request.work({
-        prices: {
-          listed: [
-            {
-              priceId: undefined,
-            },
-          ],
-        },
+        prices: [
+          {
+            priceId: undefined,
+          },
+        ],
       }), 'priceId');
 
       tester.type(testDataFactory.calendar.entry.request.work({
-        prices: {
-          listed: [
-            {
-              priceId: 1 as any,
-            },
-          ],
-        },
+        prices: [
+          {
+            priceId: 1 as any,
+          },
+        ],
       }), 'priceId', 'string');
 
       tester.pattern(testDataFactory.calendar.entry.request.work({
-        prices: {
-          listed: [
-            {
-              priceId: testDataFactory.price.id('not-mongo-id'),
-            },
-          ],
-        },
+        prices: [
+          {
+            priceId: testDataFactory.price.id('not-mongo-id'),
+          },
+        ],
       }), 'priceId');
     });
 
     describe('if data.prices[0].quantity', () => {      
       tester.required(testDataFactory.calendar.entry.request.work({
-        prices: {
-          listed: [
-            {
-              quantity: undefined,
-            },
-          ],
-        },
+        prices: [
+          {
+            quantity: undefined,
+          },
+        ],
       }), 'quantity');
 
       tester.type(testDataFactory.calendar.entry.request.work({
-        prices: {
-          listed: [
-            {
-              quantity: '1' as any,
-            },
-          ],
-        },
-      }), 'quantity', 'integer');
+        prices: [
+          {
+            quantity: '1' as any,
+          },
+        ],
+      }), 'quantity', 'number');
 
       tester.exclusiveMinimum(testDataFactory.calendar.entry.request.work({
-        prices: {
-          listed: [
-            {
-              quantity: 0,
-            },
-          ],
-        },
+        prices: [
+          {
+            quantity: 0,
+          },
+        ],
       }), 'quantity', 0);
-    });
-
-    describe('if data.prices[0].name', () => {      
-      tester.required(testDataFactory.calendar.entry.request.work({
-        prices: {
-          custom: [
-            {
-              name: undefined,
-            },
-          ],
-        },
-      }), 'name');
-
-      tester.type(testDataFactory.calendar.entry.request.work({
-        prices: {
-          custom: [
-            {
-              name: 1 as any,
-            },
-          ],
-        },
-      }), 'name', 'string');
-
-      tester.minLength(testDataFactory.calendar.entry.request.work({
-        prices: {
-          custom: [
-            {
-              name: '',
-            },
-          ],
-        },
-      }), 'name', 1);
-    });
-
-    describe('if data.prices[0].amount', () => {      
-      tester.required(testDataFactory.calendar.entry.request.work({
-        prices: {
-          custom: [
-            {
-              amount: undefined,
-            },
-          ],
-        },
-      }), 'amount');
-
-      tester.type(testDataFactory.calendar.entry.request.work({
-        prices: {
-          custom: [
-            {
-              amount: 1.1,
-            },
-          ],
-        },
-      }), 'amount', 'integer');
     });
   });
 });

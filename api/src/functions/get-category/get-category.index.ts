@@ -6,6 +6,7 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { default as pathParameters } from '@household/shared/schemas/category-id';
 import { categoryService } from '@household/shared/dependencies/services/category-service';
 import { default as index } from '@household/api/handlers/index.handler';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const getCategoryService = getCategoryServiceFactory(categoryService, categoryDocumentConverter);
 
@@ -16,5 +17,8 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

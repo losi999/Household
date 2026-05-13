@@ -1,5 +1,5 @@
-import { createConnection, set } from 'mongoose';
-import type { Connection, Model, ClientSession } from 'mongoose';
+import mongoose, { set } from 'mongoose';
+import type { Model, ClientSession } from 'mongoose';
 import { projectSchema } from '@household/shared/mongodb-schemas/project.schema';
 import { accountSchema } from '@household/shared/mongodb-schemas/account.schema';
 import { recipientSchema } from '@household/shared/mongodb-schemas/recipient.schema';
@@ -41,9 +41,9 @@ export type IMongodbService = {
   inTransaction<T>(callback: (models: CollectionModels, session: ClientSession) => Promise<T>): Promise<T>;
   syncIndexes(): Promise<unknown>;
   dump(): Promise<{[K in keyof CollectionMapping]: CollectionMapping[K][]}>;
+  disconnect(): Promise<unknown>;
 };
 
-let connection: Connection;
 set('debug', !process.env.ENV ? (collectionName, methodName, ...methodArgs) => {
   const safeArgs = methodArgs.map(({ session, ...arg }) => {
     try {
@@ -53,41 +53,44 @@ set('debug', !process.env.ENV ? (collectionName, methodName, ...methodArgs) => {
       return '[unserializable]';
     }
   });
-
+  
   console.debug(`mongoose: ${collectionName}.${methodName}`, ...safeArgs);
 } : false);
 
 export const mongodbServiceFactory = async (mongodbConnectionString: string): Promise<IMongodbService> => {
   const connectDb = async () => {
-    if (!connection || connection.readyState === 0) {
-      connection = createConnection(mongodbConnectionString, {
+    console.log('connection state', mongoose.connection?.readyState);
+    if (!mongoose.connection || mongoose.connection.readyState === 0) {
+      console.log('connecting');
+      await mongoose.connect(mongodbConnectionString, {
         autoIndex: false,
         connectTimeoutMS: 480000,
         serverSelectionTimeoutMS: 480000,
       });
+      console.log('connected');
     }
   };
 
   await connectDb();
 
   const models = (): CollectionModels => ({
-    recipients: connection.model('recipients', recipientSchema),
-    projects: connection.model('projects', projectSchema),
-    transactions: connection.model('transactions', transactionSchema),
-    accounts: connection.model('accounts', accountSchema),
-    categories: connection.model('categories', categorySchema),
-    products: connection.model('products', productSchema),
-    files: connection.model('files', fileSchema),
-    settings: connection.model('settings', settingSchema),
-    customers: connection.model('customers', customerSchema),
-    prices: connection.model('prices', priceSchema),
-    calendarEntries: connection.model('calendarEntries', calendarEntrySchema),
-    calendarDays: connection.model('calendarDays', calendarDaySchema),
+    recipients: mongoose.connection.model('recipients', recipientSchema),
+    projects: mongoose.connection.model('projects', projectSchema),
+    transactions: mongoose.connection.model('transactions', transactionSchema),
+    accounts: mongoose.connection.model('accounts', accountSchema),
+    categories: mongoose.connection.model('categories', categorySchema),
+    products: mongoose.connection.model('products', productSchema),
+    files: mongoose.connection.model('files', fileSchema),
+    settings: mongoose.connection.model('settings', settingSchema),
+    customers: mongoose.connection.model('customers', customerSchema),
+    prices: mongoose.connection.model('prices', priceSchema),
+    calendarEntries: mongoose.connection.model('calendarEntries', calendarEntrySchema),
+    calendarDays: mongoose.connection.model('calendarDays', calendarDaySchema),
   });
 
   const getModel = <C extends keyof CollectionMapping>(collection: C): ModelFunction<C> => async (callback) => {
     await connectDb();
-    const session = await connection.startSession();
+    const session = await mongoose.connection.startSession();
     const result = await callback(models()[collection], session);
     await session.endSession();
     return result;
@@ -96,17 +99,17 @@ export const mongodbServiceFactory = async (mongodbConnectionString: string): Pr
   const instance: IMongodbService = {
     inTransaction: async (callback) => {
       await connectDb();
-      const session = await connection.startSession();
+      const session = await mongoose.connection.startSession();
       const result = await session.withTransaction(async () => {
         return callback(models(), session);
       });
       session.endSession();
       return result;
     },
-    syncIndexes: () => connection.syncIndexes(),
+    syncIndexes: () => mongoose.connection.syncIndexes(),
     dump: async () => {
       await connectDb();
-      const session = await connection.startSession();
+      const session = await mongoose.connection.startSession();
       const result = {
         accounts: await models().accounts.find({}).session(session)
           .lean(),
@@ -135,6 +138,9 @@ export const mongodbServiceFactory = async (mongodbConnectionString: string): Pr
       };
       session.endSession();
       return result;
+    },
+    disconnect: () => {
+      return mongoose.connection.close();
     },
     recipients: getModel('recipients'),
     projects: getModel('projects'),

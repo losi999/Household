@@ -1,6 +1,6 @@
 export default <E, R>(params: {
   before: ((event: E) => E)[];
-  after: ((result: R) => R)[];
+  after: ((result: R) => R | Promise<R>)[];
   handler: AWSLambda.Handler<E, R>;
 }): AWSLambda.Handler<E, R> => {
   return async (event, context) => {
@@ -21,9 +21,10 @@ export default <E, R>(params: {
     }
 
     if (result) {
-      const modifiedResult = params.after.reduce((accumulator, currentValue) => {
-        return currentValue(accumulator);
-      }, result);
+      let modifiedResult = result;
+      for (const after of params.after) {
+        modifiedResult = await after(modifiedResult);
+      }
 
       return modifiedResult;
     }

@@ -1,0 +1,6 @@
+<hairdressing-toolbar title="Árlista">
+  <button matIconButton type="button" (click)="onCreate()">
+    <mat-icon>add</mat-icon>
+  </button>
+</hairdressing-toolbar>
+<hairdressing-price-list [prices]="priceStore.priceList()" />

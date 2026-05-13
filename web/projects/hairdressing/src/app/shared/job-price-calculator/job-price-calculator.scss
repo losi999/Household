@@ -1,0 +1,51 @@
+@use '@angular/material' as mat;
+
+.prices {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  align-items: center;
+  gap: 10px;
+
+  button {
+    @include mat.button-overrides(
+      (
+        filled-container-height: 45px,
+      )
+    );
+  }
+}
+
+.detailed-price {
+  display: grid;
+  grid-template-columns: 1fr 48px 80px 48px 100px 48px;
+  grid-template-areas:
+    'name minus quantity plus amount remove'
+    'error error error error error error';
+  align-items: center;
+  text-align: right;
+
+  .additional-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    button {
+      @include mat.button-overrides(
+        (
+          tonal-horizontal-padding: 0px,
+          tonal-container-height: 35px,
+        )
+      );
+    }
+  }
+
+  .error {
+    grid-area: error;
+    text-align: left;
+  }
+
+  .quantity {
+    text-align: center;
+    grid-area: quantity;
+  }
+}

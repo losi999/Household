@@ -1,6 +1,6 @@
 import { WORKDAY_LENGTH } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
-import { Dictionary, Searchable } from '@household/shared/types/common';
+import { Dictionary } from '@household/shared/types/common';
 import { Account, Calendar, Category, Customer, File, Internal, Price, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { PopulateOptions, Types } from 'mongoose';
 
@@ -144,16 +144,14 @@ export const createWorkEntryTitle = (customer: Customer.Response, job?: Customer
 };
 
 export const toSearchTerms = (input: string): string[] => {
-  const lowercased = input.toLowerCase();
+  const lowercased = input.toLowerCase().split(' ');
+
   return [
-    lowercased,
-    lowercased.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+    ...new Set(lowercased.flatMap(term => {
+      return [
+        term,
+        term.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+      ];
+    })),
   ];
-};
-
-export const filterSearchable = (items: Searchable[], searchValue: string) => {
-  const terms = searchValue.trim().toLowerCase()
-    .split(' ');
-
-  return items?.filter(i => i.searchTerms?.some(s => terms.every(t => s.includes(t))));
 };

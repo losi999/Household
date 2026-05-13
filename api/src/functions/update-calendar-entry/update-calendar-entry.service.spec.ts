@@ -89,14 +89,12 @@ describe('Update calendar entry service', () => {
       body: {
         customerId,
       },
-      prices: {
-        listed: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
-      },      
+      prices: [
+        {
+          priceId,
+          quantity: 1,
+        },
+      ], 
     });
     mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
     mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
@@ -132,14 +130,12 @@ describe('Update calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        },      
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],  
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockRejectedValue('this is a mongo error');
 
@@ -166,14 +162,12 @@ describe('Update calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        },      
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ], 
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(undefined);
 
@@ -217,14 +211,12 @@ describe('Update calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        },      
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],  
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue({
         ...queriedCalendarWorkEntry,
@@ -257,14 +249,12 @@ describe('Update calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        },      
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockRejectedValue('this is a mongo error');
@@ -292,14 +282,12 @@ describe('Update calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        },      
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],  
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(undefined);
@@ -327,14 +315,12 @@ describe('Update calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        },      
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],  
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
@@ -363,14 +349,12 @@ describe('Update calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        },      
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],   
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
@@ -399,14 +383,12 @@ describe('Update calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        },      
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],   
       });
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarWorkEntry);
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);

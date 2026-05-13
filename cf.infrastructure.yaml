@@ -100,6 +100,7 @@ Resources:
                   - cognito-idp:AdminSetUserPassword
                   - cognito-idp:ListUsers
                   - cognito-idp:AdminRespondToAuthChallenge
+                  - cognito-idp:AdminListGroupsForUser
                   - cognito-idp:AdminUpdateUserAttributes
                   - cognito-idp:AdminDeleteUser
                   - cognito-idp:ListUsersInGroup

@@ -25,16 +25,12 @@ describe('Create customer job service', () => {
     body: {
       name: 'new job',
     },
-    prices: {
-      custom: [testDataFactory.price.base()],
-      listed: [
-        {
-          priceId,
-          quantity: 1,
-        },
-      ],
-    }
-    ,
+    prices: [
+      {
+        priceId,
+        quantity: 1,
+      },
+    ],
   });
   const queriedCustomer = testDataFactory.customer.document({
     jobs: [{}],

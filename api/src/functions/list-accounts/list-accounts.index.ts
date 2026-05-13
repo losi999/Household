@@ -4,11 +4,15 @@ import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { listAccountsServiceFactory } from '@household/api/functions/list-accounts/list-accounts.service';
 import { accountService } from '@household/shared/dependencies/services/account-service';
 import { default as index } from '@household/api/handlers/index.handler';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const listAccountsService = listAccountsServiceFactory(accountService, accountDocumentConverter);
 
 export default index({
   handler: handler(listAccountsService),
   before: [],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

@@ -6,11 +6,15 @@ import { listDeferredTransactionsServiceFactory } from '@household/api/functions
 import { deferredTransactionDocumentConverter } from '@household/shared/dependencies/converters/deferred-transaction-document-converter';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const listDeferredTransactionsService = listDeferredTransactionsServiceFactory(transactionService, deferredTransactionDocumentConverter);
 
 export default index({
   handler: handler(listDeferredTransactionsService),
   before: [authorizer(UserType.Editor)],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

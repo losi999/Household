@@ -1,1 +1,119 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+@use 'sass:map';
+
+:root {
+  --content-max-width: 1024px;
+  --work-entry-container: #{map.get(mat.$azure-palette, 40)}; //--mat-sys-primary
+  --pending-work-entry-container: #{map.get(mat.$azure-palette, 90)}; //--mat-sys-primary-container
+  --pending-work-entry-on-container: #{map.get(mat.$azure-palette, 10)}; //--mat-sys-on-primary-container
+  --personal-entry-container: #{map.get(mat.$spring-green-palette, 40)}; //--mat-sys-primary
+  --issue-entry-container: #{map.get(mat.$orange-palette, 90)}; //--mat-sys-primary-fixed
+  --issue-entry-on-container: #{map.get(mat.$orange-palette, 10)}; //--mat-sys-on-primary-fixed
+  --holiday-day-container: #{map.get(mat.$red-palette, 80)}; //--mat-sys-primary-fixed-dim
+  --vacation-day-container: #{map.get(mat.$spring-green-palette, 80)}; //--mat-sys-primary-fixed-dim
+}
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$cyan-palette,
+        tertiary: mat.$red-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  @include mat.dialog-overrides(
+    (
+      container-max-width: var(--content-max-width),
+    )
+  );
+}
+
+button,
+a {
+  &.danger {
+    @include mat.button-overrides(
+      (
+        filled-container-color: var(--mat-sys-error),
+        protected-label-text-color: var(--mat-sys-error),
+        outlined-label-text-color: var(--mat-sys-error),
+        outlined-outline-color: var(--mat-sys-error),
+        tonal-container-color: var(--mat-sys-error-container),
+        tonal-label-text-color: var(--mat-sys-error),
+        text-label-text-color: var(--mat-sys-error),
+      )
+    );
+
+    @include mat.icon-button-overrides(
+      (
+        icon-color: var(--mat-sys-error),
+      )
+    );
+  }
+
+  @include mat.button-overrides(
+    (
+      filled-container-shape: var(--mat-sys-corner-medium),
+      outlined-container-shape: var(--mat-sys-corner-medium),
+      protected-container-shape: var(--mat-sys-corner-medium),
+      text-container-shape: var(--mat-sys-corner-medium),
+      tonal-container-shape: var(--mat-sys-corner-medium),
+    )
+  );
+}
+
+button {
+  &.work {
+    @include mat.button-overrides(
+      (
+        filled-container-color: var(--work-entry-container),
+      )
+    );
+  }
+
+  &.personal {
+    @include mat.button-overrides(
+      (
+        filled-container-color: var(--personal-entry-container),
+      )
+    );
+  }
+
+  &.pending {
+    @include mat.button-overrides(
+      (
+        filled-container-color: var(--pending-work-entry-container),
+        filled-label-text-color: var(--pending-work-entry-on-container),
+      )
+    );
+    border: 2px solid var(--work-entry-container);
+  }
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+  height: 100%;
+}
 /* You can add global styles to this file, and also import other style files */

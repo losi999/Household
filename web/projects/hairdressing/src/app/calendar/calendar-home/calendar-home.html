@@ -1,0 +1,65 @@
+<hairdressing-toolbar title="Naptár">
+  <button mat-icon-button type="button" [matMenuTriggerFor]="new">
+    <mat-icon>add</mat-icon>
+  </button>
+  <mat-menu #new="matMenu">
+    <button mat-menu-item (click)="onCreateWork()">Munka</button>
+    <button mat-menu-item (click)="onCreatePersonal()">Személyes</button>
+    <button mat-menu-item (click)="onCreateIssue()">Probléma</button>
+  </mat-menu>
+</hairdressing-toolbar>
+
+<div class="header">
+  @if (pendingCustomerJob()) {
+  <div class="pending">
+    <span>
+      Időpont keresése... {{pendingCustomerJob().customer.isGroup ? pendingCustomerJob().name : (pendingCustomerJob().customer.name + ': ' + pendingCustomerJob().name)}} ({{pendingCustomerJob().duration | timeSlotToTime}} óra)
+    </span>
+    <button matIconButton class="danger" type="button" [routerLink]="[]" [queryParams]="{ customerId: null, jobName: null }" queryParamsHandling="merge" [replaceUrl]="true"><mat-icon>close</mat-icon></button>
+  </div>
+  }
+  <div class="week-stepper">
+    <button matButton="filled" type="button" (click)="onChangeWeek(-1)">
+      <mat-icon>arrow_left</mat-icon>Előző hét
+    </button>
+    <button matButton="filled" class="danger" type="button" (click)="onShowToday()">Ma</button>
+    <button matButton="filled" type="button" (click)="onChangeWeek(1)">Következő hét
+      <mat-icon>arrow_right</mat-icon>
+    </button>
+  </div>
+  <div class="days-of-week">
+    <div></div>
+    @for (d of daysOfWeek().days | keyvalue; track $index) {
+    <div class="day">
+      <div [style.grid-column]="1">
+        {{d.key | date: 'yyyy'}}
+      </div>
+      <div [style.grid-column]="1">
+        {{d.key | date: 'MMM dd.'}}
+      </div>
+      <div [style.grid-column]="1">
+        {{d.key | date: 'EEEE'}}
+      </div>
+      @let dayResponse = d.value;
+      @if (dayResponse && dayResponse.dayType !== 'holiday') {
+      <button matIconButton type="button" (click)="onSetWorkDay(dayResponse)"><mat-icon>settings</mat-icon></button>
+      }
+    </div>
+    }
+  </div>
+</div>
+
+<div class="calendar" [style.grid-template-rows]="calendarGridRows()">
+  @for (t of calendarTimeColumn(); let i = $index; track $index) {
+  @if (t) {
+  <div class="time" [style.grid-row]="i+1">
+    {{ t }}
+  </div>
+  }
+  }
+  @for (day of daysOfWeek().days | keyvalue; let i = $index; track $index) {
+  @if(day.value) {
+  <hairdressing-calendar-vertical-day [day]="day.value" [column]="i+2" [pendingCustomerJob]="pendingCustomerJob()" />
+  }
+  }
+</div>

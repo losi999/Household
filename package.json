@@ -12,8 +12,8 @@
     "test:web_legacy": "cd web_legacy && yarn test",
     "test:web_legacy:dev": "cd web_legacy && yarn test:dev",
     "deploy:api:LOCAL": "sam deploy -t cf.household.yaml --config-env household-local && yarn postdeploy --profile losonczil",
-    "deploy:api:CI": "export ENV=CI && yarn samconfig && sam deploy -t cf.household.yaml && yarn postdeploy --profile ci",
-    "postdeploy": "aws lambda invoke --function-name Household-${ENV}-PostDeploy /dev/null",
+    "deploy:api:CI": "export ENV=CI && yarn samconfig && sam deploy -t cf.household.yaml",
+    "postdeploy": "aws lambda invoke --function-name Household-LOCAL-PostDeploy /dev/null",
     "start:web:LOCAL": "cd web_legacy && yarn start -c LOCAL",
     "build:api": "rimraf ./dist/api && tsc -p tsconfig.build.json --noEmit && node build.cjs",
     "build:api:watch": "export ENV=localhost && yarn build:api --watch",
@@ -30,8 +30,8 @@
     "test:hairdressing": "cd web && yarn test hairdressing --no-watch",
     "test:shared-ui": "cd web && yarn test shared --no-watch",
     "test:web": "yarn test:hairdressing | yarn test:shared-ui",
-    "deploy:hairdressing:LOCAL": "sam deploy -t cf.hairdressing.yaml --config-env hairdressing-web-local && aws s3 sync dist/hairdressing/browser s3://$(aws cloudformation describe-stacks --stack-name HairdressingWeb-LOCAL --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile losonczil) --profile losonczil",
-    "deploy:hairdressing:DEV": "sam deploy -t cf.hairdressing.yaml --config-env hairdressing-web-dev && aws s3 sync dist/hairdressing/browser s3://$(aws cloudformation describe-stacks --stack-name HairdressingWeb-DEV --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile losonczil) --profile losonczil"
+    "deploy:hairdressing:LOCAL": "sam deploy -t cf.hairdressing.yaml --config-env hairdressing-web-local --no-fail-on-empty-changeset && aws s3 sync dist/hairdressing/browser s3://$(aws cloudformation describe-stacks --stack-name HairdressingWeb-LOCAL --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile losonczil) --profile losonczil",
+    "deploy:hairdressing:DEV": "sam deploy -t cf.hairdressing.yaml --config-env hairdressing-web-dev --no-fail-on-empty-changeset && aws s3 sync dist/hairdressing/browser s3://$(aws cloudformation describe-stacks --stack-name HairdressingWeb-DEV --query \"Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue\" --output text --profile losonczil) --profile losonczil"
   },
   "dependencies": {
     "@aws-sdk/client-cloudformation": "3.1021.0",

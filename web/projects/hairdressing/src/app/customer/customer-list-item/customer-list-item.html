@@ -1,0 +1,38 @@
+<mat-card [class.archived]="customer().isArchived">
+  <mat-card-header>
+    <mat-card-title>
+      {{customer().name}}
+    </mat-card-title>
+    <mat-card-subtitle>
+      {{customer().description}}
+    </mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <mat-divider />
+    @if (customer().jobs?.length > 0) {
+    <div class="job-list">
+      <shared-icon-text icon="content_cut" size="small" text="Munkák" />
+      <mat-nav-list>
+        @for (job of customer().jobs; track $index) {
+        <a mat-list-item [routerLink]="['/']" [queryParams]="{customerId: customer().customerId, jobName: job.name}" [disabled]="isDisabled()">
+          <span matListItemTitle>{{job.name}}</span>
+          <span matListItemLine>{{job.duration | timeSlotToTime}} óra</span>
+          <button matIconButton matListItemMeta color="primary">
+            <mat-icon>calendar_add_on</mat-icon>
+          </button>
+        </a>
+        }
+      </mat-nav-list>
+    </div>
+    }
+  </mat-card-content>
+  <mat-card-actions>
+    <a mat-button [routerLink]="[customer().customerId]" [disabled]="isDisabled()">Részletek</a>
+    @if (!customer().isArchived) {
+    <button matIconButton style="margin-left: auto;" class="danger" (click)="onDelete()" [disabled]="isDisabled()">
+      <mat-icon>person_off</mat-icon>
+    </button>
+    }
+
+  </mat-card-actions>
+</mat-card>

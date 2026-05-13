@@ -3,11 +3,12 @@ import { databaseArchiveServiceFactory } from '@household/api/functions/database
 import { databaseArchiveStorageService } from '@household/shared/dependencies/services/storage-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { mongodbService } from '@household/shared/dependencies/services/mongodb-service';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const databaseArchiveService = databaseArchiveServiceFactory(mongodbService, databaseArchiveStorageService);
 
 export default index({
   handler: handler(databaseArchiveService),
   before: [ ],
-  after: [],
+  after: [ mongoDisconnect],
 });

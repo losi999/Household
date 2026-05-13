@@ -1,0 +1,10 @@
+<hairdressing-toolbar title="Vendégek">
+  <button matIconButton (click)="onCreate()" type="button">
+    <mat-icon>add</mat-icon>
+  </button>
+</hairdressing-toolbar>
+<div class="search">
+  <mat-slide-toggle [(ngModel)]="showArchivedCustomers">{{showArchivedCustomers() ? 'Régi vendégek megjelenítve' : 'Régi vendégek elrejtve'}}</mat-slide-toggle>
+  <shared-clearable-input label="Keresés" [(value)]="searchValue" />
+</div>
+<hairdressing-customer-list [customers]="filteredCustomers()" />

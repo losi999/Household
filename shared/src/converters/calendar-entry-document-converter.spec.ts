@@ -244,9 +244,7 @@ describe('Calendar entry document converter', () => {
         ]);
 
         const body = testDataFactory.calendar.entry.request.work({
-          prices: {
-            listed: [{}],
-          },
+          prices: [{}],
         });
         const result = converter.update({
           body,
@@ -284,9 +282,7 @@ describe('Calendar entry document converter', () => {
         ]);
 
         const body = testDataFactory.calendar.entry.request.work({
-          prices: {
-            listed: [{}],
-          },
+          prices: [{}],
         });
         delete body.description;
         const result = converter.update({
@@ -335,6 +331,47 @@ describe('Calendar entry document converter', () => {
             },
             $unset: {
               prices: true,
+            },
+          },
+        }));
+      });
+
+      it('should unset additionalPrice', () => {
+        const customerDocument = testDataFactory.customer.document();
+        const priceDocument = testDataFactory.price.document();
+        const quantity = 1;
+        mockCustomerDocumentConverter.functions.createJobPriceList.mockReturnValue([
+          {
+            price: priceDocument,
+            quantity,
+          },
+        ]);
+
+        const body = testDataFactory.calendar.entry.request.work({
+          prices: [{}],
+        });
+        delete body.additionalPrice;
+        const result = converter.update({
+          body,
+          customer: customerDocument,
+          prices: [],
+        }, expiresIn);
+        const { customerId, ...rest } = body;
+        expect(result).toEqual(createDocumentUpdate({
+          update: {
+            $set: {
+              ...rest,
+              customer: customerDocument,
+              prices: [
+                {
+                  price: priceDocument,
+                  quantity,
+                },
+              ],
+              expiresAt: addSeconds(expiresIn, now),
+            },
+            $unset: {
+              additionalPrice: true,
             },
           },
         }));
@@ -459,18 +496,18 @@ describe('Calendar entry document converter', () => {
         const customerResponse = testDataFactory.customer.response();
         const priceDocument = testDataFactory.price.document();
         const quantity = 1;
-        const customPrice = testDataFactory.price.base();
+        const additionalPrice = 1500;
         const priceResponse = testDataFactory.price.response();
 
         const doc = testDataFactory.calendar.entry.document({
           entryType: CalendarEntryType.Work,
           customer: customerDocument,
+          additionalPrice,
           prices: [
             {
               price: priceDocument,
               quantity,
             },
-            customPrice,
           ],
         });
         mockCustomerDocumentConverter.functions.toResponse.mockReturnValue(customerResponse);
@@ -492,6 +529,7 @@ describe('Calendar entry document converter', () => {
           end,
           calendarEntryId: getCalendarEntryId(doc),
           customer: customerResponse,
+          additionalPrice,
           prices: [
             {
               ...priceResponse,
@@ -505,7 +543,6 @@ describe('Calendar entry document converter', () => {
             price: priceDocument,
             quantity,
           },
-          customPrice,
         ]);
       });
     });
@@ -525,18 +562,18 @@ describe('Calendar entry document converter', () => {
       const customerResponse = testDataFactory.customer.response();
       const priceDocument = testDataFactory.price.document();
       const quantity = 1;
-      const customPrice = testDataFactory.price.base();
+      const additionalPrice = 1500;
       const priceResponse = testDataFactory.price.response();
 
       const workEntryDocument = testDataFactory.calendar.entry.document({
         entryType: CalendarEntryType.Work,
         customer: customerDocument,
+        additionalPrice,
         prices: [
           {
             price: priceDocument,
             quantity,
           },
-          customPrice,
         ],
       });
       mockCustomerDocumentConverter.functions.toResponse.mockReturnValue(customerResponse);
@@ -577,6 +614,7 @@ describe('Calendar entry document converter', () => {
           end: workEntryDocument.end,
           calendarEntryId: getCalendarEntryId(workEntryDocument),
           customer: customerResponse,
+          additionalPrice,
           prices: [
             {
               ...priceResponse,
@@ -591,7 +629,6 @@ describe('Calendar entry document converter', () => {
           price: priceDocument,
           quantity,
         },
-        customPrice,
       ]);
     });
   });
