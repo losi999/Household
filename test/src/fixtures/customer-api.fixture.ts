@@ -1,4 +1,4 @@
-import { hasPriceId, isPriceBase } from '@household/shared/common/type-guards';
+import { hasPriceId } from '@household/shared/common/type-guards';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Customer, Price } from '@household/shared/types/types';
@@ -183,13 +183,6 @@ export const validateCustomerJobPriceResponse = (priceResponses: (Price.Response
   return priceResponses.map((priceResponse, index) => {
     const priceDocument = priceDocuments[index];
 
-    if (isPriceBase(priceDocument)) {
-      return new Comparer(priceResponse, {
-        name: priceDocument.name,
-        amount: priceDocument.amount,
-      });
-    }
-
     return new Comparer(priceResponse, {
       name: priceDocument.price.name,
       amount: priceDocument.price.amount,
@@ -227,6 +220,7 @@ export const validateCustomerResponse = (response: Customer.Response, document: 
           name: jobDocument.name,
           description: jobDocument.description,
           duration: jobDocument.duration,
+          additionalPrice: jobDocument.additionalPrice,
           prices: validateCustomerJobPriceResponse(job.prices, jobDocument.prices), 
         });
       }),
@@ -260,22 +254,14 @@ const compareCustomerJobs = (actual: Customer.Document, expectedCustomerJobs: Cu
         name: expectedJob.name,
         description: expectedJob.description,
         duration: expectedJob.duration,
+        additionalPrice: expectedJob.additionalPrice,
         prices: actualJob.prices.map((actualPrice, priceIndex) => {
           const expectedPrice = expectedJob.prices[priceIndex];
 
-          if (isPriceBase(actualPrice) && isPriceBase(expectedPrice)) {
-            return new Comparer(actualPrice, {
-              name: expectedPrice.name,
-              amount: expectedPrice.amount,
-            });
-          } 
-
-          if (!isPriceBase(actualPrice) && !isPriceBase(expectedPrice)) {
-            return new Comparer(actualPrice, {
-              price: hasPriceId(expectedPrice) ? expectedPrice.priceId : getPriceId(expectedPrice.price),
-              quantity: expectedPrice.quantity,
-            });
-          } 
+          return new Comparer(actualPrice, {
+            price: hasPriceId(expectedPrice) ? expectedPrice.priceId : getPriceId(expectedPrice.price),
+            quantity: expectedPrice.quantity,
+          });
         }),
       });
     }),

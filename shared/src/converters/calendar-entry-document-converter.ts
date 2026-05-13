@@ -44,6 +44,7 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
         resolution: undefined,
         customer: body.entryType === CalendarEntryType.Work ? customer : undefined,
         prices: body.entryType === CalendarEntryType.Work ? customerDocumentConverter.createJobPriceList(body.prices, prices) : undefined,
+        additionalPrice: body.entryType === CalendarEntryType.Work ? body.additionalPrice : undefined,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
@@ -66,6 +67,13 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
             prices: true,
           };
         }
+
+        if (!body.additionalPrice) {
+          $unset = {
+            ...$unset,
+            additionalPrice: true,
+          };
+        }
       } else {
         $set = {
           ...body,
@@ -78,6 +86,7 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
           description: true,
         };
       }
+
       return {
         update: {
           $set: {
@@ -132,6 +141,7 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
           entryType: doc.entryType,
           customer: customerDocumentConverter.toResponse(doc.customer),
           prices: customerDocumentConverter.toResponseJobPriceList(doc.prices),
+          additionalPrice: doc.additionalPrice,
         };
       }
       return {

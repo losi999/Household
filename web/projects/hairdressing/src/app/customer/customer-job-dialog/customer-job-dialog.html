@@ -1,0 +1,11 @@
+<div mat-dialog-title>{{data?.job ? 'Munka szerkesztése' : 'Új munka'}}</div>
+<div mat-dialog-content>
+  <shared-clearable-input data-testId="name" label="Munka neve" [formField]="customerJobForm.name" />
+  <shared-clearable-input data-testId="description" type="area" label="Megjegyzés" [formField]="customerJobForm.description" />
+  <hairdressing-duration-stepper [formField]="customerJobForm.duration" />
+  <hairdressing-job-price-calculator [formField]="customerJobForm.cost" />
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial (click)="onSave()">Mentés</button>
+  <button matButton="text" type="button" mat-dialog-close>Mégse</button>
+</div>

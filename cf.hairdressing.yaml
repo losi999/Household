@@ -48,8 +48,7 @@ Resources:
         Aliases:
           - !FindInMap [EnvMapping, !Ref Env, WebsiteDomain]
         ViewerCertificate:
-          AcmCertificateArn: "arn:aws:acm:us-east-1:691446342567:certificate/89fc9055-95da-4c0e-9cf9-d33385c3e892"
-          # AcmCertificateArn: "{{resolve:ssm:DomainCertificateArn:1}}"
+          AcmCertificateArn: "{{resolve:ssm:HairdressingDomainCertificateArn:1}}"
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2019
         Enabled: true

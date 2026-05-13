@@ -1,0 +1,20 @@
+<hairdressing-toolbar title="Bejelentkezés"></hairdressing-toolbar>
+<main>
+  <mat-form-field appearance="outline">
+    <mat-label>E-mail cím</mat-label>
+    <input matInput placeholder="E-mail cím" type="email" [formField]="loginForm.email">
+    @for(error of loginForm.email().errors(); track $index) {
+    <mat-error>
+      {{error.message}}
+    </mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Jelszó</mat-label>
+    <input matInput placeholder="Jelszó" type="password" [formField]="loginForm.password">
+    @for(error of loginForm.password().errors(); track $index) {
+    <mat-error>{{error.message}}</mat-error>
+    }
+  </mat-form-field>
+  <button matButton="filled" (click)="onSubmit()" [disabled]="loginForm().invalid()">Bejelentkezés</button>
+</main>

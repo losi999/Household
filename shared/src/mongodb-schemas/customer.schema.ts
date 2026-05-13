@@ -1,25 +1,6 @@
 import { Customer } from '@household/shared/types/types';
 import { Schema } from 'mongoose';
 
-export const jobPriceSchema = new Schema<Customer.Job.Document['prices'][number]>({
-  price: {
-    type: Schema.Types.ObjectId,
-    ref: 'prices',
-  },
-  quantity: {
-    type: Number,
-  },
-  name: {
-    type: String,
-  },
-  amount: {
-    type: Number,
-  },
-}, {
-  versionKey: false,
-  _id: false,
-});
-
 const jobSchema = new Schema<Customer.Job.Document>({
   name: {
     type: String,
@@ -30,8 +11,22 @@ const jobSchema = new Schema<Customer.Job.Document>({
     required: true,
   },
   prices: {
-    type: [jobPriceSchema],
+    type: [
+      {
+        price: {
+          type: Schema.Types.ObjectId,
+          ref: 'prices',
+        },
+        quantity: {
+          type: Number,
+        },
+      },
+    ],
     required: true,
+    _id: false,
+  },
+  additionalPrice: {
+    type: Number,
   },
   description: {
     type: String,

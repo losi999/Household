@@ -1,0 +1,20 @@
+<mat-form-field>
+  <button matIconButton matPrefix type="button" (click)="create($event)" tabIndex="-1">
+    <mat-icon>library_add</mat-icon>
+  </button>
+  <mat-label>{{label()}}</mat-label>
+  <input type="text" #inp matInput [matAutocomplete]="autocomplete" [(ngModel)]="value" [required]="required()" (input)="filterValue.set(inp.value)" (blur)="onBlur()" [errorStateMatcher]="matcher">
+  <mat-autocomplete #autocomplete="matAutocomplete" requireSelection [displayWith]="(item) => item?.name" (optionSelected)="optionSelected(inp)">
+    @for(price of filteredPrices(); track $index) {
+    <mat-option [value]="price">{{price?.name}}</mat-option>
+    }
+  </mat-autocomplete>
+  <button matSuffix mat-icon-button aria-label="Clear" type="button" (click)="clearValue($event)" tabindex="-1">
+    <mat-icon>close</mat-icon>
+  </button>
+  @for (error of errors(); track $index) {
+  <mat-error>
+    {{error.message}}
+  </mat-error>
+  }
+</mat-form-field>

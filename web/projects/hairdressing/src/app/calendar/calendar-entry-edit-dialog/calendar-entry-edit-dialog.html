@@ -1,0 +1,52 @@
+<div mat-dialog-title>{{title()}}</div>
+<div mat-dialog-content>
+  @if(entry.entryType === 'work') {
+  <hairdressing-customer-autocomplete-input label="Vendég" [formField]="entryForm.customer" />
+  @if (entryForm.customer().value()) {
+  <mat-form-field>
+    <mat-label>Munka</mat-label>
+    <mat-select [formField]="entryForm.job">
+      @for (job of entryForm.customer().value().jobs; track $index) {
+      <mat-option [value]="job">{{job.name}} ({{job.duration | timeSlotToTime}} óra)</mat-option>
+      }
+      <mat-option [value]="CUSTOM_JOB">Egyéb</mat-option>
+    </mat-select>
+    @for (error of entryForm.job().errors(); track $index) {
+    <mat-error>
+      {{error.message}}
+    </mat-error>
+
+    }
+  </mat-form-field>
+  }
+  @if(entryForm.job().value()?.name === CUSTOM_JOB.name) {
+  <shared-clearable-input label="Megnevezés" [formField]="entryForm.title" />
+  <shared-clearable-input type="area" label="Leírás" [formField]="entryForm.description" />
+  }
+  } @else {
+  <shared-clearable-input label="Megnevezés" [formField]="entryForm.title" />
+  <shared-clearable-input type="area" label="Leírás" [formField]="entryForm.description" />
+  }
+
+  <mat-form-field>
+    <mat-label>Dátum</mat-label>
+    <input matInput [formField]="entryForm.day" [matDatepicker]="picker" placeholder="Dátum" (click)="picker.open()" readonly>
+    <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
+    <mat-datepicker #picker />
+  </mat-form-field>
+  <hairdressing-duration-stepper [(value)]="duration" />
+  <mat-slider min="0" [max]="96-duration()">
+    <input matSliderThumb [(ngModel)]="start">
+  </mat-slider>
+  {{start() | timeSlotToTime}} - {{start() + duration() | timeSlotToTime}}
+  <hairdressing-calendar-horizontal-day [pendingStart]="start()" [pendingEnd]="start() + duration()" [calendarDay]="calendarDay()" />
+  @for (e of entryWarnings(); track $index) {
+  <mat-error>
+    {{e}}
+  </mat-error>
+  }
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial form="calendar-entry-form" (click)="onSubmit()">Mentés</button>
+  <button matButton="text" mat-dialog-close type="button">Mégse</button>
+</div>

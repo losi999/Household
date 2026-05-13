@@ -1,0 +1,18 @@
+<mat-form-field>
+  @if (!signHidden()) {
+  <button mat-icon-button matPrefix type="button" (click)="inverseValue($event)" [disabled]="signDisabled()">
+    <mat-icon>{{isPositive() ? 'add' : 'remove'}}</mat-icon>
+  </button>
+  }
+  <mat-label>{{label()}}</mat-label>
+  <input type="number" matInput [(ngModel)]="value" min="0" [required]="required()" [errorStateMatcher]="matcher">
+  <span matTextSuffix>{{currency()}}</span>
+  @if (newBalance()) {
+  <mat-hint>Új egyenleg: {{newBalance()}} {{currency()}}</mat-hint>
+  }
+  @for (error of errors(); track $index) {
+  <mat-error>
+    {{error.message}}
+  </mat-error>
+  }
+</mat-form-field>

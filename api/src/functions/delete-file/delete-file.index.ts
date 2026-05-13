@@ -8,6 +8,7 @@ import { default as index } from '@household/api/handlers/index.handler';
 import { importStorageService } from '@household/shared/dependencies/services/storage-service';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const deleteFileService = deleteFileServiceFactory(fileService, importStorageService);
 
@@ -19,5 +20,8 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

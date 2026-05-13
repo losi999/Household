@@ -9,8 +9,6 @@ import { accountApiActions } from '@household/web/state/account/account.actions'
 import { transactionApiActions } from '@household/web/state/transaction/transaction.actions';
 import { fileApiActions } from '@household/web/state/file/file.actions';
 import { userApiActions } from '@household/web/state/user/user.actions';
-import { priceApiActions } from '@household/web/app/hairdressing/price/state/price.actions';
-import { customerApiActions } from '@household/web/app/hairdressing/customer/state/customer.actions';
 
 export type ProgressState = {
   counter: number;
@@ -259,38 +257,6 @@ on(userApiActions.addUserToGroupCompleted, userApiActions.removeUserFromGroupCom
   return {
     ..._state,
     inProgressUserGroups: _state.inProgressUserGroups.filter(x => x !== `${email}_${group}`),
-  };
-}),
-
-on(priceApiActions.deletePriceInitiated, (_state, { priceId }) => {
-  return {
-    ..._state,
-    inProgressPrices: [
-      ..._state.inProgressPrices,
-      priceId,
-    ],
-  };
-}),
-on(priceApiActions.deletePriceCompleted, priceApiActions.deletePriceFailed, (_state, { priceId }) => {
-  return {
-    ..._state,
-    inProgressPrices: _state.inProgressPrices.filter(p => p !== priceId),
-  };
-}),
-
-on(customerApiActions.deleteCustomerInitiated, (_state, { customerId }) => {
-  return {
-    ..._state,
-    inProgressCustomers: [
-      ..._state.inProgressCustomers,
-      customerId,
-    ],
-  };
-}),
-on(customerApiActions.deleteCustomerCompleted, customerApiActions.deleteCustomerFailed, (_state, { customerId }) => {
-  return {
-    ..._state,
-    inProgressCustomers: _state.inProgressCustomers.filter(c => c !== customerId),
   };
 }),
 );

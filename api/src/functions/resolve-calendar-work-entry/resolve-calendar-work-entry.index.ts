@@ -13,6 +13,7 @@ import { settingService } from '@household/shared/dependencies/services/setting-
 import { accountService } from '@household/shared/dependencies/services/account-service';
 import { categoryService } from '@household/shared/dependencies/services/category-service';
 import { calendarEntryDocumentConverter } from '@household/shared/dependencies/converters/calendar-entry-document-converter';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const resolveCalendarWorkEntryService = resolveCalendarWorkEntryServiceFactory(calendarEntryService, paymentTransactionDocumentConverter, settingService, accountService, categoryService, calendarEntryDocumentConverter);
 
@@ -25,5 +26,8 @@ export default index({
       body,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

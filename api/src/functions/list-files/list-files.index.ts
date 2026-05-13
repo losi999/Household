@@ -6,11 +6,15 @@ import { fileService } from '@household/shared/dependencies/services/file-servic
 import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const listFilesService = listFilesServiceFactory(fileService, fileDocumentConverter);
 
 export default index({
   handler: handler(listFilesService),
   before: [authorizer(UserType.Editor)],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

@@ -74,14 +74,12 @@ describe('Create calendar entry service', () => {
       body: {
         customerId,
       },
-      prices: {
-        listed: [
-          {
-            priceId,
-            quantity: 1,
-          },
-        ],
-      }, 
+      prices: [
+        {
+          priceId,
+          quantity: 1,
+        },
+      ],
     });
     mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
     mockPriceService.functions.findPricesByIds.mockResolvedValue([queriedPrice]);
@@ -115,14 +113,12 @@ describe('Create calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        }, 
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],
       });
       mockCustomerService.functions.findCustomerById.mockRejectedValue('this is a mongo error');
 
@@ -147,14 +143,12 @@ describe('Create calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        }, 
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],
       });
       mockCustomerService.functions.findCustomerById.mockResolvedValue(undefined);
 
@@ -179,14 +173,12 @@ describe('Create calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        }, 
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],
       });
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
       mockPriceService.functions.findPricesByIds.mockRejectedValue('this is a mongo error');
@@ -212,14 +204,12 @@ describe('Create calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        }, 
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],
       });
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
       mockPriceService.functions.findPricesByIds.mockResolvedValue([]);
@@ -245,14 +235,12 @@ describe('Create calendar entry service', () => {
         body: {
           customerId,
         },
-        prices: {
-          listed: [
-            {
-              priceId,
-              quantity: 1,
-            },
-          ],
-        }, 
+        prices: [
+          {
+            priceId,
+            quantity: 1,
+          },
+        ],
       });
       mockCustomerService.functions.findCustomerById.mockResolvedValue(queriedCustomer);
       mockPriceService.functions.findPricesByIds.mockResolvedValue([queriedPrice]);

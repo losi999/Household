@@ -33,14 +33,11 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
     customerDocumentB = customerDataFactory.document({
       jobs: [
         {
-          prices: {
-            custom: [],
-            listed: [
-              {
-                price: priceDocument,
-              },
-            ],
-          },
+          prices: [
+            {
+              price: priceDocument,
+            },
+          ],
         },
       ],
     });

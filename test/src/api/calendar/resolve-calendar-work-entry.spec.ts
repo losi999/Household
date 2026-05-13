@@ -42,14 +42,11 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
 
     calendarWorkEntryDocument = calendarEntryDataFactory.document.work({
       customer: customerDocument,
-      prices: {
-        custom: [{}],
-        listed: [
-          {
-            price: priceDocument,
-          },
-        ],
-      },
+      prices: [
+        {
+          price: priceDocument,
+        },
+      ],
     });
             
     request = calendarEntryDataFactory.resolutionRequest();

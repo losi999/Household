@@ -10,6 +10,7 @@ import { default as index } from '@household/api/handlers/index.handler';
 import { transferTransactionDocumentConverter } from '@household/shared/dependencies/converters/transfer-transaction-document-converter';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
+import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const updateToTransferTransactionService = updateToTransferTransactionServiceFactory(accountService, transactionService, transferTransactionDocumentConverter);
 
@@ -22,5 +23,8 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [cors],
+  after: [
+    cors,
+    mongoDisconnect,
+  ],
 });

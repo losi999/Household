@@ -1,4 +1,4 @@
-import { okResponse } from '@household/api/common/response-factory';
+import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { ILoginService } from '@household/api/functions/login/login.service';
 import { Auth } from '@household/shared/types/types';
 
@@ -12,10 +12,7 @@ export default (login: ILoginService): AWSLambda.APIGatewayProxyHandler => {
       });
     } catch (error) {
       console.error(error);
-      return {
-        statusCode: error.statusCode,
-        body: error.message,
-      };
+      return errorResponse(error);
     }
 
     return okResponse(loginResponse);

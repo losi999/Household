@@ -30,17 +30,13 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
     customerDocument = customerDataFactory.document({
       blacklistedCustomers: [blacklistedCustomer],
       jobs: [
-        {},
         {
-          prices: {
-            custom: [{}],
-            listed: [
-              {
-                price: priceDocument,
-                quantity: 1,
-              },
-            ],
-          },
+          prices: [
+            {
+              price: priceDocument,
+              quantity: 1,
+            },
+          ],
         },
       ],
     });
@@ -48,18 +44,12 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
     jobName = customerDocument.jobs[0].name;
 
     request = customerDataFactory.jobRequest({
-      prices: {
-        custom: [
-          {},
-          {},
-        ],
-        listed: [
-          {
-            priceId: getPriceId(priceDocument),
-            quantity: 2,
-          },
-        ],
-      },
+      prices: [
+        {
+          priceId: getPriceId(priceDocument),
+          quantity: 2,
+        },
+      ],
     });
   });
 
@@ -84,13 +74,37 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should update customer job', async ({ requestUpdateCustomerJob, savePrice, saveCustomers, getCustomerById }) => {
-          await saveCustomers(customerDocument, blacklistedCustomer);
-          await savePrice(priceDocument);
-          const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), jobName, request);
-          expect(res).toBeNoContentResponse();
-          expect(request).toHaveBeenUpdatedInCustomerJobs(jobName, customerDocument, await getCustomerById(getCustomerId(customerDocument)));
-        });
+        test.describe('should update customer job', () => {
+          test('with complete body', async ({ requestUpdateCustomerJob, savePrice, saveCustomers, getCustomerById }) => {
+            await saveCustomers(customerDocument, blacklistedCustomer);
+            await savePrice(priceDocument);
+            const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), jobName, request);
+            expect(res).toBeNoContentResponse();
+            expect(request).toHaveBeenUpdatedInCustomerJobs(jobName, customerDocument, await getCustomerById(getCustomerId(customerDocument)));
+          });
+
+          test('unsetting description', async ({ requestUpdateCustomerJob, savePrice, saveCustomers, getCustomerById }) => {
+            await saveCustomers(customerDocument, blacklistedCustomer);
+            await savePrice(priceDocument);
+
+            delete request.description;
+
+            const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), jobName, request);
+            expect(res).toBeNoContentResponse();
+            expect(request).toHaveBeenUpdatedInCustomerJobs(jobName, customerDocument, await getCustomerById(getCustomerId(customerDocument)));
+          });
+
+          test('unsetting additionalPrice', async ({ requestUpdateCustomerJob, savePrice, saveCustomers, getCustomerById }) => {
+            await saveCustomers(customerDocument, blacklistedCustomer);
+            await savePrice(priceDocument);
+
+            delete request.additionalPrice;
+
+            const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), jobName, request);
+            expect(res).toBeNoContentResponse();
+            expect(request).toHaveBeenUpdatedInCustomerJobs(jobName, customerDocument, await getCustomerById(getCustomerId(customerDocument)));
+          });
+        });        
 
         test.describe('should return error', () => {        
           test.describe('if body', () => {
@@ -135,29 +149,36 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different job on the same customer', async ({ requestUpdateCustomerJob, saveCustomer }) => {
-              const existingJobName = 'job name already used';
+            test('is already in use by a different job on the same customer', async ({ requestUpdateCustomerJob, saveCustomer, savePrice }) => {
+              const existingJobName = 'job to update';
               const customerDocument = customerDataFactory.document({
                 jobs: [
-                  {},
                   {
                     body: {
                       name: existingJobName,
                     },
+                    prices: [
+                      {
+                        price: priceDocument,
+                      },
+                    ],
+                  },
+                  {
+                    body: {
+                      name: request.name,
+                    },
+                    prices: [
+                      {
+                        price: priceDocument,
+                      },
+                    ],
                   },
                 ],
               });
 
-              jobName = customerDocument.jobs[0].name;
-
-              request = customerDataFactory.jobRequest({
-                body: {
-                  name: existingJobName,
-                },
-              });
-
               await saveCustomer(customerDocument);
-              const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), jobName, request);
+              await savePrice(priceDocument);
+              const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), existingJobName, request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate customer job name');
             });
@@ -274,13 +295,11 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
           test.describe('if prices[0].priceId', () => {
             test('is missing', async ({ requestUpdateCustomerJob }) => {
               const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      priceId: undefined, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: undefined, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('body', 'priceId');
@@ -288,13 +307,11 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
 
             test('is not string', async ({ requestUpdateCustomerJob }) => {
               const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      priceId: <any>1, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: <any>1, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'priceId', 'string');
@@ -302,13 +319,11 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
 
             test('is not mongo id', async ({ requestUpdateCustomerJob }) => {
               const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      priceId: <any>'not mongo id', 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: <any>'not mongo id', 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'priceId');
@@ -318,13 +333,11 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
               await saveCustomer(customerDocument);
               await savePrice(priceDocument);
               const res = await requestUpdateCustomerJob(getCustomerId(customerDocument), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      priceId: priceDataFactory.id(), 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: priceDataFactory.id(), 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Some of the prices are not found');
@@ -334,118 +347,38 @@ test.describe('PUT customer/v1/customers/{customerId}/jobs/{jobName}', () => {
           test.describe('if prices[0].quantity', () => {
             test('is missing', async ({ requestUpdateCustomerJob }) => {
               const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      quantity: undefined, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    quantity: undefined, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('body', 'quantity');
             });
 
-            test('is not integer', async ({ requestUpdateCustomerJob }) => {
+            test('is not number', async ({ requestUpdateCustomerJob }) => {
               const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      quantity: <any>1.1, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    quantity: <any>'1', 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'integer');
+              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
             test('is too small', async ({ requestUpdateCustomerJob }) => {
               const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      quantity: 0, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    quantity: 0, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
-            });
-          });
-
-          test.describe('if prices[0].name', () => {
-            test('is missing', async ({ requestUpdateCustomerJob }) => {
-              const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  custom: [
-                    {
-                      name: undefined, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
-            });
-
-            test('is not string', async ({ requestUpdateCustomerJob }) => {
-              const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  custom: [
-                    {
-                      name: <any>1, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
-            });
-
-            test('is too short', async ({ requestUpdateCustomerJob }) => {
-              const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  custom: [
-                    {
-                      name: '', 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'name', 1);
-            });
-          });
-
-          test.describe('if prices[0].amount', () => {
-            test('is missing', async ({ requestUpdateCustomerJob }) => {
-              const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  custom: [
-                    {
-                      amount: undefined, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
-            });
-
-            test('is not integer', async ({ requestUpdateCustomerJob }) => {
-              const res = await requestUpdateCustomerJob(customerDataFactory.id(), jobName, customerDataFactory.jobRequest({
-                prices: {
-                  custom: [
-                    {
-                      amount: <any>1.1, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'integer');
             });
           });
 

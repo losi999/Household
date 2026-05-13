@@ -27,30 +27,21 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
     customerDocument = customerDataFactory.document({
       jobs: [
         {
-          prices: {
-            custom: [{}],
-            listed: [
-              {
-                price: priceDocument,
-              },
-            ],
-          },
+          prices: [
+            {
+              price: priceDocument,
+            },
+          ],
         },
       ],
     });
 
     request = customerDataFactory.jobRequest({
-      prices: {
-        custom: [
-          {},
-          {},
-        ],
-        listed: [
-          {
-            priceId: getPriceId(priceDocument),
-          },
-        ],
-      },
+      prices: [
+        {
+          priceId: getPriceId(priceDocument),
+        },
+      ],
     });
   });
 
@@ -75,12 +66,36 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should add customer job', async ({ requestCreateCustomerJob, savePrice, saveCustomer, getCustomerById }) => {
-          await saveCustomer(customerDocument);
-          await savePrice(priceDocument);
-          const res = await requestCreateCustomerJob(getCustomerId(customerDocument), request);
-          expect(res).toBeCreatedResponse();
-          expect(request).toHaveBeenAddedToCustomerJobs(customerDocument, await getCustomerById(getCustomerId(customerDocument)));
+        test.describe('should add customer job', () => {
+          test('with complete body', async ({ requestCreateCustomerJob, savePrice, saveCustomer, getCustomerById }) => {
+            await saveCustomer(customerDocument);
+            await savePrice(priceDocument);
+            const res = await requestCreateCustomerJob(getCustomerId(customerDocument), request);
+            expect(res).toBeCreatedResponse();
+            expect(request).toHaveBeenAddedToCustomerJobs(customerDocument, await getCustomerById(getCustomerId(customerDocument)));
+          });
+
+          test('without description', async ({ requestCreateCustomerJob, savePrice, saveCustomer, getCustomerById }) => {
+            await saveCustomer(customerDocument);
+            await savePrice(priceDocument);
+
+            delete request.description;
+
+            const res = await requestCreateCustomerJob(getCustomerId(customerDocument), request);
+            expect(res).toBeCreatedResponse();
+            expect(request).toHaveBeenAddedToCustomerJobs(customerDocument, await getCustomerById(getCustomerId(customerDocument)));
+          });
+
+          test('without additionalPrice', async ({ requestCreateCustomerJob, savePrice, saveCustomer, getCustomerById }) => {
+            await saveCustomer(customerDocument);
+            await savePrice(priceDocument);
+
+            delete request.additionalPrice;
+
+            const res = await requestCreateCustomerJob(getCustomerId(customerDocument), request);
+            expect(res).toBeCreatedResponse();
+            expect(request).toHaveBeenAddedToCustomerJobs(customerDocument, await getCustomerById(getCustomerId(customerDocument)));
+          });
         });
 
         test.describe('should return error', () => {
@@ -127,18 +142,24 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different job on the same customer', async ({ requestCreateCustomerJob, saveCustomer }) => {
+            test('is already in use by a different job on the same customer', async ({ requestCreateCustomerJob, saveCustomer, savePrice }) => {
               const customerDocument = customerDataFactory.document({
                 jobs: [
                   {
                     body: {
                       name: request.name,
                     },
+                    prices: [
+                      {
+                        price: priceDocument,
+                      },
+                    ],
                   },
                 ],
               });
 
               await saveCustomer(customerDocument);
+              await savePrice(priceDocument);
               const res = await requestCreateCustomerJob(getCustomerId(customerDocument), request);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Duplicate customer job name');
@@ -256,13 +277,11 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
           test.describe('if prices[0].priceId', () => {
             test('is missing', async ({ requestCreateCustomerJob }) => {
               const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      priceId: undefined, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: undefined, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('body', 'priceId');
@@ -270,13 +289,11 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
 
             test('is not string', async ({ requestCreateCustomerJob }) => {
               const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      priceId: <any>1, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: <any>1, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'priceId', 'string');
@@ -284,13 +301,11 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
 
             test('is not mongo id', async ({ requestCreateCustomerJob }) => {
               const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      priceId: <any>'not mongo id', 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: <any>'not mongo id', 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'priceId');
@@ -300,13 +315,11 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
               await saveCustomer(customerDocument);
               await savePrice(priceDocument);
               const res = await requestCreateCustomerJob(getCustomerId(customerDocument), customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      priceId: priceDataFactory.id(), 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    priceId: priceDataFactory.id(), 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Some of the prices are not found');
@@ -316,118 +329,38 @@ test.describe('POST customer/v1/customers/{customerId}/jobs', () => {
           test.describe('if prices[0].quantity', () => {
             test('is missing', async ({ requestCreateCustomerJob }) => {
               const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      quantity: undefined, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    quantity: undefined, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('body', 'quantity');
             });
 
-            test('is not integer', async ({ requestCreateCustomerJob }) => {
+            test('is not number', async ({ requestCreateCustomerJob }) => {
               const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      quantity: <any>1.1, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    quantity: <any> '1', 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'integer');
+              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
             test('is too small', async ({ requestCreateCustomerJob }) => {
               const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  listed: [
-                    {
-                      quantity: 0, 
-                    }, 
-                  ], 
-                }, 
+                prices: [
+                  {
+                    quantity: 0, 
+                  }, 
+                ], 
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
-            });
-          });
-
-          test.describe('if prices[0].name', () => {
-            test('is missing', async ({ requestCreateCustomerJob }) => {
-              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  custom: [
-                    {
-                      name: undefined, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
-            });
-
-            test('is not string', async ({ requestCreateCustomerJob }) => {
-              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  custom: [
-                    {
-                      name: <any>1, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
-            });
-
-            test('is too short', async ({ requestCreateCustomerJob }) => {
-              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  custom: [
-                    {
-                      name: '', 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'name', 1);
-            });
-          });
-
-          test.describe('if prices[0].amount', () => {
-            test('is missing', async ({ requestCreateCustomerJob }) => {
-              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  custom: [
-                    {
-                      amount: undefined, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
-            });
-
-            test('is not integer', async ({ requestCreateCustomerJob }) => {
-              const res = await requestCreateCustomerJob(customerDataFactory.id(), customerDataFactory.jobRequest({
-                prices: {
-                  custom: [
-                    {
-                      amount: <any>1.1, 
-                    }, 
-                  ], 
-                }, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'integer');
             });
           });
 

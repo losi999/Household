@@ -5,6 +5,7 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use strict type checking
 - Prefer type inference when the type is obvious
 - Avoid the `any` type; use `unknown` when type is uncertain
+- Use absolute imports (path aliases) instead of relative imports whenever possible
 
 ## Angular Best Practices
 

@@ -58,10 +58,7 @@ export const calendarEntryDataFactory = (() => {
   const createCalendarWorkEntryDocument = (ctx?: {
     body?: Omit<Partial<Calendar.Entry.WorkEntryRequest>, 'entryType'>;
     customer: Customer.Document;
-    prices?: {
-      custom?: Partial<Price.Base>[];
-      listed?: (Partial<Customer.Job.Quantity> & {price: Price.Document})[];
-    };
+    prices?: (Partial<Customer.Job.Quantity> & {price: Price.Document})[];
     resolution?: {
       transaction?: Transaction.PaymentDocument;
     } & Partial<Calendar.Entry.Delay>
@@ -75,18 +72,15 @@ export const calendarEntryDataFactory = (() => {
             ...ctx?.body,
             customerId: getCustomerId(ctx?.customer),
           },
-          prices: {
-            custom: ctx?.prices?.custom,
-            listed: ctx?.prices?.listed?.map(({ price, ...rest }) => {
-              return {
-                priceId: getPriceId(price),
-                ...rest,
-              };
-            }),
-          },
+          prices: ctx?.prices?.map(({ price, ...rest }) => {
+            return {
+              priceId: getPriceId(price),
+              ...rest,
+            };
+          }),
         }),
         customer: ctx?.customer,
-        prices: ctx?.prices?.listed?.map((p) => p.price) ?? [],
+        prices: ctx?.prices?.map((p) => p.price) ?? [],
       }, Number(process.env.EXPIRES_IN), true),
       resolution: ctx?.resolution ? {
         status: ctx?.resolution.transaction ? CalendarEntryResolutionStatus.Paid : ctx.resolution.status ?? CalendarEntryResolutionStatus.Paid,

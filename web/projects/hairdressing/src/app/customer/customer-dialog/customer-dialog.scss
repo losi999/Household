@@ -1,0 +1,24 @@
+@use '@angular/material' as mat;
+
+.rating {
+  display: flex;
+  justify-content: space-around;
+  height: 44px;
+
+  button {
+    @include mat.fab-overrides(
+      (
+        small-container-color: var(--mat-sys-surface-variant),
+        small-container-shape: var(--mat-sys-corner-full),
+      )
+    );
+    &.selected {
+      @include mat.fab-overrides(
+        (
+          small-container-color: var(--mat-sys-primary),
+          small-foreground-color: var(--mat-sys-on-primary),
+        )
+      );
+    }
+  }
+}

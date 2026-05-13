@@ -4,7 +4,6 @@ import { default as customerId } from '@household/shared/schemas/customer-id';
 import { default as customer } from '@household/shared/schemas/customer-request';
 import { default as name } from '@household/shared/schemas/partials/customer-job-name';
 import { default as quantity } from '@household/shared/schemas/partials/customer-job-quantity';
-import { default as priceBase } from '@household/shared/schemas/partials/price-base';
 import { default as price } from '@household/test/schemas/price-response';
 
 const schema: StrictJSONSchema7<Customer.Response> = {
@@ -37,36 +36,23 @@ const schema: StrictJSONSchema7<Customer.Response> = {
             type: 'integer',
             exclusiveMinimum: 0,
           },
+          additionalPrice: {
+            type: 'integer',
+          },
           prices: {
             type: 'array',
             minItems: 1,
             items: {
-              oneOf: [
-                {
-                  type: 'object',
-                  additionalProperties: false,
-                  required: [
-                    ...price.required,
-                    ...quantity.required,
-                  ],
-                  properties: {
-                    ...price.properties,
-                    ...quantity.properties,
-                  },
-                },
-                {
-                  type: 'object',
-                  additionalProperties: false,
-                  required: [...priceBase.required],
-                  properties: {
-                    ...priceBase.properties,
-                    amount: {
-                      ...priceBase.properties.amount,
-                      exclusiveMinimum: undefined,
-                    },
-                  },
-                },
+              type: 'object',
+              additionalProperties: false,
+              required: [
+                ...price.required,
+                ...quantity.required,
               ],
+              properties: {
+                ...price.properties,
+                ...quantity.properties,
+              },
             },
           },
           description: {
