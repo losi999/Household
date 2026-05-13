@@ -35,7 +35,13 @@
             ]
           },
           "configurations": {
-            "production": {
+            "PROD": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/hairdressing/src/environments/environment.ts",
+                  "with": "projects/hairdressing/src/environments/environment.PROD.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -50,25 +56,42 @@
               ],
               "outputHashing": "all"
             },
-            "development": {
+            "DEV": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/hairdressing/src/environments/environment.ts",
+                  "with": "projects/hairdressing/src/environments/environment.DEV.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            },
+            "LOCAL": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/hairdressing/src/environments/environment.ts",
+                  "with": "projects/hairdressing/src/environments/environment.LOCAL.ts"
+                }
+              ],
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "PROD"
         },
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
-            "production": {
-              "buildTarget": "hairdressing:build:production"
+            "LOCAL": {
+              "buildTarget": "hairdressing:build:LOCAL"
             },
-            "development": {
-              "buildTarget": "hairdressing:build:development"
+            "PROD": {
+              "buildTarget": "hairdressing:build:PROD"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "LOCAL"
         },
         "test": {
           "builder": "@angular/build:unit-test"
