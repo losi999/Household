@@ -319,46 +319,68 @@ workflows:
             - api_deploy
           filters: pipeline.git.branch != "master" and pipeline.parameters.skip_api_tests != true
       - test:
-          serial-group: api-test1
           matrix:
             parameters:
               testCommand:
-                ["transaction-common", "transaction-payment", "product"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test2
-          matrix:
-            parameters:
-              testCommand: ["customer", "category", "price"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test3
-          matrix:
-            parameters:
-              testCommand: ["calendar", "account", "file"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test4
-          matrix:
-            parameters:
-              testCommand:
-                ["transaction-reimbursement", "project", "transaction-transfer"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test5
-          matrix:
-            parameters:
-              testCommand: ["transaction-split", "recipient", "setting"]
-          requires:
-            - api_test_setup
-      - test:
-          serial-group: api-test6
-          matrix:
-            parameters:
-              testCommand: ["transaction-deferred", "user", "transaction-draft"]
-          requires:
-            - api_test_setup
+                - "transaction-common"
+                - "transaction-payment"
+                - "product"
+                - "customer"
+                - "category"
+                - "price"
+                - "calendar"
+                - "account"
+                - "file"
+                - "transaction-reimbursement"
+                - "project"
+                - "transaction-transfer"
+                - "transaction-split"
+                - "recipient"
+                - "setting"
+                - "transaction-deferred"
+                - "user"
+                - "transaction-draft"
+      # - test:
+      #     serial-group: api-test1
+      #     matrix:
+      #       parameters:
+      #         testCommand:
+      #           ["transaction-common", "transaction-payment", "product"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test2
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["customer", "category", "price"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test3
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["calendar", "account", "file"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test4
+      #     matrix:
+      #       parameters:
+      #         testCommand:
+      #           ["transaction-reimbursement", "project", "transaction-transfer"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test5
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["transaction-split", "recipient", "setting"]
+      #     requires:
+      #       - api_test_setup
+      # - test:
+      #     serial-group: api-test6
+      #     matrix:
+      #       parameters:
+      #         testCommand: ["transaction-deferred", "user", "transaction-draft"]
+      #     requires:
+      #       - api_test_setup
