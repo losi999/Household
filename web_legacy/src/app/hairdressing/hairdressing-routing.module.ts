@@ -8,10 +8,6 @@ const routes: Routes = [
     component: HairdressingIncomeHomeComponent,
   },
   {
-    path: 'calendar',
-    loadChildren: () => import('@household/web/app/hairdressing/calendar/calendar.module').then(m => m.CalendarModule),
-  },
-  {
     path: '**',
     redirectTo: 'income',
   },

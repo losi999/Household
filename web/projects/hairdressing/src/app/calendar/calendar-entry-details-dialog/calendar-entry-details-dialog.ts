@@ -17,7 +17,6 @@ export enum CalendarEntryDetailsDialogResult {
 }
 
 @Component({
-  selector: 'hairdressing-calendar-entry-details-dialog',
   imports: [
     MatDialogModule,
     IconText,

@@ -38,10 +38,10 @@ export class CalendarWorkdayDialog {
   private dialogRef = inject<MatDialogRef<CalendarWorkdayDialog, CalendarWorkdayDialogResult>>(MatDialogRef);
   day = inject<CalendarWorkdayDialogData>(MAT_DIALOG_DATA);
 
-  start = model<number>(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_START : this.day.start ?? WORKDAY_START);
-  end = model<number>(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_END : this.day.end ?? WORKDAY_END);
-  dayType = model<CalendarDayType>(this.day.dayType !== CalendarDayType.Weekend ? this.day.dayType : CalendarDayType.Workday);
   shiftType = model(ShiftType.Custom);
+  start = model<number>();
+  end = model<number>();
+  dayType = model<CalendarDayType>(this.day.dayType !== CalendarDayType.Weekend ? this.day.dayType : CalendarDayType.Workday);
 
   constructor() {
     effect(() => {
@@ -55,9 +55,8 @@ export class CalendarWorkdayDialog {
           this.end.set(AFTERNOON_SHIFT_END);
         } break;
         case ShiftType.Custom: {
-
-          this.start.set(WORKDAY_START);
-          this.end.set(WORKDAY_END);
+          this.start.set(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_START : this.day.start);
+          this.end.set(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_END : this.day.end);
         } break;
       }
     });

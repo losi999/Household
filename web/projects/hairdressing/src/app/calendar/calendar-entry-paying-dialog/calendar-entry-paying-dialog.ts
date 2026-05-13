@@ -15,7 +15,6 @@ export type CalendarEntryPayingDialogData = Calendar.Entry.WorkEntryResponse;
 export type CalendarEntryPayingDialogResult = Calendar.Entry.ResolutionRequest;
 
 @Component({
-  selector: 'hairdressing-calendar-entry-paying-dialog',
   imports: [
     MatDialogModule,
     MatButtonModule,

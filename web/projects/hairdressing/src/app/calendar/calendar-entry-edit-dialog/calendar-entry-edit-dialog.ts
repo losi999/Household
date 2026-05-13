@@ -26,7 +26,6 @@ export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
 export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
 
 @Component({
-  selector: 'hairdressing-calendar-entry-edit-dialog',
   imports: [
     MatDialogModule,
     MatButtonModule,
