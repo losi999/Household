@@ -1,11 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { RouterModule } from '@angular/router';
 import { MatDividerModule } from '@angular/material/divider';
-import { Store } from '@ngrx/store';
-import { authActions } from '@household/shared-ui';
+import { authEvents } from '@household/shared-ui';
+import { injectDispatch } from '@ngrx/signals/events';
 
 @Component({
   selector: 'hairdressing-main-menu',
@@ -20,9 +20,9 @@ import { authActions } from '@household/shared-ui';
   styleUrl: './main-menu.scss',
 })
 export class MainMenu {
-  private store = inject(Store);
+  private authEvents = injectDispatch(authEvents);
 
   logOut() {
-    this.store.dispatch(authActions.logOut());    
+    this.authEvents.logOut();    
   }
 }

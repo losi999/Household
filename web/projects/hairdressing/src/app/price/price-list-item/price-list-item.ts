@@ -1,10 +1,10 @@
-import { Component, effect, inject, input, Signal } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
-import { priceActions } from '@hairdressing/state/price/price-actions';
-import { selectPriceIsInProgress } from '@hairdressing/state/price/price-selector';
+import { priceEvents } from '@hairdressing/state/price/price-events';
+import { PriceStore } from '@hairdressing/state/price/price-store';
 import { Price } from '@household/shared/types/types';
-import { Store } from '@ngrx/store';
+import { injectDispatch } from '@ngrx/signals/events';
 
 @Component({
   selector: 'hairdressing-price-list-item',
@@ -17,18 +17,14 @@ import { Store } from '@ngrx/store';
 })
 export class PriceListItem {
   price = input.required<Price.Response>();
+  private priceEvents = injectDispatch(priceEvents);
+  private readonly priceStore = inject(PriceStore);
   
-  private store = inject(Store);
-  
-  isDisabled: Signal<boolean>;
-
-  constructor() {
-    effect(() => {
-      this.isDisabled = this.store.selectSignal(selectPriceIsInProgress(this.price().priceId));
-    });
-  }
+  isDisabled = computed(() => {
+    return this.priceStore.isInProgress().includes(this.price().priceId);
+  });
   
   onShowMenu() {
-    this.store.dispatch(priceActions.openPriceListItemSubmenu(this.price()));
+    this.priceEvents.openPriceListItemSubmenu(this.price());
   }
 }

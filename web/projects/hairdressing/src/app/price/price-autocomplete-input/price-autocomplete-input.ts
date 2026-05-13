@@ -1,16 +1,16 @@
-import { Component, effect, inject, input, model, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, model, signal } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { Store } from '@ngrx/store';
 import { Price } from '@household/shared/types/types';
-import { selectPriceList } from '@hairdressing/state/price/price-selector';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 import { FormsModule } from '@angular/forms';
-import { priceActions } from '@hairdressing/state/price/price-actions';
 import { SignalErrorStateMatcher } from '@household/shared-ui';
+import { PriceStore } from '@hairdressing/state/price/price-store';
+import { injectDispatch } from '@ngrx/signals/events';
+import { priceEvents } from '@hairdressing/state/price/price-events';
 
 @Component({
   selector: 'hairdressing-price-autocomplete-input',
@@ -26,6 +26,9 @@ import { SignalErrorStateMatcher } from '@household/shared-ui';
   styleUrl: './price-autocomplete-input.scss',
 })
 export class PriceAutocompleteInput implements FormValueControl<Price.Response> {
+  private priceStore = inject(PriceStore);
+  private priceEvents = injectDispatch(priceEvents);
+
   value = model<Price.Response>();
 
   touched = model<boolean>(false);
@@ -38,13 +41,24 @@ export class PriceAutocompleteInput implements FormValueControl<Price.Response> 
   
   matcher = new SignalErrorStateMatcher(this.touched);
 
-  private store = inject(Store);
-
-  private prices = this.store.selectSignal(selectPriceList);
-
   filterValue = signal<string>('');
 
-  filteredPrices = signal<Price.Response[]>([]);
+  filteredPrices = computed(() => {
+    return this.priceStore.priceList()?.filter((c) => {        
+      if (this.exclude()?.includes(c.priceId)) {
+        return false;
+      }
+      const terms = this.filterValue().toLowerCase()
+        .split(' ');
+        
+      if (terms.every(t => c.searchTerms?.some(s => s.includes(t)))) {
+        return true;
+      }
+        
+      return false;
+        
+    }) ?? [];
+  });
 
   constructor() {
     effect(() => {
@@ -53,25 +67,6 @@ export class PriceAutocompleteInput implements FormValueControl<Price.Response> 
     
     effect(() => {
       this.filterValue.set(this.value()?.name ?? '');
-    });
-    
-    effect(() => {
-      const filteredPrices = this.prices()?.filter((c) => {        
-        if (this.exclude()?.includes(c.priceId)) {
-          return false;
-        }
-        const terms = this.filterValue().toLowerCase()
-          .split(' ');
-        
-        if (terms.every(t => c.searchTerms?.some(s => s.includes(t)))) {
-          return true;
-        }
-        
-        return false;
-        
-      }) ?? [];
-      this.filteredPrices.set(filteredPrices);
-    
     });
   }
 
@@ -92,7 +87,7 @@ export class PriceAutocompleteInput implements FormValueControl<Price.Response> 
   }
 
   create(event: MouseEvent) {
-    this.store.dispatch(priceActions.createPrice());
+    this.priceEvents.createPrice();
     event.stopPropagation();
   }
 }

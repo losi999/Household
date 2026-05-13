@@ -1,7 +1,7 @@
-import { inject } from '@angular/core/primitives/di';
+import { inject } from '@angular/core';
 import { CanMatchFn } from '@angular/router';
-import { AuthService, navigationActions } from '@household/shared-ui';
-import { Store } from '@ngrx/store';
+import { AuthService, navigationEvents } from '@household/shared-ui';
+import { injectDispatch } from '@ngrx/signals/events';
 
 export const authenticatedGuard: CanMatchFn = (route) => {
   const authService = inject(AuthService);
@@ -9,7 +9,7 @@ export const authenticatedGuard: CanMatchFn = (route) => {
     return true;
   }
 
-  const store = inject(Store);
-  store.dispatch(navigationActions.loggedOutHomepage());
+  const navigationEventsDispathcer = injectDispatch(navigationEvents);
+  navigationEventsDispathcer.loggedOutHomepage();
   return false;
 };

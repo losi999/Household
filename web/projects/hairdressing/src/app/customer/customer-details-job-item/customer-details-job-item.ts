@@ -6,9 +6,9 @@ import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
 import { Customer } from '@household/shared/types/types';
-import { Store } from '@ngrx/store';
 import { JobPriceSummary } from '@hairdressing/app/shared/job-price-summary/job-price-summary';
-import { customerActions } from '@hairdressing/state/customer/customer-actions';
+import { injectDispatch } from '@ngrx/signals/events';
+import { customerEvents } from '@hairdressing/state/customer/customer-events';
 
 @Component({
   selector: 'hairdressing-customer-details-job-item',
@@ -25,23 +25,24 @@ import { customerActions } from '@hairdressing/state/customer/customer-actions';
   styleUrl: './customer-details-job-item.scss',
 })
 export class CustomerDetailsJobItem {
-  private store = inject(Store);
+  private customerEvents = injectDispatch(customerEvents);
   private activatedRoute = inject(ActivatedRoute);
+  
   customerId: Customer.Id = this.activatedRoute.snapshot.paramMap.get('customerId') as Customer.Id;
   job = input.required<Customer.Job.Response>();
 
   onEdit() {
-    this.store.dispatch(customerActions.updateCustomerJob({
+    this.customerEvents.updateCustomerJob({
       customerId: this.customerId,
       ...this.job(),
-    }));
+    });
   }
 
   onDelete() {
-    this.store.dispatch(customerActions.deleteCustomerJob({
+    this.customerEvents.deleteCustomerJob({
       customerId: this.customerId,
       name: this.job().name,
-    }));
+    });
   }
 
 }

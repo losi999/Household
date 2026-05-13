@@ -18,9 +18,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { v4 } from 'uuid';
 import { CalendarHorizontalDay } from '@hairdressing/app/calendar/calendar-horizontal-day/calendar-horizontal-day';
 import { LimitedCalendarDay } from '@hairdressing/types';
-import { Store } from '@ngrx/store';
-import { selectCalendar } from '@hairdressing/state/calendar/calendar-selector';
-import { calendarActions } from '@hairdressing/state/calendar/calendar-actions';
+import { CalendarStore } from '@hairdressing/state/calendar/calendar-store';
+import { injectDispatch } from '@ngrx/signals/events';
+import { calendarEvents } from '@hairdressing/state/calendar/calendar-events';
 
 export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
 export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
@@ -47,7 +47,8 @@ export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
   styleUrl: './calendar-entry-edit-dialog.scss',
 })
 export class CalendarEntryEditDialog {
-  private store = inject(Store);
+  private calendarStore = inject(CalendarStore);
+  private calendarEvents = injectDispatch(calendarEvents);
   private dialogRef = inject<MatDialogRef<CalendarEntryEditDialog, CalendarEntryEditDialogResult>>(MatDialogRef);
   entry = inject<CalendarEntryEditDialogData>(MAT_DIALOG_DATA);
 
@@ -60,7 +61,6 @@ export class CalendarEntryEditDialog {
   };
 
   title = computed(() => {
-    console.log('dialog title computed');
     let title = '';
     switch(this.entry.entryType) {
       case CalendarEntryType.Issue: {
@@ -110,12 +110,12 @@ export class CalendarEntryEditDialog {
     }
   });
 
-  private calendar = this.store.selectSignal(selectCalendar);
+  start = model<number>(this.entry.start ?? dateToTimeSlot(new Date()));
+  duration = model<number>(this.entry.end - this.entry.start || 4);
 
   calendarDay = computed(() => {
     const date = this.entryForm.day().value();
-    console.log('calendar day computed', dateToISODateString(date));
-    const day = this.calendar()[dateToISODateString(date)];
+    const day = this.calendarStore.days()[dateToISODateString(date)];
 
     if (!day) {
       return day;
@@ -142,7 +142,6 @@ export class CalendarEntryEditDialog {
   });
 
   entryWarnings = computed(() => {
-    console.log('entry warnings computed');
     const errors = [];
     const end = this.start() + this.duration();
 
@@ -188,27 +187,23 @@ export class CalendarEntryEditDialog {
     return errors;
   });
 
-  start = model<number>(this.entry.start ?? dateToTimeSlot(new Date()));
-  duration = model<number>(this.entry.end - this.entry.start || 4);
-
   constructor() {
     effect(() => {
-      console.log('calendar day changed');
       if (!this.calendarDay()) {
-        this.store.dispatch(calendarActions.listCalendarMonth({
-          date: this.entryForm.day().value(),
-        }));
+        this.calendarEvents.listCalendarMonth(this.entryForm.day().value());
       }
     });
 
     effect(() => {
-      console.log('duration changed');
       this.start.set(Math.min(96 - this.duration(), this.start()));
     });
 
     effect(() => {
+      if (this.entry.entryType !== CalendarEntryType.Work) {
+        return;
+      }
+      
       const selectedCustomer = this.entryForm.customer().value();
-      console.log('customer changed', selectedCustomer);
 
       if (!selectedCustomer) {
         this.entryForm.job().value.set(null);
@@ -217,8 +212,10 @@ export class CalendarEntryEditDialog {
     });
 
     effect(() => {
+      if (this.entry.entryType !== CalendarEntryType.Work) {
+        return;
+      }
       const selectedJob = this.entryForm.job().value();
-      console.log('job changed', selectedJob);
 
       if (!selectedJob) {
         this.entryForm.title().reset(null);
@@ -227,13 +224,11 @@ export class CalendarEntryEditDialog {
       }
       this.duration.set(selectedJob.duration);
 
-      if (selectedJob?.name !== this.CUSTOM_JOB.name) {
+      if (selectedJob.name !== this.CUSTOM_JOB.name) {
         const newTitle = createWorkEntryTitle(this.entryForm.customer().value(), selectedJob);
-        console.log('new title', newTitle);
         this.entryForm.title().value.set(newTitle);
       } else {
         const newTitle = createWorkEntryTitle(this.entryForm.customer().value());
-        console.log('new title', newTitle);
         this.entryForm.title().value.set(newTitle);
       }
     });
@@ -243,9 +238,6 @@ export class CalendarEntryEditDialog {
     Object.values(this.entryForm).forEach(field => {
       field().markAsTouched();
     });
-
-    console.log(this.entryForm().value());
-    console.log(this.entryForm().errorSummary());
 
     if (this.entryForm().valid()) {
       if (this.entry.entryType === CalendarEntryType.Work) {

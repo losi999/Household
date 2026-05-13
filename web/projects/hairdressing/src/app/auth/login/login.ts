@@ -1,12 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { email, form, FormField, minLength, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { Toolbar } from '@hairdressing/app/shared/toolbar/toolbar';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { Store } from '@ngrx/store';
-import { authActions } from '@household/shared-ui';
+import { authEvents } from '@household/shared-ui';
 import { UserType } from '@household/shared/enums';
+import { injectDispatch } from '@ngrx/signals/events';
 
 @Component({
   selector: 'hairdressing-login',
@@ -21,7 +21,7 @@ import { UserType } from '@household/shared/enums';
   styleUrls: ['./login.scss'],
 })
 export class Login {
-  private store = inject(Store);
+  private authEvents = injectDispatch(authEvents);
 
   loginModel = signal({
     email: '',
@@ -45,11 +45,11 @@ export class Login {
 
   onSubmit(): void {    
     if (this.loginForm().valid()) {
-      this.store.dispatch(authActions.logInInitiated({
+      this.authEvents.logInInitiated({
         email: this.loginForm.email().value(),
         password: this.loginForm.password().value(),
         requiredUserType: UserType.Hairdresser,
-      }));
+      });
     }
   }
 }

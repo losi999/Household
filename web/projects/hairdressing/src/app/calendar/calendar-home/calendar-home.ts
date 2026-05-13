@@ -4,21 +4,23 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Toolbar } from '@hairdressing/app/shared/toolbar/toolbar';
-import { customerApiActions } from '@hairdressing/state/customer/customer-actions';
-import { priceApiActions } from '@hairdressing/state/price/price-actions';
-import { navigationActions } from '@household/shared-ui';
-import { timeSlotToTimeString } from '@household/shared/common/utils';
+import { navigationEvents } from '@household/shared-ui';
+import { addDays, dateToISODateString, timeSlotToTimeString } from '@household/shared/common/utils';
 import { CalendarEntryType } from '@household/shared/enums';
-import { Store } from '@ngrx/store';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { calendarActions } from '@hairdressing/state/calendar/calendar-actions';
 import { DatePipe, KeyValuePipe } from '@angular/common';
-import { Calendar } from '@household/shared/types/types';
-import { selectCalendarWeek } from '@hairdressing/state/calendar/calendar-selector';
-import { getISOWeek, lastDayOfISOWeekYear } from 'date-fns';
+import { Calendar, Customer } from '@household/shared/types/types';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
-import { selectPendingCustomerJob } from '@hairdressing/state/customer/customer-selector';
 import { CalendarVerticalDay } from '../calendar-vertical-day/calendar-vertical-day';
+import { injectDispatch } from '@ngrx/signals/events';
+import { priceApiEvents } from '@hairdressing/state/price/price-events';
+import { customerApiEvents } from '@hairdressing/state/customer/customer-events';
+import { CustomerStore } from '@hairdressing/state/customer/customer-store';
+import { CalendarWeek, CustomerJob } from '@hairdressing/types';
+import { calendarEvents } from '@hairdressing/state/calendar/calendar-events';
+import { CalendarStore } from '@hairdressing/state/calendar/calendar-store';
+import { WORKDAY_START, WORKDAY_END } from '@household/shared/constants';
+import { lastDayOfISOWeekYear, startOfISOWeek, setISOWeek, getISOWeek } from 'date-fns';
 
 @Component({
   selector: 'hairdressing-calendar-home',
@@ -37,10 +39,22 @@ import { CalendarVerticalDay } from '../calendar-vertical-day/calendar-vertical-
   styleUrl: './calendar-home.scss',
 })
 export class CalendarHome {
-  private store = inject(Store);
+  private priceApiEvents = injectDispatch(priceApiEvents);
+  private customerApiEvents = injectDispatch(customerApiEvents);
+  private calendarEvents = injectDispatch(calendarEvents);
+  private navigationEvents = injectDispatch(navigationEvents);
+  private customerStore = inject(CustomerStore);
+  readonly calendarStore = inject(CalendarStore);
+  
   private activatedRoute = inject(ActivatedRoute);
 
-  private queryParams = toSignal<{week: string; year: string; weekOf: string;}>(this.activatedRoute.queryParams);
+  private queryParams = toSignal<{
+    week: string; 
+    year: string;
+    weekOf: string;
+    customerId: Customer.Id;
+    jobName: string;
+  }>(this.activatedRoute.queryParams);
 
   private today = new Date();
 
@@ -52,8 +66,65 @@ export class CalendarHome {
   private week = signal<number>(null);
   private year = signal<number>(null);
 
-  pendingCustomerJob = this.store.selectSignal(selectPendingCustomerJob);
-  daysOfWeek = this.store.selectSignal(selectCalendarWeek);
+  pendingCustomerJob = computed<CustomerJob>(() => {
+    const customer = this.customerStore.customerList().find(c => c.customerId === this.queryParams().customerId);
+    const job = customer?.jobs.find(j => j.name === this.queryParams().jobName);
+    if (!customer || !job) {
+      return undefined;
+    }
+    return {
+      customer,
+      ...job,
+    };
+  });
+  daysOfWeek = computed<CalendarWeek>(() => {
+    const weekOf = this.queryParams().weekOf ? new Date(this.queryParams().weekOf) : new Date();
+    const year = Number(this.queryParams().year) || weekOf.getFullYear();
+    const week = Number(this.queryParams().week) || getISOWeek(weekOf);
+    
+    const weekStart = startOfISOWeek(setISOWeek(new Date(year, 0), week));
+
+    return Array.from({
+      length: 7, 
+    }, (_, i) => i).reduce<CalendarWeek>((accumulator, _, index) => {
+      const d = dateToISODateString(addDays(index, weekStart));
+      const day = this.calendarStore.days()[d];
+    
+      if (day) {
+        let min = accumulator.start;
+        let max = accumulator.end;
+        day.entries.forEach((e) => {
+          if (e.start < min) {
+            min = e.start;
+          }
+          if (e.end > max) {
+            max = e.end;
+          }
+        });
+      
+        return {
+          start: min,
+          end: max,
+          days: {
+            ...accumulator.days,
+            [d]: day,
+          },
+        };
+      }
+    
+      return {
+        ...accumulator,
+        days: {
+          ...accumulator.days,
+          [d]: null,
+        },
+      };
+    }, {
+      start: WORKDAY_START,
+      end: WORKDAY_END,
+      days: {},
+    });
+  });
 
   calendarGridRows = computed(() => {
     const { start, end } = this.daysOfWeek();
@@ -88,15 +159,15 @@ export class CalendarHome {
   });
 
   constructor() {    
-    this.store.dispatch(customerApiActions.listCustomersInitiated());
-    this.store.dispatch(priceApiActions.listPricesInitiated());
+    this.customerApiEvents.listCustomersInitiated();
+    this.priceApiEvents.listPricesInitiated();
 
     effect(() => {
       if (this.year() && this.week()) {
-        this.store.dispatch(calendarActions.listCalendarWeek({
+        this.calendarEvents.listCalendarWeek({
           year: this.year(),
           week: this.week(),
-        }));
+        });
       }
     });
 
@@ -122,56 +193,56 @@ export class CalendarHome {
     
     if (newWeek < 1) {
       const newYear = this.year() - 1;
-      this.store.dispatch(navigationActions.changeCalendarWeek({
+      this.navigationEvents.changeCalendarWeek({
         year: newYear,
         week: getISOWeek(lastDayOfISOWeekYear(new Date(newYear, 0))),
         weekOf: undefined,
-      }));
+      });
     } else if (newWeek > this.lastISOWeekOfYear()) {
       const newYear = this.year() + 1;
-      this.store.dispatch(navigationActions.changeCalendarWeek({
+      this.navigationEvents.changeCalendarWeek({
         year: newYear,
         week: 1,
         weekOf: undefined,
-      }));
+      });
     } else {
-      this.store.dispatch(navigationActions.changeCalendarWeek({
+      this.navigationEvents.changeCalendarWeek({
         year: this.year() !== this.today.getFullYear() ? this.year() : undefined,
         week: this.week() + diff,
         weekOf: undefined,
-      }));
+      });
 
     }
 
   }
 
   onShowToday() {
-    this.store.dispatch(navigationActions.changeCalendarWeek({
+    this.navigationEvents.changeCalendarWeek({
       year: undefined,
       week: undefined,
       weekOf: undefined,
-    }));
+    });
   }
 
   onCreateWork() {
-    this.store.dispatch(calendarActions.createCalendarEntry({
+    this.calendarEvents.createCalendarEntry({
       entryType: CalendarEntryType.Work,
-    }));
+    });
   }
 
   onCreatePersonal() {
-    this.store.dispatch(calendarActions.createCalendarEntry({
+    this.calendarEvents.createCalendarEntry({
       entryType: CalendarEntryType.Personal,
-    }));
+    });
   }
 
   onCreateIssue() {
-    this.store.dispatch(calendarActions.createCalendarEntry({
+    this.calendarEvents.createCalendarEntry({
       entryType: CalendarEntryType.Issue,
-    }));
+    });
   }
 
   onSetWorkDay(day: Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>) {
-    this.store.dispatch(calendarActions.setWorkDay(day));
+    this.calendarEvents.setWorkDay(day);
   }
 }

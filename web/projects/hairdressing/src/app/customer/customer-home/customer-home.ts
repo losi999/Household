@@ -1,14 +1,14 @@
-import { Component, computed, inject, model, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, model, signal } from '@angular/core';
 import { Toolbar } from '@hairdressing/app/shared/toolbar/toolbar';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { Store } from '@ngrx/store';
-import { customerActions, customerApiActions } from '@hairdressing/state/customer/customer-actions';
-import { selectCustomerList } from '@hairdressing/state/customer/customer-selector';
 import { ClearableInput } from '@household/shared-ui';
 import { CustomerList } from '../customer-list/customer-list';
+import { CustomerStore } from '@hairdressing/state/customer/customer-store';
+import { injectDispatch } from '@ngrx/signals/events';
+import { customerApiEvents, customerEvents } from '@hairdressing/state/customer/customer-events';
 
 @Component({
   selector: 'hairdressing-customer-home',
@@ -24,15 +24,17 @@ import { CustomerList } from '../customer-list/customer-list';
   templateUrl: './customer-home.html',
   styleUrl: './customer-home.scss',
 })
-export class CustomerHome implements OnInit {
-  private store = inject(Store);
+export class CustomerHome {
+  readonly customerStore = inject(CustomerStore);
+  private customerApiEvents = injectDispatch(customerApiEvents);
+  private customerEvents = injectDispatch(customerEvents);
 
   showArchivedCustomers = signal(false);
+
   searchValue = model<string>('');
-  private customers = this.store.selectSignal(selectCustomerList);
 
   filteredCustomers = computed(() => {
-    return this.customers().filter((c) => {
+    return this.customerStore.customerList().filter((c) => {
       if (c.isArchived && !this.showArchivedCustomers()) {
         return false;
       }
@@ -48,12 +50,12 @@ export class CustomerHome implements OnInit {
     });
   });
 
-  ngOnInit(): void {
-    this.store.dispatch(customerApiActions.listCustomersInitiated());
+  constructor() {
+    this.customerApiEvents.listCustomersInitiated();
   }
 
   onCreate() {
-    this.store.dispatch(customerActions.createCustomer());
+    this.customerEvents.createCustomer();
   }
 
 }

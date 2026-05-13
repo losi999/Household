@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, model, signal } from '@angular/core';
+import { Component, computed, input, model, signal } from '@angular/core';
 import { FormValueControl, SchemaPath, validate, ValidationError } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
@@ -6,9 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MinutesToHourPipe } from '@hairdressing/app/pipes/minutes-to-hour-pipe';
 import { PriceAutocompleteInput } from '@hairdressing/app/price/price-autocomplete-input/price-autocomplete-input';
-import { selectPriceList } from '@hairdressing/state/price/price-selector';
 import { Price } from '@household/shared/types/types';
-import { Store } from '@ngrx/store';
 
 export const requiredPrices = (field: SchemaPath<JobPriceCalculatorValue>, min: number, config?: {message: string}) => {
   validate(field, (ctx) => {
@@ -51,10 +49,6 @@ export class JobPriceCalculator implements FormValueControl<JobPriceCalculatorVa
   errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
   touched = input(false);
   _touched = signal(false);
-
-  private store = inject(Store);
-
-  prices = this.store.selectSignal(selectPriceList);
 
   excludedPriceIds = computed(() => {
     return this.value().prices

@@ -3,15 +3,15 @@ import { Toolbar } from '@hairdressing/app/shared/toolbar/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ActivatedRoute } from '@angular/router';
-import { Store } from '@ngrx/store';
 import { Customer } from '@household/shared/types/types';
-import { customerActions, customerApiActions } from '@hairdressing/state/customer/customer-actions';
-import { priceApiActions } from '@hairdressing/state/price/price-actions';
-import { selectCustomerById, selectCustomerWorks } from '@hairdressing/state/customer/customer-selector';
 import { MatDividerModule } from '@angular/material/divider';
 import { IconText } from '@household/shared-ui';
 import { CustomerDetailsWorks } from '@hairdressing/app/customer/customer-details-works/customer-details-works';
 import { CustomerDetailsJobItem } from '@hairdressing/app/customer/customer-details-job-item/customer-details-job-item';
+import { CustomerStore } from '@hairdressing/state/customer/customer-store';
+import { priceApiEvents } from '@hairdressing/state/price/price-events';
+import { injectDispatch } from '@ngrx/signals/events';
+import { customerApiEvents, customerEvents } from '@hairdressing/state/customer/customer-events';
 
 @Component({
   selector: 'hairdressing-customer-details',
@@ -28,17 +28,21 @@ import { CustomerDetailsJobItem } from '@hairdressing/app/customer/customer-deta
   styleUrl: './customer-details.scss',
 })
 export class CustomerDetails {
+  private priceApiEvents = injectDispatch(priceApiEvents);
+  private customerApiEvents = injectDispatch(customerApiEvents);
+  private customerEvents = injectDispatch(customerEvents);
   private activatedRoute = inject(ActivatedRoute);
-  private store = inject(Store);
+  private customerStore = inject(CustomerStore);
 
   customerId = this.activatedRoute.snapshot.paramMap.get('customerId') as Customer.Id;
 
-  customer = this.store.selectSignal(selectCustomerById(this.customerId));
-  workEntries = this.store.selectSignal(selectCustomerWorks(this.customerId));
+  customer = computed(() => {
+    return this.customerStore.customerList().find(c => c.customerId === this.customerId);
+  });
 
   upcomingEntries = computed(() => {
     const now = new Date().toISOString();
-    return this.workEntries()?.filter(e => {
+    return this.customerStore.customerWorks()[this.customer().customerId]?.filter(e => {
       return e.day > now;
     })
       .toReversed() ?? [];      
@@ -47,43 +51,39 @@ export class CustomerDetails {
   pastEntries = computed(() => {
     const now = new Date().toISOString();
 
-    return this.workEntries()?.filter(e => {
+    return this.customerStore.customerWorks()[this.customer().customerId]?.filter(e => {
       return e.day < now;
     }) ?? [];
   });
 
   constructor() {
-    this.store.dispatch(customerApiActions.listCustomersInitiated());
-    this.store.dispatch(priceApiActions.listPricesInitiated());    
-    this.store.dispatch(customerApiActions.listCustomerWorksInitiated({
+    this.customerApiEvents.listCustomersInitiated();
+    this.priceApiEvents.listPricesInitiated();
+    this.customerApiEvents.listCustomerWorksInitiated({
       customerId: this.customerId,
-    }));
+    });
 
   }
 
   onEdit() {
-    this.store.dispatch(customerActions.updateCustomer({
-      customerId: this.customer().customerId,
-    }));
+    this.customerEvents.updateCustomer(this.customer());
   }
 
   onCreateJob() {
-    this.store.dispatch(customerActions.createCustomerJob({
+    this.customerEvents.createCustomerJob({
       customerId: this.customerId,
-    }));
+    });
   }
 
   onAddToBlacklist() {
-    this.store.dispatch(customerActions.addCustomerToBlacklist({
-      customerId: this.customer().customerId,
-    }));
+    this.customerEvents.addCustomerToBlacklist(this.customer());
   }
 
   onRemoveFromBlacklist(customer: Customer.ResponseBase) {
-    this.store.dispatch(customerActions.deleteCustomerFromBlacklist({
-      customerId: this.customer().customerId,
+    this.customerEvents.deleteCustomerFromBlacklist({
+      currentCustomer: this.customer(),
       selectedCustomer: customer,
-    }));
+    });
   }
 
 }

@@ -9,7 +9,7 @@
       <ng-content></ng-content>
     </div>
   </mat-toolbar>
-  @if(isInProgress()) {
+  @if(progressStore.isInProgress()) {
   <mat-progress-bar mode="indeterminate"></mat-progress-bar>
   }
 </div>

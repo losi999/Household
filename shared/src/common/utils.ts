@@ -1,6 +1,6 @@
 import { WORKDAY_LENGTH } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
-import { Dictionary, Searchable } from '@household/shared/types/common';
+import { Dictionary } from '@household/shared/types/common';
 import { Account, Calendar, Category, Customer, File, Internal, Price, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { PopulateOptions, Types } from 'mongoose';
 

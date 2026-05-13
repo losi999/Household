@@ -4,11 +4,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { DurationStepper } from '@hairdressing/app/shared/duration-stepper/duration-stepper';
 import { JobPriceCalculator, JobPriceCalculatorValue, requiredPrices } from '@hairdressing/app/shared/job-price-calculator/job-price-calculator';
-import { selectPriceList } from '@hairdressing/state/price/price-selector';
 import { ClearableInput } from '@household/shared-ui';
 import { toUndefined } from '@household/shared/common/utils';
 import { Customer } from '@household/shared/types/types';
-import { Store } from '@ngrx/store';
 
 export type CustomerJobDialogData = Customer.CustomerId 
 & {
@@ -34,10 +32,7 @@ export type CustomerJobDialogResult = Customer.CustomerId
 })
 export class CustomerJobDialog {
   private dialogRef = inject<MatDialogRef<CustomerJobDialog, CustomerJobDialogResult>>(MatDialogRef);
-  private store = inject(Store);
   public data = inject<CustomerJobDialogData>(MAT_DIALOG_DATA);
-
-  prices = this.store.selectSignal(selectPriceList);
 
   customerJobModel = signal<Omit<Customer.Job.Request, 'prices' | 'additionalPrice'> & { cost: JobPriceCalculatorValue }>({
     name: this.data.job?.name ?? '',
@@ -69,8 +64,6 @@ export class CustomerJobDialog {
     Object.values(this.customerJobForm).forEach(field => {
       field().markAsTouched();
     });
-
-    console.log(this.customerJobForm.cost().errors());
 
     if (this.customerJobForm().valid()) {
       this.dialogRef.close({

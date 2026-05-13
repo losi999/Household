@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
-import { calendarActions } from '@hairdressing/state/calendar/calendar-actions';
+import { calendarEvents } from '@hairdressing/state/calendar/calendar-events';
 import { CustomerJob, LimitedCalendarDay } from '@hairdressing/types';
 import { dateToISODateString } from '@household/shared/common/utils';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
-import { Store } from '@ngrx/store';
+import { injectDispatch } from '@ngrx/signals/events';
 
 @Component({
   selector: 'hairdressing-calendar-vertical-day',
@@ -22,7 +22,7 @@ import { Store } from '@ngrx/store';
   styleUrl: './calendar-vertical-day.scss',
 })
 export class CalendarVerticalDay {
-  private store = inject(Store);
+  private calendarEvents = injectDispatch(calendarEvents);
 
   day = input.required<LimitedCalendarDay>();
   column = input.required<number>();
@@ -96,25 +96,25 @@ export class CalendarVerticalDay {
   });
 
   onEntryClick(entry: Calendar.Entry.Response) {
-    this.store.dispatch(calendarActions.viewCalendarEntry({
+    this.calendarEvents.viewCalendarEntry({
       ...entry,
       day: this.day().day,
-    }));    
+    });    
   }
 
   onProposalClick(timeInterval: Calendar.TimeInterval) {
     if (this.pendingCustomerJob().duration === timeInterval.end - timeInterval.start) {
-      this.store.dispatch(calendarActions.confirmCalendarEntryProposal({
+      this.calendarEvents.confirmCalendarEntryProposal({
         day: this.day().day,
         timeInterval: timeInterval,
         customerJob: this.pendingCustomerJob(),
-      }));
+      });
     } else {
-      this.store.dispatch(calendarActions.createCalendarEntryWithProposal({
+      this.calendarEvents.createCalendarEntryWithProposal({
         customerJob: this.pendingCustomerJob(),
         day: this.day().day,
         timeInterval: timeInterval,
-      }));
+      });
     }
   }
 }

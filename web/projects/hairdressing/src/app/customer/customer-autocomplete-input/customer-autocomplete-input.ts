@@ -1,16 +1,16 @@
-import { Component, effect, inject, input, model, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, model, signal } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { Store } from '@ngrx/store';
 import { Customer } from '@household/shared/types/types';
-import { selectCustomerList } from '@hairdressing/state/customer/customer-selector';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 import { FormsModule } from '@angular/forms';
-import { customerActions } from '@hairdressing/state/customer/customer-actions';
 import { SignalErrorStateMatcher } from '@household/shared-ui';
+import { CustomerStore } from '@hairdressing/state/customer/customer-store';
+import { injectDispatch } from '@ngrx/signals/events';
+import { customerEvents } from '@hairdressing/state/customer/customer-events';
 
 @Component({
   selector: 'hairdressing-customer-autocomplete-input',
@@ -26,6 +26,9 @@ import { SignalErrorStateMatcher } from '@household/shared-ui';
   styleUrl: './customer-autocomplete-input.scss',
 })
 export class CustomerAutocompleteInput implements FormValueControl<Customer.Response> {
+  readonly customerStore = inject(CustomerStore);
+  private customerEvents = injectDispatch(customerEvents);
+  
   value = model<Customer.Response>();
 
   touched = model<boolean>(false);
@@ -38,13 +41,28 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
     
   matcher = new SignalErrorStateMatcher(this.touched);
 
-  private store = inject(Store);
-
-  private customers = this.store.selectSignal(selectCustomerList);
-
   filterValue = signal<string>('');
 
-  filteredCustomers = signal<Customer.Response[]>([]);
+  filteredCustomers = computed(() => {
+    return this.customerStore.customerList()?.filter((c) => {
+      if (c.isArchived) {
+        return false;
+      }
+        
+      if (this.exclude()?.includes(c.customerId)) {
+        return false;
+      }
+      const terms = this.filterValue().toLowerCase()
+        .split(' ');
+        
+      if (terms.every(t => c.searchTerms?.some(s => s.includes(t)))) {
+        return true;
+      }
+        
+      return false;
+        
+    }) ?? [];
+  });
 
   constructor() {
     effect(() => {
@@ -54,29 +72,7 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
     effect(() => {
       this.filterValue.set(this.value()?.name ?? '');
     });
-    
-    effect(() => {
-      const filteredCustomers = this.customers()?.filter((c) => {
-        if (c.isArchived) {
-          return false;
-        }
-        
-        if (this.exclude()?.includes(c.customerId)) {
-          return false;
-        }
-        const terms = this.filterValue().toLowerCase()
-          .split(' ');
-        
-        if (terms.every(t => c.searchTerms?.some(s => s.includes(t)))) {
-          return true;
-        }
-        
-        return false;
-        
-      }) ?? [];
-      this.filteredCustomers.set(filteredCustomers);
-    
-    });
+
   }
 
   clearValue(event: MouseEvent) {
@@ -96,7 +92,7 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
   }
 
   create(event: MouseEvent) {
-    this.store.dispatch(customerActions.createCustomer());
+    this.customerEvents.createCustomer();
     event.stopPropagation();
   }
 }

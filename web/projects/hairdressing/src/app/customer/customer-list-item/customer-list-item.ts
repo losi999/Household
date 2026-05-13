@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, Signal } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
@@ -6,11 +6,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { RouterModule } from '@angular/router';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
-import { selectCustomerIsInProgress } from '@hairdressing/state/customer/customer-selector';
 import { Customer } from '@household/shared/types/types';
-import { Store } from '@ngrx/store';
 import { IconText } from '@household/shared-ui';
-import { customerActions } from '@hairdressing/state/customer/customer-actions';
+import { injectDispatch } from '@ngrx/signals/events';
+import { customerEvents } from '@hairdressing/state/customer/customer-events';
+import { CustomerStore } from '@hairdressing/state/customer/customer-store';
 
 @Component({
   selector: 'hairdressing-customer-list-item',
@@ -29,18 +29,15 @@ import { customerActions } from '@hairdressing/state/customer/customer-actions';
 })
 export class CustomerListItem {
   customer = input.required<Customer.Response>();
-  private store = inject(Store);
+  private customerEvents = injectDispatch(customerEvents);
+  readonly customerStore = inject(CustomerStore);
 
-  isDisabled: Signal<boolean>;
-
-  constructor() {
-    effect(() => {
-      this.isDisabled = this.store.selectSignal(selectCustomerIsInProgress(this.customer().customerId));
-    });
-  }
+  isDisabled = computed(() => {
+    return this.customerStore.isInProgress().includes(this.customer().customerId);
+  });
 
   onDelete() {
-    this.store.dispatch(customerActions.deleteCustomer(this.customer()));
+    this.customerEvents.deleteCustomer(this.customer());
   }
 
 }

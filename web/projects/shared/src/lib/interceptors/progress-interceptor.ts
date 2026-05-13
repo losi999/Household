@@ -1,23 +1,22 @@
 import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { progressActions } from '../state/progress/progress-actions';
-import { Store } from '@ngrx/store';
+import { progressEvents } from '@household/shared-ui';
+import { injectDispatch } from '@ngrx/signals/events';
 import { catchError, tap, throwError } from 'rxjs';
 
 export const progressInterceptor: HttpInterceptorFn = (req, next) => {
-  const store = inject(Store);
+  const progressEventsDispatcher = injectDispatch(progressEvents);
 
   return next(req).pipe(tap({
     next: (event) => {
       if (event instanceof HttpResponse) {
-        store.dispatch(progressActions.processFinished());
+        progressEventsDispatcher.processFinished();
       }
       else {
-        store.dispatch(progressActions.processStarted());
+        progressEventsDispatcher.processStarted();
       }
     },
   }), catchError((error) => { 
-    store.dispatch(progressActions.processFinished());
+    progressEventsDispatcher.processFinished();
     return throwError(() => error);
   }));
 };

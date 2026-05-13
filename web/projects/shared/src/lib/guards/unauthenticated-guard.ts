@@ -1,7 +1,7 @@
+import { inject } from '@angular/core';
 import { CanActivateFn } from '@angular/router';
-import { AuthService, navigationActions } from '@household/shared-ui';
-import { inject } from '@angular/core/primitives/di';
-import { Store } from '@ngrx/store';
+import { AuthService, navigationEvents } from '@household/shared-ui';
+import { injectDispatch } from '@ngrx/signals/events';
 
 export const unauthenticatedGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
@@ -9,7 +9,7 @@ export const unauthenticatedGuard: CanActivateFn = () => {
   if (!authService.isLoggedIn) {
     return true;
   }
-  const store = inject(Store);
-  store.dispatch(navigationActions.loggedInHomepage());
+  const navigationEventsDispathcer = injectDispatch(navigationEvents);
+  navigationEventsDispathcer.loggedInHomepage();
   return false;
 };
