@@ -72,23 +72,6 @@ jobs:
       - store_artifacts:
           path: coverage
           destination: coverage
-  unit_test_web_legacy:
-    docker:
-      - image: cimg/node:24.0-browsers
-    working_directory: ~/repo
-    steps:
-      - attach_workspace:
-          at: ~/
-
-      - browser-tools/install_chrome
-
-      - run:
-          name: Running unit tests
-          command: yarn test:web_legacy
-
-      - store_artifacts:
-          path: coverage
-          destination: coverage
 
   unit_test_web_hairdressing:
     docker:
@@ -276,10 +259,6 @@ workflows:
           name: unit_test_api
           requires:
             - install
-      - unit_test_web_legacy:
-          name: unit_test_web_legacy
-          requires:
-            - install
       - unit_test_web_hairdressing:
           name: unit_test_web_hairdressing
           requires:
@@ -301,7 +280,6 @@ workflows:
           filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
           requires:
             - unit_test_api
-            # - unit_test_web_legacy
             # - unit_test_web_hairdressing
             # - unit_test_web_shared_ui
             - lint
@@ -342,47 +320,3 @@ workflows:
                 - "transaction-draft"
           requires:
             - api_test_setup                
-      # - test:
-      #     serial-group: api-test1
-      #     matrix:
-      #       parameters:
-      #         testCommand:
-      #           ["transaction-common", "transaction-payment", "product"]
-      #     requires:
-      #       - api_test_setup
-      # - test:
-      #     serial-group: api-test2
-      #     matrix:
-      #       parameters:
-      #         testCommand: ["customer", "category", "price"]
-      #     requires:
-      #       - api_test_setup
-      # - test:
-      #     serial-group: api-test3
-      #     matrix:
-      #       parameters:
-      #         testCommand: ["calendar", "account", "file"]
-      #     requires:
-      #       - api_test_setup
-      # - test:
-      #     serial-group: api-test4
-      #     matrix:
-      #       parameters:
-      #         testCommand:
-      #           ["transaction-reimbursement", "project", "transaction-transfer"]
-      #     requires:
-      #       - api_test_setup
-      # - test:
-      #     serial-group: api-test5
-      #     matrix:
-      #       parameters:
-      #         testCommand: ["transaction-split", "recipient", "setting"]
-      #     requires:
-      #       - api_test_setup
-      # - test:
-      #     serial-group: api-test6
-      #     matrix:
-      #       parameters:
-      #         testCommand: ["transaction-deferred", "user", "transaction-draft"]
-      #     requires:
-      #       - api_test_setup
