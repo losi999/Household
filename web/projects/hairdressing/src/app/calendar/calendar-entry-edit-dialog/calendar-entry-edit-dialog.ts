@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, model, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ClearableInput } from '@household/shared-ui';
@@ -12,7 +12,6 @@ import { form, FormField, required } from '@angular/forms/signals';
 import { MatInputModule } from '@angular/material/input';
 import { calculateWorkdayLimits, createDate, createWorkEntryTitle, dateToISODateString, dateToTimeSlot, toUndefined } from '@household/shared/common/utils';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
-import { FormsModule } from '@angular/forms';
 import { CustomerAutocompleteInput } from '@hairdressing/app/customer/customer-autocomplete-input/customer-autocomplete-input';
 import { MatSelectModule } from '@angular/material/select';
 import { v4 } from 'uuid';
@@ -21,6 +20,7 @@ import { LimitedCalendarDay } from '@hairdressing/types';
 import { CalendarStore } from '@hairdressing/state/calendar/calendar-store';
 import { injectDispatch } from '@ngrx/signals/events';
 import { calendarEvents } from '@hairdressing/state/calendar/calendar-events';
+import { MatIconModule } from '@angular/material/icon';
 
 export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
 export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
@@ -29,6 +29,7 @@ export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
   imports: [
     MatDialogModule,
     MatButtonModule,
+    MatIconModule,
     ClearableInput,
     DurationStepper,
     MatSliderModule,
@@ -37,7 +38,6 @@ export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
     MatInputModule,
     FormField,
     TimeSlotToTimePipe,
-    FormsModule,
     CustomerAutocompleteInput,
     MatSelectModule,
     CalendarHorizontalDay,
@@ -87,12 +87,16 @@ export class CalendarEntryEditDialog {
     title: string;
     description: string;
     day: Date;
+    start: number;
+    duration: number;
   }>({
     customer: this.entry.entryType === CalendarEntryType.Work ? this.entry.customer ?? null : null,
     job: this.entry.entryType === CalendarEntryType.Work ? this.entry.customer?.jobs.find(j => this.entry.title.endsWith(j.name)) ?? this.CUSTOM_JOB : null,
     title: this.entry.title ?? '',
     description: this.entry.description ?? '',
     day: createDate(this.entry.day) ?? new Date(),
+    start: this.entry.start ?? dateToTimeSlot(new Date()),
+    duration: this.entry.end - this.entry.start || 4,
   });
 
   entryForm = form(this.entryModel, (schemaPath) => {
@@ -108,9 +112,6 @@ export class CalendarEntryEditDialog {
       });
     }
   });
-
-  start = model<number>(this.entry.start ?? dateToTimeSlot(new Date()));
-  duration = model<number>(this.entry.end - this.entry.start || 4);
 
   calendarDay = computed(() => {
     const date = this.entryForm.day().value();
@@ -142,10 +143,9 @@ export class CalendarEntryEditDialog {
 
   entryWarnings = computed(() => {
     const errors = [];
-    const end = this.start() + this.duration();
 
     if (this.entry.entryType === CalendarEntryType.Work) {
-      if (this.duration() < this.entryForm.job().value()?.duration) {
+      if (this.entryForm.duration().value() < this.entryForm.job().value()?.duration) {
         errors.push('Időtartam kevesebb, mint a munkához rögzített');
       }
       
@@ -160,14 +160,14 @@ export class CalendarEntryEditDialog {
           errors.push('Hétvége');
         } break;
         case CalendarDayType.Workday: {
-          if (this.start() < this.calendarDay().calculatedStart || end > this.calendarDay().calculatedEnd) {
+          if (this.entryForm.start().value() < this.calendarDay().calculatedStart || this.end() > this.calendarDay().calculatedEnd) {
             errors.push('Túlóra');
           }
         } break;
       }
     }
 
-    this.calendarDay()?.entries.filter(e => !(this.start() >= e.end || end <= e.start)).forEach((e) => {
+    this.calendarDay()?.entries.filter(e => !(this.entryForm.start().value() >= e.end || this.end() <= e.start)).forEach((e) => {
       let entryTypeText: string;
       switch(e.entryType) {
         case CalendarEntryType.Work: {
@@ -186,6 +186,14 @@ export class CalendarEntryEditDialog {
     return errors;
   });
 
+  maximumStart = computed(() => {
+    return 96 - this.entryForm.duration().value();
+  });
+
+  end = computed(() => {
+    return this.entryForm.start().value() + this.entryForm.duration().value();
+  });
+
   constructor() {
     effect(() => {
       if (!this.calendarDay()) {
@@ -194,7 +202,8 @@ export class CalendarEntryEditDialog {
     });
 
     effect(() => {
-      this.start.set(Math.min(96 - this.duration(), this.start()));
+      console.log('duration changed');
+      this.entryForm.start().value.update(current => Math.min(this.maximumStart(), current));
     });
 
     effect(() => {
@@ -218,10 +227,10 @@ export class CalendarEntryEditDialog {
 
       if (!selectedJob) {
         this.entryForm.title().reset(null);
-        this.duration.set(4);
+        this.entryForm.duration().value.set(4);
         return;
       }
-      this.duration.set(selectedJob.duration);
+      this.entryForm.duration().value.set(selectedJob.duration);
 
       if (selectedJob.name !== this.CUSTOM_JOB.name) {
         const newTitle = createWorkEntryTitle(this.entryForm.customer().value(), selectedJob);
@@ -231,6 +240,10 @@ export class CalendarEntryEditDialog {
         this.entryForm.title().value.set(newTitle);
       }
     });
+  }
+
+  onAdjustStart(value: number) {
+    this.entryForm.start().value.update(current => current + value);
   }
 
   onSubmit() {
@@ -245,8 +258,8 @@ export class CalendarEntryEditDialog {
         this.dialogRef.close({
           entryType: CalendarEntryType.Work,
           day: dateToISODateString(this.entryForm.day().value()),
-          start: this.start(),
-          end: this.start() + this.duration(),
+          start: this.entryForm.start().value(),
+          end: this.end(),
           title: this.entryForm.title().value(),
           description: toUndefined(selectedJob.description) ?? toUndefined(this.entryForm.description().value()),
           customerId: this.entryForm.customer().value().customerId,
@@ -263,8 +276,8 @@ export class CalendarEntryEditDialog {
         this.dialogRef.close({
           entryType: this.entry.entryType,
           day: dateToISODateString(this.entryForm.day().value()),
-          start: this.start(),
-          end: this.start() + this.duration(),
+          start: this.entryForm.start().value(),
+          end: this.end(),
           title: this.entryForm.title().value(),
           description: toUndefined(this.entryForm.description().value()),
         });

@@ -1,4 +1,11 @@
+@use '@angular/material' as mat;
+
 mat-slider,
 mat-form-field {
   display: block;
+}
+
+.duration {
+  display: flex;
+  justify-content: space-around;
 }

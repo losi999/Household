@@ -59,7 +59,6 @@ export class CalendarHome {
   private today = new Date();
 
   private lastISOWeekOfYear = computed(() => {
-    console.log('computed last iso week of year', this.year());
     return getISOWeek(lastDayOfISOWeekYear(new Date(this.year(), 0)));
   });
 

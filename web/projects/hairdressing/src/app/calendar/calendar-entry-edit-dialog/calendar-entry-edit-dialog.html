@@ -34,12 +34,16 @@
     <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
     <mat-datepicker #picker />
   </mat-form-field>
-  <hairdressing-duration-stepper [(value)]="duration" />
-  <mat-slider min="0" [max]="96-duration()">
-    <input matSliderThumb [(ngModel)]="start">
+  <div class="duration">
+    <button matIconButton (click)="onAdjustStart(-1)"><mat-icon>swipe_left_alt</mat-icon></button>
+    <hairdressing-duration-stepper [formField]="entryForm.duration" />
+    <button matIconButton (click)="onAdjustStart(1)"><mat-icon>swipe_right_alt</mat-icon></button>
+  </div>
+  <mat-slider min="0" [max]="maximumStart()">
+    <input matSliderThumb [formField]="entryForm.start">
   </mat-slider>
-  {{start() | timeSlotToTime}} - {{start() + duration() | timeSlotToTime}}
-  <hairdressing-calendar-horizontal-day [pendingStart]="start()" [pendingEnd]="start() + duration()" [calendarDay]="calendarDay()" />
+  {{entryForm.start().value() | timeSlotToTime}} - {{end() | timeSlotToTime}}
+  <hairdressing-calendar-horizontal-day [pendingStart]="entryForm.start().value()" [pendingEnd]="end()" [calendarDay]="calendarDay()" />
   @for (e of entryWarnings(); track $index) {
   <mat-error>
     {{e}}
