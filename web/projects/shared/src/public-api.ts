@@ -27,3 +27,4 @@ export * from './lib/operators/take-first-defined';
 export * from './lib/utils/signal-error-state-matcher';
 export * from './lib/injection-tokens';
 export * from './lib/testing/element-selector';
+export * from './lib/testing/common';

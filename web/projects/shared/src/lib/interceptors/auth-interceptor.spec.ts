@@ -3,22 +3,24 @@ import { HttpClient, HttpErrorResponse, provideHttpClient, withInterceptors } fr
 
 import { authInterceptor } from './auth-interceptor';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { API_URL, AuthService } from '@household/shared-ui';
-import { catchError, delay, of } from 'rxjs';
+import { API_URL, authEvents, AuthService, AuthStore, MockSignalStore, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
+import { catchError, delay, of, tap } from 'rxjs';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { Dispatcher } from '@ngrx/signals/events';
 
 describe('authInterceptor', () => {
   const apiUrl = 'http://api.url';
   let mockAuthService: MockService<AuthService>; 
+  let mockAuthStore: MockSignalStore<typeof AuthStore>;
+  let http: HttpClient;
+  let httpMock: HttpTestingController;
+  let mockDispatcher: Dispatcher;
 
   const token = 'some.web.token';
 
-  let http: HttpClient;
-  let httpMock: HttpTestingController;
-
   beforeEach(() => {
     vi.useFakeTimers();
-    mockAuthService = createMockService('idToken', 'refreshToken', 'isLoggedIn', 'logout');
+    mockAuthService = createMockService('refreshToken');
 
     TestBed.configureTestingModule({
       providers: [
@@ -26,6 +28,8 @@ describe('authInterceptor', () => {
           withInterceptors([authInterceptor]),
         ),
         provideHttpClientTesting(),
+        provideMockDispatcher(),
+        provideMockSignalStore(AuthStore, 'isLoggedIn', 'idToken', 'refreshToken'),
         {
           provide: AuthService,
           useValue: mockAuthService.service,
@@ -38,8 +42,9 @@ describe('authInterceptor', () => {
     });
 
     http = TestBed.inject(HttpClient);
-    httpMock =
-      TestBed.inject(HttpTestingController);
+    httpMock = TestBed.inject(HttpTestingController);
+    mockDispatcher = TestBed.inject(Dispatcher);
+    mockAuthStore = TestBed.inject<MockSignalStore<typeof AuthStore>>(AuthStore);
   });
 
   afterEach(() => {
@@ -61,16 +66,14 @@ describe('authInterceptor', () => {
       message,
     });
 
-    validateFunctionCall(mockAuthService.functions.idToken);
     validateFunctionCall(mockAuthService.functions.refreshToken);
-    validateFunctionCall(mockAuthService.functions.isLoggedIn);
-    validateFunctionCall(mockAuthService.functions.logout);
-    expect.assertions(5);
+    validateFunctionCall(mockDispatcher.dispatch);
+    expect.assertions(3);
   });
 
   it('should forward if not logged in', () => {
     const message = 'testing';
-    mockAuthService.functions.isLoggedIn.mockReturnValue(false);
+    mockAuthStore.isLoggedIn.set(false);
 
     http.get(`${apiUrl}/testing`).subscribe({
       next: (resp: any) => {
@@ -86,17 +89,38 @@ describe('authInterceptor', () => {
       },
     );
 
-    validateFunctionCall(mockAuthService.functions.idToken);
     validateFunctionCall(mockAuthService.functions.refreshToken);
-    expect(mockAuthService.functions.isLoggedIn).toHaveBeenCalled();
-    validateFunctionCall(mockAuthService.functions.logout);
-    expect.assertions(5);
+    validateFunctionCall(mockDispatcher.dispatch);
+    expect.assertions(3);
+  });
+
+  it('should forward refreshToken request', () => {
+    const message = 'testing';
+    mockAuthStore.isLoggedIn.set(false);
+
+    http.get(`${apiUrl}/refreshToken`).subscribe({
+      next: (resp: any) => {
+        expect(resp.message).toBe(message);
+      },
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/refreshToken`);
+
+    req.flush(
+      {
+        message,
+      },
+    );
+
+    validateFunctionCall(mockAuthService.functions.refreshToken);
+    validateFunctionCall(mockDispatcher.dispatch);
+    expect.assertions(3);
   });
 
   it('should forward request with authorization', () => {
     const message = 'testing';
-    mockAuthService.functions.isLoggedIn.mockReturnValue(true);
-    mockAuthService.functions.idToken.mockReturnValue(token);
+    mockAuthStore.isLoggedIn.set(true);
+    mockAuthStore.idToken.set(token);
 
     http.get(`${apiUrl}/testing`).subscribe({
       next: (resp: any) => {
@@ -114,20 +138,21 @@ describe('authInterceptor', () => {
       },
     );
 
-    expect(mockAuthService.functions.idToken).toHaveBeenCalled();
     validateFunctionCall(mockAuthService.functions.refreshToken);
-    expect(mockAuthService.functions.isLoggedIn).toHaveBeenCalled();
-    validateFunctionCall(mockAuthService.functions.logout);
-    expect.assertions(6);
+    validateFunctionCall(mockDispatcher.dispatch);
+    expect.assertions(4);
   });
 
   it('should refresh token if response is 401', () => {
     const message = 'testing';
     const refreshedToken = 'refreshed.jwt';
-    mockAuthService.functions.isLoggedIn.mockReturnValue(true);
-    mockAuthService.functions.idToken.mockReturnValueOnce(token);
-    mockAuthService.functions.idToken.mockReturnValueOnce(refreshedToken);
-    mockAuthService.functions.refreshToken.mockReturnValue(of({}));
+    mockAuthStore.isLoggedIn.set(true);
+    mockAuthStore.idToken.set(token);
+    mockAuthService.functions.refreshToken.mockReturnValue(of(undefined).pipe(
+      tap(() => {
+        mockAuthStore.idToken.set(refreshedToken);
+      }),
+    ));
 
     http.get(`${apiUrl}/testing`).subscribe({
       next: (resp: any) => {
@@ -155,22 +180,22 @@ describe('authInterceptor', () => {
     
     expect(refreshedRequest.request.headers.get('Authorization')).toBe(refreshedToken);
 
-    expect(mockAuthService.functions.idToken).toHaveBeenCalled();
     expect(mockAuthService.functions.refreshToken).toHaveBeenCalled();
-    expect(mockAuthService.functions.isLoggedIn).toHaveBeenCalled();
-    validateFunctionCall(mockAuthService.functions.logout);
-    expect.assertions(7);
+    validateFunctionCall(mockDispatcher.dispatch);
+    expect.assertions(5);
   });
 
   it('should refresh token only once if multiple API calls respond with 401', () => {
     const message = 'testing';
     const refreshedToken = 'refreshed.jwt';
-    mockAuthService.functions.isLoggedIn.mockReturnValue(true);
-    mockAuthService.functions.idToken.mockReturnValueOnce(token);
-    mockAuthService.functions.idToken.mockReturnValueOnce(token);
-    mockAuthService.functions.idToken.mockReturnValueOnce(refreshedToken);
-    mockAuthService.functions.idToken.mockReturnValueOnce(refreshedToken);
-    mockAuthService.functions.refreshToken.mockReturnValue(of({}).pipe(delay(2000)));
+    mockAuthStore.isLoggedIn.set(true);
+    mockAuthStore.idToken.set(token);
+    mockAuthService.functions.refreshToken.mockReturnValue(of(undefined).pipe(
+      delay(2000),
+      tap(() => {
+        mockAuthStore.idToken.set(refreshedToken);
+      }),
+    ));
 
     http.get(`${apiUrl}/testing`).subscribe({
       next: (resp: any) => {
@@ -226,18 +251,16 @@ describe('authInterceptor', () => {
       message,
     });
 
-    expect(mockAuthService.functions.idToken).toHaveBeenCalled();
     expect(mockAuthService.functions.refreshToken).toHaveBeenCalledOnce();
-    expect(mockAuthService.functions.isLoggedIn).toHaveBeenCalled();
-    validateFunctionCall(mockAuthService.functions.logout);
-    expect.assertions(10);
+    validateFunctionCall(mockDispatcher.dispatch);
+    expect.assertions(8);
   });
 
   it('should log out if response is 401 but not "expired token message"', () => {
     const message = 'testing';
-    mockAuthService.functions.isLoggedIn.mockReturnValue(true);
-    mockAuthService.functions.idToken.mockReturnValue(token);
-    mockAuthService.functions.refreshToken.mockReturnValue(of({}));
+    mockAuthStore.isLoggedIn.set(true);
+    mockAuthStore.idToken.set(token);
+    mockAuthService.functions.refreshToken.mockReturnValue(of(undefined));
 
     http.get(`${apiUrl}/testing`).pipe(
       catchError((err: HttpErrorResponse) => {
@@ -264,20 +287,23 @@ describe('authInterceptor', () => {
       },
     );
 
-    expect(mockAuthService.functions.idToken).toHaveBeenCalled();
     validateFunctionCall(mockAuthService.functions.refreshToken);
-    expect(mockAuthService.functions.isLoggedIn).toHaveBeenCalled();
-    expect(mockAuthService.functions.logout).toHaveBeenCalled();
-    expect.assertions(6);
+    validateFunctionCall(mockDispatcher.dispatch, authEvents.logOut(), {
+      scope: 'self',
+    });
+    expect.assertions(4);
   });
 
   it('should log out if unable to refresh token', () => {
     const message = 'testing';
     const refreshedToken = 'refreshed.jwt';
-    mockAuthService.functions.isLoggedIn.mockReturnValue(true);
-    mockAuthService.functions.idToken.mockReturnValueOnce(token);
-    mockAuthService.functions.idToken.mockReturnValueOnce(refreshedToken);
-    mockAuthService.functions.refreshToken.mockReturnValue(of({}));
+    mockAuthStore.isLoggedIn.set(true);
+    mockAuthStore.idToken.set(token);
+    mockAuthService.functions.refreshToken.mockReturnValue(of(undefined).pipe(
+      tap(() => {
+        mockAuthStore.idToken.set(refreshedToken);
+      }),
+    ));
 
     http.get(`${apiUrl}/testing`).pipe(
       catchError((err: HttpErrorResponse) => {
@@ -312,10 +338,10 @@ describe('authInterceptor', () => {
     
     expect(refreshedRequest.request.headers.get('Authorization')).toBe(refreshedToken);
 
-    expect(mockAuthService.functions.idToken).toHaveBeenCalled();
-    expect(mockAuthService.functions.refreshToken).toHaveBeenCalled();
-    expect(mockAuthService.functions.isLoggedIn).toHaveBeenCalled();
-    expect(mockAuthService.functions.logout).toHaveBeenCalled();
-    expect.assertions(7);
+    expect(mockAuthService.functions.refreshToken).toHaveBeenCalled();    
+    validateFunctionCall(mockDispatcher.dispatch, authEvents.logOut(), {
+      scope: 'self',
+    });
+    expect.assertions(5);
   });
 });

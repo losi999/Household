@@ -17,15 +17,12 @@ export class AuthService {
     return this.httpClient.post<Auth.Login.Response>(`${this.apiUrl}/user/v1/login`, request);
   }
 
-  refreshToken(refreshToken: string) {
-    const request: Auth.RefreshToken.Request = {
-      refreshToken,
-    };
+  refreshToken(request: Auth.RefreshToken.Request) {
     return this.httpClient.post<Auth.RefreshToken.Response>(`${this.apiUrl}/user/v1/refreshToken`, request).pipe(
       tap((data: Auth.RefreshToken.Response) => {
         this.authEventDispatcher.tokensRetrieved({
           idToken: data.idToken,
-          refreshToken,
+          refreshToken: request.refreshToken,
         });
       }));
   }

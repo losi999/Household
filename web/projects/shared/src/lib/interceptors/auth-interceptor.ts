@@ -25,7 +25,9 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
     }
     refreshTokenInProgress = true;
 
-    return authService.refreshToken(authStore.refreshToken()).pipe(
+    return authService.refreshToken({
+      refreshToken: authStore.refreshToken(),
+    }).pipe(
       tap(() => {
         refreshTokenInProgress = false;
         tokenRefreshedSource.next(undefined);
@@ -48,27 +50,34 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
     return next(request);
   }
 
-  if (authStore.isLoggedIn()) {
-    const authorizedRequest = addAuthHeaders(request);
-    return next(authorizedRequest).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          if (error.error.message === 'The incoming token has expired') {
-            return refreshToken().pipe(
-              switchMap(() => {
-                return next(addAuthHeaders(request));
-              }),
-              catchError((error) => {
-                authEventDispatcher.logOut();
-                return throwError(() => error);
-              }),
-            );
-          }
-          authEventDispatcher.logOut();
-        }
-        return throwError(() => error);
-      }));
+  if (request.url.endsWith('refreshToken')) {
+    return next(request);
   }
 
-  return next(request);
+  if (!authStore.isLoggedIn()) {
+    return next(request);
+  }
+
+  const authorizedRequest = addAuthHeaders(request);
+  return next(authorizedRequest).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status !== 401) {
+        return throwError(() => error);
+      }
+
+      if (error.error.message !== 'The incoming token has expired') {
+        authEventDispatcher.logOut();
+        return throwError(() => error);
+      }
+
+      return refreshToken().pipe(
+        switchMap(() => {
+          return next(addAuthHeaders(request));
+        }),
+        catchError((error) => {
+          authEventDispatcher.logOut();
+          return throwError(() => error);
+        }),
+      );
+    }));
 };

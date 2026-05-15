@@ -66,7 +66,9 @@ export const withAuthEvents = () => {
             console.log('dispatched');
           }),
           exhaustMap(() => {
-            return authService.refreshToken(store.refreshToken())
+            return authService.refreshToken({
+              refreshToken: store.refreshToken(),
+            })
               .pipe(
                 map((data) => authEvents.tokensRetrieved({
                   idToken: data.idToken,

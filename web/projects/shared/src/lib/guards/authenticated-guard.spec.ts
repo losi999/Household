@@ -2,40 +2,34 @@ import { TestBed } from '@angular/core/testing';
 import { CanMatchFn } from '@angular/router';
 
 import { authenticatedGuard } from './authenticated-guard';
-import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { AuthService, navigationEvents } from '@household/shared-ui';
+import { validateFunctionCall } from '@household/shared/common/unit-testing';
+import { AuthStore, MockSignalStore, navigationEvents, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
+import { UserType } from '@household/shared/enums';
 
 describe('authenticatedGuard', () => {
   const executeGuard: CanMatchFn = (...guardParameters) => 
     TestBed.runInInjectionContext(() => authenticatedGuard(...guardParameters));
-  let mockAuthService: MockService<AuthService>;
-  let mockDispatcher: { dispatch: (...args: any) => any };
-  const requiredUserType = 'requiredUserType';
+      
+  let mockAuthStore: MockSignalStore<typeof AuthStore>;
+  let mockDispatcher: Dispatcher;
+  const requiredUserType: UserType = UserType.Hairdresser;
 
   beforeEach(() => {
-    mockAuthService = createMockService('hasUserType', 'isLoggedIn');
-    mockDispatcher = {
-      dispatch: vi.fn(), 
-    };
-
     TestBed.configureTestingModule({
       providers: [
-        {
-          provide: AuthService,
-          useValue: mockAuthService.service,
-        },
-        {
-          provide: Dispatcher,
-          useValue: mockDispatcher,
-        },
+        provideMockSignalStore(AuthStore, 'isLoggedIn', 'userTypes'),
+        provideMockDispatcher(),
       ],
     });
+
+    mockDispatcher = TestBed.inject(Dispatcher);
+    mockAuthStore = TestBed.inject<MockSignalStore<typeof AuthStore>>(AuthStore);
   });
 
   it('should allow', () => {
-    mockAuthService.functions.isLoggedIn.mockReturnValue(true);
-    mockAuthService.functions.hasUserType.mockReturnValue(true);
+    mockAuthStore.isLoggedIn.set(true);
+    mockAuthStore.userTypes.set([requiredUserType]);
 
     const result = executeGuard({
       data: {
@@ -48,7 +42,7 @@ describe('authenticatedGuard', () => {
   });
 
   it('should deny if not logged in', () => {
-    mockAuthService.functions.isLoggedIn.mockReturnValue(false);
+    mockAuthStore.isLoggedIn.set(false);
 
     const result = executeGuard({
       data: {
@@ -63,8 +57,8 @@ describe('authenticatedGuard', () => {
   });
 
   it('should deny if does not have the required user type', () => {
-    mockAuthService.functions.isLoggedIn.mockReturnValue(true);
-    mockAuthService.functions.hasUserType.mockReturnValue(false);
+    mockAuthStore.isLoggedIn.set(true);
+    mockAuthStore.userTypes.set([]);
 
     const result = executeGuard({
       data: {

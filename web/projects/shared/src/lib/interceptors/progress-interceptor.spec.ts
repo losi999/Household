@@ -4,35 +4,28 @@ import { progressInterceptor } from './progress-interceptor';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Dispatcher } from '@ngrx/signals/events';
 import { validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
-import { progressEvents } from '@household/shared-ui';
+import { progressEvents, provideMockDispatcher } from '@household/shared-ui';
 import { catchError, of } from 'rxjs';
 
 describe('progressInterceptor', () => {
   let http: HttpClient;
   let httpMock: HttpTestingController;
-  let mockDispatcher: { dispatch: (...args: any) => any };
+  let mockDispatcher: Dispatcher;
 
   beforeEach(() => {
-    mockDispatcher = {
-      dispatch: vi.fn(), 
-    };
-
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(
           withInterceptors([progressInterceptor]),
         ),
         provideHttpClientTesting(),
-        {
-          provide: Dispatcher,
-          useValue: mockDispatcher,
-        },
+        provideMockDispatcher(),
       ],
     });
 
     http = TestBed.inject(HttpClient);
-    httpMock =
-      TestBed.inject(HttpTestingController);
+    httpMock = TestBed.inject(HttpTestingController);
+    mockDispatcher = TestBed.inject(Dispatcher);
   });
 
   it('should start progress on request', () => {

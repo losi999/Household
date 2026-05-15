@@ -2,38 +2,31 @@ import { TestBed } from '@angular/core/testing';
 import { CanActivateFn } from '@angular/router';
 
 import { unauthenticatedGuard } from './unauthenticated-guard';
-import { AuthService, navigationEvents } from '@household/shared-ui';
-import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { AuthStore, MockSignalStore, navigationEvents, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
+import { validateFunctionCall } from '@household/shared/common/unit-testing';
 import { Dispatcher } from '@ngrx/signals/events';
 
 describe('unauthenticatedGuard', () => {
   const executeGuard: CanActivateFn = (...guardParameters) => 
     TestBed.runInInjectionContext(() => unauthenticatedGuard(...guardParameters));
-  let mockAuthService: MockService<AuthService>;
-  let mockDispatcher: { dispatch: (...args: any) => any };
 
-  beforeEach(() => {
-    mockAuthService = createMockService('isLoggedIn');
-    mockDispatcher = {
-      dispatch: vi.fn(), 
-    };
-        
+  let mockAuthStore: MockSignalStore<typeof AuthStore>;
+  let mockDispatcher: Dispatcher;
+
+  beforeEach(() => {        
     TestBed.configureTestingModule({
       providers: [
-        {
-          provide: AuthService,
-          useValue: mockAuthService.service,
-        },
-        {
-          provide: Dispatcher,
-          useValue: mockDispatcher,
-        },
+        provideMockSignalStore(AuthStore, 'isLoggedIn'),
+        provideMockDispatcher(),
       ],
     });
+
+    mockDispatcher = TestBed.inject(Dispatcher);
+    mockAuthStore = TestBed.inject<MockSignalStore<typeof AuthStore>>(AuthStore);
   });
 
   it('should allow', () => {
-    mockAuthService.functions.isLoggedIn.mockReturnValue(false);
+    mockAuthStore.isLoggedIn.set(false);
     const result = executeGuard(undefined, undefined);
 
     expect(result).toBe(true);
@@ -41,7 +34,7 @@ describe('unauthenticatedGuard', () => {
   });
 
   it('should deny if logged in', () => {
-    mockAuthService.functions.isLoggedIn.mockReturnValue(true);
+    mockAuthStore.isLoggedIn.set(true);
     const result = executeGuard(undefined, undefined);
 
     expect(result).toBe(false);
