@@ -1,62 +1,32 @@
 import { inject, Injectable } from '@angular/core';
 import { Auth } from '@household/shared/types/types';
 import { HttpClient } from '@angular/common/http';
-import { UserType } from '@household/shared/enums';
-import { Router } from '@angular/router';
-import { map, Observable } from 'rxjs';
-import { API_URL } from '@household/shared-ui';
+import { tap } from 'rxjs';
+import { API_URL, authEvents } from '@household/shared-ui';
+import { injectDispatch } from '@ngrx/signals/events';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  userTypes: UserType[] = [];
   private httpClient = inject(HttpClient);
-  private router = inject(Router);
   private apiUrl = inject(API_URL);
-
-  get idToken(): string {
-    return localStorage.getItem('idToken') ?? '';
-  }
-
-  get isLoggedIn(): boolean {
-    return !!this.idToken;
-  }  
-
-  hasUserType(userType: UserType) {
-    if (!userType) {
-      return true;
-    }
-
-    if (this.userTypes.length === 0) {
-      this.userTypes = (localStorage.getItem('userTypes')?.split(',') ?? []) as UserType[];
-    }
-    return this.userTypes.includes(userType);
-  }
+  private authEventDispatcher = injectDispatch(authEvents);
 
   login(request: Auth.Login.Request) {
     return this.httpClient.post<Auth.Login.Response>(`${this.apiUrl}/user/v1/login`, request);
   }
 
-  refreshToken(): Observable<unknown> {
+  refreshToken(refreshToken: string) {
     const request: Auth.RefreshToken.Request = {
-      refreshToken: localStorage.getItem('refreshToken') ?? '',
+      refreshToken,
     };
-    return this.httpClient.post<Auth.RefreshToken.Response>(`${this.apiUrl}/user/v1/refreshToken`, request).pipe(map((data) => {
-      localStorage.setItem('idToken', data.idToken);
-    }));
-  }
-  
-  redirect(): void {
-    if (this.isLoggedIn) {
-      this.router.navigate(['/']);
-    } else {
-      this.router.navigate(['/login']);
-    }
-  }
-  
-  public logout() {
-    localStorage.clear();
-    this.redirect();
+    return this.httpClient.post<Auth.RefreshToken.Response>(`${this.apiUrl}/user/v1/refreshToken`, request).pipe(
+      tap((data: Auth.RefreshToken.Response) => {
+        this.authEventDispatcher.tokensRetrieved({
+          idToken: data.idToken,
+          refreshToken,
+        });
+      }));
   }
 }

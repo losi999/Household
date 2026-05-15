@@ -1,7 +1,7 @@
 import { Component, inject, input, ViewEncapsulation } from '@angular/core';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MainMenu } from '@hairdressing/app/shared/main-menu/main-menu';
-import { AuthService, ProgressStore } from '@household/shared-ui';
+import { AuthStore, ProgressStore } from '@household/shared-ui';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 @Component({
@@ -18,6 +18,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 export class Toolbar {
   title = input<string>();
 
-  public authService = inject(AuthService);
+  public authStore = inject(AuthStore);
   readonly progressStore = inject(ProgressStore);
 }

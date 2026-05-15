@@ -16,3 +16,10 @@ export const authEvents = eventGroup({
     logOut: type<void>(),
   },
 });
+
+export const authApiEvents = eventGroup({
+  source: 'Auth API',
+  events: {
+    refreshTokenInitiated: type<void>(),
+  },
+});

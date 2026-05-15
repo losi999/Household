@@ -1,14 +1,18 @@
 import { inject } from '@angular/core';
-import { AuthService, notificationEvents } from '@household/shared-ui';
+import { AuthService, AuthState, notificationEvents } from '@household/shared-ui';
 import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
-import { authEvents } from './auth-events';
-import { exhaustMap, map, catchError, tap } from 'rxjs';
+import { authApiEvents, authEvents } from './auth-events';
+import { exhaustMap, map, catchError, tap, exhaust } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 
 export const withAuthEvents = () => {
   return signalStoreFeature(
-    withEventHandlers(() => {
+    withEventHandlers<{
+      state: AuthState,
+      props: {},
+      methods: {}
+    }>((store) => {
       const events = inject(Events); 
       const authService = inject(AuthService);
 
@@ -55,7 +59,20 @@ export const withAuthEvents = () => {
           tap(() => {
             console.log('log out');
             localStorage.clear();
-            authService.userTypes = [];
+          }),
+        ),
+        refreshToken: events.on(authApiEvents.refreshTokenInitiated).pipe(
+          tap(() => {
+            console.log('dispatched');
+          }),
+          exhaustMap(() => {
+            return authService.refreshToken(store.refreshToken())
+              .pipe(
+                map((data) => authEvents.tokensRetrieved({
+                  idToken: data.idToken,
+                  refreshToken: store.refreshToken(),
+                })),
+              );
           }),
         ),
         // confirmUser = createEffect(() => {
