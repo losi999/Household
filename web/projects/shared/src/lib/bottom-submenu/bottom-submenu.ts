@@ -6,9 +6,13 @@ import { MatListModule } from '@angular/material/list';
 
 export type BottomSubmenuItem = 'edit' | 'delete' | 'merge';
 
-export type BottomSubmenuData<I extends BottomSubmenuItem = BottomSubmenuItem> = {
+export type BottomSubmenuData = {
   title: string;
-  items: I[]
+  items: {
+    action: string;
+    icon: string;
+    label: string
+  }[]
 };
 
 @Component({
@@ -23,23 +27,8 @@ export type BottomSubmenuData<I extends BottomSubmenuItem = BottomSubmenuItem> =
 export class BottomSubmenu {
   private bottomSheetRef = inject(MatBottomSheetRef<BottomSubmenu, string>);
   public data = inject<BottomSubmenuData>(MAT_BOTTOM_SHEET_DATA);
-  public itemMapping: Record<BottomSubmenuItem, { icon: string; label: string}> = {
-    edit: {
-      icon: 'edit',
-      label: 'Szerkesztés',
-    },
-    delete: {
-      icon: 'delete',
-      label: 'Törlés',
-    },
-    merge: {
-      icon: 'merge',
-      label: 'Egyesítés',
-    },
-  };
   
   onSelect(action: string) {
     this.bottomSheetRef.dismiss(action);
   }
-
 }

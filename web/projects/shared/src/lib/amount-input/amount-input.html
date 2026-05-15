@@ -1,6 +1,6 @@
 <mat-form-field>
   @if (!signHidden()) {
-  <button mat-icon-button matPrefix type="button" (click)="inverseValue($event)" [disabled]="signDisabled()">
+  <button matIconButton matPrefix type="button" (click)="inverseValue($event)" [disabled]="signDisabled()">
     <mat-icon>{{isPositive() ? 'add' : 'remove'}}</mat-icon>
   </button>
   }

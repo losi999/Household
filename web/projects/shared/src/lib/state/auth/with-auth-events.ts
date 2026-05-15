@@ -53,6 +53,7 @@ export const withAuthEvents = () => {
         ),
         logOut: events.on(authEvents.logOut).pipe(
           tap(() => {
+            console.log('log out');
             localStorage.clear();
             authService.userTypes = [];
           }),

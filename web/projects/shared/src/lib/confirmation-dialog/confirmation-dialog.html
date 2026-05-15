@@ -1,8 +1,8 @@
-<h1 mat-dialog-title>{{data.title}}</h1>
+<div matDialogTitle>{{data.title}}</div>
 @if(data.content) {
-<div mat-dialog-content>{{data.content}}</div>
+<mat-dialog-content>{{data.content}}</mat-dialog-content>
 }
-<div mat-dialog-actions>
+<mat-dialog-actions>
   <button matButton="filled" class="danger" [mat-dialog-close]="true" cdkFocusInitial>Igen</button>
   <button matButton="text" [mat-dialog-close]="false">Nem</button>
-</div>
+</mat-dialog-actions>
