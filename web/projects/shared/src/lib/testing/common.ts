@@ -29,3 +29,14 @@ export const provideMockSignalStore = <S extends ReturnType<typeof signalStore>>
     useValue: mockStore,
   } ;
 };
+
+export const createMockDispatcher = (dispatcher: Dispatcher) => {
+  const originalDispatch = dispatcher.dispatch.bind(dispatcher);
+  const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
+
+  dispatchSpy.mockImplementationOnce(originalDispatch)
+    .mockImplementation(() => undefined);
+
+  return dispatchSpy;
+
+};

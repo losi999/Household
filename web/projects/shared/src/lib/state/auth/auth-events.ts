@@ -10,7 +10,9 @@ export const authEvents = eventGroup({
       requiredUserType?: UserType;
     }>(),
     tokensRetrieved: type<Auth.Login.Response>(),
-    logInCompleted: type<void>(),
+    logInCompleted: type<Auth.Login.Response & {
+      userTypes: UserType[]
+    }>(),
     confirmUserInitiated: type<Auth.ConfirmUser.Request & User.Email>(),
     confirmUserCompleted: type<void>(),
     logOut: type<void>(),

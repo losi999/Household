@@ -18,6 +18,13 @@ withState<AuthState>({
   refreshToken: undefined,
   userTypes: [],
 }),
+withComputed((store) => {
+  return {
+    isLoggedIn: computed(() => {
+      return !!store.idToken();
+    }),
+  };
+}),
 withHooks({
   onInit(store) {
     patchState(store, {
@@ -29,11 +36,4 @@ withHooks({
 }),
 withAuthEvents(),
 withAuthReducer(),
-withComputed((store) => {
-  return {
-    isLoggedIn: computed(() => {
-      return !!store.idToken();
-    }),
-  };
-}),
 );

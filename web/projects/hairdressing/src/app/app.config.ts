@@ -10,6 +10,7 @@ import localeHu from '@angular/common/locales/hu';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { environment } from '@hairdressing/environments/environment';
+import { jwtDecode } from 'jwt-decode';
 
 registerLocaleData(localeHu);
 
@@ -18,6 +19,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: API_URL,
       useValue: environment.apiUrl,
+    },
+    {
+      provide: jwtDecode,
+      useValue: jwtDecode,
     },
     {
       provide: MAT_DATE_LOCALE,
