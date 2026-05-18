@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { authEvents, AuthService, AuthState, AuthStore, createMockDispatcher, notificationEvents } from '@household/shared-ui';
+import { authEvents, AuthService, AuthState, AuthStore, createDispatcherSpy, notificationEvents } from '@household/shared-ui';
 import { createMockService, MockService, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { UserType } from '@household/shared/enums';
 import { Dispatcher } from '@ngrx/signals/events';
@@ -41,7 +41,7 @@ describe('Auth store', () => {
 
     store = TestBed.inject(AuthStore);
     dispatcher = TestBed.inject(Dispatcher);
-    dispatchSpy = createMockDispatcher(dispatcher);
+    dispatchSpy = createDispatcherSpy(dispatcher);
   });
 
   afterEach(() => {
@@ -80,6 +80,7 @@ describe('Auth store', () => {
       expect(store.idToken()).toBe(initialState.idToken);
       expect(store.refreshToken()).toBe(initialState.refreshToken);
       expect(store.userTypes()).toEqual(initialState.userTypes);
+      expect(store.isLoggedIn()).toBe(true);
       validateNthFunctionCall(dispatchSpy, 2, authEvents.tokensRetrieved({
         idToken,
         refreshToken,
@@ -107,6 +108,7 @@ describe('Auth store', () => {
         expect(store.idToken()).toBe(initialState.idToken);
         expect(store.refreshToken()).toBe(initialState.refreshToken);
         expect(store.userTypes()).toEqual(initialState.userTypes);
+        expect(store.isLoggedIn()).toBe(true);
         validateNthFunctionCall(dispatchSpy, 2, notificationEvents.showMessage('Hibás felhasználónév vagy jelszó'), undefined);
         expect(dispatchSpy).toHaveBeenCalledTimes(2);
       });
@@ -130,6 +132,7 @@ describe('Auth store', () => {
         expect(store.idToken()).toBe(initialState.idToken);
         expect(store.refreshToken()).toBe(initialState.refreshToken);
         expect(store.userTypes()).toEqual(initialState.userTypes);
+        expect(store.isLoggedIn()).toBe(true);
         validateNthFunctionCall(dispatchSpy, 2, notificationEvents.showMessage('Nincs jogosultságod ehhez az oldalhoz!'), undefined);
         expect(dispatchSpy).toHaveBeenCalledTimes(2);
       });
@@ -153,6 +156,7 @@ describe('Auth store', () => {
         expect(store.idToken()).toBe(initialState.idToken);
         expect(store.refreshToken()).toBe(initialState.refreshToken);
         expect(store.userTypes()).toEqual(initialState.userTypes);
+        expect(store.isLoggedIn()).toBe(true);
         validateNthFunctionCall(dispatchSpy, 2, notificationEvents.showMessage('Hiba történt'), undefined);
         expect(dispatchSpy).toHaveBeenCalledTimes(2);
       });
@@ -182,6 +186,7 @@ describe('Auth store', () => {
       expect(store.idToken()).toBe(initialState.idToken);
       expect(store.refreshToken()).toBe(initialState.refreshToken);
       expect(store.userTypes()).toEqual(initialState.userTypes);
+      expect(store.isLoggedIn()).toBe(true);
       validateNthFunctionCall(dispatchSpy, 2, authEvents.logInCompleted({
         idToken,
         refreshToken,
@@ -207,6 +212,7 @@ describe('Auth store', () => {
       expect(store.idToken()).toBe(idToken);
       expect(store.refreshToken()).toBe(refreshToken);
       expect(store.userTypes()).toEqual([userType]);
+      expect(store.isLoggedIn()).toBe(true);
       expect(dispatchSpy).toHaveBeenCalledTimes(1);
     });
   });
@@ -218,6 +224,7 @@ describe('Auth store', () => {
       expect(store.idToken()).toBeUndefined();
       expect(store.refreshToken()).toBeUndefined();
       expect(store.userTypes()).toBeUndefined();
+      expect(store.isLoggedIn()).toBe(false);
       expect(localStorage.getItem('idToken')).toBeNull();
       expect(localStorage.getItem('refreshToken')).toBeNull();
       expect(localStorage.getItem('userTypes')).toBeNull();

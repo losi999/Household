@@ -30,7 +30,7 @@ export const provideMockSignalStore = <S extends ReturnType<typeof signalStore>>
   } ;
 };
 
-export const createMockDispatcher = (dispatcher: Dispatcher) => {
+export const createDispatcherSpy = (dispatcher: Dispatcher) => {
   const originalDispatch = dispatcher.dispatch.bind(dispatcher);
   const dispatchSpy = vi.spyOn(dispatcher, 'dispatch');
 
