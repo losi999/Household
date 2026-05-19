@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { ClearableInput } from '@household/shared-ui';
+import { ClearableInput, HoldableButton } from '@household/shared-ui';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar, Customer } from '@household/shared/types/types';
 import { DurationStepper } from '@hairdressing/app/shared/duration-stepper/duration-stepper';
@@ -41,6 +41,7 @@ export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
     CustomerAutocompleteInput,
     MatSelectModule,
     CalendarHorizontalDay,
+    HoldableButton,
   ],
   templateUrl: './calendar-entry-edit-dialog.html',
   styleUrl: './calendar-entry-edit-dialog.scss',

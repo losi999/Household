@@ -35,9 +35,9 @@
     <mat-datepicker #picker />
   </mat-form-field>
   <div class="duration">
-    <button matIconButton (click)="onAdjustStart(-1)"><mat-icon>swipe_left_alt</mat-icon></button>
+    <button matIconButton sharedHoldableButton (hold)="onAdjustStart(-1)"><mat-icon>swipe_left_alt</mat-icon></button>
     <hairdressing-duration-stepper [formField]="entryForm.duration" />
-    <button matIconButton (click)="onAdjustStart(1)"><mat-icon>swipe_right_alt</mat-icon></button>
+    <button matIconButton sharedHoldableButton (hold)="onAdjustStart(1)"><mat-icon>swipe_right_alt</mat-icon></button>
   </div>
   <mat-slider min="0" [max]="maximumStart()">
     <input matSliderThumb [formField]="entryForm.start">
