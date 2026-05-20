@@ -804,8 +804,11 @@ export namespace Customer {
       name: string;
     };
 
-    type Base = Name & {
+    export type Duration = {
       duration: number;
+    };
+
+    type Base = Name & Duration & {
       description: string;
     };
 

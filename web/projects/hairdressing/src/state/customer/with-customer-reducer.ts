@@ -1,4 +1,4 @@
-import { customerApiEvents } from '@hairdressing/state/customer/customer-events';
+import { customerApiEvents, customerEvents } from '@hairdressing/state/customer/customer-events';
 import { CustomerState } from '@hairdressing/state/customer/customer-store';
 import { toSearchTerms } from '@household/shared/common/utils';
 import { signalStoreFeature } from '@ngrx/signals';
@@ -246,6 +246,29 @@ export const withCustomerReducer = () => {
               [customerId]: works,
             },
           };
+        };
+      }),
+      on(customerEvents.addPriceFilter, ({ payload }) => {
+        return (state) => {
+          return {
+            priceIdFilters: [
+              ...state.priceIdFilters,
+              payload,
+            ],
+          };
+        };
+      }),
+      on(customerEvents.removePriceFilter, ({ payload }) => {
+        return (state) => {
+          return {
+            priceIdFilters: state.priceIdFilters.filter(p => p !== payload),
+          };
+        };
+      }),
+      on(customerEvents.sortJobs, ({ payload }) => {
+        return {
+          jobListSortBy: payload.sortBy,
+          jobListSortOrder: payload.sortOrder,
         };
       }),
     ),
