@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
 import { HoldableButton } from '@household/shared-ui';
+import { DAY_LENGTH } from '@household/shared/constants';
 
 @Component({
   selector: 'hairdressing-duration-stepper',
@@ -23,6 +24,6 @@ export class DurationStepper implements FormValueControl<number> {
 
   onSetDuration(diff: number) {
     const newValue = this.value() + diff;
-    this.value.set(Math.min(Math.max(newValue, 1), 96));
+    this.value.set(Math.min(Math.max(newValue, 1), DAY_LENGTH));
   }
 }

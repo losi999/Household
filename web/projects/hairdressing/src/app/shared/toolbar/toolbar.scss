@@ -20,7 +20,8 @@
         flex: 1 1 auto;
       }
 
-      button {
+      button,
+      a {
         @include mat.icon-button-overrides(
           (
             icon-color: var(--mat-sys-on-primary),

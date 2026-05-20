@@ -68,7 +68,7 @@ export const calendarEntryDocumentConverterFactory = (customerDocumentConverter:
           };
         }
 
-        if (!body.additionalPrice) {
+        if (body.additionalPrice === undefined) {
           $unset = {
             ...$unset,
             additionalPrice: true,

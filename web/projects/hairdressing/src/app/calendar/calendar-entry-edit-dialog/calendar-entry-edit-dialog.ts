@@ -10,7 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { form, FormField, required } from '@angular/forms/signals';
 import { MatInputModule } from '@angular/material/input';
-import { calculateWorkdayLimits, createDate, createWorkEntryTitle, dateToISODateString, dateToTimeSlot, toUndefined } from '@household/shared/common/utils';
+import { calculateWorkdayLimits, createDate, dateToISODateString, dateToTimeSlot, toUndefined } from '@household/shared/common/utils';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
 import { CustomerAutocompleteInput } from '@hairdressing/app/customer/customer-autocomplete-input/customer-autocomplete-input';
 import { MatSelectModule } from '@angular/material/select';
@@ -21,6 +21,7 @@ import { CalendarStore } from '@hairdressing/state/calendar/calendar-store';
 import { injectDispatch } from '@ngrx/signals/events';
 import { calendarEvents } from '@hairdressing/state/calendar/calendar-events';
 import { MatIconModule } from '@angular/material/icon';
+import { DAY_LENGTH } from '@household/shared/constants';
 
 export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
 export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
@@ -54,8 +55,9 @@ export class CalendarEntryEditDialog {
 
   CUSTOM_JOB: Customer.Job.Response = {
     name: v4(),
+    title: undefined,
     duration: 4,
-    description: undefined,
+    description: null,
     prices: undefined,
     additionalPrice: undefined,
   };
@@ -92,7 +94,7 @@ export class CalendarEntryEditDialog {
     duration: number;
   }>({
     customer: this.entry.entryType === CalendarEntryType.Work ? this.entry.customer ?? null : null,
-    job: this.entry.entryType === CalendarEntryType.Work ? this.entry.customer?.jobs.find(j => this.entry.title.endsWith(j.name)) ?? this.CUSTOM_JOB : null,
+    job: this.entry.entryType === CalendarEntryType.Work ? this.entry.customer?.jobs.find(j => this.entry.title === j.title) ?? this.CUSTOM_JOB : null,
     title: this.entry.title ?? '',
     description: this.entry.description ?? '',
     day: createDate(this.entry.day) ?? new Date(),
@@ -188,7 +190,7 @@ export class CalendarEntryEditDialog {
   });
 
   maximumStart = computed(() => {
-    return 96 - this.entryForm.duration().value();
+    return DAY_LENGTH - this.entryForm.duration().value();
   });
 
   end = computed(() => {
@@ -203,7 +205,6 @@ export class CalendarEntryEditDialog {
     });
 
     effect(() => {
-      console.log('duration changed');
       this.entryForm.start().value.update(current => Math.min(this.maximumStart(), current));
     });
 
@@ -232,14 +233,8 @@ export class CalendarEntryEditDialog {
         return;
       }
       this.entryForm.duration().value.set(selectedJob.duration);
-
-      if (selectedJob.name !== this.CUSTOM_JOB.name) {
-        const newTitle = createWorkEntryTitle(this.entryForm.customer().value(), selectedJob);
-        this.entryForm.title().value.set(newTitle);
-      } else {
-        const newTitle = createWorkEntryTitle(this.entryForm.customer().value());
-        this.entryForm.title().value.set(newTitle);
-      }
+      this.entryForm.title().value.set(selectedJob.title ?? `${this.entryForm.customer().value().name}:`);
+      this.entryForm.description().value.set(selectedJob.description);
     });
   }
 
@@ -262,7 +257,7 @@ export class CalendarEntryEditDialog {
           start: this.entryForm.start().value(),
           end: this.end(),
           title: this.entryForm.title().value(),
-          description: toUndefined(selectedJob.description) ?? toUndefined(this.entryForm.description().value()),
+          description: toUndefined(this.entryForm.description().value()),
           customerId: this.entryForm.customer().value().customerId,
           additionalPrice: selectedJob.additionalPrice,
           prices: selectedJob.prices?.map((p) => {

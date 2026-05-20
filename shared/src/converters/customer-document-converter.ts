@@ -148,6 +148,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
             description, 
             duration,
             additionalPrice,
+            title: customer.isGroup ? name : `${customer.name}: ${name}`,
             prices: instance.toResponseJobPriceList(prices),
           };
         }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {

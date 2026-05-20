@@ -19,7 +19,7 @@ import { CustomerStore } from '@hairdressing/state/customer/customer-store';
 import { CalendarWeek, CustomerJob } from '@hairdressing/types';
 import { calendarEvents } from '@hairdressing/state/calendar/calendar-events';
 import { CalendarStore } from '@hairdressing/state/calendar/calendar-store';
-import { WORKDAY_START, WORKDAY_END } from '@household/shared/constants';
+import { WORKDAY_START, WORKDAY_END, DAY_END, DAY_LENGTH } from '@household/shared/constants';
 import { lastDayOfISOWeekYear, startOfISOWeek, setISOWeek, getISOWeek } from 'date-fns';
 
 @Component({
@@ -129,11 +129,11 @@ export class CalendarHome {
     const { start, end } = this.daysOfWeek();
 
     const rowsToHideStart = Math.floor((start) / 2) * 2;
-    const rowsToHideEnd = 96 - Math.floor((end + 1) / 2) * 2;
+    const rowsToHideEnd = DAY_END - Math.floor((end + 1) / 2) * 2;
 
     const parts = [
       rowsToHideStart > 0 ? `repeat(${rowsToHideStart}, auto)` : '',
-      `repeat(${96 - rowsToHideStart - rowsToHideEnd}, 20px)`,
+      `repeat(${DAY_END - rowsToHideStart - rowsToHideEnd}, 20px)`,
       rowsToHideEnd > 0 ? `repeat(${rowsToHideEnd}, auto)` : '',
     ];
 
@@ -145,7 +145,7 @@ export class CalendarHome {
 
     return Array.from(
       {
-        length: 96,
+        length: DAY_LENGTH,
       },
       (_, i) => {
         if (i % 2 === 0 && i + 1 >= start && i - 1 <= end) {

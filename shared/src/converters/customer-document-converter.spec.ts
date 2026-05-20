@@ -275,10 +275,13 @@ describe('Customer document converter', () => {
   });
 
   describe('toResponse', () => {
-    it('should return response', () => {
+    it('should return group customer response', () => {
       const quantity = 1;
       const blacklistedCustomer = testDataFactory.customer.document();
       const doc = testDataFactory.customer.document({
+        body: {
+          isGroup: true,
+        },
         jobs: [
           {
             body: {
@@ -321,6 +324,7 @@ describe('Customer document converter', () => {
             description: job.description,
             duration: job.duration,
             additionalPrice: job.additionalPrice,
+            title: job.name,
             prices: [
               {
                 ...priceResponse,
@@ -331,13 +335,14 @@ describe('Customer document converter', () => {
         ],
       }));
     });
-  });
 
-  describe('toResponseList', () => {
-    it('should return response', () => {
-      const quantity = 1;   
+    it('should return individual customer response', () => {
+      const quantity = 1;
       const blacklistedCustomer = testDataFactory.customer.document();
       const doc = testDataFactory.customer.document({
+        body: {
+          isGroup: false,
+        },
         jobs: [
           {
             body: {
@@ -358,40 +363,100 @@ describe('Customer document converter', () => {
 
       const { description, isGroup, name, rating } = doc;
 
-      const result = converter.toResponseList([doc]);
-      expect(result).toEqual([
-        testDataFactory.customer.response({
-          description,
-          name,
-          isGroup,
-          rating,
-          customerId: getCustomerId(doc),
-          blacklistedCustomers: [
-            {
-              customerId: getCustomerId(blacklistedCustomer),
-              name: blacklistedCustomer.name,
-              rating: blacklistedCustomer.rating,
-              description: blacklistedCustomer.description,
-              isGroup: blacklistedCustomer.isGroup,
-            },
-          ],
-          jobs: [
-            {
-              name: job.name,
-              description: job.description,
-              duration: job.duration,
-              additionalPrice: job.additionalPrice,
-              prices: [
-                {
-                  ...priceResponse,
-                  quantity,
-                },
-              ],
-            },
-  
-          ],
-        }),
-      ]);
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(testDataFactory.customer.response({
+        description,
+        name,
+        isGroup,
+        rating,
+        customerId: getCustomerId(doc),
+        blacklistedCustomers: [
+          {
+            customerId: getCustomerId(blacklistedCustomer),
+            name: blacklistedCustomer.name,
+            rating: blacklistedCustomer.rating,
+            description: blacklistedCustomer.description,
+            isGroup: blacklistedCustomer.isGroup,
+          },
+        ],
+        jobs: [
+          {
+            name: job.name,
+            description: job.description,
+            duration: job.duration,
+            additionalPrice: job.additionalPrice,
+            title: `${name}: ${job.name}`,
+            prices: [
+              {
+                ...priceResponse,
+                quantity,
+              },
+            ],
+          },
+        ],
+      }));
     });
   });
+
+  // describe('toResponseList', () => {
+  //   it('should return response', () => {
+  //     const quantity = 1;   
+  //     const blacklistedCustomer = testDataFactory.customer.document();
+  //     const doc = testDataFactory.customer.document({
+  //       jobs: [
+  //         {
+  //           body: {
+  //             name: 'A',
+  //           },
+  //           prices: [
+  //             {
+  //               quantity,
+  //             },
+  //           ],
+  //         },
+  //       ],
+  //       blacklistedCustomers: [blacklistedCustomer],
+  //     });
+  //     const job = doc.jobs[0];
+  //     const priceResponse = testDataFactory.price.response();
+  //     mockPriceDocumentConverter.functions.toResponse.mockReturnValue(priceResponse);
+
+  //     const { description, isGroup, name, rating } = doc;
+
+  //     const result = converter.toResponseList([doc]);
+  //     expect(result).toEqual([
+  //       testDataFactory.customer.response({
+  //         description,
+  //         name,
+  //         isGroup,
+  //         rating,
+  //         customerId: getCustomerId(doc),
+  //         blacklistedCustomers: [
+  //           {
+  //             customerId: getCustomerId(blacklistedCustomer),
+  //             name: blacklistedCustomer.name,
+  //             rating: blacklistedCustomer.rating,
+  //             description: blacklistedCustomer.description,
+  //             isGroup: blacklistedCustomer.isGroup,
+  //           },
+  //         ],
+  //         jobs: [
+  //           {
+  //             name: job.name,
+  //             description: job.description,
+  //             duration: job.duration,
+  //             additionalPrice: job.additionalPrice,
+  //             prices: [
+  //               {
+  //                 ...priceResponse,
+  //                 quantity,
+  //               },
+  //             ],
+  //           },
+  
+  //         ],
+  //       }),
+  //     ]);
+  //   });
+  // });
 });

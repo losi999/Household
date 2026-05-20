@@ -107,6 +107,7 @@ export const withCustomerReducer = () => {
                 ...c,
                 jobs: c.jobs.concat({
                   name,
+                  title: c.isGroup ? name : `${c.name}: ${name}`,
                   prices: prices.map((p) => {
                     const price = priceList.find(x => x.priceId === p.priceId);
                     return {
@@ -143,6 +144,7 @@ export const withCustomerReducer = () => {
 
                   return {
                     name,
+                    title: c.isGroup ? name : `${c.name}: ${name}`,
                     prices: prices.map((p) => {
                       const price = priceList.find(x => x.priceId === p.priceId);
                       return {

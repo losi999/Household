@@ -13,7 +13,7 @@
   @if (pendingCustomerJob()) {
   <div class="pending">
     <span>
-      Időpont keresése... {{pendingCustomerJob().customer.isGroup ? pendingCustomerJob().name : (pendingCustomerJob().customer.name + ': ' + pendingCustomerJob().name)}} ({{pendingCustomerJob().duration | timeSlotToTime}} óra)
+      Időpont keresése... {{pendingCustomerJob().title}} ({{pendingCustomerJob().duration | timeSlotToTime}} óra)
     </span>
     <button matIconButton class="danger" type="button" [routerLink]="[]" [queryParams]="{ customerId: null, jobName: null }" queryParamsHandling="merge" [replaceUrl]="true"><mat-icon>close</mat-icon></button>
   </div>

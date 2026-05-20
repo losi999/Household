@@ -19,6 +19,15 @@ export const routes: Routes = [
     },
   },
   {
+    path: 'customers/jobs',
+    title: 'Munkák',
+    loadComponent: () => import('@hairdressing/app/customer/customer-jobs-home/customer-jobs-home').then(m => m.CustomerJobsHome),
+    canMatch: [authenticatedGuard],
+    data: {
+      requiredUserType: UserType.Hairdresser,
+    },
+  },
+  {
     path: 'customers/:customerId',
     title: 'Vendég',
     loadComponent: () => import('@hairdressing/app/customer/customer-details/customer-details').then(m => m.CustomerDetails),
