@@ -94,7 +94,16 @@
           "defaultConfiguration": "LOCAL"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/hairdressing/tsconfig.spec.json"
+          },
+          "configurations": {
+            "LOCAL": {
+              "buildTarget": "hairdressing:build:LOCAL"
+            }
+          },
+          "defaultConfiguration": "LOCAL"
         }
       }
     },

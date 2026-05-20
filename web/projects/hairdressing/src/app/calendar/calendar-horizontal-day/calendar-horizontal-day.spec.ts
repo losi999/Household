@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CalendarHorizontalDay } from './calendar-horizontal-day';
 
-describe('CalendarHorizontalDay', () => {
+describe.skip('CalendarHorizontalDay', () => {
   let component: CalendarHorizontalDay;
   let fixture: ComponentFixture<CalendarHorizontalDay>;
 

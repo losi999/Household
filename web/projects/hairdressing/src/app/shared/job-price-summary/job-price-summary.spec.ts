@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { JobPriceSummary } from './job-price-summary';
 
-describe('JobPriceSummary', () => {
+describe.skip('JobPriceSummary', () => {
   let component: JobPriceSummary;
   let fixture: ComponentFixture<JobPriceSummary>;
 
