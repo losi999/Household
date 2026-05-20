@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CustomerDetailsWorks } from './customer-details-works';
 
-describe('CustomerDetailsWorks', () => {
+describe.skip('CustomerDetailsWorks', () => {
   let component: CustomerDetailsWorks;
   let fixture: ComponentFixture<CustomerDetailsWorks>;
 

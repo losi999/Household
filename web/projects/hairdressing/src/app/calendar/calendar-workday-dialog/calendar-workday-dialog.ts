@@ -55,8 +55,8 @@ export class CalendarWorkdayDialog {
           this.end.set(AFTERNOON_SHIFT_END);
         } break;
         case ShiftType.Custom: {
-          this.start.set(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_START : this.day.start);
-          this.end.set(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_END : this.day.end);
+          this.start.set(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_START : this.day.start ?? WORKDAY_START);
+          this.end.set(this.day.dayType === CalendarDayType.Vacation ? WORKDAY_END : this.day.end ?? WORKDAY_END);
         } break;
       }
     });

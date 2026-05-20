@@ -7,6 +7,7 @@ import { test as calendarApiTest, expect as calendarApiExpect } from '@household
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
+import { DAY_END, DAY_START } from '@household/shared/constants';
 
 const test = mergeTests(calendarApiTest, calendarDayDbTest);
 
@@ -170,7 +171,7 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
                 start: -1, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooSmallValidationError('body', 'start', 0);
+              expect(res).toHaveTooSmallValidationError('body', 'start', DAY_START);
             });
 
             test('is too large', async ({ requestUpdateCalendarDay }) => {
@@ -178,7 +179,7 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
                 start: 97, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooLargeValidationError('body', 'start', 96);
+              expect(res).toHaveTooLargeValidationError('body', 'start', DAY_END);
             });
           });
 
@@ -213,7 +214,7 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
                 end: 97, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooLargeValidationError('body', 'end', 96);
+              expect(res).toHaveTooLargeValidationError('body', 'end', DAY_END);
             });
           });
 

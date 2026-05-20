@@ -89,6 +89,15 @@ components:
               - $ref: "price.yaml#/components/schemas/Response"
               - $ref: "#/components/schemas/Quantity"
 
+    Job.Title:
+      title: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          minLength: 1
+
     Job.Request:
       allOf:
         - $ref: "#/components/schemas/Job.Base"
@@ -98,6 +107,7 @@ components:
     Job.Response:
       allOf:
         - $ref: "#/components/schemas/Job.Base"
+        - $ref: "#/components/schemas/Job.Title"
         - $ref: "#/components/schemas/Cost.Response"
         - $ref: "#/components/schemas/Cost.Required"
 

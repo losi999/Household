@@ -85,15 +85,7 @@
           "as-needed"
         ],
         "space-infix-ops": "error",
-        "@angular-eslint/component-class-suffix": "off",
-        "@angular-eslint/directive-selector": [
-          "error",
-          {
-            "type": "attribute",
-            "prefix": "household",
-            "style": "camelCase"
-          }
-        ]
+        "@angular-eslint/component-class-suffix": "off"
       }
     },
     {

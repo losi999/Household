@@ -1,0 +1,61 @@
+<hairdressing-toolbar title="Munkák">
+</hairdressing-toolbar>
+@if (customerStore.jobList().length > 0) {
+<table mat-table [dataSource]="customerStore.jobList()" matSort (matSortChange)="onSortChange($event)">
+  <ng-container matColumnDef="customerName">
+    <th mat-header-cell *matHeaderCellDef>Vendég</th>
+    <td mat-cell *matCellDef="let element"><a [routerLink]="['/customers', element.customerId]"> {{element.customerName}} </a></td>
+  </ng-container>
+
+  <ng-container matColumnDef="jobName">
+    <th mat-header-cell *matHeaderCellDef>Munka neve</th>
+    <td mat-cell *matCellDef="let element"> {{element.jobName}} </td>
+  </ng-container>
+
+  <ng-container matColumnDef="duration">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Időtartam</th>
+    <td mat-cell *matCellDef="let element"> {{element.duration | timeSlotToTime}} óra</td>
+  </ng-container>
+
+  <ng-container matColumnDef="total">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Ár</th>
+    <td mat-cell *matCellDef="let element"> {{element.total}} Ft</td>
+  </ng-container>
+
+  <ng-container matColumnDef="hourlyRate">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>Óradíj</th>
+    <td mat-cell *matCellDef="let element"> {{element.hourlyRate | number: '1.0-1'}} Ft/óra</td>
+  </ng-container>
+
+  <ng-container matColumnDef="prices">
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell class="price-buttons" *matCellDef="let element">
+      @for(p of element.prices; track $index) {
+      @if (customerStore.priceIdFilters().includes(p.priceId)) {
+      <button matButton="filled" (click)="onRemovePriceFilter(p.priceId)">
+        {{p.name}}
+        <mat-icon>remove</mat-icon>
+      </button>
+      } @else {
+      <button matButton="outlined" (click)="onAddPriceFilter(p.priceId)">
+        {{p.name}}
+        <mat-icon>add</mat-icon>
+      </button>
+      }
+      }
+    </td>
+  </ng-container>
+
+  <ng-container matColumnDef="buttons">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header></th>
+    <td mat-cell *matCellDef="let element">
+      <button matIconButton (click)="onEditJob(element.customerId, element.jobName)">
+        <mat-icon>edit</mat-icon>
+      </button>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+}

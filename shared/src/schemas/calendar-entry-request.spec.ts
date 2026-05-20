@@ -3,6 +3,7 @@ import { Calendar } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { CalendarEntryType } from '@household/shared/enums';
+import { DAY_END, DAY_START } from '@household/shared/constants';
 
 describe('Calendar personal entry request schema', () => {
   const tester = jsonSchemaTesterFactory<Calendar.Entry.PersonalEntryRequest>(schema);
@@ -78,11 +79,11 @@ describe('Calendar personal entry request schema', () => {
 
       tester.minimum(testDataFactory.calendar.entry.request.personal({
         start: -1,
-      }), 'start', 0);
+      }), 'start', DAY_START);
 
       tester.maximum(testDataFactory.calendar.entry.request.personal({
         start: 97,
-      }), 'start', 96);
+      }), 'start', DAY_END);
     });
 
     describe('if data.end', () => {
@@ -96,11 +97,11 @@ describe('Calendar personal entry request schema', () => {
 
       tester.minimum(testDataFactory.calendar.entry.request.personal({
         end: -1,
-      }), 'end', 0);
+      }), 'end', DAY_START);
 
       tester.maximum(testDataFactory.calendar.entry.request.personal({
         end: 97,
-      }), 'end', 96);
+      }), 'end', DAY_END);
 
       tester.exclusiveMinimum(testDataFactory.calendar.entry.request.personal({
         start: 20,
@@ -184,11 +185,11 @@ describe('Calendar issue entry request schema', () => {
 
       tester.minimum(testDataFactory.calendar.entry.request.issue({
         start: -1,
-      }), 'start', 0);
+      }), 'start', DAY_START);
 
       tester.maximum(testDataFactory.calendar.entry.request.issue({
         start: 97,
-      }), 'start', 96);
+      }), 'start', DAY_END);
     });
 
     describe('if data.end', () => {
@@ -202,11 +203,11 @@ describe('Calendar issue entry request schema', () => {
 
       tester.minimum(testDataFactory.calendar.entry.request.issue({
         end: -1,
-      }), 'end', 0);
+      }), 'end', DAY_START);
 
       tester.maximum(testDataFactory.calendar.entry.request.issue({
         end: 97,
-      }), 'end', 96);
+      }), 'end', DAY_END);
 
       tester.exclusiveMinimum(testDataFactory.calendar.entry.request.issue({
         start: 20,
@@ -321,13 +322,13 @@ describe('Calendar work entry request schema', () => {
         body: {
           start: -1,
         },
-      }), 'start', 0);
+      }), 'start', DAY_START);
 
       tester.maximum(testDataFactory.calendar.entry.request.work({
         body: {
           start: 97,
         },
-      }), 'start', 96);
+      }), 'start', DAY_END);
     });
 
     describe('if data.end', () => {
@@ -347,13 +348,13 @@ describe('Calendar work entry request schema', () => {
         body: {
           end: -1,
         },
-      }), 'end', 0);
+      }), 'end', DAY_START);
 
       tester.maximum(testDataFactory.calendar.entry.request.work({
         body: {
           end: 97,
         },
-      }), 'end', 96);
+      }), 'end', DAY_END);
 
       tester.exclusiveMinimum(testDataFactory.calendar.entry.request.work({
         body: {

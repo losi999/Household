@@ -9,6 +9,7 @@ import { CustomerList } from '../customer-list/customer-list';
 import { CustomerStore } from '@hairdressing/state/customer/customer-store';
 import { injectDispatch } from '@ngrx/signals/events';
 import { customerApiEvents, customerEvents } from '@hairdressing/state/customer/customer-events';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'hairdressing-customer-home',
@@ -20,6 +21,7 @@ import { customerApiEvents, customerEvents } from '@hairdressing/state/customer/
     FormsModule,
     ClearableInput,
     CustomerList,
+    RouterLink,
   ],
   templateUrl: './customer-home.html',
   styleUrl: './customer-home.scss',

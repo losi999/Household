@@ -221,6 +221,7 @@ export const validateCustomerResponse = (response: Customer.Response, document: 
           description: jobDocument.description,
           duration: jobDocument.duration,
           additionalPrice: jobDocument.additionalPrice,
+          title: document.isGroup ? jobDocument.name : `${document.name}: ${jobDocument.name}`,
           prices: validateCustomerJobPriceResponse(job.prices, jobDocument.prices), 
         });
       }),

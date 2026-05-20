@@ -134,15 +134,6 @@ export const calculateWorkdayLimits = (day: Calendar.Day.Response): Calendar.Tim
   };
 };
 
-export const createWorkEntryTitle = (customer: Customer.Response, job?: Customer.Job.Response) => {
-  if (!job) {
-    return `${customer.name}: `;
-  }
-
-  return customer.isGroup ? job.name : `${customer.name}: ${job.name}`;
-
-};
-
 export const toSearchTerms = (input: string): string[] => {
   const lowercased = input.toLowerCase().split(' ');
 

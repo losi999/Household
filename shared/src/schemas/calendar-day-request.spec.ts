@@ -2,6 +2,7 @@ import { default as schema } from '@household/shared/schemas/calendar-day-reques
 import { Calendar } from '@household/shared/types/types';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { DAY_END, DAY_START } from '@household/shared/constants';
 
 describe('Calendar workday request schema', () => {
   const tester = jsonSchemaTesterFactory<Calendar.Day.WorkdayRequest>(schema);
@@ -40,11 +41,11 @@ describe('Calendar workday request schema', () => {
 
       tester.minimum(testDataFactory.calendar.day.request.workday({
         start: -1,
-      }), 'start', 0);
+      }), 'start', DAY_START);
 
       tester.maximum(testDataFactory.calendar.day.request.workday({
         start: 97,
-      }), 'start', 96);
+      }), 'start', DAY_END);
     });
 
     describe('if data.end', () => {
@@ -58,11 +59,11 @@ describe('Calendar workday request schema', () => {
 
       tester.minimum(testDataFactory.calendar.day.request.workday({
         end: -1,
-      }), 'end', 0);
+      }), 'end', DAY_START);
 
       tester.maximum(testDataFactory.calendar.day.request.workday({
         end: 97,
-      }), 'end', 96);
+      }), 'end', DAY_END);
 
       tester.exclusiveMinimum(testDataFactory.calendar.day.request.workday({
         start: 50,

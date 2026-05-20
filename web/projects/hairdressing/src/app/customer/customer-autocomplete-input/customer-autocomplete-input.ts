@@ -86,7 +86,10 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
   }
 
   onBlur() {
-    if (this.value()?.name !== this.filterValue()) {
+    if (!this.value()) {
+      return;
+    }
+    if (this.value().name !== this.filterValue()) {
       this.value.set(null);
     }
   }

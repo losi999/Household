@@ -1,7 +1,7 @@
 <div class="header">
   <mat-toolbar>
     <div class="wrapper">
-      @if (authService.isLoggedIn) {
+      @if (authStore.isLoggedIn()) {
       <hairdressing-main-menu />
       }
       <span>{{title()}}</span>
