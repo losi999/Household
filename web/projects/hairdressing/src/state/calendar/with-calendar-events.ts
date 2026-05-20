@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { calendarApiEvents, calendarEvents } from '@hairdressing/state/calendar/calendar-events';
 import { DialogService, dispatchIfConfirmed } from '@household/shared-ui';
-import { createWorkEntryTitle, dateToISODateString, timeSlotToTimeString } from '@household/shared/common/utils';
+import { dateToISODateString, timeSlotToTimeString } from '@household/shared/common/utils';
 import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
 import { exhaustMap, filter, map } from 'rxjs';
@@ -182,7 +182,7 @@ export const withCalendarEvents = () => {
                 customer,
                 day,
                 description: job.description,
-                title: createWorkEntryTitle(customer, job),
+                title: job.title,
                 prices: job.prices,
                 start: timeInterval.start,
                 end: timeInterval.start + job.duration,
@@ -198,10 +198,9 @@ export const withCalendarEvents = () => {
         ),
         confirmCalendarEntryProposal: events.on(calendarEvents.confirmCalendarEntryProposal).pipe(
           exhaustMap(({ payload: { day, timeInterval, customerJob: { customer, ...job } } }) => {
-            const title = createWorkEntryTitle(customer, job);
             return dialogService.openConfirmationDialog({
               title: 'Rögzíted ezt a munkát erre az időpontra?',
-              content: `${title} ${new Date(day).toLocaleString('hu', {
+              content: `${job.title} ${new Date(day).toLocaleString('hu', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -211,7 +210,7 @@ export const withCalendarEvents = () => {
               dispatchIfConfirmed(calendarApiEvents.createCalendarEntryInitiated({
                 entryType: CalendarEntryType.Work,
                 day,
-                title,
+                title: job.title,
                 start: timeInterval.start,
                 end: timeInterval.end,
                 description: job.description,

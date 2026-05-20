@@ -9,6 +9,9 @@ export const MORNING_SHIFT_START = 32;
 export const MORNING_SHIFT_END = 60;
 export const AFTERNOON_SHIFT_START = 52;
 export const AFTERNOON_SHIFT_END = 80;
+export const DAY_START = 0;
+export const DAY_END = 96;
+export const DAY_LENGTH = 96;
 
 export const unitsOfMeasurement = [
   'cm',

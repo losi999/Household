@@ -1,3 +1,4 @@
+import { CustomerJobReportSort } from '@hairdressing/types';
 import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { type } from '@ngrx/signals';
 import { eventGroup } from '@ngrx/signals/events';
@@ -16,6 +17,9 @@ export const customerEvents = eventGroup({
       currentCustomer: Customer.Response;
       selectedCustomer: Customer.ResponseBase;
     }>(),
+    addPriceFilter: type<Price.Id>(),
+    removePriceFilter: type<Price.Id>(),
+    sortJobs: type<{sortBy: CustomerJobReportSort; sortOrder: 'asc' | 'desc'}>(),
   },
 });
 

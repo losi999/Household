@@ -12,6 +12,7 @@ import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { DAY_END, DAY_START } from '@household/shared/constants';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect, customerApiExpect);
 
@@ -357,7 +358,7 @@ test.describe('POST /calendar/v1/entries', () => {
                 }, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooSmallValidationError('body', 'start', 0);
+              expect(res).toHaveTooSmallValidationError('body', 'start', DAY_START);
             });
 
             test('is too large', async ({ requestCreateCalendarEntry }) => {
@@ -367,7 +368,7 @@ test.describe('POST /calendar/v1/entries', () => {
                 }, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooLargeValidationError('body', 'start', 96);
+              expect(res).toHaveTooLargeValidationError('body', 'start', DAY_END);
             });
           });
 
@@ -410,7 +411,7 @@ test.describe('POST /calendar/v1/entries', () => {
                 }, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooLargeValidationError('body', 'end', 96);
+              expect(res).toHaveTooLargeValidationError('body', 'end', DAY_END);
             });
           }); 
           

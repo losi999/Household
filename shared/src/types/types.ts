@@ -804,8 +804,11 @@ export namespace Customer {
       name: string;
     };
 
-    type Base = Name & {
+    export type Duration = {
       duration: number;
+    };
+
+    type Base = Name & Duration & {
       description: string;
     };
 
@@ -829,12 +832,16 @@ export namespace Customer {
       additionalPrice: number;
       prices: (Price.Response & Quantity)[];
     };
+
+    type Title = {
+      title: string
+    };
     
     export type Request = Base & CostRequest;
 
     export type Document = Base & CostDocument;
 
-    export type Response = Base & CostResponse;
+    export type Response = Base & CostResponse & Title;
   }
 
   type Jobs = {

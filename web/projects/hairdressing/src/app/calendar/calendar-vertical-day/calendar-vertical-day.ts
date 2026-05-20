@@ -6,6 +6,7 @@ import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pi
 import { calendarEvents } from '@hairdressing/state/calendar/calendar-events';
 import { CustomerJob, LimitedCalendarDay } from '@hairdressing/types';
 import { dateToISODateString } from '@household/shared/common/utils';
+import { DAY_LENGTH } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
 import { injectDispatch } from '@ngrx/signals/events';
@@ -53,7 +54,7 @@ export class CalendarVerticalDay {
     const dayEnd = day.calculatedEnd;
 
     const openSlots = Array.from({
-      length: 96,
+      length: DAY_LENGTH,
     }, (_, index) => index >= dayStart && index < dayEnd);
       
     entries.forEach((e) => {

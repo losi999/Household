@@ -1,9 +1,9 @@
 <h2>{{data.title}}</h2>
 <mat-action-list>
   @for(item of data.items; track $index) {
-  <button mat-list-item type="button" (click)="onSelect(item)">
-    <mat-icon matListItemIcon>{{itemMapping[item].icon}}</mat-icon>
-    <div matListItemTitle>{{itemMapping[item].label}}</div>
+  <button mat-list-item type="button" (click)="onSelect(item.action)">
+    <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
+    <div matListItemTitle>{{item.label}}</div>
   </button>
   }
 </mat-action-list>

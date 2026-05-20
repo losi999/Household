@@ -3,7 +3,7 @@ import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEn
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account, Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { faker } from '@faker-js/faker';
-import { priceUnitsOfMeasurement, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
+import { DAY_LENGTH, priceUnitsOfMeasurement, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 
 const createId = <I>(id?: string): I => (id ?? faker.database.mongodbObjectId()) as I;
 
@@ -892,7 +892,7 @@ const createCustomerJobRequest = (ctx?: {
     }),
     duration: faker.number.int({
       min: 1,
-      max: 96,
+      max: DAY_LENGTH,
     }),
     additionalPrice: faker.number.int({
       min: -5000,
@@ -921,11 +921,13 @@ const createCustomerJobRequest = (ctx?: {
 };
 
 const createCustomerJobResponse: DataFactoryFunction<Customer.Job.Response> = (data) => {
+  const name = `${faker.company.buzzVerb()} ${faker.string.uuid()}`;
   return {
-    name: `${faker.company.buzzVerb()} ${faker.string.uuid()}`,
+    name,
+    title: name,
     duration: faker.number.int({
       min: 1,
-      max: 96,
+      max: DAY_LENGTH,
     }),
     additionalPrice: faker.number.int({
       min: -5000,

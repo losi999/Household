@@ -1,0 +1,21 @@
+@use '@angular/material' as mat;
+
+.price-buttons {
+  max-width: 250px;
+}
+
+button {
+  @include mat.button-overrides(
+    (
+      outlined-horizontal-padding: 5px,
+      outlined-container-height: auto,
+      outlined-icon-offset: 0,
+      outlined-icon-spacing: 3px,
+      filled-horizontal-padding: 5px,
+      filled-container-height: auto,
+      filled-icon-offset: 0,
+      filled-icon-spacing: 3px,
+    )
+  );
+  margin-right: 5px;
+}

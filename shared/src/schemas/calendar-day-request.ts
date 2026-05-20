@@ -1,3 +1,4 @@
+import { DAY_END, DAY_START } from '@household/shared/constants';
 import { CalendarDayType } from '@household/shared/enums';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
@@ -29,13 +30,13 @@ const workdayRequestSchema: StrictJSONSchema7<Calendar.Day.WorkdayRequest> = {
     },
     start: {
       type: 'integer',
-      minimum: 0,
-      maximum: 96,
+      minimum: DAY_START,
+      maximum: DAY_END,
     },
     end: {
       type: 'integer',
-      minimum: 0,
-      maximum: 96,
+      minimum: DAY_START,
+      maximum: DAY_END,
       exclusiveMinimum: {
         $data: '1/start',
       },

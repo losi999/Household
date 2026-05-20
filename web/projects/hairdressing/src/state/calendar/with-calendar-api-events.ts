@@ -82,7 +82,6 @@ export const withCalendarApiEvents = () => {
         ),
         deleteCalendarEntry: events.on(calendarApiEvents.deleteCalendarEntryInitiated).pipe(
           mergeMap(({ payload: { calendarEntryId } }) => {
-            console.log('delete entry', calendarEntryId);
             return calendarService.deleteCalendarEntry(calendarEntryId).pipe(
               map(() => calendarApiEvents.deleteCalendarEntryCompleted({
                 calendarEntryId, 

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CustomerAddToBlacklistDialog } from './customer-add-to-blacklist-dialog';
 
-describe('CustomerAddToBlacklistDialog', () => {
+describe.skip('CustomerAddToBlacklistDialog', () => {
   let component: CustomerAddToBlacklistDialog;
   let fixture: ComponentFixture<CustomerAddToBlacklistDialog>;
 

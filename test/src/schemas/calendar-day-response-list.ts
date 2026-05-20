@@ -3,6 +3,7 @@ import { Calendar } from '@household/shared/types/types';
 import { default as calendarEntry } from '@household/test/schemas/calendar-entry-response';
 import { default as day } from '@household/shared/schemas/calendar-day';
 import { CalendarDayType } from '@household/shared/enums';
+import { DAY_END, DAY_START } from '@household/shared/constants';
 
 const workdayResponseSchema: StrictJSONSchema7<Calendar.Day.WorkdayResponse> = {
   type: 'object',
@@ -22,12 +23,12 @@ const workdayResponseSchema: StrictJSONSchema7<Calendar.Day.WorkdayResponse> = {
     },
     start: {
       type: 'integer',
-      minimum: 0,
-      maximum: 96,
+      minimum: DAY_START,
+      maximum: DAY_END,
     },
     end: {
       type: 'integer',
-      maximum: 96,
+      maximum: DAY_END,
       minimum: {
         $data: '1/start',
       },
@@ -55,12 +56,12 @@ const weekendResponseSchema: StrictJSONSchema7<Calendar.Day.WeekendResponse> = {
     },
     start: {
       type: 'integer',
-      minimum: 0,
-      maximum: 96,
+      minimum: DAY_START,
+      maximum: DAY_END,
     },
     end: {
       type: 'integer',
-      maximum: 96,
+      maximum: DAY_END,
       minimum: {
         $data: '1/start',
       },
