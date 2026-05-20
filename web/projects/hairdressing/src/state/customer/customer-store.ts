@@ -69,8 +69,7 @@ withComputed((store) => {
 
       const sorted = list.toSorted((a, b) => a[store.jobListSortBy()] > b[store.jobListSortBy()] ? 1 : -1);
 
-      const ordered = store.jobListSortOrder() === 'asc' ? sorted : sorted.toReversed();
-      return ordered;
+      return store.jobListSortOrder() === 'asc' ? sorted : sorted.toReversed();
     }),
   };
 }),

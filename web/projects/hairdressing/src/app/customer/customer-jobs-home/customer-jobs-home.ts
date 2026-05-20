@@ -12,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Customer, Price } from '@household/shared/types/types';
 import { RouterLink } from '@angular/router';
+import { priceApiEvents } from '@hairdressing/state/price/price-events';
 
 @Component({
   selector: 'hairdressing-customer-jobs-home',
@@ -32,6 +33,7 @@ export class CustomerJobsHome {
   readonly customerStore = inject(CustomerStore);
   private customerApiEvents = injectDispatch(customerApiEvents);
   private customerEvents = injectDispatch(customerEvents);
+  private priceApiEvents = injectDispatch(priceApiEvents);
 
   displayedColumns = [
     'customerName',
@@ -45,6 +47,7 @@ export class CustomerJobsHome {
 
   constructor() {
     this.customerApiEvents.listCustomersInitiated();
+    this.priceApiEvents.listPricesInitiated();
   }
 
   onAddPriceFilter(priceId: Price.Id) {
