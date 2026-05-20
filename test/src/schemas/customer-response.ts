@@ -29,6 +29,7 @@ const schema: StrictJSONSchema7<Customer.Response> = {
           ...name.required,
           'duration', 
           'prices',
+          'title',
         ],
         properties: {
           ...name.properties,
@@ -38,6 +39,10 @@ const schema: StrictJSONSchema7<Customer.Response> = {
           },
           additionalPrice: {
             type: 'integer',
+          },
+          title: {
+            type: 'string',
+            minLength: 1,
           },
           prices: {
             type: 'array',
