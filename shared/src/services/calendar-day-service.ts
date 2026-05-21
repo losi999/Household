@@ -4,6 +4,7 @@ import { Calendar } from '@household/shared/types/types';
 
 export interface ICalendarDayService {
   findCalendarDayByDay(day: Calendar.DayProp['day']): Promise<Calendar.Day.Document>;
+  saveCalendarDays(documents: Calendar.Day.Document[]): Promise<unknown>;
   saveCalendarDay(document: Calendar.Day.Document): Promise<Calendar.Day.Document>;
   deleteCalendarDay(day: Calendar.DayProp['day']): Promise<unknown>;
   updateCalendarDay(day: Calendar.DayProp['day'], updateQuery: DocumentUpdate<Calendar.Day.Document>): Promise<unknown>;
@@ -22,6 +23,18 @@ export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICal
           upsert: true,
           session,
         });
+      });
+    },
+    saveCalendarDays: (docs) => {
+      return mongodbService.inTransaction(({ calendarDays }, session) => {
+        return Promise.all(docs.map(d => {
+          return calendarDays.findOneAndReplace({
+            day: d.day,
+          }, d, {
+            upsert: true,
+            session,
+          });
+        }));
       });
     },
     findCalendarDayByDay: async(day) => {

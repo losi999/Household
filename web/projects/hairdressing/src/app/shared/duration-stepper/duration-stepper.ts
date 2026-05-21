@@ -23,7 +23,14 @@ export class DurationStepper implements FormValueControl<number> {
   value = model<number>(1);
 
   onSetDuration(diff: number) {
-    const newValue = this.value() + diff;
-    this.value.set(Math.min(Math.max(newValue, 1), DAY_LENGTH));
+    this.value.update((current) => {
+      const newValue = current + diff;
+
+      if(newValue < 1 || newValue > DAY_LENGTH) {
+        return current;
+      }
+
+      return newValue;
+    });
   }
 }

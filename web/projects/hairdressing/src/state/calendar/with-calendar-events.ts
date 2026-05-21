@@ -24,8 +24,8 @@ export const withCalendarEvents = () => {
         listCalendarWeek: events.on(calendarEvents.listCalendarWeek).pipe(
           map(({ payload: { week, year } }) => {
             return calendarApiEvents.listCalendarDaysInitiated({
-              dateFrom: dateToISODateString(startOfISOWeek(setISOWeek(new Date(year, 0), week))),
-              dateTo: dateToISODateString(endOfISOWeek(setISOWeek(new Date(year, 0), week))),
+              dateFrom: dateToISODateString(startOfISOWeek(setISOWeek(new Date(year, 1), week))),
+              dateTo: dateToISODateString(endOfISOWeek(setISOWeek(new Date(year, 1), week))),
             });
           }),
         ),
