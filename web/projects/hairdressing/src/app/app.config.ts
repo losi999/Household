@@ -11,6 +11,7 @@ import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { environment } from '@hairdressing/environments/environment';
 import { jwtDecode } from 'jwt-decode';
+import { providePriceStoreInitialState } from '@hairdressing/state/price/price-store';
 
 registerLocaleData(localeHu);
 
@@ -39,6 +40,7 @@ export const appConfig: ApplicationConfig = {
         appearance: 'fill',
       },
     },
+    providePriceStoreInitialState(),
     {
       provide: MatPaginatorIntl,
       useFactory: () => {
