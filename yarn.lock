@@ -3883,6 +3883,11 @@ undici-types@~7.10.0:
   resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-7.10.0.tgz#4ac2e058ce56b462b056e629cc6a02393d3ff350"
   integrity sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag==
 
+undici@8.3.0:
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-8.3.0.tgz#5086bf56cd2b28219500492d822df0d6c21f3b47"
+  integrity sha512-TkUDgb6tl7KOGZ+7e8E3d2FYgUQgF6z5YypqjWmixVQSQERFcVrVg0ySADm2LVLRh5ljAaHTCR5Fmz3Q34rB7Q==
+
 update-browserslist-db@^1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/update-browserslist-db/-/update-browserslist-db-1.2.3.tgz#64d76db58713136acbeb4c49114366cc6cc2e80d"

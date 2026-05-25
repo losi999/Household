@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MinutesToHourPipe } from '@hairdressing/app/pipes/minutes-to-hour-pipe';
 import { PriceAutocompleteInput } from '@hairdressing/app/price/price-autocomplete-input/price-autocomplete-input';
+import { HoldableButton } from '@household/shared-ui';
 import { Price } from '@household/shared/types/types';
 
 export const requiredPrices = (field: SchemaPath<JobPriceCalculatorValue>, min: number, config?: {message: string}) => {
@@ -40,6 +41,7 @@ export type JobPriceCalculatorValue = {
     MatDividerModule,
     MatFormFieldModule,
     PriceAutocompleteInput,
+    HoldableButton,
   ],
   templateUrl: './job-price-calculator.html',
   styleUrl: './job-price-calculator.scss',

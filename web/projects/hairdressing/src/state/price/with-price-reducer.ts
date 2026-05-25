@@ -43,6 +43,7 @@ export const withPriceReducer = () => {
                 name,
                 amount,
                 unitOfMeasurement,
+                searchTerms: toSearchTerms(name),
               })
               .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
                 sensitivity: 'base',
