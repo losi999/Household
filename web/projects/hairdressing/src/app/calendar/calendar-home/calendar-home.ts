@@ -81,7 +81,7 @@ export class CalendarHome {
     const year = Number(this.queryParams().year) || weekOf.getFullYear();
     const week = Number(this.queryParams().week) || getISOWeek(weekOf);
     
-    const weekStart = startOfISOWeek(setISOWeek(new Date(year, 0), week));
+    const weekStart = startOfISOWeek(setISOWeek(new Date(year, 1), week));
 
     return Array.from({
       length: 7, 
@@ -189,6 +189,7 @@ export class CalendarHome {
 
   onChangeWeek(diff: number) {
     const newWeek = this.week() + diff;
+    console.log('new week', newWeek, this.lastISOWeekOfYear());
     
     if (newWeek < 1) {
       const newYear = this.year() - 1;

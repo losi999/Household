@@ -5,7 +5,7 @@
 <div class="detailed-price">
   @for(p of value().prices;track $index) {
   <span [style.grid-area]="'name'" [style.grid-row]="$index + 1">{{p.price.name}}</span>
-  <button mat-icon-button type="button" [style.grid-area]="'minus'" [style.grid-row]="$index + 1" (click)="onRemoveQuantity($index)">
+  <button mat-icon-button type="button" [style.grid-area]="'minus'" [style.grid-row]="$index + 1" sharedHoldableButton (hold)="onRemoveQuantity($index)">
     <mat-icon>remove</mat-icon>
   </button>
   @switch (p.price.unitOfMeasurement) {
@@ -19,7 +19,7 @@
   <span class="quantity" [style.grid-area]="'quantity'" [style.grid-row]="$index + 1">{{p.quantity * 60 | minutesToHour}} óra</span>
   }
   }
-  <button mat-icon-button type="button" [style.grid-area]="'plus'" [style.grid-row]="$index + 1" (click)="onAddQuantity($index)">
+  <button mat-icon-button type="button" [style.grid-area]="'plus'" [style.grid-row]="$index + 1" (hold)="onAddQuantity($index)" sharedHoldableButton>
     <mat-icon>add</mat-icon>
   </button>
   <span [style.grid-area]="'amount'" [style.grid-row]="$index + 1">{{p.price.amount * p.quantity}} Ft</span>
