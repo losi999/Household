@@ -130,7 +130,7 @@ export const withCalendarEvents = () => {
         openUpdateCalendarEntryDialog: events.on(calendarEvents.updateCalendarEntry).pipe(
           exhaustMap(({ payload: entry }) => {
             return dialog.open<CalendarEntryEditDialog, CalendarEntryEditDialogData, CalendarEntryEditDialogResult>(CalendarEntryEditDialog, {
-              data: structuredClone(entry),
+              data: entry, // TODO structuredClone
               width: '900px',
               disableClose: true,
             }).afterClosed()

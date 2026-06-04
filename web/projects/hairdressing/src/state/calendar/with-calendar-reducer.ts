@@ -250,7 +250,7 @@ export const withCalendarReducer = () => {
             days: {
               ...state.days,
               [day]: {
-                ...state[day],
+                ...state.days[day],
                 entries: state.days[day].entries.map(e => {
                   if (e.calendarEntryId !== calendarEntryId) {
                     return e;

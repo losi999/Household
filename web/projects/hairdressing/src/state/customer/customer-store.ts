@@ -6,6 +6,9 @@ import { CustomerJobReport, CustomerJobReportSort } from '@hairdressing/types';
 import { Searchable } from '@household/shared/types/common';
 import { Customer, Calendar, Price } from '@household/shared/types/types';
 import { signalStore, withComputed, withState } from '@ngrx/signals';
+import { inject, ValueProvider, InjectionToken } from '@angular/core';
+
+const CUSTOMER_STORE_INITIAL_STATE = new InjectionToken<CustomerState>('CUSTOMER_STORE_INITIAL_STATE');
 
 export type CustomerState = { 
   customerList: Searchable<Customer.Response>[];
@@ -18,16 +21,27 @@ export type CustomerState = {
   jobListSortOrder: 'asc' | 'desc'
 };
 
-export const CustomerStore = signalStore({
-  providedIn: 'root',
-}, 
-withState<CustomerState>({
+export const provideCustomerStoreInitialState = (state: CustomerState = {
   customerList: [],
   customerWorks: {},
   isInProgress: [],
   priceIdFilters: [],
   jobListSortBy: undefined,
   jobListSortOrder: undefined,
+}): ValueProvider => {
+  return {
+    provide: CUSTOMER_STORE_INITIAL_STATE,
+    useValue: state,
+  };
+};
+
+export const CustomerStore = signalStore({
+  providedIn: 'root',
+}, 
+withState<CustomerState>(() => {
+  const initialState = inject(CUSTOMER_STORE_INITIAL_STATE);
+
+  return initialState;
 }),
 withCustomerReducer(),
 withCustomerEvents(),
