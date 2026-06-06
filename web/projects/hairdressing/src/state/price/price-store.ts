@@ -13,12 +13,10 @@ export type PriceState = {
   isInProgress: Price.Id[];
 };
 
-const initialState: PriceState = {
+export const providePriceStoreInitialState = (state: PriceState = {
   isInProgress: [],
   priceList: [],
-};
-
-export const providePriceStoreInitialState = (state: PriceState = initialState): ValueProvider => {
+}): ValueProvider => {
   return {
     provide: PRICE_STORE_INITIAL_STATE,
     useValue: state,
@@ -32,8 +30,7 @@ withState<PriceState>(() => {
   const initialState = inject(PRICE_STORE_INITIAL_STATE);
 
   return initialState;
-},
-),
+}),
 withPriceReducer(),
 withPriceApiEvents(),
 withPriceEvents(),

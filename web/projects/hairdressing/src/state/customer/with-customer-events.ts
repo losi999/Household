@@ -21,7 +21,6 @@ export const withCustomerEvents = () => {
           exhaustMap(() => {
             return dialog.open<CustomerDialog, CustomerDialogData, CustomerDialogResult>(CustomerDialog, {
               disableClose: true,
-              maxHeight: '90vh',
             }).afterClosed();
           }),
           filter(req => !!req),

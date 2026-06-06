@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { PriceService } from '@hairdressing/services/price-service';
 import { PriceState, PriceStore, providePriceStoreInitialState } from '@hairdressing/state/price/price-store';
-import { BottomSheetService, createDispatcherSpy, DialogService, notificationEvents } from '@household/shared-ui';
+import { BottomSheetService, createDispatcherSpy, DialogService, notificationEvents, validateDispatcher } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
 import { Mock } from 'vitest';
-import { createMockService, MockService, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
+import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { priceApiEvents, priceEvents } from '@hairdressing/state/price/price-events';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
@@ -22,18 +22,18 @@ describe('Price store', () => {
   let mockDialogService: MockService<DialogService>;
   let mockMatDialog: MockService<MatDialog>;
   let mockBottomSheetService: MockService<BottomSheetService>;
-  let originalPrice: Price.Response;
 
-  beforeEach(() => {
-    mockPriceService = createMockService('listPrices', 'createPrice', 'updatePrice', 'deletePrice');
-    mockDialogService = createMockService('openConfirmationDialog');
-    mockBottomSheetService = createMockService('openBottomSubmenu');  
-    mockMatDialog = createMockService('open');
+  const validateState = (currentValue?: Partial<PriceState>) => {
+    expect(store.isInProgress(), 'isInProgress').toEqual(currentValue?.isInProgress ?? initialState.isInProgress);
+    expect(store.priceList(), 'priceList').toEqual(currentValue?.priceList ?? initialState.priceList);
+  };
 
-    originalPrice = testDataFactory.price.response();
+  const setup = (initial?: Partial<PriceState>) => {
+    TestBed.resetTestingModule();
     initialState = {
-      isInProgress: [originalPrice.priceId],
-      priceList: [originalPrice],
+      isInProgress: [],
+      priceList: [],
+      ...initial,
     };
 
     TestBed.configureTestingModule({
@@ -61,19 +61,23 @@ describe('Price store', () => {
     store = TestBed.inject(PriceStore);
     dispatcher = TestBed.inject(Dispatcher);
     dispatchSpy = createDispatcherSpy(dispatcher);
-  });
+  };
 
-  afterEach(() => {
-    vi.restoreAllMocks();
+  beforeEach(() => {
+    mockPriceService = createMockService('listPrices', 'createPrice', 'updatePrice', 'deletePrice');
+    mockDialogService = createMockService('openConfirmationDialog');
+    mockBottomSheetService = createMockService('openBottomSubmenu');  
+    mockMatDialog = createMockService('open');
+
+    setup();
   });
 
   it('should initialize', () => {
-    expect(store.isInProgress()).toEqual(initialState.isInProgress);
-    expect(store.priceList()).toEqual(initialState.priceList);
+    validateState();
   });
 
   describe('dispatching createPrice', () => {
-    it('should open the dialog and dispatch createPriceInitiated if submitted', () => {
+    it('should open dialog and dispatch if submitted', () => {
       const priceRequest = testDataFactory.price.request();
       
       mockMatDialog.functions.open.mockReturnValue({
@@ -85,13 +89,11 @@ describe('Price store', () => {
       validateFunctionCall(mockMatDialog.functions.open, PriceDialog, {
         disableClose: true,
       });
-      validateNthFunctionCall(dispatchSpy, 2, priceApiEvents.createPriceInitiated(priceRequest), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy, priceApiEvents.createPriceInitiated(priceRequest));
+      validateState();
     });
 
-    it('should open the dialog and not dispatch anything if cancelled', () => {    
+    it('should open dialog and not dispatch anything if cancelled', () => {    
       mockMatDialog.functions.open.mockReturnValue({
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
@@ -101,16 +103,15 @@ describe('Price store', () => {
       validateFunctionCall(mockMatDialog.functions.open, PriceDialog, {
         disableClose: true,
       });
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy);
+      validateState();
     });
   });
 
   describe('dispatching updatePrice', () => {
     const priceId = testDataFactory.price.id();
     const priceRequest = testDataFactory.price.request();
-    it('should open the dialog and dispatch updatePriceInitiated if submitted', () => {
+    it('should open dialog and dispatch if submitted', () => {
       
       mockMatDialog.functions.open.mockReturnValue({
         afterClosed: () => of(priceRequest),
@@ -128,16 +129,14 @@ describe('Price store', () => {
           ...priceRequest,
         },
       });
-      validateNthFunctionCall(dispatchSpy, 2, priceApiEvents.updatePriceInitiated({
+      validateDispatcher(dispatchSpy, priceApiEvents.updatePriceInitiated({
         ...priceRequest,
         priceId,
-      }), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      }));
+      validateState();
     });
 
-    it('should open the dialog and not dispatch anything if cancelled', () => {    
+    it('should open dialog and not dispatch anything if cancelled', () => {    
       mockMatDialog.functions.open.mockReturnValue({
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
@@ -154,15 +153,14 @@ describe('Price store', () => {
           ...priceRequest,
         },
       });
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy);
+      validateState();
     });
   });
 
   describe('dispatching deletePrice', () => {
     const priceResponse = testDataFactory.price.response();
-    it('should open the dialog and dispatch deletePriceInitiated if confirmed', () => {
+    it('should open dialog and dispatch if confirmed', () => {
       mockDialogService.functions.openConfirmationDialog.mockReturnValue(of(true));
 
       dispatcher.dispatch(priceEvents.deletePrice(priceResponse)); 
@@ -171,15 +169,13 @@ describe('Price store', () => {
         title: 'Törölni akarod ezt a tételt az árlistából?',
         content: priceResponse.name,
       });
-      validateNthFunctionCall(dispatchSpy, 2, priceApiEvents.deletePriceInitiated({
+      validateDispatcher(dispatchSpy, priceApiEvents.deletePriceInitiated({
         priceId: priceResponse.priceId,
-      }), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      }));
+      validateState();
     });
 
-    it('should open the dialog and not dispatch anything if cancelled', () => {    
+    it('should open dialog and not dispatch anything if cancelled', () => {    
       mockDialogService.functions.openConfirmationDialog.mockReturnValue(of(false));
 
       dispatcher.dispatch(priceEvents.deletePrice(priceResponse)); 
@@ -188,15 +184,14 @@ describe('Price store', () => {
         title: 'Törölni akarod ezt a tételt az árlistából?',
         content: priceResponse.name,
       });
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy);
+      validateState();
     });
   });
 
   describe('dispatching openPriceListItemSubmenu', () => {
     const priceResponse = testDataFactory.price.response();
-    it('should open bottom sheet and dispatch updatePrice if selected', () => {
+    it('should open bottom sheet and dispatch if edit is selected', () => {
       mockBottomSheetService.functions.openBottomSubmenu.mockReturnValue({
         afterDismissed: () => of('edit'),
       } as MatBottomSheetRef);
@@ -204,13 +199,11 @@ describe('Price store', () => {
       dispatcher.dispatch(priceEvents.openPriceListItemSubmenu(priceResponse)); 
 
       validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, priceResponse.name, 'edit', 'delete');
-      validateNthFunctionCall(dispatchSpy, 2, priceEvents.updatePrice(priceResponse), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy, priceEvents.updatePrice(priceResponse));
+      validateState();
     });
 
-    it('should open bottom sheet and dispatch deletePrice if selected', () => {
+    it('should open bottom sheet and dispatch if delete is selected', () => {
       mockBottomSheetService.functions.openBottomSubmenu.mockReturnValue({
         afterDismissed: () => of('delete'),
       } as MatBottomSheetRef);
@@ -218,10 +211,8 @@ describe('Price store', () => {
       dispatcher.dispatch(priceEvents.openPriceListItemSubmenu(priceResponse)); 
 
       validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, priceResponse.name, 'edit', 'delete');
-      validateNthFunctionCall(dispatchSpy, 2, priceEvents.deletePrice(priceResponse), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy, priceEvents.deletePrice(priceResponse));
+      validateState();
     });
 
     it('should open bottom sheet and not dispatch anything if cancelled', () => {
@@ -232,27 +223,24 @@ describe('Price store', () => {
       dispatcher.dispatch(priceEvents.openPriceListItemSubmenu(priceResponse)); 
 
       validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, priceResponse.name, 'edit', 'delete');
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy);
+      validateState();
     });
   });
   
   describe('dispatching listPricesInitiated', () => {
-    it('should call listPrices and dispatch listPricesCompleted', () => {
+    it('should call API and dispatch response', () => {
       const priceList = [testDataFactory.price.response()];
       mockPriceService.functions.listPrices.mockReturnValue(of(priceList));
 
       dispatcher.dispatch(priceApiEvents.listPricesInitiated());
 
       expect(mockPriceService.functions.listPrices).toHaveBeenCalled();
-      validateNthFunctionCall(dispatchSpy, 2, priceApiEvents.listPricesCompleted(priceList), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy, priceApiEvents.listPricesCompleted(priceList));
+      validateState();
     });
 
-    it('should call listPrices and show notification if there is an error', () => {
+    it('should call API and show notification if there is an error', () => {
       mockPriceService.functions.listPrices.mockReturnValue(throwError(() => ({
         error: {
           message: 'There is an error',
@@ -262,10 +250,8 @@ describe('Price store', () => {
       dispatcher.dispatch(priceApiEvents.listPricesInitiated());
 
       expect(mockPriceService.functions.listPrices).toHaveBeenCalled();
-      validateNthFunctionCall(dispatchSpy, 2, notificationEvents.showMessage('Hiba történt'), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy, notificationEvents.showMessage('Hiba történt'));
+      validateState();
     });
   });
 
@@ -277,16 +263,20 @@ describe('Price store', () => {
       });
 
       dispatcher.dispatch(priceApiEvents.listPricesCompleted([priceResponse]));
-    
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toContainEqual({
-        ...priceResponse,
-        searchTerms: expect.arrayContaining([
-          'ekezetes',
-          'nev',
-          'ékezetes',
-          'név',
-        ]),
+      
+      validateDispatcher(dispatchSpy);    
+      validateState({
+        priceList: [
+          {
+            ...priceResponse,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
+          },
+        ],
       });
     });
   });
@@ -295,7 +285,7 @@ describe('Price store', () => {
     const priceRequest = testDataFactory.price.request();
     const priceId = testDataFactory.price.id();
 
-    it('should call createPrice and dispatch createPriceCompleted', () => {
+    it('should call API and dispatch response', () => {
       mockPriceService.functions.createPrice.mockReturnValue(of({
         priceId,
       }));
@@ -303,16 +293,14 @@ describe('Price store', () => {
       dispatcher.dispatch(priceApiEvents.createPriceInitiated(priceRequest));
 
       validateFunctionCall(mockPriceService.functions.createPrice, priceRequest);
-      validateNthFunctionCall(dispatchSpy, 2, priceApiEvents.createPriceCompleted({
+      validateDispatcher(dispatchSpy, priceApiEvents.createPriceCompleted({
         priceId,
         ...priceRequest, 
-      }), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      }));
+      validateState();
     });
 
-    it('should call createPrice and show notification if price name is already taken', () => {
+    it('should call API and show notification if price name is already taken', () => {
       mockPriceService.functions.createPrice.mockReturnValue(throwError(() => ({
         error: {
           message: 'Duplicate price name',
@@ -322,13 +310,11 @@ describe('Price store', () => {
       dispatcher.dispatch(priceApiEvents.createPriceInitiated(priceRequest));
 
       validateFunctionCall(mockPriceService.functions.createPrice, priceRequest);
-      validateNthFunctionCall(dispatchSpy, 2, notificationEvents.showMessage(`Árlista elem (${priceRequest.name}) már létezik!`), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy, notificationEvents.showMessage(`Árlista elem (${priceRequest.name}) már létezik!`));
+      validateState();
     });
 
-    it('should call createPrice and show notification if there is an error', () => {
+    it('should call API and show notification if there is an error', () => {
       mockPriceService.functions.createPrice.mockReturnValue(throwError(() => ({
         error: {
           message: 'There is an error',
@@ -338,10 +324,8 @@ describe('Price store', () => {
       dispatcher.dispatch(priceApiEvents.createPriceInitiated(priceRequest));
 
       validateFunctionCall(mockPriceService.functions.createPrice, priceRequest);
-      validateNthFunctionCall(dispatchSpy, 2, notificationEvents.showMessage('Hiba történt'), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      validateDispatcher(dispatchSpy, notificationEvents.showMessage('Hiba történt'));
+      validateState();
     });
   });
 
@@ -358,25 +342,40 @@ describe('Price store', () => {
         ...priceRequest,
       }));
 
-      expect(store.isInProgress()).toEqual(initialState.isInProgress);
-      expect(store.priceList()).toContainEqual({
-        priceId,
-        ...priceRequest,
-        searchTerms: expect.arrayContaining([
-          'ekezetes',
-          'nev',
-          'ékezetes',
-          'név',
-        ]),
+      validateDispatcher(dispatchSpy);
+      validateState({
+        priceList: [
+          {
+            priceId,
+            ...priceRequest,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
+          },
+        ],
       });
     });
   });
 
   describe('dispatching updatePriceInitiated', () => {
-    const priceRequest = testDataFactory.price.request();
-    const priceId = testDataFactory.price.id();
+    let priceRequest: Price.Request;
+    let priceId: Price.Id;
+    let originalPrice: Price.Response;
 
-    it('should call updatePrice and dispatch updatePriceCompleted', () => {
+    beforeEach(() => {
+      priceRequest = testDataFactory.price.request();
+      originalPrice = testDataFactory.price.response();
+      priceId = originalPrice.priceId;
+
+      setup({
+        priceList: [originalPrice],
+      });
+    });
+
+    it('should call API and dispatch response', () => {
       mockPriceService.functions.updatePrice.mockReturnValue(of({
         priceId,
       }));
@@ -387,14 +386,16 @@ describe('Price store', () => {
       }));
 
       validateFunctionCall(mockPriceService.functions.updatePrice, priceId, priceRequest);
-      validateNthFunctionCall(dispatchSpy, 2, priceApiEvents.updatePriceCompleted({
+      validateDispatcher(dispatchSpy, priceApiEvents.updatePriceCompleted({
         priceId,
         ...priceRequest, 
-      }), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
+      }));
+      validateState({
+        isInProgress: [priceId],
+      });
     });
 
-    it('should call updatePrice and show notification if price name is already taken', () => {
+    it('should call API and show notification if price name is already taken', () => {
       mockPriceService.functions.updatePrice.mockReturnValue(throwError(() => ({
         error: {
           message: 'Duplicate price name',
@@ -406,15 +407,16 @@ describe('Price store', () => {
         ...priceRequest, 
       }));
       
-      validateNthFunctionCall(dispatchSpy, 2, priceApiEvents.updatePriceFailed({
+      validateDispatcher(dispatchSpy, priceApiEvents.updatePriceFailed({
         priceId,
-      }), undefined);
-      validateNthFunctionCall(dispatchSpy, 3, notificationEvents.showMessage(`Árlista elem (${priceRequest.name}) már létezik!`), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(3);
+      }), notificationEvents.showMessage(`Árlista elem (${priceRequest.name}) már létezik!`));
+      validateState({
+        isInProgress: [priceId],
+      });
 
     });
 
-    it('should call updatePrice and show notification if there is an error', () => {
+    it('should call API and show notification if there is an error', () => {
       mockPriceService.functions.updatePrice.mockReturnValue(throwError(() => ({
         error: {
           message: 'There is an error',
@@ -426,31 +428,24 @@ describe('Price store', () => {
         ...priceRequest, 
       }));
 
-      validateNthFunctionCall(dispatchSpy, 2, priceApiEvents.updatePriceFailed({
-        priceId,
-      }), undefined);
       validateFunctionCall(mockPriceService.functions.updatePrice, priceId, priceRequest);
-      validateNthFunctionCall(dispatchSpy, 3, notificationEvents.showMessage('Hiba történt'), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(3);
-    });
-
-    it('should update store', () => {
-      mockPriceService.functions.updatePrice.mockReturnValue(of({
+      validateDispatcher(dispatchSpy, priceApiEvents.updatePriceFailed({
         priceId,
-      }));
-
-      dispatcher.dispatch(priceApiEvents.updatePriceInitiated({
-        priceId,
-        ...priceRequest, 
-      }));
-
-      expect(store.isInProgress()).toContain(priceId);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      }), notificationEvents.showMessage('Hiba történt'));
+      validateState({
+        isInProgress: [priceId],
+      });
     });
   });
 
   describe('dispatching updatePriceCompleted', () => {
     it('should update store', () => {
+      const originalPrice = testDataFactory.price.response();
+      setup({
+        isInProgress: [originalPrice.priceId],
+        priceList: [originalPrice],
+      });
+
       const name = 'ékezetes név';
       const priceRequest = testDataFactory.price.request({
         name,
@@ -461,37 +456,58 @@ describe('Price store', () => {
         ...priceRequest,
       }));
 
-      expect(store.isInProgress()).toEqual([]);
-      expect(store.priceList()).toContainEqual({
-        priceId: originalPrice.priceId,
-        ...priceRequest,
-        searchTerms: expect.arrayContaining([
-          'ekezetes',
-          'nev',
-          'ékezetes',
-          'név',
-        ]),
+      validateDispatcher(dispatchSpy);
+      validateState({
+        isInProgress: [],
+        priceList: [
+          {
+            priceId: originalPrice.priceId,
+            ...priceRequest,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
+          },
+        ],
       });
     });
   });
 
   describe('dispatching updatePriceFailed', () => {
     it('should update store', () => {
-      const priceId = testDataFactory.price.id();
+      const originalPrice = testDataFactory.price.response();
+      setup({
+        isInProgress: [originalPrice.priceId],
+        priceList: [originalPrice],
+      });
 
       dispatcher.dispatch(priceApiEvents.updatePriceFailed({
-        priceId,
+        priceId: originalPrice.priceId,
       }));
 
-      expect(store.priceList()).toEqual(initialState.priceList);
-      expect(store.isInProgress()).not.toContain(priceId);
+      validateDispatcher(dispatchSpy);
+      validateState({
+        isInProgress: [],
+      });
     });
   });
 
   describe('dispatching deletePriceInitiated', () => {
-    const priceId = testDataFactory.price.id();
+    let originalPrice: Price.Response;
+    let priceId: Price.Id;
+    
+    beforeEach(() => {
+      originalPrice = testDataFactory.price.response();
+      priceId = originalPrice.priceId;
 
-    it('should call deletePrice and dispatch deletePriceCompleted', () => {
+      setup({
+        priceList: [originalPrice],
+      });
+    });
+
+    it('should call API and dispatch response', () => {
       mockPriceService.functions.deletePrice.mockReturnValue(of({
         priceId,
       }));
@@ -501,13 +517,15 @@ describe('Price store', () => {
       }));
 
       validateFunctionCall(mockPriceService.functions.deletePrice, priceId);
-      validateNthFunctionCall(dispatchSpy, 2, priceApiEvents.deletePriceCompleted({
+      validateDispatcher(dispatchSpy, priceApiEvents.deletePriceCompleted({
         priceId,
-      }), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(2);
+      }));
+      validateState({
+        isInProgress: [priceId],
+      });
     });
 
-    it('should call deletePrice and show notification if there is an error', () => {
+    it('should call API and show notification if there is an error', () => {
       mockPriceService.functions.deletePrice.mockReturnValue(throwError(() => ({
         error: {
           message: 'There is an error',
@@ -519,29 +537,22 @@ describe('Price store', () => {
       }));
 
       validateFunctionCall(mockPriceService.functions.deletePrice, priceId);
-      validateNthFunctionCall(dispatchSpy, 2, priceApiEvents.deletePriceFailed({
+      validateDispatcher(dispatchSpy, priceApiEvents.deletePriceFailed({
         priceId,
-      }), undefined);
-      validateNthFunctionCall(dispatchSpy, 3, notificationEvents.showMessage('Hiba történt'), undefined);
-      expect(dispatchSpy).toHaveBeenCalledTimes(3);
-    });
-
-    it('should update store', () => {
-      mockPriceService.functions.deletePrice.mockReturnValue(of({
-        priceId,
-      }));
-      
-      dispatcher.dispatch(priceApiEvents.deletePriceInitiated({
-        priceId, 
-      }));
-
-      expect(store.isInProgress()).toContain(priceId);
-      expect(store.priceList()).toEqual(initialState.priceList);
+      }), notificationEvents.showMessage('Hiba történt'));
+      validateState({
+        isInProgress: [priceId],
+      });
     });
   });
 
   describe('dispatching deletePriceCompleted', () => {
     it('should update store', () => {
+      const originalPrice = testDataFactory.price.response();
+      setup({
+        isInProgress: [originalPrice.priceId],
+        priceList: [originalPrice],
+      });
       const priceRequest = testDataFactory.price.request();
 
       dispatcher.dispatch(priceApiEvents.deletePriceCompleted({
@@ -549,22 +560,30 @@ describe('Price store', () => {
         ...priceRequest,
       }));
 
-      expect(store.isInProgress()).toEqual([]);
-      expect(store.priceList()).toEqual([]);
+      validateDispatcher(dispatchSpy);
+      validateState({
+        isInProgress: [],
+        priceList: [],
+      });
     });
   });
 
   describe('dispatching deletePriceFailed', () => {
     it('should update store', () => {
-      const priceId = testDataFactory.price.id();
+      const originalPrice = testDataFactory.price.response();
+      setup({
+        isInProgress: [originalPrice.priceId],
+        priceList: [originalPrice],
+      });
 
       dispatcher.dispatch(priceApiEvents.deletePriceFailed({
-        priceId,
+        priceId: originalPrice.priceId,
       }));
 
-      expect(store.priceList()).toEqual(initialState.priceList);
-      expect(store.isInProgress()).not.toContain(priceId);
+      validateDispatcher(dispatchSpy);
+      validateState({
+        isInProgress: [],
+      });
     });
   });
 });
-  

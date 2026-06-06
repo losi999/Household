@@ -12,6 +12,8 @@ import { MatPaginatorIntl } from '@angular/material/paginator';
 import { environment } from '@hairdressing/environments/environment';
 import { jwtDecode } from 'jwt-decode';
 import { providePriceStoreInitialState } from '@hairdressing/state/price/price-store';
+import { provideCustomerStoreInitialState } from '@hairdressing/state/customer/customer-store';
+import { provideCalendarStoreInitialState } from '@hairdressing/state/calendar/calendar-store';
 
 registerLocaleData(localeHu);
 
@@ -41,6 +43,8 @@ export const appConfig: ApplicationConfig = {
       },
     },
     providePriceStoreInitialState(),
+    provideCustomerStoreInitialState(),
+    provideCalendarStoreInitialState(),
     {
       provide: MatPaginatorIntl,
       useFactory: () => {

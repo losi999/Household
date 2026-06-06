@@ -43,7 +43,7 @@ export class CustomerService {
   }
 
   listCustomerWorks(customerId: Customer.Id) {
-    return this.httpClient.get<Calendar.Entry.ResponseBase[]>(`${this.apiUrl}/customer/v1/customers/${customerId}/works`);
+    return this.httpClient.get<Calendar.Entry.WorkEntryResponseBase[]>(`${this.apiUrl}/customer/v1/customers/${customerId}/works`);
   }
 
   updateCustomerBlacklist(body: Customer.Id[]) {

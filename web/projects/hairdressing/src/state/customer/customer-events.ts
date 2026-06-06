@@ -17,8 +17,8 @@ export const customerEvents = eventGroup({
       currentCustomer: Customer.Response;
       selectedCustomer: Customer.ResponseBase;
     }>(),
-    addPriceFilter: type<Price.Id>(),
-    removePriceFilter: type<Price.Id>(),
+    addPriceFilter: type<Price.PriceId>(),
+    removePriceFilter: type<Price.PriceId>(),
     sortJobs: type<{sortBy: CustomerJobReportSort; sortOrder: 'asc' | 'desc'}>(),
   },
 });
@@ -43,7 +43,7 @@ export const customerApiEvents = eventGroup({
     deleteCustomerJobInitiated: type<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),
     deleteCustomerJobCompleted: type<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),    
     listCustomerWorksInitiated: type<Customer.CustomerId>(),
-    listCustomerWorksCompleted: type<Customer.CustomerId & {works: Calendar.Entry.ResponseBase[]}>(),
+    listCustomerWorksCompleted: type<Customer.CustomerId & {works: Calendar.Entry.WorkEntryResponseBase[]}>(),
     addCustomerToBlacklistInitiated: type<Customer.Response[]>(),
     addCustomerToBlacklistCompleted: type<Customer.Response[]>(),
     deleteCustomerFromBlacklistInitiated: type<Customer.Id[]>(),

@@ -189,7 +189,6 @@ export class CalendarHome {
 
   onChangeWeek(diff: number) {
     const newWeek = this.week() + diff;
-    console.log('new week', newWeek, this.lastISOWeekOfYear());
     
     if (newWeek < 1) {
       const newYear = this.year() - 1;

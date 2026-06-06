@@ -248,20 +248,20 @@ export const withCustomerReducer = () => {
           };
         };
       }),
-      on(customerEvents.addPriceFilter, ({ payload }) => {
+      on(customerEvents.addPriceFilter, ({ payload: { priceId } }) => {
         return (state) => {
           return {
             priceIdFilters: [
               ...state.priceIdFilters,
-              payload,
+              priceId,
             ],
           };
         };
       }),
-      on(customerEvents.removePriceFilter, ({ payload }) => {
+      on(customerEvents.removePriceFilter, ({ payload: { priceId } }) => {
         return (state) => {
           return {
-            priceIdFilters: state.priceIdFilters.filter(p => p !== payload),
+            priceIdFilters: state.priceIdFilters.filter(p => p !== priceId),
           };
         };
       }),

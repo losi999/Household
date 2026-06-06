@@ -51,11 +51,15 @@ export class CustomerJobsHome {
   }
 
   onAddPriceFilter(priceId: Price.Id) {
-    this.customerEvents.addPriceFilter(priceId);
+    this.customerEvents.addPriceFilter({
+      priceId,
+    });
   }
 
   onRemovePriceFilter(priceId: Price.Id) {
-    this.customerEvents.removePriceFilter(priceId);
+    this.customerEvents.removePriceFilter({
+      priceId,
+    });
   }
 
   onSortChange(event: Sort) {
