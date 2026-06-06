@@ -1,4 +1,4 @@
-import { Mock } from 'vitest';
+import { Mock, vi, expect } from 'vitest';
 
 export type MockService<T> = {
   service: T;

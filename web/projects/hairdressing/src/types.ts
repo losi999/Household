@@ -16,7 +16,7 @@ export type CustomerJobReport = Customer.CustomerId
   jobName: Customer.Job.Name['name'];
   total: number;
   hourlyRate: number;
-  prices: Price.Response[]
+  prices: (Price.Response & Customer.Job.Quantity)[]
 };
 
 export type CustomerJobReportSort = keyof Pick<CustomerJobReport, 'duration' | 'total' | 'hourlyRate'>;

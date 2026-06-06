@@ -1,5 +1,5 @@
 import { inject } from '@angular/core';
-import { CalendarService } from '@hairdressing/services/calendar.service';
+import { CalendarService } from '@hairdressing/services/calendar-service';
 import { calendarApiEvents } from '@hairdressing/state/calendar/calendar-events';
 import { CustomerStore } from '@hairdressing/state/customer/customer-store';
 import { notificationEvents } from '@household/shared-ui';
