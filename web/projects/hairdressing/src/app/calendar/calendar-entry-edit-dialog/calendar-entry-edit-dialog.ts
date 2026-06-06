@@ -22,7 +22,6 @@ import { injectDispatch } from '@ngrx/signals/events';
 import { calendarEvents } from '@hairdressing/state/calendar/calendar-events';
 import { MatIconModule } from '@angular/material/icon';
 import { DAY_LENGTH } from '@household/shared/constants';
-
 export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
 export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
 
@@ -232,9 +231,10 @@ export class CalendarEntryEditDialog {
         this.entryForm.duration().value.set(4);
         return;
       }
+    
       this.entryForm.duration().value.set(selectedJob.duration);
       this.entryForm.title().value.set(selectedJob.title ?? `${this.entryForm.customer().value().name}:`);
-      this.entryForm.description().value.set(selectedJob.description);
+      this.entryForm.description().value.set(selectedJob.description ?? '');
     });
   }
 
