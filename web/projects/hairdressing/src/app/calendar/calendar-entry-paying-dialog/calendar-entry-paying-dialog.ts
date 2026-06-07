@@ -7,6 +7,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
 import { JobPriceCalculator, JobPriceCalculatorValue } from '@hairdressing/app/shared/job-price-calculator/job-price-calculator';
+import { calculateTotalPrice } from '@hairdressing/utils';
 import { IconText, AmountInput, exclusiveMin } from '@household/shared-ui';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 import { Calendar } from '@household/shared/types/types';
@@ -36,7 +37,7 @@ export class CalendarEntryPayingDialog {
 
   paymentType = model<string>();
 
-  amountForm = form(signal<number>(0), (schemaPath) => {
+  amountForm = form(signal<number>(calculateTotalPrice(this.entry)), (schemaPath) => {
     required(schemaPath, {
       message: 'Kötelező',
     });
