@@ -7,6 +7,7 @@ import { Searchable } from '@household/shared/types/common';
 import { Customer, Calendar, Price } from '@household/shared/types/types';
 import { signalStore, withComputed, withState } from '@ngrx/signals';
 import { inject, ValueProvider, InjectionToken } from '@angular/core';
+import { calculateTotalPrice } from '@hairdressing/utils';
 
 const CUSTOMER_STORE_INITIAL_STATE = new InjectionToken<CustomerState>('CUSTOMER_STORE_INITIAL_STATE');
 
@@ -61,9 +62,7 @@ withComputed((store) => {
 
           return j.prices.some(p => store.priceIdFilters().includes(p.priceId));
         }).map<CustomerJobReport>(j => {
-          const total = j.prices.reduce((accumulator, currentValue) => {
-            return accumulator + (currentValue.amount * currentValue.quantity);
-          }, j.additionalPrice ?? 0);
+          const total = calculateTotalPrice(j);
 
           return {
             customerId: c.customerId,

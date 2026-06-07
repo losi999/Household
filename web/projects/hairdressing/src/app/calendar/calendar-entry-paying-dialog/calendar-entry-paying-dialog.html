@@ -18,6 +18,6 @@
 </div>
 
 <div mat-dialog-actions>
-  <button matButton="filled" color="primary" cdkFocusInitial form="calendar-entry-paying" (click)="onSubmit()">Mentés</button>
+  <button matButton="filled" color="primary" cdkFocusInitial form="calendar-entry-paying" [disabled]="!paymentType()" (click)="onSubmit()">Mentés</button>
   <button matButton="text" mat-dialog-close type="button">Mégse</button>
 </div>
