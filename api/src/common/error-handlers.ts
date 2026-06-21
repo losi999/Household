@@ -765,7 +765,7 @@ export const httpErrors = {
         throw httpError(401, 'Incorrect email or password');
       }
       log('Login', ctx, error);
-      throw httpError(statusCode, 'Error while logging in');
+      throw httpError(statusCode, error.message);
     },
     refreshToken: (statusCode = 500): CatchAndThrow => (error) => {
       log('Refresh token', error);
