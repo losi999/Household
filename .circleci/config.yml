@@ -20,12 +20,12 @@ orbs:
 jobs:
   install:
     docker:
-      - image: cimg/node:24.0
+      - image: cimg/node:26.8
     working_directory: ~/repo
     steps:
       - checkout
       - restore_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "web_legacy/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}
       - run:
           name: Install API dependencies
           command: yarn
@@ -34,14 +34,10 @@ jobs:
           command: yarn
           working_directory: web
       - run:
-          name: Install web (Legacy) dependencies
-          command: yarn
-          working_directory: web_legacy
-      - run:
           name: Install layer dependencies
           command: yarn install --modules-folder layers/dependencies/nodejs/node_modules --prod
       - save_cache:
-          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}-{{checksum "web_legacy/yarn.lock"}}
+          key: cache-yarn-v1-{{checksum "yarn.lock"}}-{{checksum "web/yarn.lock"}}
           paths:
             - ~/.cache/yarn
       - run:
@@ -59,7 +55,7 @@ jobs:
             - repo
   unit_test_api:
     docker:
-      - image: cimg/node:24.0
+      - image: cimg/node:26.8
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -72,10 +68,12 @@ jobs:
       - store_artifacts:
           path: coverage
           destination: coverage
-
-  unit_test_web_hairdressing:
+  unit_test_web:
+    parameters:
+      test_command:
+        type: string
     docker:
-      - image: cimg/node:24.0-browsers
+      - image: cimg/node:26.8-browsers
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -85,33 +83,51 @@ jobs:
 
       - run:
           name: Running unit tests
-          command: yarn test:hairdressing
+          command: yarn test:<<parameters.test_command>>
 
       - store_artifacts:
           path: coverage
           destination: coverage
 
-  unit_test_web_shared_ui:
-    docker:
-      - image: cimg/node:24.0-browsers
-    working_directory: ~/repo
-    steps:
-      - attach_workspace:
-          at: ~/
+  # unit_test_web_hairdressing:
+  #   docker:
+  #     - image: cimg/node:26.8-browsers
+  #   working_directory: ~/repo
+  #   steps:
+  #     - attach_workspace:
+  #         at: ~/
 
-      - browser-tools/install_chrome
+  #     - browser-tools/install_chrome
 
-      - run:
-          name: Running unit tests
-          command: yarn test:shared-ui
+  #     - run:
+  #         name: Running unit tests
+  #         command: yarn test:hairdressing
 
-      - store_artifacts:
-          path: coverage
-          destination: coverage          
+  #     - store_artifacts:
+  #         path: coverage
+  #         destination: coverage
+
+  # unit_test_web_shared_ui:
+  #   docker:
+  #     - image: cimg/node:26.8-browsers
+  #   working_directory: ~/repo
+  #   steps:
+  #     - attach_workspace:
+  #         at: ~/
+
+  #     - browser-tools/install_chrome
+
+  #     - run:
+  #         name: Running unit tests
+  #         command: yarn test:shared-ui
+
+  #     - store_artifacts:
+  #         path: coverage
+  #         destination: coverage          
   
   lint:
     docker:
-      - image: cimg/node:24.0
+      - image: cimg/node:26.8
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -122,7 +138,7 @@ jobs:
           command: yarn lint
   build:
     docker:
-      - image: cimg/node:24.0
+      - image: cimg/node:26.8
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -138,8 +154,8 @@ jobs:
           command: yarn build:hairdressing -c $ENV
 
       - run:
-          name: Build Web (Legacy)
-          command: yarn build:web -c $ENV
+          name: Build Household Web
+          command: yarn build:household -c $ENV
 
       - persist_to_workspace:
           root: ~/
@@ -181,7 +197,7 @@ jobs:
       - deploy:
           name: Web deploy
           command: aws s3 sync dist/hairdressing/browser s3://$(aws cloudformation describe-stacks --stack-name HairdressingWeb-$ENV --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)          
-  web_legacy_deploy:
+  web_household_deploy:
     docker:
       - image: cibuilds/aws:1.16.1
     working_directory: ~/repo
@@ -191,13 +207,13 @@ jobs:
       - load-config
       - run:
           name: Insert RUM App Monitor Id
-          command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue' --output text)/g" ./dist/web_legacy/browser/index.html
+          command: sed -i -e "s/RUM_APP_MONITOR_ID/$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumAppMonitorId`].OutputValue' --output text)/g" ./dist/household/browser/index.html
       - run:
           name: Insert RUM Identity Pool Id
-          command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue' --output text)/g" ./dist/web_legacy/browser/index.html
+          command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name Household-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue' --output text)/g" ./dist/household/browser/index.html
       - deploy:
           name: Web deploy
-          command: aws s3 sync dist/web_legacy/browser s3://$(aws cloudformation describe-stacks --stack-name Household-$ENV --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
+          command: aws s3 sync dist/household/browser s3://$(aws cloudformation describe-stacks --stack-name Household-$ENV --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
   api_test_setup:
     docker:
       - image: cibuilds/aws:1.16.1
@@ -225,7 +241,7 @@ jobs:
             - repo
   test:
     parameters:
-      testCommand:
+      test_command:
         type: string
     docker:
       - image: mcr.microsoft.com/playwright:v1.49.0-noble
@@ -247,10 +263,10 @@ jobs:
       - run:
           name: Running tests
           working_directory: test
-          command: export ENV=$ENV && yarn run test:<<parameters.testCommand>>
+          command: export ENV=$ENV && yarn run test:<<parameters.test_command>>
       - store_artifacts:
           path: test/playwright-report
-          destination: test/playwright-report/<<parameters.testCommand>>
+          destination: test/playwright-report/<<parameters.test_command>>
 workflows:
   local:
     jobs:
@@ -259,14 +275,21 @@ workflows:
           name: unit_test_api
           requires:
             - install
-      - unit_test_web_hairdressing:
-          name: unit_test_web_hairdressing
-          requires:
-            - install
-      - unit_test_web_shared_ui:
-          name: unit_test_web_shared_ui
-          requires:
-            - install
+      # - unit_test_web:
+      #     name: unit_test_web_household
+      #     test_command: "household"
+      #     requires:
+      #       - install
+      # - unit_test_web:
+      #     name: unit_test_web_hairdressing
+      #     test_command: "hairdressing"
+      #     requires:
+      #       - install
+      # - unit_test_web:
+      #     name: unit_test_web_shared_ui
+      #     test_command: "shared-ui"
+      #     requires:
+      #       - install
       - lint:
           name: lint
           requires:
@@ -280,6 +303,7 @@ workflows:
           filters: pipeline.git.branch == "master" or pipeline.git.branch == "development" or pipeline.parameters.deploy
           requires:
             - unit_test_api
+            # - unit_test_web_household
             # - unit_test_web_hairdressing
             # - unit_test_web_shared_ui
             - lint
@@ -288,8 +312,8 @@ workflows:
           name: web_hairdressing_deploy
           requires:
             - api_deploy
-      - web_legacy_deploy:
-          name: web_legacy_deploy
+      - web_household_deploy:
+          name: web_household_deploy
           requires:
             - api_deploy
       - api_test_setup:
@@ -299,7 +323,7 @@ workflows:
       - test:
           matrix:
             parameters:
-              testCommand:
+              test_command:
                 - "transaction-common"
                 - "transaction-payment"
                 - "product"

@@ -46,6 +46,12 @@
     },
     {
       "path": "./projects/shared/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/household/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/household/tsconfig.spec.json"
     }
   ]
 }
