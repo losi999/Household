@@ -277,20 +277,17 @@ workflows:
             - install
       - unit_test_web:
           name: unit_test_web_household
-          parameters:
-            test_command: "household"
+          test_command: "household"
           requires:
             - install
       - unit_test_web:
           name: unit_test_web_hairdressing
-          parameters:
-            test_command: "hairdressing"
+          test_command: "hairdressing"
           requires:
             - install
       - unit_test_web:
           name: unit_test_web_shared_ui
-          parameters:
-            test_command: "shared-ui"
+          test_command: "shared-ui"
           requires:
             - install
       - lint:
