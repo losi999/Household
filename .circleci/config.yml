@@ -20,7 +20,7 @@ orbs:
 jobs:
   install:
     docker:
-      - image: cimg/node:24.0
+      - image: cimg/node:26.8
     working_directory: ~/repo
     steps:
       - checkout
@@ -55,7 +55,7 @@ jobs:
             - repo
   unit_test_api:
     docker:
-      - image: cimg/node:24.0
+      - image: cimg/node:26.8
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -73,7 +73,7 @@ jobs:
       test_command:
         type: string
     docker:
-      - image: cimg/node:24.0-browsers
+      - image: cimg/node:26.8-browsers
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -91,7 +91,7 @@ jobs:
 
   # unit_test_web_hairdressing:
   #   docker:
-  #     - image: cimg/node:24.0-browsers
+  #     - image: cimg/node:26.8-browsers
   #   working_directory: ~/repo
   #   steps:
   #     - attach_workspace:
@@ -109,7 +109,7 @@ jobs:
 
   # unit_test_web_shared_ui:
   #   docker:
-  #     - image: cimg/node:24.0-browsers
+  #     - image: cimg/node:26.8-browsers
   #   working_directory: ~/repo
   #   steps:
   #     - attach_workspace:
@@ -127,7 +127,7 @@ jobs:
   
   lint:
     docker:
-      - image: cimg/node:24.0
+      - image: cimg/node:26.8
     working_directory: ~/repo
     steps:
       - attach_workspace:
@@ -138,7 +138,7 @@ jobs:
           command: yarn lint
   build:
     docker:
-      - image: cimg/node:24.0
+      - image: cimg/node:26.8
     working_directory: ~/repo
     steps:
       - attach_workspace:
