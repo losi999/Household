@@ -6,7 +6,8 @@ import { recipientSchema } from '@household/shared/mongodb-schemas/recipient.sch
 import { categorySchema } from '@household/shared/mongodb-schemas/category.schema';
 import { productSchema } from '@household/shared/mongodb-schemas/product.schema';
 import { transactionSchema } from '@household/shared/mongodb-schemas/transaction.schema';
-import { Recipient, Project, Account, Category, Transaction, Product, File, Setting, Customer, Price, Calendar } from '@household/shared/types/types';
+import { Recipient, Project, Category, Transaction, Product, File, Setting, Customer, Price, Calendar } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { fileSchema } from '@household/shared/mongodb-schemas/file.schema';
 import { settingSchema } from '@household/shared/mongodb-schemas/setting.schema';
 import { customerSchema } from '@household/shared/mongodb-schemas/customer.schema';
@@ -18,7 +19,7 @@ type CollectionMapping = {
   recipients: Recipient.Document;
   projects: Project.Document;
   transactions: Transaction.Document;
-  accounts: Account.Document;
+  accounts: Documents.Account;
   categories: Category.Document;
   products: Product.Document;
   files: File.Document;

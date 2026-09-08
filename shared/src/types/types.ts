@@ -133,7 +133,7 @@ export namespace Account {
     & FullName
     & Currency;
 
-  export type Request = Base;
+  // export type Request = Base;
 }
 
 export namespace Category {

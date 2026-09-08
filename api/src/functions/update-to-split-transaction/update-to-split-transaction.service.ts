@@ -8,7 +8,8 @@ import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Account, Category, Product, Project, Transaction } from '@household/shared/types/types';
+import { Category, Product, Project, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IUpdateToSplitTransactionService {
   (ctx: {
@@ -45,7 +46,7 @@ export const updateToSplitTransactionServiceFactory = (
     const categoryIds: Category.Id[] = [];
     const projectIds: Project.Id[] = [];
     const productIds: Product.Id[] = [];
-    const accountIds: Account.Id[] = [accountId];
+    const accountIds: Api.Account.Id[] = [accountId];
 
     splits.forEach(({ amount, categoryId, productId, projectId }) => {
       total += amount;

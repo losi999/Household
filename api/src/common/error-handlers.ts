@@ -2,7 +2,9 @@ import { GroupType } from '@aws-sdk/client-cognito-identity-provider';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey, UserType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Account, Calendar, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
+import { Calendar, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
 
 type CatchAndThrow = (error: any) => never;
@@ -26,7 +28,7 @@ export const httpErrors = {
       log('Save transactions', docs, error);
       throw httpError(statusCode, 'Error while saving transactions');
     },
-    getById: (ctx: Transaction.TransactionId & Partial<Account.AccountId>, statusCode = 500): CatchAndThrow => (error) => {
+    getById: (ctx: Transaction.TransactionId & Partial<Api.Account.AccountId>, statusCode = 500): CatchAndThrow => (error) => {
       log('Get transaction', ctx, error);
       throw httpError(statusCode, 'Error while getting transaction');
     },
@@ -34,7 +36,7 @@ export const httpErrors = {
       log('List transactions', undefined, error);
       throw httpError(statusCode, 'Error while listing transactions');
     },
-    listByAccountId: (ctx: Account.AccountId & Common.Pagination<number>, statusCode = 500): CatchAndThrow => (error) => {
+    listByAccountId: (ctx: Api.Account.AccountId & Common.Pagination<number>, statusCode = 500): CatchAndThrow => (error) => {
       log('List transactions by account', ctx, error);
       throw httpError(statusCode, 'Error while getting transactions');
     },
@@ -42,7 +44,7 @@ export const httpErrors = {
       log('List transactions by file', ctx, error);
       throw httpError(statusCode, 'Error while getting transactions');
     },
-    notFound: (ctx: Transaction.TransactionId & Partial<Account.AccountId> & {transaction: Transaction.Document}, statusCode = 404) => {
+    notFound: (ctx: Transaction.TransactionId & Partial<Api.Account.AccountId> & {transaction: Transaction.Document}, statusCode = 404) => {
       if (ctx.transactionId && !ctx.transaction) {
         log('No transaction found', ctx);
         throw httpError(statusCode, 'No transaction found');
@@ -73,19 +75,19 @@ export const httpErrors = {
         throw httpError(statusCode, 'Sum of splits must equal to total amount');
       }
     },
-    sameAccountTransfer: (ctx: Account.AccountId & Transaction.TransferAccountId, statusCode = 400) => {
+    sameAccountTransfer: (ctx: Api.Account.AccountId & Transaction.TransferAccountId, statusCode = 400) => {
       if (ctx.accountId === ctx.transferAccountId) {
         log('Cannot transfer to same account', ctx);
         throw httpError(statusCode, 'Cannot transfer to same account');
       }
     },
-    sameAccountLoan: (ctx: Account.AccountId & Transaction.LoanAccountId, statusCode = 400) => {
+    sameAccountLoan: (ctx: Api.Account.AccountId & Transaction.LoanAccountId, statusCode = 400) => {
       if (ctx.accountId === ctx.loanAccountId) {
         log('Cannot loan to same account', ctx);
         throw httpError(statusCode, 'Cannot loan to same account');
       }
     },
-    invalidLoanAccountType: (ctx: Account.Document, statusCode = 400) => {
+    invalidLoanAccountType: (ctx: Documents.Account, statusCode = 400) => {
       if (ctx.accountType === AccountType.Loan) {
         log('Account type cannot be loan', ctx);
         throw httpError(statusCode, 'Account type cannot be loan');
@@ -154,7 +156,7 @@ export const httpErrors = {
     },
   },
   account: {
-    save: (doc: Account.Document, statusCode = 500): CatchAndThrow => (error) => {
+    save: (doc: Documents.Account, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate account name', doc, error);
         throw httpError(400, 'Duplicate account name');
@@ -163,7 +165,7 @@ export const httpErrors = {
       log('Save account', doc, error);
       throw httpError(statusCode, 'Error while saving account');
     },
-    getById: (ctx: Account.AccountId, statusCode = 500): CatchAndThrow => (error) => {
+    getById: (ctx: Api.Account.AccountId, statusCode = 500): CatchAndThrow => (error) => {
       log('Get account', ctx, error);
       throw httpError(statusCode, 'Error while getting account');
     },
@@ -171,13 +173,13 @@ export const httpErrors = {
       log('List accounts', undefined, error);
       throw httpError(statusCode, 'Error while listing accounts');
     },
-    notFound: (ctx: Account.AccountId & {account: Account.Document}, statusCode = 404) => {
+    notFound: (ctx: Api.Account.AccountId & {account: Documents.Account}, statusCode = 404) => {
       if (ctx.accountId && !ctx.account) {
         log('No account found', ctx);
         throw httpError(statusCode, 'No account found');
       }
     },
-    update: (ctx: Account.AccountId & {update: UpdateQuery<Account.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+    update: (ctx: Api.Account.AccountId & {update: UpdateQuery<Documents.Account>}, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate account name', ctx, error);
         throw httpError(400, 'Duplicate account name');
@@ -186,17 +188,17 @@ export const httpErrors = {
       log('Update account', ctx, error);
       throw httpError(statusCode, 'Error while updating account');
     },
-    delete: (ctx: Account.AccountId, statusCode = 500): CatchAndThrow => (error) => {
+    delete: (ctx: Api.Account.AccountId, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete account', ctx, error);
       throw httpError(statusCode, 'Error while deleting account');
     },
-    multipleNotFound: (ctx: { accountIds: Account.Id[]; accounts: Account.Document[] }, statusCode = 400) => {
+    multipleNotFound: (ctx: { accountIds: Api.Account.Id[]; accounts: Documents.Account[] }, statusCode = 400) => {
       if (ctx.accountIds.length !== ctx.accounts.length) {
         log('Some of the accounts are not found', ctx);
         throw httpError(statusCode, 'Some of the accounts are not found');
       }
     },
-    differentCurrency: (account: Account.Document, transferAccount: Account.Document, statusCode = 400) => {
+    differentCurrency: (account: Documents.Account, transferAccount: Documents.Account, statusCode = 400) => {
       if(account.currency !== transferAccount.currency) {
         log('Accounts must be in the same currency', {
           account,

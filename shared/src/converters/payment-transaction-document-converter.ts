@@ -8,27 +8,28 @@ import { IProjectDocumentConverter } from '@household/shared/converters/project-
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { DocumentUpdate, Unset } from '@household/shared/types/common';
-import { Account, Calendar, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Calendar, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
 import { default as moment } from 'moment-timezone';
 
 export interface IPaymentTransactionDocumentConverter {
   create(data: {
     body: Transaction.PaymentRequest;
-    account: Account.Document;
+    account: Documents.Account;
     category: Category.Document;
     recipient: Recipient.Document;
     project: Project.Document;
     product: Product.Document;
   }, expiresIn: number, generateId?: boolean): Transaction.PaymentDocument;
   createFromEntry(data: {
-    account: Account.Document;
+    account: Documents.Account;
     category: Category.Document;
     calendarEntry: Calendar.Entry.Document;
   } & Transaction.Amount, expiresIn: number): Transaction.PaymentDocument;
   update(data: {
     body: Transaction.PaymentRequest;
-    account: Account.Document;
+    account: Documents.Account;
     category: Category.Document;
     recipient: Recipient.Document;
     project: Project.Document;

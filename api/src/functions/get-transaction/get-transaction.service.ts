@@ -2,12 +2,13 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IGetTransactionService {
   (ctx: {
     transactionId: Transaction.Id;
-    accountId: Account.Id;
+    accountId: Api.Account.Id;
   }): Promise<Transaction.Response>;
 }
 

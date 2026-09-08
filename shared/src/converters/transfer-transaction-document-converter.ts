@@ -4,24 +4,26 @@ import { IAccountDocumentConverter } from '@household/shared/converters/account-
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { TransactionType } from '@household/shared/enums';
 import { Dictionary, DocumentUpdate, Unset } from '@household/shared/types/common';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
 
 export interface ITransferTransactionDocumentConverter {
   create(data: {
     body: Transaction.TransferRequest;
-    account: Account.Document;
-    transferAccount: Account.Document;
+    account: Documents.Account;
+    transferAccount: Documents.Account;
     transactions: Dictionary<Transaction.DeferredDocument>;
   }, expiresIn: number, generateId?: boolean): Transaction.TransferDocument;
   update(data: {
     body: Transaction.TransferRequest;
-    account: Account.Document;
-    transferAccount: Account.Document;
+    account: Documents.Account;
+    transferAccount: Documents.Account;
     transactions: Dictionary<Transaction.DeferredDocument>;
   }, expiresIn: number): DocumentUpdate<Transaction.Document>;
-  toResponse(document: Transaction.TransferDocument, viewingAccountId: Account.Id): Transaction.TransferResponse;
-  toResponseList(documents: Transaction.TransferDocument[], viewingAccountId: Account.Id): Transaction.TransferResponse[];
+  toResponse(document: Transaction.TransferDocument, viewingAccountId: Api.Account.Id): Transaction.TransferResponse;
+  toResponseList(documents: Transaction.TransferDocument[], viewingAccountId: Api.Account.Id): Transaction.TransferResponse[];
 }
 
 export const transferTransactionDocumentConverterFactory = (

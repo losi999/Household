@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
-import { Account } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListAccountsService {
-  (): Promise<Account.Response[]>;
+  (): Promise<Responses.Account[]>;
 }
 
 export const listAccountsServiceFactory = (

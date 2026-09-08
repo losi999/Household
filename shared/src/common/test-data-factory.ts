@@ -2,6 +2,10 @@ import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account, Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
+import { Documents } from '@household/shared/types/documents';
 import { faker } from '@faker-js/faker';
 import { DAY_LENGTH, priceUnitsOfMeasurement, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 
@@ -11,7 +15,7 @@ const amount = -100;
 
 type DataFactoryFunction<T> = (input?: Partial<T>) => T;
 
-export const createAccountId = (id?: string): Account.Id => {
+export const createAccountId = (id?: string): Api.Account.Id => {
   return createId(id);
 };
 
@@ -43,7 +47,7 @@ export const createSettingKey = (key?: string): SettingKey => {
   return (key ?? 'defaultKey') as SettingKey;
 };
 
-export const createAccountDocument: DataFactoryFunction<Account.Document> = (doc) => {
+export const createAccountDocument: DataFactoryFunction<Documents.Account> = (doc) => {
   return {
     _id: createId(),
     accountType: AccountType.BankAccount,
@@ -254,7 +258,7 @@ export const createDraftTransactionResponse: DataFactoryFunction<Transaction.Dra
   };
 };
 
-export const createAccountRequest: DataFactoryFunction<Account.Request> = (req) => {
+export const createAccountRequest: DataFactoryFunction<Requests.Account> = (req) => {
   return {
     accountType: AccountType.BankAccount,
     name: 'account name',
@@ -461,7 +465,7 @@ export const createReportIssuedAtFilter: DataFactoryFunction<Report.IssuedAtFilt
   };
 };
 
-export const createAccountResponse: DataFactoryFunction<Account.Response> = (resp) => {
+export const createAccountResponse: DataFactoryFunction<Responses.Account> = (resp) => {
   return {
     accountType: AccountType.BankAccount,
     name: 'account name',

@@ -7,7 +7,8 @@ import { IAccountService } from '@household/shared/services/account-service';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { ISettingService } from '@household/shared/services/setting-service';
-import { Account, Calendar, Category, Transaction } from '@household/shared/types/types';
+import { Calendar, Category, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IResolveCalendarWorkEntryService {
   (ctx: {
@@ -59,7 +60,7 @@ export const resolveCalendarWorkEntryServiceFactory = (
       SettingKey.HairdressingIncomeCategory,
     ]));
 
-    const accountId = settings.find(s => s.settingKey === SettingKey.HairdressingIncomeAccount).value as Account.Id;
+    const accountId = settings.find(s => s.settingKey === SettingKey.HairdressingIncomeAccount).value as Api.Account.Id;
     const categoryId = settings.find(s => s.settingKey === SettingKey.HairdressingIncomeCategory).value as Category.Id;
 
     const [

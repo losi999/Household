@@ -7,14 +7,15 @@ import { IProjectDocumentConverter } from '@household/shared/converters/project-
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { DocumentUpdate, Unset } from '@household/shared/types/common';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
 
 export interface IReimbursementTransactionDocumentConverter {
   create(data: {
     body: Transaction.PaymentRequest;
-    payingAccount: Account.Document;
-    ownerAccount: Account.Document;
+    payingAccount: Documents.Account;
+    ownerAccount: Documents.Account;
     category: Category.Document;
     recipient: Recipient.Document;
     project: Project.Document;
@@ -22,8 +23,8 @@ export interface IReimbursementTransactionDocumentConverter {
   }, expiresIn: number, generateId?: boolean): Transaction.ReimbursementDocument;
   update(data: {
     body: Transaction.PaymentRequest;
-    payingAccount: Account.Document;
-    ownerAccount: Account.Document;
+    payingAccount: Documents.Account;
+    ownerAccount: Documents.Account;
     category: Category.Document;
     recipient: Recipient.Document;
     project: Project.Document;

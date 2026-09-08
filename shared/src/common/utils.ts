@@ -1,7 +1,9 @@
 import { WORKDAY_LENGTH } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Dictionary } from '@household/shared/types/common';
-import { Account, Calendar, Category, Customer, File, Internal, Price, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Calendar, Category, Customer, File, Internal, Price, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 import { PopulateOptions, Types } from 'mongoose';
 
 export const keys = <O extends object>(obj: O): (keyof O)[] => {
@@ -79,7 +81,7 @@ export const parseStringToBoolean = (value: string): boolean => {
 
 export const getId = (doc: Internal.Id) => doc?._id?.toString() ?? doc?.toString();
 export const getTransactionId = (doc: Transaction.Document | Transaction.RawReport | Types.ObjectId): Transaction.Id => getId(doc) as Transaction.Id;
-export const getAccountId = (doc: Account.Document | Types.ObjectId): Account.Id => getId(doc) as Account.Id;
+export const getAccountId = (doc: Documents.Account | Types.ObjectId): Api.Account.Id => getId(doc) as Api.Account.Id;
 export const getProjectId = (doc: Project.Document | Types.ObjectId): Project.Id => getId(doc) as Project.Id;
 export const getRecipientId = (doc: Recipient.Document | Types.ObjectId): Recipient.Id => getId(doc) as Recipient.Id;
 export const getCustomerId = (doc: Customer.Document | Types.ObjectId): Customer.Id => getId(doc) as Customer.Id;

@@ -3,7 +3,8 @@ import { populate } from '@household/shared/common/utils';
 import { TransactionType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Account, Common, File, Transaction } from '@household/shared/types/types';
+import { Common, File, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { PipelineStage, Types } from 'mongoose';
 
 export interface ITransactionService {
@@ -11,7 +12,7 @@ export interface ITransactionService {
   saveTransactions(...docs: Transaction.Document[]): Promise<any>;
   findTransactionById<T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T>;
   getTransactionById<T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T>;
-  getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
+  getTransactionByIdAndAccountId(query: Transaction.TransactionId & Api.Account.AccountId): Promise<Transaction.Document>;
   deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
   updateTransaction(transactionId: Transaction.Id, updateQuery: DocumentUpdate<Transaction.Document>): Promise<unknown>;
   listTransactions(match: PipelineStage.Match): Promise<Transaction.RawReport[]>;
@@ -20,7 +21,7 @@ export interface ITransactionService {
     excludedTransferTransactionId?: Transaction.Id
   }): Promise<Transaction.DeferredDocument[]>;
   listDraftTransactionsByFileId(fileId: File.Id): Promise<Transaction.DraftDocument[]>;
-  listTransactionsByAccountId(data: Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
+  listTransactionsByAccountId(data: Api.Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
 }
 
 export const transactionServiceFactory = (mongodbService: IMongodbService): ITransactionService => {

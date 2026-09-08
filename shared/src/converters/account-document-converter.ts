@@ -2,13 +2,16 @@ import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
+import { Documents } from '@household/shared/types/documents';
 
 export interface IAccountDocumentConverter {
-  create(body: Account.Request, expiresIn: number, generateId?: boolean): Account.Document;
-  update(body: Account.Request, expiresIn: number): DocumentUpdate<Account.Document>;
-  toReport(document: Account.Document): Account.Report;
-  toResponse(document: Account.Document): Account.Response;
-  toResponseList(docs: Account.Document[]): Account.Response[];
+  create(body: Requests.Account, expiresIn: number, generateId?: boolean): Documents.Account;
+  update(body: Requests.Account, expiresIn: number): DocumentUpdate<Documents.Account>;
+  toReport(document: Documents.Account): Account.Report;
+  toResponse(document: Documents.Account): Responses.Account;
+  toResponseList(docs: Documents.Account[]): Responses.Account[];
 }
 
 export const accountDocumentConverterFactory = (): IAccountDocumentConverter => {
@@ -22,7 +25,7 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: (body, expiresIn): DocumentUpdate<Account.Document> => {
+    update: (body, expiresIn): DocumentUpdate<Documents.Account> => {
       return {
         update: {
           $set: {

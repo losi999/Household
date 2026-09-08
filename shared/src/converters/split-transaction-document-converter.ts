@@ -8,13 +8,14 @@ import { IProjectDocumentConverter } from '@household/shared/converters/project-
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { Dictionary, DocumentUpdate, Unset } from '@household/shared/types/common';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Types, UpdateQuery } from 'mongoose';
 
 export interface ISplitTransactionDocumentConverter {
   create(data: {
     body: Transaction.SplitRequest;
-    accounts: Dictionary<Account.Document>;
+    accounts: Dictionary<Documents.Account>;
     categories: Dictionary<Category.Document>;
     recipient: Recipient.Document;
     projects: Dictionary<Project.Document>;
@@ -22,7 +23,7 @@ export interface ISplitTransactionDocumentConverter {
   }, expiresIn: number, generateId?: boolean): Transaction.SplitDocument;
   update(data: {
     body: Transaction.SplitRequest;
-    accounts: Dictionary<Account.Document>;
+    accounts: Dictionary<Documents.Account>;
     categories: Dictionary<Category.Document>;
     recipient: Recipient.Document;
     projects: Dictionary<Project.Document>;

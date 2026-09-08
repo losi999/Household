@@ -12,7 +12,8 @@ import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 
 describe('Create payment transaction service', () => {
   let service: ICreatePaymentTransactionService;
@@ -41,8 +42,8 @@ describe('Create payment transaction service', () => {
   });
 
   let body: Transaction.PaymentRequest;
-  let queriedAccount: Account.Document;
-  let queriedLoanAccount: Account.Document;
+  let queriedAccount: Documents.Account;
+  let queriedLoanAccount: Documents.Account;
   let queriedCategory: Category.Document;
   let queriedProject: Project.Document;
   let queriedRecipient: Recipient.Document;
