@@ -39,7 +39,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
   let accountDocument: Documents.Account;
   let loanAccountDocument: Documents.Account;
   let transferAccountDocument: Documents.Account;
-  let projectDocument: Project.Document;
+  let projectDocument: Documents.Project;
   let recipientDocument: Recipient.Document;
   let regularCategoryDocument: Category.Document;
   let inventoryCategoryDocument: Category.Document;

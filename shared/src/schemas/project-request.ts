@@ -1,7 +1,8 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Project } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 
-const schema: StrictJSONSchema7<Project.Request> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Requests.Project> = {
   type: 'object',
   additionalProperties: false,
   required: ['name'],

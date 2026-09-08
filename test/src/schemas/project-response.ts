@@ -1,9 +1,9 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Project } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { default as projectId } from '@household/shared/schemas/project-id';
 import { default as project } from '@household/shared/schemas/project-request';
 
-const schema: StrictJSONSchema7<Project.Response> = {
+const schema: StrictJSONSchema7<Responses.Project> = {
   type: 'object',
   additionalProperties: false,
   required: [

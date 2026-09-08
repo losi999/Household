@@ -3,7 +3,8 @@ import { allowUsers } from '@household/test/utils';
 import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
-import { Project } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
 
@@ -14,7 +15,7 @@ const expect = mergeExpects(projectApiExpect, apiExpect);
 const test = mergeTests(projectApiTest, projectDbTest);
 
 test.describe('POST /project/v1/projects', () => {
-  let req: Project.Request;
+  let req: Requests.Project;
 
   test.beforeEach(async () => {
     req = projectDataFactory.request();
@@ -47,7 +48,7 @@ test.describe('POST /project/v1/projects', () => {
             const res = await requestCreateProject(req);
             expect(res).toBeCreatedResponse();
 
-            const { projectId } = (await res.json()) as Project.ProjectId;
+            const { projectId } = (await res.json()) as Api.Project.ProjectId;
             expect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
           });
 
@@ -60,7 +61,7 @@ test.describe('POST /project/v1/projects', () => {
               const res = await requestCreateProject(req);
               expect(res).toBeCreatedResponse();
               
-              const { projectId } = (await res.json()) as Project.ProjectId;
+              const { projectId } = (await res.json()) as Api.Project.ProjectId;
               expect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
             });
           });

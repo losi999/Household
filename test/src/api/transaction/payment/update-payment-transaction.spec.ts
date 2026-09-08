@@ -31,7 +31,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
   let request: Transaction.PaymentRequest;
   let originalDocument: Transaction.TransferDocument;
 
-  let projectDocument: Project.Document;
+  let projectDocument: Documents.Project;
   let recipientDocument: Recipient.Document;
   let accountDocument: Documents.Account;
   let regularCategoryDocument: Category.Document;

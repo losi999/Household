@@ -1,13 +1,13 @@
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IGetProjectService } from '@household/api/functions/get-project/get-project.service';
 import { castPathParameters } from '@household/shared/common/aws-utils';
-import { Project } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (getProject: IGetProjectService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const { projectId } = castPathParameters(event);
 
-    let project: Project.Response;
+    let project: Responses.Project;
     try {
       project = await getProject({
         projectId,

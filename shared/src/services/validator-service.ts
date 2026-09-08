@@ -1,9 +1,9 @@
-import { ObjectSchema } from '@household/shared/types/schema';
+import { StrictSchema } from '@household/shared/types/schema';
 import { default as Ajv, ErrorObject } from 'ajv';
 import { JSONSchema7 } from 'json-schema';
 
 export interface IValidatorService {
-  validate(obj: object, schema: JSONSchema7 | ObjectSchema<any>): string | undefined; // TODO: remove JSONSchema7 type when all schemas are converted to ObjectSchema
+  validate(obj: object, schema: JSONSchema7 | StrictSchema<any>): string | undefined; // TODO: remove JSONSchema7 type when all schemas are converted to StrictSchema
 }
 
 export const validatorServiceFactory = (validator: Ajv): IValidatorService => {

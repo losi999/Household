@@ -33,7 +33,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
   let request: Transaction.SplitRequest;
   let originalDocument: Transaction.PaymentDocument;
 
-  let projectDocument: Project.Document;
+  let projectDocument: Documents.Project;
   let recipientDocument: Recipient.Document;
   let accountDocument: Documents.Account;
   let secondaryAccountDocument: Documents.Account;

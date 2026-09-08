@@ -1,7 +1,7 @@
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
+import { Auth, Calendar, Category, Customer, File, Price, Product, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -23,7 +23,7 @@ export const createCategoryId = (id?: string): Category.Id => {
   return createId(id);
 };
 
-export const createProjectId = (id?: string): Project.Id => {
+export const createProjectId = (id?: string): Api.Project.Id => {
   return createId(id);
 };
 
@@ -59,7 +59,7 @@ export const createAccountDocument: DataFactoryFunction<Documents.Account> = (do
     ...doc,
   };
 };
-export const createProjectDocument: DataFactoryFunction<Project.Document> = (doc) => {
+export const createProjectDocument: DataFactoryFunction<Documents.Project> = (doc) => {
   return {
     _id: createId(),
     name: 'project name',
@@ -268,7 +268,7 @@ export const createAccountRequest: DataFactoryFunction<Requests.Account> = (req)
   };
 };
 
-export const createProjectRequest: DataFactoryFunction<Project.Request> = (req) => {
+export const createProjectRequest: DataFactoryFunction<Requests.Project> = (req) => {
   return {
     name: 'project name',
     description: 'project description',
@@ -479,7 +479,7 @@ export const createAccountResponse: DataFactoryFunction<Responses.Account> = (re
   };
 };
 
-export const createProjectResponse: DataFactoryFunction<Project.Response> = (resp) => {
+export const createProjectResponse: DataFactoryFunction<Responses.Project> = (resp) => {
   return {
     projectId: createProjectId(),
     name: 'project name',
@@ -686,10 +686,10 @@ export const createCategoryReport: DataFactoryFunction<Category.Report> = (rep) 
   };
 };
 
-export const createProjectReport: DataFactoryFunction<Project.Report> = (rep) => {
+export const createProjectReport: DataFactoryFunction<Responses.ProjectReport> = (rep) => {
   return {
     projectId: createProjectId(),
-    name: 'acc name',
+    name: 'project name',
     ...rep,
   };
 };

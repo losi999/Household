@@ -13,4 +13,6 @@ export namespace Documents {
   };
 
   export type Account = Id & Timestamps & Api.Account.Base & Partial<Api.Account.Balance> & Api.Account.IsOpen;
+
+  export type Project = Id & Timestamps & Api.Project.Base;
 }

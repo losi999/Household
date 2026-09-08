@@ -1,7 +1,7 @@
-import { Project } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-export const projectSchema = new Schema<Project.Document>({
+export const projectSchema = new Schema<Documents.Project>({
   name: {
     type: String,
     required: true,

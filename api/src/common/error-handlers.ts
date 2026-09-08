@@ -2,7 +2,7 @@ import { GroupType } from '@aws-sdk/client-cognito-identity-provider';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey, UserType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Calendar, Category, Common, Customer, File, Price, Product, Project, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
+import { Calendar, Category, Common, Customer, File, Price, Product, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
@@ -95,7 +95,7 @@ export const httpErrors = {
     },
   },
   project: {
-    save: (doc: Project.Document, statusCode = 500): CatchAndThrow => (error) => {
+    save: (doc: Documents.Project, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate project name', doc, error);
         throw httpError(400, 'Duplicate project name');
@@ -104,11 +104,11 @@ export const httpErrors = {
       log('Save project', doc, error);
       throw httpError(statusCode, 'Error while saving project');
     },
-    getById: (ctx: Project.ProjectId, statusCode = 500): CatchAndThrow => (error) => {
+    getById: (ctx: Api.Project.ProjectId, statusCode = 500): CatchAndThrow => (error) => {
       log('Get project', ctx, error);
       throw httpError(statusCode, 'Error while getting project');
     },
-    listByIds: (ctx: Project.Id[], statusCode = 500): CatchAndThrow => (error) => {
+    listByIds: (ctx: Api.Project.Id[], statusCode = 500): CatchAndThrow => (error) => {
       log('List projects by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing projects by ids');
     },
@@ -116,23 +116,23 @@ export const httpErrors = {
       log('List projects', undefined, error);
       throw httpError(statusCode, 'Error while listing projects');
     },
-    notFound: (ctx: Project.ProjectId & {project: Project.Document}, statusCode = 404) => {
+    notFound: (ctx: Api.Project.ProjectId & {project: Documents.Project}, statusCode = 404) => {
       if (ctx.projectId && !ctx.project) {
         log('No project found', ctx);
         throw httpError(statusCode, 'No project found');
       }
     },
-    delete: (ctx: Project.ProjectId, statusCode = 500): CatchAndThrow => (error) => {
+    delete: (ctx: Api.Project.ProjectId, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete project', ctx, error);
       throw httpError(statusCode, 'Error while deleting project');
     },
-    multipleNotFound: (ctx: { projectIds: Project.Id[]; projects: Project.Document[] }, statusCode = 400) => {
+    multipleNotFound: (ctx: { projectIds: Api.Project.Id[]; projects: Documents.Project[] }, statusCode = 400) => {
       if (ctx.projectIds.length !== ctx.projects.length) {
         log('Some of the projects are not found', ctx);
         throw httpError(statusCode, 'Some of the projects are not found');
       }
     },
-    update: (ctx: Project.ProjectId & {update: UpdateQuery<Project.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+    update: (ctx: Api.Project.ProjectId & {update: UpdateQuery<Documents.Project>}, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate project name', ctx, error);
         throw httpError(400, 'Duplicate project name');
@@ -141,15 +141,15 @@ export const httpErrors = {
       log('Update project', ctx, error);
       throw httpError(statusCode, 'Error while updating project');
     },
-    mergeTargetAmongSource: (ctx: {target: Project.Id; source: Project.Id[]}, statusCode = 400) => {
+    mergeTargetAmongSource: (ctx: {target: Api.Project.Id; source: Api.Project.Id[]}, statusCode = 400) => {
       if (ctx.source.includes(ctx.target)) {
         log('Target project is among the source project Ids', ctx);
         throw httpError(statusCode, 'Target project is among the source project Ids');
       }
     },
     merge: (ctx: {
-      targetProjectId: Project.Id;
-      sourceProjectIds: Project.Id[];
+      targetProjectId: Api.Project.Id;
+      sourceProjectIds: Api.Project.Id[];
     }, statusCode = 500): CatchAndThrow => (error) => {
       log('Merge projects', ctx, error);
       throw httpError(statusCode, 'Error while merging projects');

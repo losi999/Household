@@ -1,5 +1,6 @@
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Category, Product, Recipient, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
 import { Comparer } from '@household/test/comparer';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
@@ -70,7 +71,7 @@ export const expect = baseExpect.extend({
   },
   toHaveRelatedDocumentsChangedInDeferredTransaction(originalDocument: Transaction.DeferredDocument, currentDocument: Transaction.DeferredDocument, reassignments: {
     recipient?: Reassignment<Recipient.Id>;
-    project?: Reassignment<Project.Id>;
+    project?: Reassignment<Api.Project.Id>;
     product?: Reassignment<Product.Id>;
     category?: Reassignment<Category.Document>;
   }) {

@@ -29,7 +29,7 @@ const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, ca
 
 test.describe('POST transaction/v1/transactions/split (split)', () => {
   let request: Transaction.SplitRequest;
-  let projectDocument: Project.Document;
+  let projectDocument: Documents.Project;
   let recipientDocument: Recipient.Document;
   let accountDocument: Documents.Account;
   let secondaryAccountDocument: Documents.Account;

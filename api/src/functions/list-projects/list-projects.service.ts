@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
-import { Project } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListProjectsService {
-  (): Promise<Project.Response[]>;
+  (): Promise<Responses.Project[]>;
 }
 
 export const listProjectsServiceFactory = (

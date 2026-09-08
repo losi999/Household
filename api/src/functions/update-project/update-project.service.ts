@@ -1,12 +1,13 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
-import { Project } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateProjectService {
   (ctx: {
-    body: Project.Request;
-    projectId: Project.Id;
+    body: Requests.Project;
+    projectId: Api.Project.Id;
     expiresIn: number;
   }): Promise<unknown>;
 }

@@ -16,7 +16,7 @@ Keep this list current — check a domain off here in the same change that migra
 - [ ] File
 - [ ] Price
 - [ ] Product
-- [ ] Project
+- [x] Project
 - [ ] Recipient
 - [ ] Setting
 - [ ] Transaction
@@ -160,6 +160,25 @@ A field-level schema can be reused directly too: `Account.accountId.properties.a
 the plain `{type: 'string', pattern: ...}` schema out of the whole-record `accountId` object —
 useful for a path parameter that validates the same field a body schema also carries.
 
+Not every request body is object-shaped — a merge-style endpoint (`Project`'s `merge-projects`,
+also present on `Recipient`/`Product`/`Category` in the legacy pattern) takes a bare JSON array
+of ids. For that, skip `combine()` (it only produces `ObjectSchema<T>`) and write the array
+schema directly against the exported `StrictSchema<T>`:
+
+```ts
+export const idList: StrictSchema<Api.Project.Id[]> = {
+  type: 'array',
+  minItems: 1,
+  items: projectId.properties.projectId,
+};
+```
+
+`StrictSchema<T>` and `ObjectSchema<T>` are both exported from `schema.ts` for exactly this —
+`IValidatorService.validate` (`shared/src/services/validator-service.ts`) and
+`apiRequestValidator`'s `RequestSchemaTypes` (`api/src/handlers/api-request-validator.handler.ts`)
+both accept `StrictSchema<any>` (not just `ObjectSchema<any>`) so an array-typed `body` schema
+type-checks through the same `apiRequestValidator({ body })` wiring as everything else.
+
 ### 8. `shared/src/mongodb-schemas/<domain>.schema.ts` — mongoose schema
 
 A plain `new Schema<Documents.<Domain>>({...})`. This is mongoose's own schema DSL (validators,
@@ -282,6 +301,36 @@ types, used across `*.spec.ts` files instead of hand-rolled fixtures.
     9, embedding the layer-5 schema exports directly (no cast); wire into `specs/index.ts`.
 13. Wire the SAM/CloudFormation route (`sam.<domain>.yaml` or equivalent) to the new Lambda —
     unrelated to this pattern but needed for the endpoint to actually exist.
+14. **`test/`** (the Playwright suite) — replace every remaining `<Domain>.<Member>` reference
+    from the legacy `types.ts` namespace with its new-pattern equivalent, the same mapping as
+    everywhere else (`Document`→`Documents.<Domain>`, `Request`→`Requests.<Domain>`,
+    `Response`→`Responses.<Domain>`, `Report`→`Responses.<Domain>Report`, everything else→
+    `Api.<Domain>.<Member>`). In practice:
+    - Find every file: `grep -rln "from '@household/shared/types/types'" test/ | xargs grep -l
+      '<Domain>\.'`.
+    - Substitute with a **word-boundary-aware** regex (`\b<Domain>\.<Member>\b` per member, in
+      Python or similar — not `sed`; macOS/BSD `sed` silently drops `\b` with no error, so a
+      pattern like `Account\.Id\b` matches *nothing* instead of failing loudly, and a plain
+      substring replace without any boundary check will corrupt unrelated identifiers like
+      `loanAccount.accountType`). Check the substitution actually landed (`grep` for the old
+      pattern afterward) rather than trusting silent success.
+    - Run `tsc -p tsconfig.json --noEmit` (covers `test/` without `web/`'s unrelated noise) —
+      every `Cannot find namespace 'Api'/'Documents'/'Requests'/'Responses'` error names exactly
+      the file and the import to add. Drop the old `<Domain>` import from
+      `@household/shared/types/types` in each fixed file if nothing else in it still needs it
+      (check for `(?<!\.)\b<Domain>\b` — a lookbehind excluding `.`-prefixed matches like
+      `Api.Project` — since `tsc` won't flag an import as merely unused).
+    - Finish with `yarn lint` (0 errors expected) and `yarn test:api` (only confirms `shared`/`api`
+      unit tests still pass — the Playwright suite itself needs a live backend and isn't run
+      here, so this step is a pure type-safety migration, not a behavior-verified one).
+
+**Scope of one pass**: steps 1–14 are the domain's own layers, `test/` included. One thing is
+deliberately *not* part of migrating a domain, and should be flagged to the user as available
+follow-up work rather than done silently in the same pass: other domains'/`Transaction`'s
+converters, services, and `error-handlers.ts` entries that reference the migrated domain's
+`Document`/`Response` through `Transaction`'s still-legacy types (see "Legacy pattern" below) —
+that's cross-domain cleanup belonging to whichever domain migrates next (`Transaction` itself,
+ultimately), not to this one.
 
 ## Legacy pattern — do not replicate
 
@@ -290,11 +339,27 @@ types, used across `*.spec.ts` files instead of hand-rolled fixtures.
 file), paired with hand-written AJV-only schemas in `shared/src/schemas/<domain>-id.ts` /
 `<domain>-request.ts` typed via `StrictJSONSchema7<T>` (`shared/src/types/common.ts`) — a
 JSON-Schema-only type with no OpenAPI story at all. See "Migration status" above for which
-domains are still on this. The whole `Account` namespace in `types.ts` is marked `@deprecated`
-and kept only as dead code
-for reference — `Account.Document`/`Response`/`Request` have no consumers left, though
-`Account.Report` is still referenced by `Transaction.Report` (itself still on the legacy
-pattern, unmigrated) even though it's now structurally identical to `Responses.AccountReport`.
-`@typescript-eslint/no-deprecated` (`.eslintrc.json`) will flag any *new* code that references
-the deprecated namespace — that lint rule firing on a domain you're touching is the signal that
-migration work is needed there.
+domains are still on this.
+
+Once a domain migrates, mark its `namespace <Domain>` in `types.ts` `@deprecated` — but do not
+delete it or its `Id`/field types/`Base`/`Document`/`Response`/`Report`: `Transaction`'s
+composite types are themselves still unmigrated and embed `<Domain>.Document`, `<Domain>
+.Response`, and `<Domain>.Report` via a generic `<Domain><T>` wrapper local to `namespace
+Transaction` (e.g. `Account<Account.Document>`, `Project<Project.Response>` — confirmed by
+grepping `types.ts` for `<Domain><<Domain>.` before assuming otherwise). Only `Request` reliably
+has zero remaining consumers once a domain's own layers stop using it — comment that one out
+(`// export type Request = Base;`), not delete, so it stays visible as "removed, not forgotten."
+The three legacy AJV schema files for the domain (`<domain>-id.ts`, `<domain>-id-list.ts` if it
+has one, `<domain>-request.ts`) usually stay too, retyped to the new `Api.<Domain>.*`/
+`Requests.<Domain>` types and marked `@deprecated` — other still-unmigrated domains' legacy
+schemas often import them directly (e.g. `transaction-payment-request.ts` imports
+`project-id.ts`) and must keep working unchanged.
+
+`@typescript-eslint/no-deprecated` (`.eslintrc.json`) will flag any *new* code that references a
+deprecated namespace — that lint rule firing on a domain you're touching is the signal that
+migration work is needed there. Expect it to keep firing inside `types.ts` itself (`Transaction`'s
+embedding, described above) and inside `Transaction`'s own converters/services/`error-handlers.ts`
+entries that consume a migrated domain's document/response through `Transaction`'s still-legacy
+types — that cross-domain cleanup is a separate follow-up belonging to `Transaction`'s own
+migration, not to the domain you just finished (recipe step 14 already covers `test/`, so no
+`no-deprecated` warnings for the migrated domain should remain there).

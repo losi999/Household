@@ -105,7 +105,7 @@ export const expect = baseExpect.extend({
   },
   toHaveRelatedDocumentsChangedInSplitTransaction(originalDocument: Transaction.SplitDocument, currentDocument: Transaction.SplitDocument, reassignments: {
     recipient?: Reassignment<Recipient.Id>;
-    project?: Reassignment<Project.Id>;
+    project?: Reassignment<Api.Project.Id>;
     product?: Reassignment<Product.Id>;
     category?: Reassignment<Category.Document>;
   }) {

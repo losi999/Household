@@ -21,6 +21,7 @@ export namespace Internal {
   };
 }
 
+/** @deprecated */
 export namespace Project {
   export type Id = Branding<string, 'project'>;
 
@@ -49,7 +50,7 @@ export namespace Project {
   export type Report = ProjectId
     & Name;
 
-  export type Request = Base;
+  // export type Request = Base;
 }
 
 export namespace Recipient {

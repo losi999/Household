@@ -2,13 +2,13 @@ import { JSONSchema7 } from 'json-schema';
 import { IValidatorService } from '@household/shared/services/validator-service';
 import { badRequestResponse } from '@household/api/common/response-factory';
 import { keys } from '@household/shared/common/utils';
-import { ObjectSchema } from '@household/shared/types/schema';
+import { StrictSchema } from '@household/shared/types/schema';
 
-type RequestSchemaTypes = { // TODO: remove JSONSchema7 type when all schemas are converted to ObjectSchema
-  body?: JSONSchema7 | ObjectSchema<any>;
-  pathParameters?: JSONSchema7 | ObjectSchema<any>;
-  queryStringParameters?: JSONSchema7 | ObjectSchema<any>;
-  multiValueQueryStringParameters?: JSONSchema7 | ObjectSchema<any>;
+type RequestSchemaTypes = { // TODO: remove JSONSchema7 type when all schemas are converted to StrictSchema
+  body?: JSONSchema7 | StrictSchema<any>;
+  pathParameters?: JSONSchema7 | StrictSchema<any>;
+  queryStringParameters?: JSONSchema7 | StrictSchema<any>;
+  multiValueQueryStringParameters?: JSONSchema7 | StrictSchema<any>;
 };
 
 export default (validatorService: IValidatorService) => {

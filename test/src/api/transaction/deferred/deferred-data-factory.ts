@@ -12,7 +12,7 @@ export const deferredTransactionDataFactory = (() => {
     loanAccount: Documents.Account;
     category?: Category.Document;
     product?: Product.Document;
-    project?: Project.Document;
+    project?: Documents.Project;
     recipient?: Recipient.Document;
   }): Transaction.DeferredDocument => {
     if (ctx.account.accountType === AccountType.Loan) {

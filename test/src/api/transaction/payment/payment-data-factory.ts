@@ -49,7 +49,7 @@ export const paymentTransactionDataFactory = (() => {
     account: Documents.Account;
     category?: Category.Document;
     product?: Product.Document;
-    project?: Project.Document;
+    project?: Documents.Project;
     recipient?: Recipient.Document;
   }): Transaction.PaymentDocument => {
     if (ctx.account.accountType === AccountType.Loan) {

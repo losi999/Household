@@ -15,4 +15,10 @@ export namespace Responses {
   export type AccountReport = Api.Account.AccountId &
     Api.Account.FullName &
     Api.Account.Currency;
+
+  export type Project = Api.Project.Base &
+    Api.Project.ProjectId;
+
+  export type ProjectReport = Api.Project.ProjectId &
+    Api.Project.Name;
 }

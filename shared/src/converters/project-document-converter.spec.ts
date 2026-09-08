@@ -1,7 +1,7 @@
 import { createDocumentUpdate, createProjectDocument, createProjectReport, createProjectRequest, createProjectResponse } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProjectId } from '@household/shared/common/utils';
 import { projectDocumentConverterFactory, IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
-import { Project } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Project document converter', () => {
   let converter: IProjectDocumentConverter;
@@ -68,7 +68,7 @@ describe('Project document converter', () => {
     });
 
     it('should unset description', () => {
-      const modifiedBody: Project.Request = {
+      const modifiedBody: Requests.Project = {
         ...body,
         description: undefined,
       };

@@ -43,4 +43,22 @@ export namespace Api {
       balance: number;
     };
   }
+
+  export namespace Project {
+    export type Id = Branding<string, 'project'>;
+
+    export type ProjectId = {
+      projectId: Id;
+    };
+
+    export type Name = {
+      name: string;
+    };
+
+    export type Description = {
+      description: string;
+    };
+
+    export type Base = Name & Description;
+  }
 }

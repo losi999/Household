@@ -1,8 +1,9 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Project } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { default as mongoId } from '@household/shared/schemas/partials/mongo-id';
 
-const schema: StrictJSONSchema7<Project.ProjectId> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Api.Project.ProjectId> = {
   type: 'object',
   additionalProperties: false,
   required: ['projectId'],
