@@ -1,6 +1,7 @@
 import { validatorService } from '@household/shared/dependencies/services/validator-service';
 import { JSONSchema7 } from 'json-schema';
 
+/** @deprecated */
 export const jsonSchemaTesterFactory = <T extends object>(schema: JSONSchema7) => {
   return {
     validateSuccess: (data: T, message: string = '') => {

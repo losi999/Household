@@ -1,20 +1,19 @@
-import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Account } from '@household/shared/types/types';
-import { default as accountId } from '@household/shared/schemas/account-id';
-import { default as account } from '@household/shared/schemas/account-request';
+import { request, accountId } from '@household/shared/schemas/account';
+import { ObjectSchema } from '@household/shared/types/schema';
+import { Responses } from '@household/shared/types/responses';
 
-const schema: StrictJSONSchema7<Account.Response> = {
+const schema: ObjectSchema<Responses.AccountLean> = {
   type: 'object',
   additionalProperties: false,
   required: [
     ...accountId.required,
-    ...account.required,
+    ...request.required,
     'isOpen',
     'fullName',
   ],
   properties: {
     ...accountId.properties,
-    ...account.properties,
+    ...request.properties,
     isOpen: {
       type: 'boolean',
     },

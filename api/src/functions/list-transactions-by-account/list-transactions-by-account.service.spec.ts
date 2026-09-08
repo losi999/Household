@@ -54,7 +54,7 @@ describe('List transactions by account service', () => {
         accountId,
         pageNumber,
         pageSize,
-      });0;
+      });
       validateFunctionCall(mockTransactionDocumentConverter.functions.toResponseList);
       expect.assertions(4);
     });

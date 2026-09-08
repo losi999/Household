@@ -28,7 +28,7 @@ describe('Create customer service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(customerId.toString()),
+    expect(result).toEqual(customerId.toString());
     validateFunctionCall(mockCustomerDocumentConverter.functions.create, body, undefined);
     validateFunctionCall(mockCustomerService.functions.saveCustomer, convertedCustomerDocument);
     expect.assertions(3);

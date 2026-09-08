@@ -32,7 +32,7 @@ describe('Create category service', () => {
         body,
         expiresIn: undefined,
       });
-      expect(result).toEqual(categoryId),
+      expect(result).toEqual(categoryId);
       validateFunctionCall(mockCategoryService.functions.findCategoryById, body.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.create, {
         body,
@@ -54,7 +54,7 @@ describe('Create category service', () => {
         body: parentlessBody,
         expiresIn: undefined,
       });
-      expect(result).toEqual(categoryId),
+      expect(result).toEqual(categoryId);
       validateFunctionCall(mockCategoryService.functions.findCategoryById, parentlessBody.parentCategoryId);
       validateFunctionCall(mockCategoryDocumentConverter.functions.create, {
         body: parentlessBody,

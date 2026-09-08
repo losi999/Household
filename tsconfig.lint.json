@@ -6,6 +6,7 @@
     "web_legacy/src",
     "web/projects",
     "test",
+    "specs",
     "./*.ts"
   ]
 }

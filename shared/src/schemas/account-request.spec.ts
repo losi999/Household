@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/account-request';
-import { Account } from '@household/shared/types/types';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { request as schema } from '@household/shared/schemas/account';
 import { createAccountRequest } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Account schema', () => {
-  const tester = jsonSchemaTesterFactory<Account.Request>(schema);
+  const tester = schemaTesterFactory<Requests.Account>(schema);
 
   tester.validateSuccess(createAccountRequest());
 

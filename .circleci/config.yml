@@ -87,43 +87,7 @@ jobs:
 
       - store_artifacts:
           path: coverage
-          destination: coverage
-
-  # unit_test_web_hairdressing:
-  #   docker:
-  #     - image: cimg/node:26.8-browsers
-  #   working_directory: ~/repo
-  #   steps:
-  #     - attach_workspace:
-  #         at: ~/
-
-  #     - browser-tools/install_chrome
-
-  #     - run:
-  #         name: Running unit tests
-  #         command: yarn test:hairdressing
-
-  #     - store_artifacts:
-  #         path: coverage
-  #         destination: coverage
-
-  # unit_test_web_shared_ui:
-  #   docker:
-  #     - image: cimg/node:26.8-browsers
-  #   working_directory: ~/repo
-  #   steps:
-  #     - attach_workspace:
-  #         at: ~/
-
-  #     - browser-tools/install_chrome
-
-  #     - run:
-  #         name: Running unit tests
-  #         command: yarn test:shared-ui
-
-  #     - store_artifacts:
-  #         path: coverage
-  #         destination: coverage          
+          destination: coverage 
   
   lint:
     docker:

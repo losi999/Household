@@ -9,6 +9,7 @@ export namespace Internal {
     _id: Types.ObjectId;
   };
 
+  /** @deprecated */
   export type IsArchived = {
     isArchived: boolean;
   };
@@ -36,17 +37,17 @@ export namespace Project {
   };
 
   type Base = Name
-  & Description;
+    & Description;
 
   export type Document = Internal.Id
-  & Internal.Timestamps
-  & Base;
+    & Internal.Timestamps
+    & Base;
 
   export type Response = Base
-  & ProjectId;
+    & ProjectId;
 
   export type Report = ProjectId
-  & Name;
+    & Name;
 
   export type Request = Base;
 }
@@ -63,18 +64,19 @@ export namespace Recipient {
   };
 
   export type Document = Internal.Id
-  & Internal.Timestamps
-  & Name;
+    & Internal.Timestamps
+    & Name;
 
   export type Response = Name
-  & RecipientId;
+    & RecipientId;
 
   export type Report = RecipientId
-  & Name;
+    & Name;
 
   export type Request = Name;
 }
 
+/** @deprecated */
 export namespace Account {
   export type Id = Branding<string, 'account'>;
 
@@ -82,15 +84,15 @@ export namespace Account {
     accountId: Id;
   };
 
-  type IsOpen = {
+  export type IsOpen = {
     isOpen: boolean;
   };
 
-  type Name = {
+  export type Name = {
     name: string;
   };
 
-  type Currency = {
+  export type Currency = {
     currency: string;
   };
 
@@ -98,38 +100,38 @@ export namespace Account {
     accountType: Enum.AccountType;
   };
 
-  type Owner = {
+  export type Owner = {
     owner: string;
   };
 
-  type FullName = {
+  export type FullName = {
     fullName: string;
   };
 
-  type Base = Name
-  & Currency
-  & AccountType
-  & Owner;
+  export type Base = Name
+    & Currency
+    & AccountType
+    & Owner;
 
-  type Balance = {
+  export type Balance = {
     balance: number;
   };
 
   export type Document = Internal.Id
-  & Internal.Timestamps
-  & Base
-  & IsOpen
-  & Partial<Balance>;
+    & Internal.Timestamps
+    & Base
+    & IsOpen
+    & Partial<Balance>;
 
   export type Response = Base
-  & IsOpen
-  & AccountId
-  & FullName
-  & Balance;
+    & IsOpen
+    & AccountId
+    & FullName
+    & Balance;
 
   export type Report = AccountId
-  & FullName
-  & Currency;
+    & FullName
+    & Currency;
 
   export type Request = Base;
 }
@@ -162,33 +164,33 @@ export namespace Category {
   };
 
   export type Document = Internal.Id
-  & Internal.Timestamps
-  & CategoryType
-  & Name
-  & {
-    ancestors: Document[];
-    products?: Product.Document[];
-  };
+    & Internal.Timestamps
+    & CategoryType
+    & Name
+    & {
+      ancestors: Document[];
+      products?: Product.Document[];
+    };
 
   export type Report = CategoryId
-  & FullName;
+    & FullName;
 
   export type ResponseAncestor = CategoryType
-  & Name
-  & CategoryId;
+    & Name
+    & CategoryId;
 
   export type ResponseParent = ResponseAncestor & FullName;
 
   export type Response = ResponseAncestor
-  & FullName
-  & {
-    ancestors: ResponseAncestor[];
-    parentCategory: ResponseParent;
-  };
+    & FullName
+    & {
+      ancestors: ResponseAncestor[];
+      parentCategory: ResponseParent;
+    };
 
   export type Request = CategoryType
-  & Name
-  & ParentCategoryId;
+    & Name
+    & ParentCategoryId;
 }
 
 export namespace Product {
@@ -209,23 +211,23 @@ export namespace Product {
   };
 
   export type Document = Internal.Id
-  & Internal.Timestamps
-  & Base
-  & FullName
-  & {
-    category: Category.Document;
-  };
+    & Internal.Timestamps
+    & Base
+    & FullName
+    & {
+      category: Category.Document;
+    };
 
   export type Response = Base
-  & ProductId
-  & FullName;
+    & ProductId
+    & FullName;
 
   export type GroupedResponse = Category.FullName & Category.CategoryId & {
     products: Response[];
   };
 
   export type Report = ProductId
-  & FullName;
+    & FullName;
 
   export type Request = Base;
 }
@@ -274,7 +276,7 @@ export namespace Transaction {
     transferAccountId: Account.Id;
   };
 
-  export type TransferAmount ={
+  export type TransferAmount = {
     transferAmount: number;
   };
 
@@ -306,7 +308,7 @@ export namespace Transaction {
     transferAccount: A;
   };
 
-  export type PayingAccount<A extends Account.Document |Account.Response> = {
+  export type PayingAccount<A extends Account.Document | Account.Response> = {
     payingAccount: A;
   };
 
@@ -326,127 +328,127 @@ export namespace Transaction {
   };
 
   export type PaymentRequest = Account.AccountId
-  & Category.CategoryId
-  & Project.ProjectId
-  & Recipient.RecipientId
-  & IssuedAt<string>
-  & InvoiceNumber
-  & InvoiceDate<string>
-  & Quantity
-  & Product.ProductId
-  & Amount
-  & Description
-  & LoanAccountId
-  & IsSettled;
+    & Category.CategoryId
+    & Project.ProjectId
+    & Recipient.RecipientId
+    & IssuedAt<string>
+    & InvoiceNumber
+    & InvoiceDate<string>
+    & Quantity
+    & Product.ProductId
+    & Amount
+    & Description
+    & LoanAccountId
+    & IsSettled;
 
   export type TransferRequest = Account.AccountId
-  & IssuedAt<string>
-  & Amount
-  & Description
-  & TransferAccountId
-  & TransferAmount
-  & {
-    payments: (TransactionId & Amount)[];
-  };
+    & IssuedAt<string>
+    & Amount
+    & Description
+    & TransferAccountId
+    & TransferAmount
+    & {
+      payments: (TransactionId & Amount)[];
+    };
 
   export type SplitRequestItem = Category.CategoryId
-  & Project.ProjectId
-  & InvoiceNumber
-  & InvoiceDate<string>
-  & Quantity
-  & Product.ProductId
-  & Amount
-  & Description;
+    & Project.ProjectId
+    & InvoiceNumber
+    & InvoiceDate<string>
+    & Quantity
+    & Product.ProductId
+    & Amount
+    & Description;
 
   export type LoanRequestItem = Category.CategoryId
-  & Project.ProjectId
-  & InvoiceNumber
-  & InvoiceDate<string>
-  & Quantity
-  & Product.ProductId
-  & Amount
-  & Description
-  & LoanAccountId
-  & IsSettled
-  & TransactionId;
+    & Project.ProjectId
+    & InvoiceNumber
+    & InvoiceDate<string>
+    & Quantity
+    & Product.ProductId
+    & Amount
+    & Description
+    & LoanAccountId
+    & IsSettled
+    & TransactionId;
 
   export type SplitRequest = Account.AccountId
-  & Recipient.RecipientId
-  & IssuedAt<string>
-  & Amount
-  & Description
-  & {
-    splits: SplitRequestItem[];
-    loans: LoanRequestItem[];
-  };
+    & Recipient.RecipientId
+    & IssuedAt<string>
+    & Amount
+    & Description
+    & {
+      splits: SplitRequestItem[];
+      loans: LoanRequestItem[];
+    };
 
   export type DraftDocument<D extends Date | string = Date> = Internal.Id
-  & Internal.Timestamps
-  & TransactionType<Enum.TransactionType.Draft>
-  & Amount
-  & Description
-  & IssuedAt<D> & {
-    file: File.Document
-    potentialDuplicates?: (PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>)[];
-  };
+    & Internal.Timestamps
+    & TransactionType<Enum.TransactionType.Draft>
+    & Amount
+    & Description
+    & IssuedAt<D> & {
+      file: File.Document
+      potentialDuplicates?: (PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>)[];
+    };
 
   type LoanDocument<D extends Date | string = Date> = Internal.Id
-  & Internal.Timestamps
-  & Category<Category.Document>
-  & Project<Project.Document>
-  & Recipient<Recipient.Document>
-  & IssuedAt<D>
-  & InvoiceNumber
-  & InvoiceDate<D>
-  & Quantity
-  & Product<Product.Document>
-  & Amount
-  & Description
-  & PayingAccount<Account.Document>
-  & OwnerAccount<Account.Document>;
+    & Internal.Timestamps
+    & Category<Category.Document>
+    & Project<Project.Document>
+    & Recipient<Recipient.Document>
+    & IssuedAt<D>
+    & InvoiceNumber
+    & InvoiceDate<D>
+    & Quantity
+    & Product<Product.Document>
+    & Amount
+    & Description
+    & PayingAccount<Account.Document>
+    & OwnerAccount<Account.Document>;
 
   export type DeferredDocument<D extends Date | string = Date> = LoanDocument<D>
-  & TransactionType<Enum.TransactionType.Deferred>
-  & IsSettled
-  & Partial<RemainingAmount>;
+    & TransactionType<Enum.TransactionType.Deferred>
+    & IsSettled
+    & Partial<RemainingAmount>;
 
   export type ReimbursementDocument<D extends Date | string = Date> = LoanDocument<D>
-  & TransactionType<Enum.TransactionType.Reimbursement>;
+    & TransactionType<Enum.TransactionType.Reimbursement>;
 
   export type PaymentDocument<D extends Date | string = Date> = Internal.Id
-  & Internal.Timestamps
-  & TransactionType<Enum.TransactionType.Payment>
-  & Account<Account.Document>
-  & Category<Category.Document>
-  & Project<Project.Document>
-  & Recipient<Recipient.Document>
-  & IssuedAt<D>
-  & InvoiceNumber
-  & InvoiceDate<D>
-  & Quantity
-  & Product<Product.Document>
-  & Amount
-  & Description;
+    & Internal.Timestamps
+    & TransactionType<Enum.TransactionType.Payment>
+    & Account<Account.Document>
+    & Category<Category.Document>
+    & Project<Project.Document>
+    & Recipient<Recipient.Document>
+    & IssuedAt<D>
+    & InvoiceNumber
+    & InvoiceDate<D>
+    & Quantity
+    & Product<Product.Document>
+    & Amount
+    & Description;
 
   export type TransferDocument<D extends Date | string = Date> = Internal.Id
-  & Internal.Timestamps
-  & TransactionType<Enum.TransactionType.Transfer>
-  & Account<Account.Document>
-  & TransferAccount<Account.Document>
-  & IssuedAt<D>
-  & TransferAmount
-  & Amount
-  & Description
-  & Payments;
+    & Internal.Timestamps
+    & TransactionType<Enum.TransactionType.Transfer>
+    & Account<Account.Document>
+    & TransferAccount<Account.Document>
+    & IssuedAt<D>
+    & TransferAmount
+    & Amount
+    & Description
+    & Payments;
 
   export type SplitDocumentItem<D extends Date | string = Date> = Project<Project.Document>
-  & Category<Category.Document>
-  & InvoiceNumber
-  & InvoiceDate<D>
-  & Quantity
-  & Product<Product.Document>
-  & Amount
-  & Description;
+    & Category<Category.Document>
+    & InvoiceNumber
+    & InvoiceDate<D>
+    & Quantity
+    & Product<Product.Document>
+    & Amount
+    & Description;
 
   export type Splits<D extends Date | string = Date> = {
     splits: SplitDocumentItem<D>[];
@@ -454,134 +456,134 @@ export namespace Transaction {
   };
 
   export type SplitDocument<D extends Date | string = Date> = Internal.Id
-  & Internal.Timestamps
-  & TransactionType<Enum.TransactionType.Split>
-  & Account<Account.Document>
-  & Recipient<Recipient.Document>
-  & IssuedAt<D>
-  & Amount
-  & Description
-  & Splits<D>;
+    & Internal.Timestamps
+    & TransactionType<Enum.TransactionType.Split>
+    & Account<Account.Document>
+    & Recipient<Recipient.Document>
+    & IssuedAt<D>
+    & Amount
+    & Description
+    & Splits<D>;
 
   export type RawReport = Internal.Id
-  & Account<Account.Document>
-  & Category<Category.Document>
-  & Project<Project.Document>
-  & Recipient<Recipient.Document>
-  & IssuedAt<Date>
-  & InvoiceNumber
-  & InvoiceDate<Date>
-  & Quantity
-  & Product<Product.Document>
-  & Amount
-  & Description;
+    & Account<Account.Document>
+    & Category<Category.Document>
+    & Project<Project.Document>
+    & Recipient<Recipient.Document>
+    & IssuedAt<Date>
+    & InvoiceNumber
+    & InvoiceDate<Date>
+    & Quantity
+    & Product<Product.Document>
+    & Amount
+    & Description;
 
-  export type Document<D extends Date | string = Date > = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>;
+  export type Document<D extends Date | string = Date> = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>;
 
   export type PaymentResponse = TransactionId
-  & Amount
-  & Description
-  & IssuedAt<string>
-  & InvoiceNumber
-  & InvoiceDate<string>
-  & Quantity
-  & Product<Product.Response>
-  & TransactionType<Enum.TransactionType.Payment>
-  & Account<Account.Response>
-  & Category<Category.Response>
-  & Project<Project.Response>
-  & Recipient<Recipient.Response>;
+    & Amount
+    & Description
+    & IssuedAt<string>
+    & InvoiceNumber
+    & InvoiceDate<string>
+    & Quantity
+    & Product<Product.Response>
+    & TransactionType<Enum.TransactionType.Payment>
+    & Account<Account.Response>
+    & Category<Category.Response>
+    & Project<Project.Response>
+    & Recipient<Recipient.Response>;
 
   export type DeferredResponse = TransactionId
-  & Amount
-  & Description
-  & IssuedAt<string>
-  & InvoiceNumber
-  & InvoiceDate<string>
-  & Quantity
-  & IsSettled
-  & Product<Product.Response>
-  & TransactionType<Enum.TransactionType.Deferred>
-  & PayingAccount<Account.Response>
-  & OwnerAccount<Account.Response>
-  & Category<Category.Response>
-  & Project<Project.Response>
-  & Recipient<Recipient.Response>
-  & RemainingAmount;
+    & Amount
+    & Description
+    & IssuedAt<string>
+    & InvoiceNumber
+    & InvoiceDate<string>
+    & Quantity
+    & IsSettled
+    & Product<Product.Response>
+    & TransactionType<Enum.TransactionType.Deferred>
+    & PayingAccount<Account.Response>
+    & OwnerAccount<Account.Response>
+    & Category<Category.Response>
+    & Project<Project.Response>
+    & Recipient<Recipient.Response>
+    & RemainingAmount;
 
   export type ReimbursementResponse = TransactionId
-  & Amount
-  & Description
-  & IssuedAt<string>
-  & InvoiceNumber
-  & InvoiceDate<string>
-  & Quantity
-  & Product<Product.Response>
-  & TransactionType<Enum.TransactionType.Reimbursement>
-  & PayingAccount<Account.Response>
-  & OwnerAccount<Account.Response>
-  & Category<Category.Response>
-  & Project<Project.Response>
-  & Recipient<Recipient.Response>;
+    & Amount
+    & Description
+    & IssuedAt<string>
+    & InvoiceNumber
+    & InvoiceDate<string>
+    & Quantity
+    & Product<Product.Response>
+    & TransactionType<Enum.TransactionType.Reimbursement>
+    & PayingAccount<Account.Response>
+    & OwnerAccount<Account.Response>
+    & Category<Category.Response>
+    & Project<Project.Response>
+    & Recipient<Recipient.Response>;
 
   export type TransferResponse = TransactionId
-  & Amount
-  & Description
-  & IssuedAt<string>
-  & TransactionType<Enum.TransactionType.Transfer>
-  & Account<Account.Response>
-  & TransferAccount<Account.Response>
-  & TransferAmount
-  & {
-    payments: ({
-      transaction: Transaction.DeferredResponse;
-    } & Amount)[];
-  };
+    & Amount
+    & Description
+    & IssuedAt<string>
+    & TransactionType<Enum.TransactionType.Transfer>
+    & Account<Account.Response>
+    & TransferAccount<Account.Response>
+    & TransferAmount
+    & {
+      payments: ({
+        transaction: Transaction.DeferredResponse;
+      } & Amount)[];
+    };
 
   export type SplitResponseItem = Amount
-  & Description
-  & InvoiceNumber
-  & InvoiceDate<string>
-  & Quantity
-  & Product<Product.Response>
-  & Project<Project.Response>
-  & Category<Category.Response>;
+    & Description
+    & InvoiceNumber
+    & InvoiceDate<string>
+    & Quantity
+    & Product<Product.Response>
+    & Project<Project.Response>
+    & Category<Category.Response>;
 
   export type SplitResponse = TransactionId
-  & Amount
-  & Description
-  & IssuedAt<string>
-  & TransactionType<Enum.TransactionType.Split>
-  & Account<Account.Response>
-  & Recipient<Recipient.Response>
-  & {
-    splits: SplitResponseItem[];
-    deferredSplits: DeferredResponse[];
-  };
+    & Amount
+    & Description
+    & IssuedAt<string>
+    & TransactionType<Enum.TransactionType.Split>
+    & Account<Account.Response>
+    & Recipient<Recipient.Response>
+    & {
+      splits: SplitResponseItem[];
+      deferredSplits: DeferredResponse[];
+    };
 
   export type DraftResponse = TransactionId
-  & Amount
-  & Description
-  & IssuedAt<string>
-  & TransactionType<Enum.TransactionType.Draft>
-  & {
-    potentialDuplicates: Response[];
-  };
+    & Amount
+    & Description
+    & IssuedAt<string>
+    & TransactionType<Enum.TransactionType.Draft>
+    & {
+      potentialDuplicates: Response[];
+    };
 
   export type Response = PaymentResponse | TransferResponse | SplitResponse | DeferredResponse | ReimbursementResponse;
 
   export type Report = TransactionId
-  & Amount
-  & Description
-  & IssuedAt<string>
-  & Account<Account.Report>
-  & Category<Category.Report>
-  & Project<Project.Report>
-  & Recipient<Recipient.Report>
-  & Product<Product.Report>
-  & Quantity
-  & InvoiceNumber
-  & InvoiceDate<string>;
+    & Amount
+    & Description
+    & IssuedAt<string>
+    & Account<Account.Report>
+    & Category<Category.Report>
+    & Project<Project.Report>
+    & Recipient<Recipient.Report>
+    & Product<Product.Report>
+    & Quantity
+    & InvoiceNumber
+    & InvoiceDate<string>;
 }
 
 export namespace Report {
@@ -611,7 +613,7 @@ export namespace Report {
     items: Product.Id[];
   };
 
-  export type RecipientFilter =FilterBase<'recipient'> & {
+  export type RecipientFilter = FilterBase<'recipient'> & {
     items: Recipient.Id[];
   };
 
@@ -634,9 +636,9 @@ export namespace Setting {
   export type Request = Base;
 
   export type Document<V extends string | number | boolean = string | number | boolean> = Partial<Internal.Id>
-  & Base<V>
-  & SettingKey
-  & Internal.Timestamps;
+    & Base<V>
+    & SettingKey
+    & Internal.Timestamps;
 
   export type Response = Base & SettingKey;
 }
@@ -687,10 +689,10 @@ export namespace Auth {
 
   export namespace Login {
     export type Request = User.Email
-    & Password
-    & {
-      requiredUserType?: Enum.UserType;
-    };
+      & Password
+      & {
+        requiredUserType?: Enum.UserType;
+      };
 
     export type Response = IdTokenResponse & {
       refreshToken: string;
@@ -735,18 +737,18 @@ export namespace File {
 
   export type Request = FileType & Timezone;
   export type Document = Internal.Id
-  & Internal.Timestamps
-  & FileType
-  & Timezone
-  & Partial<ProcessingStatus>
-  & Partial<DraftCount>;
+    & Internal.Timestamps
+    & FileType
+    & Timezone
+    & Partial<ProcessingStatus>
+    & Partial<DraftCount>;
 
   export type Response = FileId
-  & FileType
-  & DraftCount
-  & {
-    uploadedAt: string;
-  };
+    & FileType
+    & DraftCount
+    & {
+      uploadedAt: string;
+    };
 }
 
 export namespace Import {
@@ -792,12 +794,12 @@ export namespace Customer {
     isGroup: boolean;
   };
 
-  export type Base = Name 
-  & IsGroup 
-  & {
-    description: string;
-    rating: number;
-  };
+  export type Base = Name
+    & IsGroup
+    & {
+      description: string;
+      rating: number;
+    };
 
   export namespace Job {
     export type Name = {
@@ -836,7 +838,7 @@ export namespace Customer {
     type Title = {
       title: string
     };
-    
+
     export type Request = Base & CostRequest;
 
     export type Document = Base & CostDocument;
@@ -849,23 +851,23 @@ export namespace Customer {
   };
 
   export type Document = Internal.Id
-  & Internal.Timestamps
-  & Base
-  & Internal.IsArchived
-  & {
-    blacklistedCustomers: Document[];
-    jobs: Job.Document[];
-  };
+    & Internal.Timestamps
+    & Base
+    & Internal.IsArchived
+    & {
+      blacklistedCustomers: Document[];
+      jobs: Job.Document[];
+    };
 
-  export type ResponseBase = CustomerId 
-  & Base; 
-  
+  export type ResponseBase = CustomerId
+    & Base;
+
   export type Response = ResponseBase
-  & Jobs
-  & Internal.IsArchived
-  & {
-    blacklistedCustomers: ResponseBase[];
-  };
+    & Jobs
+    & Internal.IsArchived
+    & {
+      blacklistedCustomers: ResponseBase[];
+    };
 
   export type Request = Base;
 }
@@ -876,7 +878,7 @@ export namespace Price {
   export type PriceId = {
     priceId: Id;
   };
-  
+
   type Base = {
     name: string;
     amount: number;
@@ -884,9 +886,9 @@ export namespace Price {
   };
 
   export type Document = Internal.Id
-  & Internal.Timestamps
-  & Base
-  & Internal.IsArchived;
+    & Internal.Timestamps
+    & Base
+    & Internal.IsArchived;
 
   export type Request = Base;
 
@@ -912,18 +914,18 @@ export namespace Calendar {
     export type DayType<T extends Enum.CalendarDayType> = {
       dayType: T
     };
-    
+
     export type VacationRequest = DayType<Enum.CalendarDayType.Vacation>;
-  
+
     export type WorkdayRequest = DayType<Enum.CalendarDayType.Workday> & TimeInterval;
 
     export type Request = VacationRequest | WorkdayRequest;
 
     export type Document = Partial<Internal.Id>
-    & Internal.Timestamps
-    & DayType<Enum.CalendarDayType>
-    & DayProp
-    & TimeInterval;
+      & Internal.Timestamps
+      & DayType<Enum.CalendarDayType>
+      & DayProp
+      & TimeInterval;
 
     export type ResponseBase = DayProp & {
       entries: Entry.Response[]
@@ -943,64 +945,64 @@ export namespace Calendar {
     export type CalendarEntryId = {
       calendarEntryId: Id;
     };
-    
+
     export type EntryType<T extends Enum.CalendarEntryType = Enum.CalendarEntryType> = {
       entryType: T;
     };
 
     export type Base = TimeInterval & {
       title: string;
-      description: string;      
+      description: string;
     };
 
-    export type IssueEntryRequest = Base 
-    & DayProp 
-    & EntryType<Enum.CalendarEntryType.Issue>;
-    
-    export type PersonalEntryRequest = Base 
-    & DayProp 
-    & EntryType<Enum.CalendarEntryType.Personal>;
-    
-    export type WorkEntryRequest = Base 
-    & DayProp 
-    & Customer.CustomerId 
-    & Customer.Job.CostRequest
-    & EntryType<Enum.CalendarEntryType.Work>;
+    export type IssueEntryRequest = Base
+      & DayProp
+      & EntryType<Enum.CalendarEntryType.Issue>;
+
+    export type PersonalEntryRequest = Base
+      & DayProp
+      & EntryType<Enum.CalendarEntryType.Personal>;
+
+    export type WorkEntryRequest = Base
+      & DayProp
+      & Customer.CustomerId
+      & Customer.Job.CostRequest
+      & EntryType<Enum.CalendarEntryType.Work>;
 
     export type Request = IssueEntryRequest | PersonalEntryRequest | WorkEntryRequest;
-  
-    export type Document = Internal.Id
-    & Internal.Timestamps
-    & Base
-    & DayProp
-    & EntryType<Enum.CalendarEntryType>
-    & {
-      resolution: Delay & Status<Enum.CalendarEntryResolutionStatus>;
-      transaction: Transaction.PaymentDocument;
-      customer: Customer.Document;
-    }
-    & Customer.Job.CostDocument;
 
-    export type ResponseBase = Base 
-    & DayProp
-    & CalendarEntryId; 
+    export type Document = Internal.Id
+      & Internal.Timestamps
+      & Base
+      & DayProp
+      & EntryType<Enum.CalendarEntryType>
+      & {
+        resolution: Delay & Status<Enum.CalendarEntryResolutionStatus>;
+        transaction: Transaction.PaymentDocument;
+        customer: Customer.Document;
+      }
+      & Customer.Job.CostDocument;
+
+    export type ResponseBase = Base
+      & DayProp
+      & CalendarEntryId;
 
     export type WorkEntryResponseBase = ResponseBase & {
       resolution: Delay & Status<Enum.CalendarEntryResolutionStatus>;
     };
 
     export type PersonalEntryResponse = ResponseBase
-    & EntryType<Enum.CalendarEntryType.Personal>;
-    
+      & EntryType<Enum.CalendarEntryType.Personal>;
+
     export type IssueEntryResponse = ResponseBase
-    & EntryType<Enum.CalendarEntryType.Issue>; 
+      & EntryType<Enum.CalendarEntryType.Issue>;
 
     export type WorkEntryResponse = WorkEntryResponseBase
-    & Customer.Job.CostResponse
-    & {
-      customer: Customer.Response;
-    }
-    & EntryType<Enum.CalendarEntryType.Work>;
+      & Customer.Job.CostResponse
+      & {
+        customer: Customer.Response;
+      }
+      & EntryType<Enum.CalendarEntryType.Work>;
 
     export type Response = PersonalEntryResponse | IssueEntryResponse | WorkEntryResponse;
 
@@ -1008,9 +1010,9 @@ export namespace Calendar {
       delay: number;
     };
 
-    export type Status<S extends Enum.CalendarEntryResolutionStatus>= {
+    export type Status<S extends Enum.CalendarEntryResolutionStatus> = {
       status: S
-    }; 
+    };
 
     export type PaidResolutionRequest = Delay & Transaction.Amount & Status<Enum.CalendarEntryResolutionStatus.Paid>;
     export type PendingTransferResolutionRequest = Delay & Status<Enum.CalendarEntryResolutionStatus.PendingTransfer>;

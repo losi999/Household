@@ -1,8 +1,10 @@
-import { JSONSchema7 } from 'json-schema';
 import { default as transactionId } from '@household/shared/schemas/transaction-id';
-import { default as accountId } from '@household/shared/schemas/account-id';
+import { accountId } from '@household/shared/schemas/account';
+import { ObjectSchema } from '@household/shared/types/schema';
+import { Api } from '@household/shared/types/api';
+import { Transaction } from '@household/shared/types/types';
 
-const schema: JSONSchema7 = {
+const schema: ObjectSchema<Api.Account.AccountId & Transaction.TransactionId> = {
   type: 'object',
   additionalProperties: false,
   required: [
@@ -10,7 +12,7 @@ const schema: JSONSchema7 = {
     ...accountId.required,
   ],
   properties: {
-    ...transactionId.properties,
+    ...transactionId.properties as any,
     ...accountId.properties,
   },
 };

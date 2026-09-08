@@ -39,7 +39,7 @@ describe('Create product service', () => {
       categoryId,
       expiresIn: undefined,
     });
-    expect(result).toEqual(productId.toString()),
+    expect(result).toEqual(productId.toString());
     validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
     validateFunctionCall(mockProductDocumentConverter.functions.create, {
       body,

@@ -35,7 +35,7 @@ describe('Create calendar entry service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(calendarEntryId.toString()),
+    expect(result).toEqual(calendarEntryId.toString());
     validateFunctionCall(mockCalendarEntryDocumentConverter.functions.create, {
       body,
     }, undefined);
@@ -54,7 +54,7 @@ describe('Create calendar entry service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(calendarEntryId.toString()),
+    expect(result).toEqual(calendarEntryId.toString());
     validateFunctionCall(mockCalendarEntryDocumentConverter.functions.create, {
       body,
     }, undefined);
@@ -90,7 +90,7 @@ describe('Create calendar entry service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(calendarEntryId.toString()),
+    expect(result).toEqual(calendarEntryId.toString());
     validateFunctionCall(mockCalendarEntryDocumentConverter.functions.create, {
       body,
       customer: queriedCustomer,

@@ -29,7 +29,7 @@ describe('Create project service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(projectId.toString()),
+    expect(result).toEqual(projectId.toString());
     validateFunctionCall(mockProjectDocumentConverter.functions.create, body, undefined);
     validateFunctionCall(mockProjectService.functions.saveProject, convertedProjectDocument);
     expect.assertions(3);

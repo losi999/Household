@@ -3,7 +3,7 @@ import { default as handler } from '@household/api/functions/get-account/get-acc
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { getAccountServiceFactory } from '@household/api/functions/get-account/get-account.service';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
-import { default as pathParameters } from '@household/shared/schemas/account-id';
+import { accountId as pathParameters } from '@household/shared/schemas/account';
 import { accountService } from '@household/shared/dependencies/services/account-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';

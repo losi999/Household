@@ -29,7 +29,7 @@ describe('Create price service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(priceId.toString()),
+    expect(result).toEqual(priceId.toString());
     validateFunctionCall(mockPriceDocumentConverter.functions.create, body, undefined);
     validateFunctionCall(mockPriceService.functions.savePrice, convertedPriceDocument);
     expect.assertions(3);

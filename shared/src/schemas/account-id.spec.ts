@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/account-id';
-import { Account } from '@household/shared/types/types';
+import * as Account from '@household/shared/schemas/account';
 import { createAccountId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Api } from '@household/shared/types/api';
 
 describe('Account id schema', () => {
-  const tester = jsonSchemaTesterFactory<Account.AccountId>(schema);
+  const tester = schemaTesterFactory<Api.Account.AccountId>(Account.accountId);
 
   tester.validateSuccess({
     accountId: createAccountId(),

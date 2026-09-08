@@ -25,18 +25,20 @@
         ],
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-namespace": "off",
+        "@typescript-eslint/no-empty-object-type": "off",
+        "@typescript-eslint/no-deprecated": "warn",
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/explicit-module-boundary-types": "off",
         "@typescript-eslint/ban-ts-comment": "off",
-        "@typescript-eslint/semi": "error",
+        "@stylistic/semi": "error",
         "@typescript-eslint/no-empty-function": "off",
-        "@typescript-eslint/type-annotation-spacing": "error",
+        "@stylistic/type-annotation-spacing": "error",
         "curly": "error",
         "eqeqeq": "error",
         "no-else-return": "error",
         "no-param-reassign": "error",
         "no-return-await": "error",
-        "@typescript-eslint/comma-dangle": [
+        "@stylistic/comma-dangle": [
           "error",
           "always-multiline"
         ],
@@ -55,16 +57,16 @@
           "error",
           "always"
         ],
-        "@typescript-eslint/indent": [
+        "@stylistic/indent": [
           "error",
           2
         ],
-        "@typescript-eslint/quotes": [
+        "@stylistic/quotes": [
           "error",
           "single"
         ],
         "prefer-template": "error",
-        "@typescript-eslint/no-extra-semi": "error",
+        "@stylistic/no-extra-semi": "error",
         "newline-per-chained-call": "error",
         "space-before-blocks": "error",
         "arrow-spacing": "error",
@@ -86,7 +88,10 @@
         ],
         "space-infix-ops": "error",
         "@angular-eslint/component-class-suffix": "off"
-      }
+      },
+      "plugins": [
+        "@stylistic"
+      ]
     },
     {
       "files": [

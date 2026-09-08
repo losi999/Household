@@ -1,0 +1,338 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Household API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/account/v1/accounts": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "accountId": {
+                        "type": "string",
+                        "pattern": "^[a-zA-Z0-9]{24}$"
+                      },
+                      "isOpen": {
+                        "type": "boolean"
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "currency": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "accountType": {
+                        "type": "string",
+                        "enum": [
+                          "bankAccount",
+                          "cash",
+                          "creditCard",
+                          "loan",
+                          "cafeteria"
+                        ]
+                      },
+                      "owner": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "fullName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "balance": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "accountId",
+                      "isOpen",
+                      "name",
+                      "currency",
+                      "accountType",
+                      "owner",
+                      "fullName",
+                      "balance"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "accountType": {
+                    "type": "string",
+                    "enum": [
+                      "bankAccount",
+                      "cash",
+                      "creditCard",
+                      "loan",
+                      "cafeteria"
+                    ]
+                  },
+                  "owner": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "name",
+                  "currency",
+                  "accountType",
+                  "owner"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "accountId"
+                  ],
+                  "properties": {
+                    "accountId": {
+                      "type": "string",
+                      "pattern": "^[a-zA-Z0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/v1/accounts/{accountId}": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "accountId": {
+                      "type": "string",
+                      "pattern": "^[a-zA-Z0-9]{24}$"
+                    },
+                    "isOpen": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "accountType": {
+                      "type": "string",
+                      "enum": [
+                        "bankAccount",
+                        "cash",
+                        "creditCard",
+                        "loan",
+                        "cafeteria"
+                      ]
+                    },
+                    "owner": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "balance": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "accountId",
+                    "isOpen",
+                    "name",
+                    "currency",
+                    "accountType",
+                    "owner",
+                    "fullName",
+                    "balance"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "currency": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "accountType": {
+                    "type": "string",
+                    "enum": [
+                      "bankAccount",
+                      "cash",
+                      "creditCard",
+                      "loan",
+                      "cafeteria"
+                    ]
+                  },
+                  "owner": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "name",
+                  "currency",
+                  "accountType",
+                  "owner"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "accountId"
+                  ],
+                  "properties": {
+                    "accountId": {
+                      "type": "string",
+                      "pattern": "^[a-zA-Z0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Account"
+        ],
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Account deleted"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "parameters": {},
+    "examples": {},
+    "requestBodies": {},
+    "headers": {},
+    "securitySchemes": {},
+    "links": {},
+    "callbacks": {}
+  },
+  "tags": [],
+  "servers": []
+}

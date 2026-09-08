@@ -2,6 +2,7 @@ import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Account } from '@household/shared/types/types';
 import { default as mongoId } from '@household/shared/schemas/partials/mongo-id';
 
+/** @deprecated */
 const schema: StrictJSONSchema7<Account.AccountId> = {
   type: 'object',
   additionalProperties: false,

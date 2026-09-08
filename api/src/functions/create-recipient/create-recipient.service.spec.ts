@@ -28,7 +28,7 @@ describe('Create recipient service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(recipientId.toString()),
+    expect(result).toEqual(recipientId.toString());
     validateFunctionCall(mockRecipientDocumentConverter.functions.create, body, undefined);
     validateFunctionCall(mockRecipientService.functions.saveRecipient, convertedRecipientDocument);
     expect.assertions(3);

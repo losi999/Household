@@ -29,7 +29,7 @@ describe('Create account service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(accountId),
+    expect(result).toEqual(accountId);
     validateFunctionCall(mockAccountDocumentConverter.functions.create, body, undefined);
     validateFunctionCall(mockAccountService.functions.saveAccount, convertedAccountDocument);
     expect.assertions(3);
