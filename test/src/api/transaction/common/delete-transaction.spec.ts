@@ -1,6 +1,7 @@
 import { entries, getCalendarEntryId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType } from '@household/shared/enums';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
@@ -27,9 +28,9 @@ const permissionMap = forbidUsers('viewer') ;
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
-  let accountDocument: Account.Document;
-  let loanAccountDocument: Account.Document;
-  let transferAccountDocument: Account.Document;
+  let accountDocument: Documents.Account;
+  let loanAccountDocument: Documents.Account;
+  let transferAccountDocument: Documents.Account;
   let paymentTransactionDocument: Transaction.PaymentDocument;
   let splitTransactionDocument: Transaction.SplitDocument;
   let transferTransactionDocument: Transaction.TransferDocument;

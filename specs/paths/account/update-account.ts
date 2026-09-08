@@ -1,4 +1,4 @@
-import { PathItemObject, SchemaObject } from 'openapi3-ts/oas32';
+import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Account from '@household/shared/schemas/account';
 
 export const updateAccount: PathItemObject = {
@@ -9,13 +9,13 @@ export const updateAccount: PathItemObject = {
         name: 'accountId',
         in: 'path',
         required: true,
-        schema: Account.accountId.properties.accountId as SchemaObject,
+        schema: Account.accountId.properties.accountId,
       },
     ],
     requestBody: {
       content: {
         'application/json': {
-          schema: Account.request as SchemaObject,
+          schema: Account.request,
         },
       },
     },
@@ -24,7 +24,7 @@ export const updateAccount: PathItemObject = {
         description: 'Account updated',
         content: {
           'application/json': {
-            schema: Account.accountId as SchemaObject,
+            schema: Account.accountId,
           },
         },
       },

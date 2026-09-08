@@ -1,6 +1,7 @@
 import { entries, getProductId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
-import { Account, Category, Product, Transaction } from '@household/shared/types/types';
+import { Category, Product, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
@@ -77,8 +78,8 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
           let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
           let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
           let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
-          let accountDocument: Account.Document;
-          let loanAccountDocument: Account.Document;
+          let accountDocument: Documents.Account;
+          let loanAccountDocument: Documents.Account;
 
           test.beforeEach(async () => {
             accountDocument = accountDataFactory.document();

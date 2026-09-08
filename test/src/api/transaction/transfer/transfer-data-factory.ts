@@ -1,6 +1,7 @@
 import { getAccountId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { DataFactoryFunction } from '@household/shared/types/common';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/utils';
 import { transferTransactionDocumentConverter } from '@household/shared/dependencies/converters/transfer-transaction-document-converter';
@@ -34,8 +35,8 @@ export const transferTransactionDataFactory = (() => {
 
   const createTransferTransactionDocument = (ctx: {
     body?: Partial<Transaction.TransferRequest>;
-    account: Account.Document;
-    transferAccount: Account.Document;
+    account: Documents.Account;
+    transferAccount: Documents.Account;
     transactions?: Transaction.DeferredDocument[];
   }): Transaction.TransferDocument => {
     return transferTransactionDocumentConverter.create({

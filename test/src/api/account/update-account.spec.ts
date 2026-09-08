@@ -1,6 +1,8 @@
 import { entries, getAccountId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Account } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
@@ -14,8 +16,8 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(accountApiTest, accountDbTest);
 
 test.describe('PUT /account/v1/accounts/{accountId}', () => {
-  let request: Account.Request;
-  let accountDocument: Account.Document;
+  let request: Requests.Account;
+  let accountDocument: Documents.Account;
 
   test.beforeEach(async () => {
     request = accountDataFactory.request();
@@ -49,7 +51,7 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
           const res = await requestUpdateAccount(getAccountId(accountDocument), request);
           expect(res).toBeCreatedResponse();
           
-          const { accountId } = (await res.json()) as Account.AccountId;
+          const { accountId } = (await res.json()) as Api.Account.AccountId;
           expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
 
@@ -63,7 +65,7 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
           const res = await requestUpdateAccount(getAccountId(accountDocument), request);
           expect(res).toBeCreatedResponse();
 
-          const { accountId } = (await res.json()) as Account.AccountId;
+          const { accountId } = (await res.json()) as Api.Account.AccountId;
           expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
         test.describe('should return error', () => {

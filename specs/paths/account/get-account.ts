@@ -1,4 +1,4 @@
-import { PathItemObject, SchemaObject } from 'openapi3-ts/oas32';
+import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Account from '@household/shared/schemas/account';
 
 export const getAccount: PathItemObject = {
@@ -9,7 +9,7 @@ export const getAccount: PathItemObject = {
         name: 'accountId',
         in: 'path',
         required: true,
-        schema: Account.accountId.properties.accountId as SchemaObject,
+        schema: Account.accountId.properties.accountId,
       },
     ],
     responses: {

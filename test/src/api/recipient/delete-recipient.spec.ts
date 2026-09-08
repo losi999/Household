@@ -4,7 +4,8 @@ import { test as recipientApiTest, expect as recipientApiExpect } from '@househo
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { Account, Recipient, Transaction } from '@household/shared/types/types';
+import { Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
@@ -71,8 +72,8 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
           let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
           let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
           let unrelatedSplitTransactionDocument: Transaction.SplitDocument;
-          let accountDocument: Account.Document;
-          let loanAccountDocument: Account.Document;
+          let accountDocument: Documents.Account;
+          let loanAccountDocument: Documents.Account;
 
           test.beforeEach(async () => {
             accountDocument = accountDataFactory.document();

@@ -1,4 +1,4 @@
-import { PathItemObject, SchemaObject } from 'openapi3-ts/oas32';
+import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Account from '@household/shared/schemas/account';
 
 export const createAccount: PathItemObject = {
@@ -7,7 +7,7 @@ export const createAccount: PathItemObject = {
     requestBody: {
       content: {
         'application/json': {
-          schema: Account.request as SchemaObject,
+          schema: Account.request,
         },
       },
     },
@@ -16,7 +16,7 @@ export const createAccount: PathItemObject = {
         description: 'Account created',
         content: {
           'application/json': {
-            schema: Account.accountId as SchemaObject,
+            schema: Account.accountId,
           },
         },
       },

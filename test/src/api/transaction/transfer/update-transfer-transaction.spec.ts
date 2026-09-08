@@ -1,6 +1,7 @@
 import { entries, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType } from '@household/shared/enums';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
@@ -23,8 +24,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
   let request: Transaction.TransferRequest;
   let originalDocument: Transaction.PaymentDocument;
 
-  let accountDocument: Account.Document;
-  let transferAccountDocument: Account.Document;
+  let accountDocument: Documents.Account;
+  let transferAccountDocument: Documents.Account;
   let relatedDocumentIds: Pick<Transaction.TransferRequest, 'accountId' | 'transferAccountId'> ;
 
   test.beforeEach(async () => {

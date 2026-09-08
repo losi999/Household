@@ -1,5 +1,6 @@
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
@@ -203,7 +204,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match split transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenConvertedToRegularSplitItems(originalDocument: Transaction.SplitDocument, currentDocument: Transaction.SplitDocument, deletedAccountId: Account.Id) {
+  toHaveBeenConvertedToRegularSplitItems(originalDocument: Transaction.SplitDocument, currentDocument: Transaction.SplitDocument, deletedAccountId: Api.Account.Id) {
     const comparer = new Comparer(currentDocument, {
       amount: originalDocument.amount,
       issuedAt: originalDocument.issuedAt.toISOString(),

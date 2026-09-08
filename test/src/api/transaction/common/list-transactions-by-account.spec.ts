@@ -1,5 +1,5 @@
 import { default as schema } from '@household/test/schemas/transaction-response-list';
-import { Account } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { createAccountId } from '@household/shared/common/test-data-factory';
 import { entries, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -32,7 +32,7 @@ const permissionMap = forbidUsers();
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
 test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
-  let accountDocument: Account.Document;
+  let accountDocument: Documents.Account;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();

@@ -1,5 +1,6 @@
 import { default as schema } from '@household/test/schemas/account-response-list';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
@@ -23,9 +24,9 @@ const permissionMap = forbidUsers();
 const test = mergeTests(accountApiTest, accountDbTest, transactionDbTest);
 
 test.describe('GET /account/v1/accounts', () => {
-  let accountDocument: Account.Document;
-  let loanAccountDocument: Account.Document;
-  let secondaryAccountDocument: Account.Document;
+  let accountDocument: Documents.Account;
+  let loanAccountDocument: Documents.Account;
+  let secondaryAccountDocument: Documents.Account;
   let paymentTransactionDocument: Transaction.PaymentDocument;
   let splitTransactionDocument: Transaction.SplitDocument;
   let transferTransactionDocument: Transaction.TransferDocument;

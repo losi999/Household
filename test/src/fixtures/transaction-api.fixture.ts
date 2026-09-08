@@ -1,6 +1,7 @@
 import { getTransactionId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { Account, Common, File, Report, Transaction } from '@household/shared/types/types';
+import { Common, File, Report, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
 import { expect as deferredTransactionApiExpect } from '@household/test/fixtures/deferred-transaction-api.fixture';
 import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
@@ -18,8 +19,8 @@ type TransactionApiFixture = {
   requestCreateTransferTransaction(transaction: Transaction.TransferRequest): Promise<APIResponse>;
   requestUpdateToTransferTransaction(transactionId: Transaction.Id, transaction: Transaction.TransferRequest): Promise<APIResponse>;
   requestDeleteTransaction(transactionId: Transaction.Id): Promise<APIResponse>;
-  requestGetTransaction(accountId: Account.Id, transactionId: Transaction.Id): Promise<APIResponse>;
-  requestGetTransactionListByAccount(accountId: Account.Id, querystring?: Partial<Common.Pagination<number>>): Promise<APIResponse>;
+  requestGetTransaction(accountId: Api.Account.Id, transactionId: Transaction.Id): Promise<APIResponse>;
+  requestGetTransactionListByAccount(accountId: Api.Account.Id, querystring?: Partial<Common.Pagination<number>>): Promise<APIResponse>;
   requestGetTransactionReports(report: Report.Request): Promise<APIResponse>;
   requestGetTransactionListByFile(fileId: File.Id): Promise<APIResponse>;
 };
@@ -116,7 +117,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestGetTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (accountId: Account.Id, transactionId: Transaction.Id) => {
+    const fn = async (accountId: Api.Account.Id, transactionId: Transaction.Id) => {
       return loggedRequest.get(`${process.env.BASE_URL}/transaction/v1/accounts/${accountId}/transactions/${transactionId}`, {
         headers: {
           Authorization: authToken, 
@@ -127,7 +128,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestGetTransactionListByAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (accountId: Account.Id, querystring?: Partial<Common.Pagination<number>>) => {
+    const fn = async (accountId: Api.Account.Id, querystring?: Partial<Common.Pagination<number>>) => {
       return loggedRequest.get(`${process.env.BASE_URL}/transaction/v1/accounts/${accountId}/transactions`, {
         headers: {
           Authorization: authToken, 

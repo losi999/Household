@@ -1,7 +1,6 @@
 import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Account } from '@household/shared/types/types';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { Documents } from '@household/shared/types/documents';
@@ -9,7 +8,7 @@ import { Documents } from '@household/shared/types/documents';
 export interface IAccountDocumentConverter {
   create(body: Requests.Account, expiresIn: number, generateId?: boolean): Documents.Account;
   update(body: Requests.Account, expiresIn: number): DocumentUpdate<Documents.Account>;
-  toReport(document: Documents.Account): Account.Report;
+  toReport(document: Documents.Account): Responses.AccountReport;
   toResponse(document: Documents.Account): Responses.Account;
   toResponseList(docs: Documents.Account[]): Responses.Account[];
 }

@@ -1,4 +1,5 @@
-import { Account, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { Comparer } from '@household/test/comparer';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { TransactionType } from '@household/shared/enums';
@@ -6,7 +7,7 @@ import { createDate, getAccountId, getTransactionId } from '@household/shared/co
 import { validateAccountResponse } from '@household/test/fixtures/account-api.fixture';
 import { validateDeferredTransactionResponse } from '@household/test/fixtures/deferred-transaction-api.fixture';
 
-export const validateTransferTransactionResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id = getAccountId(document.account)) => {
+export const validateTransferTransactionResponse = (response: Transaction.TransferResponse, document: Transaction.TransferDocument, viewingAccountId: Api.Account.Id = getAccountId(document.account)) => {
   return new Comparer(response, {
     transactionId: getTransactionId(document),
     amount: getAccountId(document.account) === viewingAccountId ? document.amount : document.transferAmount,
@@ -116,7 +117,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match transfer transaction, but it fif not:\n${errors.join('\n')}`,   
     };
   },
-  async toContainMatchingTransferTransactionDocument(received: APIResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id) {
+  async toContainMatchingTransferTransactionDocument(received: APIResponse, document: Transaction.TransferDocument, viewingAccountId: Api.Account.Id) {
     const response = await received.json() as Transaction.TransferResponse[];
 
     const matchingResponse = response.find(r => r.transactionId === getTransactionId(document));
@@ -137,7 +138,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match transfer transaction document, but it did not:\n${errors.join('\n')}`,
     };  
   },
-  async toMatchTransferTransactionDocument(res: APIResponse, document: Transaction.TransferDocument, viewingAccountId: Account.Id) {
+  async toMatchTransferTransactionDocument(res: APIResponse, document: Transaction.TransferDocument, viewingAccountId: Api.Account.Id) {
     const response = await res.json() as Transaction.TransferResponse;
 
     const comparer = validateTransferTransactionResponse(response, document, viewingAccountId);

@@ -1,5 +1,6 @@
 import { default as schema } from '@household/test/schemas/account-response';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { entries, getAccountId } from '@household/shared/common/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
@@ -22,9 +23,9 @@ const permissionMap = forbidUsers();
 const test = mergeTests(accountApiTest, accountDbTest, transactionDbTest);
 
 test.describe('GET /account/v1/accounts/{accountId}', () => {
-  let accountDocument: Account.Document;
-  let loanAccountDocument: Account.Document;
-  let secondaryAccountDocument: Account.Document;
+  let accountDocument: Documents.Account;
+  let loanAccountDocument: Documents.Account;
+  let secondaryAccountDocument: Documents.Account;
   let paymentTransactionDocument: Transaction.PaymentDocument;
   let splitTransactionDocument: Transaction.SplitDocument;
   let transferTransactionDocument: Transaction.TransferDocument;

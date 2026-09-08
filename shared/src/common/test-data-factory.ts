@@ -1,7 +1,7 @@
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Account, Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
+import { Auth, Calendar, Category, Customer, File, Price, Product, Project, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -669,7 +669,7 @@ export const createTransferTransactionResponse: DataFactoryFunction<Transaction.
   };
 };
 
-export const createAccountReport: DataFactoryFunction<Account.Report> = (rep) => {
+export const createAccountReport: DataFactoryFunction<Responses.AccountReport> = (rep) => {
   return {
     accountId: createAccountId(),
     currency: 'Ft',

@@ -1,5 +1,6 @@
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { reimbursementTransactionDocumentConverter } from '@household/shared/dependencies/converters/reimbursement-transaction-document-converter';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { AccountType } from '@household/shared/enums';
@@ -7,8 +8,8 @@ import { AccountType } from '@household/shared/enums';
 export const reimbursementTransactionDataFactory = (() => {
   const createReimbursementTransactionDocument = (ctx: {
     body?: Partial<Transaction.PaymentRequest>;
-    account: Account.Document;
-    loanAccount: Account.Document;
+    account: Documents.Account;
+    loanAccount: Documents.Account;
     category?: Category.Document;
     product?: Product.Document;
     project?: Project.Document;

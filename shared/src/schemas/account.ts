@@ -118,6 +118,10 @@ export const response = combine<Responses.Account>([
   balance,
 ]);
 
-// export const report = combine<Api.Account.Report>([accountId, fullName, currency]);
+export const report = combine<Responses.AccountReport>([
+  accountId,
+  fullName,
+  currency,
+]);
 
 export const request = combine<Requests.Account>([base]);

@@ -2,6 +2,7 @@ import { addSeconds, getAccountId, getCategoryId, getProductId, getProjectId, ge
 import { paymentTransactionDocumentConverter } from '@household/shared/dependencies/converters/payment-transaction-document-converter';
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -45,7 +46,7 @@ export const paymentTransactionDataFactory = (() => {
 
   const createPaymentTransactionDocument = (ctx: {
     body?: Partial<Transaction.PaymentRequest>;
-    account: Account.Document;
+    account: Documents.Account;
     category?: Category.Document;
     product?: Product.Document;
     project?: Project.Document;

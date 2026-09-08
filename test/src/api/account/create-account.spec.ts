@@ -1,5 +1,6 @@
 import { entries } from '@household/shared/common/utils';
-import { Account } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
@@ -12,7 +13,7 @@ const test = mergeTests(accountApiTest, accountDbTest);
 
 const permissionMap = allowUsers('editor') ;
 test.describe('POST account/v1/accounts', () => {
-  let request: Account.Request;
+  let request: Requests.Account;
 
   test.beforeEach(async () => {
     request = accountDataFactory.request();
@@ -43,7 +44,7 @@ test.describe('POST account/v1/accounts', () => {
           const res = await requestCreateAccount(request);
           expect(res).toBeCreatedResponse();
 
-          const { accountId } = (await res.json()) as Account.AccountId;
+          const { accountId } = (await res.json()) as Api.Account.AccountId;
           expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
 
@@ -58,7 +59,7 @@ test.describe('POST account/v1/accounts', () => {
           const res = await requestCreateAccount(request);
           expect(res).toBeCreatedResponse();
 
-          const { accountId } = (await res.json()) as Account.AccountId;
+          const { accountId } = (await res.json()) as Api.Account.AccountId;
           expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
 

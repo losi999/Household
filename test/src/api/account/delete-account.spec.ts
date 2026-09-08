@@ -1,6 +1,7 @@
 import { entries, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType } from '@household/shared/enums';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
@@ -22,7 +23,7 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(accountApiTest, accountDbTest, transactionDbTest);
 
 test.describe('DELETE /account/v1/accounts/{accountId}', () => {
-  let accountDocument: Account.Document;
+  let accountDocument: Documents.Account;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
@@ -58,8 +59,8 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
         });
 
         test.describe('related transactions', () => {
-          let loanAccountDocument: Account.Document;
-          let secondaryAccountDocument: Account.Document;
+          let loanAccountDocument: Documents.Account;
+          let secondaryAccountDocument: Documents.Account;
           let paymentTransactionDocument: Transaction.PaymentDocument;
           let splitTransactionDocument: Transaction.SplitDocument;
           let transferTransactionDocument: Transaction.TransferDocument;

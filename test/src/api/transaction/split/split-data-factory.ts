@@ -2,6 +2,7 @@ import { addSeconds, getAccountId, getCategoryId, getProductId, getProjectId, ge
 import { splitTransactionDocumentConverter } from '@household/shared/dependencies/converters/split-transaction-document-converter';
 import { DataFactoryFunction, Dictionary } from '@household/shared/types/common';
 import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -98,16 +99,16 @@ export const splitTransactionDataFactory = (() => {
     Transaction.Category<Category.Document> &
     Transaction.Product<Product.Document>> &
     {
-      loanAccount: Account.Document;
+      loanAccount: Documents.Account;
     })[];
-    account: Account.Document;
+    account: Documents.Account;
     recipient?: Recipient.Document;
   }): Transaction.SplitDocument => {
     if (ctx.account.accountType === AccountType.Loan) {
       throw 'Account cannot be loan in split transaction';
     }
 
-    const accounts: Dictionary<Account.Document> = {
+    const accounts: Dictionary<Documents.Account> = {
       [getAccountId(ctx.account)]: ctx.account,
     };
     const categories: Dictionary<Category.Document> = {};

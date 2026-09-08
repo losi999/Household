@@ -28,8 +28,8 @@ const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest);
 
 test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
   let fileDocument: File.Document;
-  let accountDocument: Account.Document;
-  let loanAccountDocument: Account.Document;
+  let accountDocument: Documents.Account;
+  let loanAccountDocument: Documents.Account;
   let draftDocument: Transaction.DraftDocument;
   let duplicatedDraftDocument: Transaction.DraftDocument;
   let duplicatePaymentDocument: Transaction.PaymentDocument;

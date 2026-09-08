@@ -1,4 +1,5 @@
-import { Account, Category, Product, Project, Recipient } from '@household/shared/types/types';
+import { Category, Product, Project, Recipient } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { default as paymentTransactionSchema } from '@household/test/schemas/transaction-payment-response';
 import { default as deferredTransactionSchema } from '@household/test/schemas/transaction-deferred-response';
 import { default as reimbursementTransactionSchema } from '@household/test/schemas/transaction-reimbursement-response';
@@ -35,9 +36,9 @@ const permissionMap = forbidUsers();
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
 test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactionId}', () => {
-  let accountDocument: Account.Document;
-  let loanAccountDocument: Account.Document;
-  let transferAccountDocument: Account.Document;
+  let accountDocument: Documents.Account;
+  let loanAccountDocument: Documents.Account;
+  let transferAccountDocument: Documents.Account;
   let projectDocument: Project.Document;
   let recipientDocument: Recipient.Document;
   let regularCategoryDocument: Category.Document;

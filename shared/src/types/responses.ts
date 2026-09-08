@@ -11,4 +11,8 @@ export namespace Responses {
     Api.Account.IsOpen &
     Api.Account.AccountId &
     Api.Account.FullName;
+
+  export type AccountReport = Api.Account.AccountId &
+    Api.Account.FullName &
+    Api.Account.Currency;
 }

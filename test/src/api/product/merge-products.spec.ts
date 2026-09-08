@@ -1,6 +1,7 @@
 import { entries, getProductId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
-import { Account, Category, Product, Transaction } from '@household/shared/types/types';
+import { Category, Product, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
@@ -25,8 +26,8 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(productApiTest, accountDbTest, transactionDbTest, categoryDbTest, productDbTest);
 
 test.describe('POST product/v1/products/{productId}/merge', () => {
-  let accountDocument: Account.Document;
-  let loanAccountDocument: Account.Document;
+  let accountDocument: Documents.Account;
+  let loanAccountDocument: Documents.Account;
   let categoryDocument: Category.Document;
   let targetProductDocument: Product.Document;
   let sourceProductDocument: Product.Document;

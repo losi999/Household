@@ -36,4 +36,10 @@ export type ObjectSchema<T> = {
   additionalProperties?: boolean;
 };
 
-type StrictSchema<T> = StringSchema | NumberSchema | BooleanSchema | ArraySchema<T> | ObjectSchema<T>;            
+type StrictSchema<T> = 
+  T extends string ? StringSchema : 
+    T extends number ? NumberSchema :
+      T extends boolean ? BooleanSchema :
+        T extends any[] ? ArraySchema<T[0]> :
+          T extends object ? ObjectSchema<T> :
+            never;

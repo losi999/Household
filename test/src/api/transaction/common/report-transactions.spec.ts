@@ -1,4 +1,5 @@
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { entries, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { default as schema } from '@household/test/schemas/transaction-report-list';
 import { createAccountId } from '@household/shared/common/test-data-factory';
@@ -63,9 +64,9 @@ test.describe('POST /transaction/v1/transactionReports', () => {
         });
       } else {
         test.describe('should get a list of transaction reports', () => {
-          let accountDocument: Account.Document;
-          let secondaryAccountDocument: Account.Document;
-          let loanAccountDocument: Account.Document;
+          let accountDocument: Documents.Account;
+          let secondaryAccountDocument: Documents.Account;
+          let loanAccountDocument: Documents.Account;
           let projectDocument: Project.Document;
           let secondaryProjectDocument: Project.Document;
           let recipientDocument: Recipient.Document;
