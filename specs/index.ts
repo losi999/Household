@@ -11,6 +11,12 @@ import { getProject } from './paths/project/get-project';
 import { updateProject } from './paths/project/update-project';
 import { deleteProject } from './paths/project/delete-project';
 import { mergeProjects } from './paths/project/merge-projects';
+import { listRecipients } from './paths/recipient/list-recipients';
+import { createRecipient } from './paths/recipient/create-recipient';
+import { getRecipient } from './paths/recipient/get-recipient';
+import { updateRecipient } from './paths/recipient/update-recipient';
+import { deleteRecipient } from './paths/recipient/delete-recipient';
+import { mergeRecipients } from './paths/recipient/merge-recipients';
 
 const document = new OpenApiBuilder()
   .addOpenApiVersion('3.1.0')
@@ -38,6 +44,18 @@ const document = new OpenApiBuilder()
   })
   .addPath('/project/v1/projects/{projectId}/merge', {
     ...mergeProjects,
+  })
+  .addPath('/recipient/v1/recipients', {
+    ...listRecipients,
+    ...createRecipient,
+  })
+  .addPath('/recipient/v1/recipients/{recipientId}', {
+    ...getRecipient,
+    ...updateRecipient,
+    ...deleteRecipient,
+  })
+  .addPath('/recipient/v1/recipients/{recipientId}/merge', {
+    ...mergeRecipients,
   });
 
 writeFileSync('specs/household.json', document.getSpecAsJson(undefined, 2));

@@ -1,13 +1,13 @@
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IGetRecipientService } from '@household/api/functions/get-recipient/get-recipient.service';
 import { castPathParameters } from '@household/shared/common/aws-utils';
-import { Recipient } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (getRecipient: IGetRecipientService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const { recipientId } = castPathParameters(event);
 
-    let recipient: Recipient.Response;
+    let recipient: Responses.Recipient;
     try {
       recipient = await getRecipient({
         recipientId,

@@ -87,8 +87,8 @@ jobs:
 
       - store_artifacts:
           path: coverage
-          destination: coverage 
-  
+          destination: coverage
+
   lint:
     docker:
       - image: cimg/node:26.8
@@ -160,7 +160,7 @@ jobs:
           command: sed -i -e "s/RUM_IDENTITY_POOL_ID/$(aws cloudformation describe-stacks --stack-name HairdressingWeb-$ENV --query 'Stacks[0].Outputs[?OutputKey==`RumIdentityPoolId`].OutputValue' --output text)/g" ./dist/hairdressing/browser/index.html
       - deploy:
           name: Web deploy
-          command: aws s3 sync dist/hairdressing/browser s3://$(aws cloudformation describe-stacks --stack-name HairdressingWeb-$ENV --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)          
+          command: aws s3 sync dist/hairdressing/browser s3://$(aws cloudformation describe-stacks --stack-name HairdressingWeb-$ENV --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucket'].OutputValue" --output text)
   web_household_deploy:
     docker:
       - image: cibuilds/aws:1.16.1
@@ -232,7 +232,7 @@ jobs:
           path: test/playwright-report
           destination: test/playwright-report/<<parameters.test_command>>
 workflows:
-  local:
+  build_and_deploy:
     jobs:
       - install
       - unit_test_api:
@@ -307,4 +307,4 @@ workflows:
                 - "user"
                 - "transaction-draft"
           requires:
-            - api_test_setup                
+            - api_test_setup

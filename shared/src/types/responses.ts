@@ -21,4 +21,10 @@ export namespace Responses {
 
   export type ProjectReport = Api.Project.ProjectId &
     Api.Project.Name;
+
+  export type Recipient = Api.Recipient.Base &
+    Api.Recipient.RecipientId;
+
+  export type RecipientReport = Api.Recipient.RecipientId &
+    Api.Recipient.Name;
 }

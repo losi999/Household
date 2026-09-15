@@ -53,6 +53,7 @@ export namespace Project {
   // export type Request = Base;
 }
 
+/** @deprecated */
 export namespace Recipient {
   export type Id = Branding<string, 'recipient'>;
 
@@ -74,7 +75,7 @@ export namespace Recipient {
   export type Report = RecipientId
     & Name;
 
-  export type Request = Name;
+  // export type Request = Name;
 }
 
 /** @deprecated */

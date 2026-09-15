@@ -17,7 +17,7 @@ Keep this list current — check a domain off here in the same change that migra
 - [ ] Price
 - [ ] Product
 - [x] Project
-- [ ] Recipient
+- [x] Recipient
 - [ ] Setting
 - [ ] Transaction
 - [ ] User

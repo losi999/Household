@@ -1,7 +1,7 @@
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Auth, Calendar, Category, Customer, File, Price, Product, Recipient, Report, Setting, Transaction, User } from '@household/shared/types/types';
+import { Auth, Calendar, Category, Customer, File, Price, Product, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -27,7 +27,7 @@ export const createProjectId = (id?: string): Api.Project.Id => {
   return createId(id);
 };
 
-export const createRecipientId = (id?: string): Recipient.Id => {
+export const createRecipientId = (id?: string): Api.Recipient.Id => {
   return createId(id);
 };
 
@@ -78,7 +78,7 @@ export const createCategoryDocument: DataFactoryFunction<Category.Document> = (d
     ...doc,
   };
 };
-export const createRecipientDocument: DataFactoryFunction<Recipient.Document> = (doc) => {
+export const createRecipientDocument: DataFactoryFunction<Documents.Recipient> = (doc) => {
   return {
     _id: createId(),
     name: 'recipient name',
@@ -283,7 +283,7 @@ export const createCategoryRequest: DataFactoryFunction<Category.Request> = (req
     ...req,
   };
 };
-export const createRecipientRequest: DataFactoryFunction<Recipient.Request> = (req) => {
+export const createRecipientRequest: DataFactoryFunction<Requests.Recipient> = (req) => {
   return {
     name: 'recipient name',
     ...req,
@@ -532,7 +532,7 @@ export const createCategoryResponse: DataFactoryFunction<Category.Response> = (r
     ...resp,
   };
 };
-export const createRecipientResponse: DataFactoryFunction<Recipient.Response> = (resp) => {
+export const createRecipientResponse: DataFactoryFunction<Responses.Recipient> = (resp) => {
   return {
     recipientId: createRecipientId(),
     name: 'recipient name',
@@ -702,10 +702,10 @@ export const createProductReport: DataFactoryFunction<Product.Report> = (rep) =>
   };
 };
 
-export const createRecipientReport: DataFactoryFunction<Recipient.Report> = (rep) => {
+export const createRecipientReport: DataFactoryFunction<Responses.RecipientReport> = (rep) => {
   return {
     recipientId: createRecipientId(),
-    name: 'acc name',
+    name: 'recipient name',
     ...rep,
   };
 };

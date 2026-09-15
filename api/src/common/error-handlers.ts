@@ -2,7 +2,7 @@ import { GroupType } from '@aws-sdk/client-cognito-identity-provider';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey, UserType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Calendar, Category, Common, Customer, File, Price, Product, Recipient, Setting, Transaction, User } from '@household/shared/types/types';
+import { Calendar, Category, Common, Customer, File, Price, Product, Setting, Transaction, User } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
@@ -318,7 +318,7 @@ export const httpErrors = {
     },
   },
   recipient: {
-    save: (doc: Recipient.Document, statusCode = 500): CatchAndThrow => (error) => {
+    save: (doc: Documents.Recipient, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate recipient name', doc, error);
         throw httpError(400, 'Duplicate recipient name');
@@ -327,7 +327,7 @@ export const httpErrors = {
       log('Save recipient', doc, error);
       throw httpError(statusCode, 'Error while saving recipient');
     },
-    getById: (ctx: Recipient.RecipientId, statusCode = 500): CatchAndThrow => (error) => {
+    getById: (ctx: Api.Recipient.RecipientId, statusCode = 500): CatchAndThrow => (error) => {
       log('Get recipient', ctx, error);
       throw httpError(statusCode, 'Error while getting recipient');
     },
@@ -335,27 +335,27 @@ export const httpErrors = {
       log('List recipients', undefined, error);
       throw httpError(statusCode, 'Error while listing recipients');
     },
-    listByIds: (ctx: Recipient.Id[], statusCode = 500): CatchAndThrow => (error) => {
+    listByIds: (ctx: Api.Recipient.Id[], statusCode = 500): CatchAndThrow => (error) => {
       log('List recipients by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing recipients by ids');
     },
-    notFound: (ctx: Recipient.RecipientId & {recipient: Recipient.Document}, statusCode = 404) => {
+    notFound: (ctx: Api.Recipient.RecipientId & {recipient: Documents.Recipient}, statusCode = 404) => {
       if (ctx.recipientId && !ctx.recipient) {
         log('No recipient found', ctx);
         throw httpError(statusCode, 'No recipient found');
       }
     },
-    multipleNotFound: (ctx: { recipientIds: Recipient.Id[]; recipients: Recipient.Document[] }, statusCode = 400) => {
+    multipleNotFound: (ctx: { recipientIds: Api.Recipient.Id[]; recipients: Documents.Recipient[] }, statusCode = 400) => {
       if (ctx.recipientIds.length !== ctx.recipients.length) {
         log('Some of the recipients are not found', ctx);
         throw httpError(statusCode, 'Some of the recipients are not found');
       }
     },
-    delete: (ctx: Recipient.RecipientId, statusCode = 500): CatchAndThrow => (error) => {
+    delete: (ctx: Api.Recipient.RecipientId, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete recipient', ctx, error);
       throw httpError(statusCode, 'Error while deleting recipient');
     },
-    update: (ctx: Recipient.RecipientId & {update: UpdateQuery<Recipient.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+    update: (ctx: Api.Recipient.RecipientId & {update: UpdateQuery<Documents.Recipient>}, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate recipient name', ctx, error);
         throw httpError(400, 'Duplicate recipient name');
@@ -364,15 +364,15 @@ export const httpErrors = {
       log('Update recipient', ctx, error);
       throw httpError(statusCode, 'Error while updating recipient');
     },
-    mergeTargetAmongSource: (ctx: {target: Recipient.Id; source: Recipient.Id[]}, statusCode = 400) => {
+    mergeTargetAmongSource: (ctx: {target: Api.Recipient.Id; source: Api.Recipient.Id[]}, statusCode = 400) => {
       if (ctx.source.includes(ctx.target)) {
         log('Target recipient is among the source recipient Ids', ctx);
         throw httpError(statusCode, 'Target recipient is among the source recipient Ids');
       }
     },
     merge: (ctx: {
-      targetRecipientId: Recipient.Id;
-      sourceRecipientIds: Recipient.Id[];
+      targetRecipientId: Api.Recipient.Id;
+      sourceRecipientIds: Api.Recipient.Id[];
     }, statusCode = 500): CatchAndThrow => (error) => {
       log('Merge recipients', ctx, error);
       throw httpError(statusCode, 'Error while merging recipients');

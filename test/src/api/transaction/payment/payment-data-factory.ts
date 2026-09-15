@@ -50,7 +50,7 @@ export const paymentTransactionDataFactory = (() => {
     category?: Category.Document;
     product?: Product.Document;
     project?: Documents.Project;
-    recipient?: Recipient.Document;
+    recipient?: Documents.Recipient;
   }): Transaction.PaymentDocument => {
     if (ctx.account.accountType === AccountType.Loan) {
       throw 'Account cannot be loan in payment transaction';

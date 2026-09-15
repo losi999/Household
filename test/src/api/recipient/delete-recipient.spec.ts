@@ -4,7 +4,7 @@ import { test as recipientApiTest, expect as recipientApiExpect } from '@househo
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { Recipient, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
@@ -25,7 +25,7 @@ const test = mergeTests(recipientApiTest, accountDbTest, transactionDbTest, reci
 
 test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
 
-  let recipientDocument: Recipient.Document;
+  let recipientDocument: Documents.Recipient;
 
   test.beforeEach(async () => {
     recipientDocument = recipientDataFactory.document();
@@ -63,7 +63,7 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
         });
 
         test.describe('in related transactions recipient', () => {
-          let unrelatedRecipientDocument: Recipient.Document;
+          let unrelatedRecipientDocument: Documents.Recipient;
           let paymentTransactionDocument: Transaction.PaymentDocument;
           let deferredTransactionDocument: Transaction.DeferredDocument;
           let reimbursementTransactionDocument: Transaction.ReimbursementDocument;

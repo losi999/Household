@@ -1,14 +1,16 @@
 import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getRecipientId } from '@household/shared/common/utils';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Recipient } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
+import { Documents } from '@household/shared/types/documents';
 
 export interface IRecipientDocumentConverter {
-  create(body: Recipient.Request, expiresIn: number, generateId?: boolean): Recipient.Document;
-  update(body: Recipient.Request, expiresIn: number): DocumentUpdate<Recipient.Document>;
-  toResponse(doc: Recipient.Document): Recipient.Response;
-  toReport(doc: Recipient.Document): Recipient.Report;
-  toResponseList(docs: Recipient.Document[]): Recipient.Response[];
+  create(body: Requests.Recipient, expiresIn: number, generateId?: boolean): Documents.Recipient;
+  update(body: Requests.Recipient, expiresIn: number): DocumentUpdate<Documents.Recipient>;
+  toResponse(doc: Documents.Recipient): Responses.Recipient;
+  toReport(doc: Documents.Recipient): Responses.RecipientReport;
+  toResponseList(docs: Documents.Recipient[]): Responses.Recipient[];
 }
 
 export const recipientDocumentConverterFactory = (): IRecipientDocumentConverter => {

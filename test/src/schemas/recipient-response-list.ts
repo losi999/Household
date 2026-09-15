@@ -1,8 +1,8 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Recipient } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { default as recipient } from '@household/test/schemas/recipient-response';
 
-const schema: StrictJSONSchema7<Recipient.Response[]> = {
+const schema: StrictJSONSchema7<Responses.Recipient[]> = {
   type: 'array',
   items: recipient,
 };

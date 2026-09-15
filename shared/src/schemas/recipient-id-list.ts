@@ -1,8 +1,9 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Recipient } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { default as recipientId } from '@household/shared/schemas/recipient-id';
 
-const schema: StrictJSONSchema7<Recipient.Id[]> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Api.Recipient.Id[]> = {
   type: 'array',
   minItems: 1,
   items: {

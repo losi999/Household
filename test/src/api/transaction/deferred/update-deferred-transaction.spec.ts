@@ -32,7 +32,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
   let originalDocument: Transaction.TransferDocument;
 
   let projectDocument: Documents.Project;
-  let recipientDocument: Recipient.Document;
+  let recipientDocument: Documents.Recipient;
   let accountDocument: Documents.Account;
   let secondaryAccountDocument: Documents.Account;
   let regularCategoryDocument: Category.Document;

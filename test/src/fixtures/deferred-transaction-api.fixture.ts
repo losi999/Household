@@ -70,7 +70,7 @@ export const expect = baseExpect.extend({
     };
   },
   toHaveRelatedDocumentsChangedInDeferredTransaction(originalDocument: Transaction.DeferredDocument, currentDocument: Transaction.DeferredDocument, reassignments: {
-    recipient?: Reassignment<Recipient.Id>;
+    recipient?: Reassignment<Api.Recipient.Id>;
     project?: Reassignment<Api.Project.Id>;
     product?: Reassignment<Product.Id>;
     category?: Reassignment<Category.Document>;

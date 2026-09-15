@@ -63,7 +63,7 @@ export const expect = baseExpect.extend({
     };
   },
   toHaveRelatedDocumentsChangedInPaymentTransaction(originalDocument: Transaction.PaymentDocument, currentDocument: Transaction.PaymentDocument, reassignments: {
-    recipient?: Reassignment<Recipient.Id>;
+    recipient?: Reassignment<Api.Recipient.Id>;
     project?: Reassignment<Api.Project.Id>;
     product?: Reassignment<Product.Id>;
     category?: Reassignment<Category.Document>;

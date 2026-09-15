@@ -102,7 +102,7 @@ export const splitTransactionDataFactory = (() => {
       loanAccount: Documents.Account;
     })[];
     account: Documents.Account;
-    recipient?: Recipient.Document;
+    recipient?: Documents.Recipient;
   }): Transaction.SplitDocument => {
     if (ctx.account.accountType === AccountType.Loan) {
       throw 'Account cannot be loan in split transaction';

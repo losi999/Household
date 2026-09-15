@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IRecipientService } from '@household/shared/services/recipient-service';
-import { Recipient } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeleteRecipientService {
   (ctx: {
-    recipientId: Recipient.Id;
+    recipientId: Api.Recipient.Id;
   }): Promise<unknown>;
 }
 

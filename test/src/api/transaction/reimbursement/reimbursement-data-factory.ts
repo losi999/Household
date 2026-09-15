@@ -13,7 +13,7 @@ export const reimbursementTransactionDataFactory = (() => {
     category?: Category.Document;
     product?: Product.Document;
     project?: Documents.Project;
-    recipient?: Recipient.Document;
+    recipient?: Documents.Recipient;
   }): Transaction.ReimbursementDocument => {
     if (ctx.account.accountType !== AccountType.Loan) {
       throw 'Paying account type must be loan in reimbursement transaction';

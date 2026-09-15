@@ -61,4 +61,18 @@ export namespace Api {
 
     export type Base = Name & Description;
   }
+
+  export namespace Recipient {
+    export type Id = Branding<string, 'recipient'>;
+
+    export type RecipientId = {
+      recipientId: Id;
+    };
+
+    export type Name = {
+      name: string;
+    };
+
+    export type Base = Name;
+  }
 }

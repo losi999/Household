@@ -1,11 +1,11 @@
 
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IListRecipientsService } from '@household/api/functions/list-recipients/list-recipients.service';
-import { Recipient } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (listRecipients: IListRecipientsService): AWSLambda.APIGatewayProxyHandler => {
   return async () => {
-    let recipients: Recipient.Response[];
+    let recipients: Responses.Recipient[];
     try {
       recipients = await listRecipients();
     } catch (error) {

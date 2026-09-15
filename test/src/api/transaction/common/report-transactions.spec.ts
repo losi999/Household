@@ -69,8 +69,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
           let loanAccountDocument: Documents.Account;
           let projectDocument: Documents.Project;
           let secondaryProjectDocument: Documents.Project;
-          let recipientDocument: Recipient.Document;
-          let secondaryRecipientDocument: Recipient.Document;
+          let recipientDocument: Documents.Recipient;
+          let secondaryRecipientDocument: Documents.Recipient;
           let regularCategoryDocument: Category.Document;
           let inventoryCategoryDocument: Category.Document;
           let invoiceCategoryDocument: Category.Document;

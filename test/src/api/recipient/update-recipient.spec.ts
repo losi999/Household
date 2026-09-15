@@ -3,7 +3,9 @@ import { allowUsers } from '@household/test/utils';
 import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { Recipient } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 import { mergeTests } from '@playwright/test';
 
@@ -12,8 +14,8 @@ const permissionMap = allowUsers('editor');
 const test = mergeTests(recipientApiTest, recipientDbTest);
 
 test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
-  let req: Recipient.Request;
-  let recipientDocument: Recipient.Document;
+  let req: Requests.Recipient;
+  let recipientDocument: Documents.Recipient;
 
   test.beforeEach(async () => {
     req = recipientDataFactory.request();
@@ -49,7 +51,7 @@ test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
           const res = await requestUpdateRecipient(getRecipientId(recipientDocument), req);
           apiExpect(res).toBeCreatedResponse();
 
-          const { recipientId } = (await res.json()) as Recipient.RecipientId;
+          const { recipientId } = (await res.json()) as Api.Recipient.RecipientId;
           recipientApiExpect(req).toHaveBeenSavedAsRecipientDocument(await findRecipientById(recipientId));
         });
 
