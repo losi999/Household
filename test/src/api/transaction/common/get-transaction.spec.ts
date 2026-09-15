@@ -44,7 +44,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
   let regularCategoryDocument: Documents.Category;
   let inventoryCategoryDocument: Documents.Category;
   let invoiceCategoryDocument: Documents.Category;
-  let productDocument: Product.Document;
+  let productDocument: Documents.Product;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();

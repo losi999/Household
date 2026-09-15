@@ -1,5 +1,6 @@
 import { DataFactoryFunction } from '@household/shared/types/common';
-import { Category, Product } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 import { Documents } from '@household/shared/types/documents';
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/utils';
@@ -8,7 +9,7 @@ import { unitsOfMeasurement } from '@household/shared/constants';
 import { CategoryType } from '@household/shared/enums';
 
 export const productDataFactory = (() => {
-  const createProductRequest: DataFactoryFunction<Product.Request> = (req) => {
+  const createProductRequest: DataFactoryFunction<Requests.Product> = (req) => {
     return {
       brand: faker.commerce.productName(),
       measurement: faker.number.float({
@@ -21,9 +22,9 @@ export const productDataFactory = (() => {
   };
 
   const createProductDocument = (ctx: {
-    body?: Partial<Product.Request>;
+    body?: Partial<Requests.Product>;
     category: Documents.Category;
-  }): Product.Document => {
+  }): Documents.Product => {
     if (ctx.category.categoryType !== CategoryType.Inventory) {
       throw 'Category must be of inventory type';
     }
@@ -38,6 +39,6 @@ export const productDataFactory = (() => {
   return {
     request: createProductRequest,
     document: createProductDocument,
-    id: (createId<Product.Id>),
+    id: (createId<Api.Product.Id>),
   };
 })();

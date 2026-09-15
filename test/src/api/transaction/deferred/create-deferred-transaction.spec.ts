@@ -35,7 +35,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
   let regularCategoryDocument: Documents.Category;
   let invoiceCategoryDocument: Documents.Category;
   let inventoryCategoryDocument: Documents.Category;
-  let productDocument: Product.Document;
+  let productDocument: Documents.Product;
   let relatedDocumentIds: Pick<Transaction.PaymentRequest, 'accountId' | 'productId' | 'categoryId' | 'projectId' | 'recipientId' | 'loanAccountId'> ;
 
   test.beforeEach(async () => {

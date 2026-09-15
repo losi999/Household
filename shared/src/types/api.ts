@@ -1,5 +1,6 @@
 import { Branding } from '@household/shared/types/common';
 import * as Enum from '@household/shared/enums';
+import { unitsOfMeasurement } from '@household/shared/constants';
 
 export namespace Api {
   export type IsArchived = {
@@ -100,5 +101,31 @@ export namespace Api {
     };
 
     export type Base = CategoryType & Name;
+  }
+
+  export namespace Product {
+    export type Id = Branding<string, 'product'>;
+
+    export type ProductId = {
+      productId: Id;
+    };
+
+    export type FullName = {
+      fullName: string;
+    };
+
+    export type Brand = {
+      brand: string;
+    };
+
+    export type Measurement = {
+      measurement: number;
+    };
+
+    export type UnitOfMeasurement = {
+      unitOfMeasurement: typeof unitsOfMeasurement[number];
+    };
+
+    export type Base = Brand & Measurement & UnitOfMeasurement;
   }
 }

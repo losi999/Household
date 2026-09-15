@@ -20,8 +20,8 @@ const permissionMap = forbidUsers();
 const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
 
 test.describe('GET /product/v1/products', () => {
-  let productDocument1: Product.Document;
-  let productDocument2: Product.Document;
+  let productDocument1: Documents.Product;
+  let productDocument2: Documents.Product;
   let categoryDocument1: Documents.Category;
   let categoryDocument2: Documents.Category;
 

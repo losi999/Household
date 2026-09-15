@@ -37,7 +37,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
   let regularCategoryDocument: Documents.Category;
   let invoiceCategoryDocument: Documents.Category;
   let inventoryCategoryDocument: Documents.Category;
-  let productDocument: Product.Document;
+  let productDocument: Documents.Product;
   let relatedDocumentIds: Pick<Transaction.PaymentRequest, 'accountId' | 'productId' | 'categoryId' | 'projectId' | 'recipientId'> ;
 
   test.beforeEach(async () => {

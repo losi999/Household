@@ -40,7 +40,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
   let regularCategoryDocument: Documents.Category;
   let invoiceCategoryDocument: Documents.Category;
   let inventoryCategoryDocument: Documents.Category;
-  let productDocument: Product.Document;
+  let productDocument: Documents.Product;
   let relatedDocumentIds: Pick<Transaction.SplitRequest, 'accountId' | 'recipientId'>;
   let relatedDocumentItemIds: Pick<Transaction.SplitRequestItem, 'categoryId' | 'productId' | 'projectId'>;
 

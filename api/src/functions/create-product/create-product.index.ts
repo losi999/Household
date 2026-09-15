@@ -3,8 +3,8 @@ import { productDocumentConverter } from '@household/shared/dependencies/convert
 import { default as handler } from '@household/api/functions/create-product/create-product.handler';
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
-import { default as body } from '@household/shared/schemas/product-request';
-import { default as pathParameters } from '@household/shared/schemas/category-id';
+import { request as body } from '@household/shared/schemas/product';
+import { categoryId as pathParameters } from '@household/shared/schemas/category';
 import { productService } from '@household/shared/dependencies/services/product-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { categoryService } from '@household/shared/dependencies/services/category-service';

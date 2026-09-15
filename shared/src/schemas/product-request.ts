@@ -1,8 +1,9 @@
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Product } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 
-const schema: StrictJSONSchema7<Product.Request> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Requests.Product> = {
   type: 'object',
   additionalProperties: false,
   required: [

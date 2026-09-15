@@ -15,7 +15,7 @@ Keep this list current — check a domain off here in the same change that migra
 - [ ] Customer
 - [ ] File
 - [ ] Price
-- [ ] Product
+- [x] Product
 - [x] Project
 - [x] Recipient
 - [ ] Setting
@@ -327,15 +327,25 @@ types, used across `*.spec.ts` files instead of hand-rolled fixtures.
    `shared/src/dependencies/converters/`.
 8. **`shared/src/services/<domain>-service.ts`** + a one-line singleton under
    `shared/src/dependencies/services/`.
-9. **`api/src/functions/<verb>-<domain>/`** — one folder per endpoint (`*.service.ts`,
-   `*.handler.ts`, `*.index.ts`), validator schemas imported from step 5.
-10. **`api/src/common/error-handlers.ts`** — add an `httpErrors.<domain>` block.
-11. **`shared/src/common/test-data-factory.ts`** — add the `create<Domain>*` builders.
-12. **`specs/paths/<domain>/<verb>-<domain>.ts`** — one `PathItemObject` per endpoint from step
-    9, embedding the layer-5 schema exports directly (no cast); wire into `specs/index.ts`.
-13. Wire the SAM/CloudFormation route (`sam.<domain>.yaml` or equivalent) to the new Lambda —
+9. **`shared/src/common/utils.ts`** — retype the domain's `get<Domain>Id` helper (e.g.
+   `getAccountId`, `getProjectId`) from `(doc: <Domain>.Document | Types.ObjectId) => <Domain>.Id`
+   to `(doc: Documents.<Domain> | Types.ObjectId) => Api.<Domain>.Id`. This file is easy to miss
+   because it's not under any domain's own folder, but nearly every domain's converters/services
+   call another domain's `get<Domain>Id` — grep `getId` in this file for the exact existing shape
+   to match, and drop the domain from this file's legacy `types.ts` import once nothing else in
+   the file still needs it (check each remaining use, not just this one function, before removing
+   the import).
+10. **`api/src/functions/<verb>-<domain>/`** — one folder per endpoint (`*.service.ts`,
+    `*.handler.ts`, `*.index.ts`), validator schemas imported from step 5.
+11. **`api/src/common/error-handlers.ts`** — add an `httpErrors.<domain>` block. Also grep the
+    *whole* file for stray `<Domain>.<Member>` references outside that block — e.g. another
+    domain's `httpErrors` entry taking a `<Domain>.Id[]` parameter — and fix those too.
+12. **`shared/src/common/test-data-factory.ts`** — add the `create<Domain>*` builders.
+13. **`specs/paths/<domain>/<verb>-<domain>.ts`** — one `PathItemObject` per endpoint from step
+    10, embedding the layer-5 schema exports directly (no cast); wire into `specs/index.ts`.
+14. Wire the SAM/CloudFormation route (`sam.<domain>.yaml` or equivalent) to the new Lambda —
     unrelated to this pattern but needed for the endpoint to actually exist.
-14. **`test/`** (the Playwright suite) — replace every remaining `<Domain>.<Member>` reference
+15. **`test/`** (the Playwright suite) — replace every remaining `<Domain>.<Member>` reference
     from the legacy `types.ts` namespace with its new-pattern equivalent, the same mapping as
     everywhere else (`Document`→`Documents.<Domain>`, `Request`→`Requests.<Domain>`,
     `Response`→`Responses.<Domain>`, `Report`→`Responses.<Domain>Report`, everything else→
@@ -358,7 +368,7 @@ types, used across `*.spec.ts` files instead of hand-rolled fixtures.
       unit tests still pass — the Playwright suite itself needs a live backend and isn't run
       here, so this step is a pure type-safety migration, not a behavior-verified one).
 
-**Scope of one pass**: steps 1–14 are the domain's own layers, `test/` included. One thing is
+**Scope of one pass**: steps 1–15 are the domain's own layers, `test/` included. One thing is
 deliberately *not* part of migrating a domain, and should be flagged to the user as available
 follow-up work rather than done silently in the same pass: other domains'/`Transaction`'s
 converters, services, and `error-handlers.ts` entries that reference the migrated domain's
@@ -395,7 +405,7 @@ migration work is needed there. Expect it to keep firing inside `types.ts` itsel
 embedding, described above) and inside `Transaction`'s own converters/services/`error-handlers.ts`
 entries that consume a migrated domain's document/response through `Transaction`'s still-legacy
 types — that cross-domain cleanup is a separate follow-up belonging to `Transaction`'s own
-migration, not to the domain you just finished (recipe step 14 already covers `test/`, so no
+migration, not to the domain you just finished (recipe step 15 already covers `test/`, so no
 `no-deprecated` warnings for the migrated domain should remain there).
 
 ### Keep a fixed-but-sometimes-absent field a *required key*, not an optional one

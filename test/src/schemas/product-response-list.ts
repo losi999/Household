@@ -1,9 +1,9 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Product } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { default as product } from '@household/test/schemas/product-response';
 import { default as categoryId } from '@household/shared/schemas/category-id';
 
-const schema: StrictJSONSchema7<Product.GroupedResponse[]> = {
+const schema: StrictJSONSchema7<Responses.ProductGroupedResponse[]> = {
   type: 'array',
   items: {
     type: 'object',

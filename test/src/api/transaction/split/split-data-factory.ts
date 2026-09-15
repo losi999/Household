@@ -93,11 +93,11 @@ export const splitTransactionDataFactory = (() => {
     splits?: Partial<Transaction.SplitRequestItem &
     Transaction.Project<Documents.Project> &
     Transaction.Category<Documents.Category> &
-    Transaction.Product<Product.Document>>[];
+    Transaction.Product<Documents.Product>>[];
     loans?: (Partial<Transaction.LoanRequestItem &
     Transaction.Project<Documents.Project> &
     Transaction.Category<Documents.Category> &
-    Transaction.Product<Product.Document>> &
+    Transaction.Product<Documents.Product>> &
     {
       loanAccount: Documents.Account;
     })[];
@@ -112,7 +112,7 @@ export const splitTransactionDataFactory = (() => {
       [getAccountId(ctx.account)]: ctx.account,
     };
     const categories: Dictionary<Documents.Category> = {};
-    const products: Dictionary<Product.Document> = {};
+    const products: Dictionary<Documents.Product> = {};
     const projects: Dictionary<Documents.Project> = {};
 
     const splits = ctx.splits?.map<Partial<Transaction.SplitRequestItem>>(({ category, product, project, ...split }) => {

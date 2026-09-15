@@ -1,6 +1,7 @@
 import { entries, getCategoryId } from '@household/shared/common/utils';
 import { CategoryType } from '@household/shared/enums';
-import { Product } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 import { Documents } from '@household/shared/types/documents';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
@@ -19,7 +20,7 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
 
 test.describe('POST product/v1/products', () => {
-  let request: Product.Request;
+  let request: Requests.Product;
   let categoryDocument: Documents.Category;
 
   test.beforeEach(async () => {
@@ -59,7 +60,7 @@ test.describe('POST product/v1/products', () => {
             const res = await requestCreateProduct(request, getCategoryId(categoryDocument));
             expect(res).toBeCreatedResponse();
 
-            const { productId } = (await res.json()) as Product.ProductId;
+            const { productId } = (await res.json()) as Api.Product.ProductId;
             expect(request).toHaveBeenSavedAsProductDocument(await findProductById(productId), getCategoryId(categoryDocument));
           });
         });

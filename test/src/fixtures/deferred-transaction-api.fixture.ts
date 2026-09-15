@@ -73,14 +73,14 @@ export const expect = baseExpect.extend({
   toHaveRelatedDocumentsChangedInDeferredTransaction(originalDocument: Transaction.DeferredDocument, currentDocument: Transaction.DeferredDocument, reassignments: {
     recipient?: Reassignment<Api.Recipient.Id>;
     project?: Reassignment<Api.Project.Id>;
-    product?: Reassignment<Product.Id>;
+    product?: Reassignment<Api.Product.Id>;
     category?: Reassignment<Documents.Category>;
   }) {
     let expectedQuantity: number;
     let expectedInvoiceNumber: string;
     let expectedBillingStartDate: string;
     let expectedBillingEndDate: string;
-    let expectedProduct: Product.Id;
+    let expectedProduct: Api.Product.Id;
 
     if (reassignments.category && getCategoryId(originalDocument.category) === getCategoryId(reassignments.category.from)) {
       expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalDocument.invoiceNumber : undefined;

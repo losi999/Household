@@ -75,8 +75,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
           let inventoryCategoryDocument: Documents.Category;
           let invoiceCategoryDocument: Documents.Category;
           let secondaryCategoryDocument: Documents.Category;
-          let productDocument: Product.Document;
-          let secondaryProductDocument: Product.Document;
+          let productDocument: Documents.Product;
+          let secondaryProductDocument: Documents.Product;
 
           let splitTransactionDocument: Transaction.SplitDocument;
           let includedPaymentTransactionDocument: Transaction.PaymentDocument;

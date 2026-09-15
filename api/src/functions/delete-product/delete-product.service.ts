@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IProductService } from '@household/shared/services/product-service';
-import { Product } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeleteProductService {
   (ctx: {
-    productId: Product.Id;
+    productId: Api.Product.Id;
   }): Promise<unknown>;
 }
 

@@ -117,8 +117,8 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
                 },
               });
 
-              let productDocument: Product.Document;
-              let unrelatedProductDocument: Product.Document;
+              let productDocument: Documents.Product;
+              let unrelatedProductDocument: Documents.Product;
 
               if (categoryType === CategoryType.Inventory) {
                 productDocument = productDataFactory.document({

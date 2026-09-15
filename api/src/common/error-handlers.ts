@@ -2,7 +2,7 @@ import { GroupType } from '@aws-sdk/client-cognito-identity-provider';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey, UserType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Calendar, Common, Customer, File, Price, Product, Setting, Transaction, User } from '@household/shared/types/types';
+import { Calendar, Common, Customer, File, Price, Setting, Transaction, User } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
@@ -222,7 +222,7 @@ export const httpErrors = {
       log('Get category', ctx, error);
       throw httpError(statusCode, 'Error while getting category');
     },
-    getByProductIds: (ctx: Product.Id[], statusCode = 500): CatchAndThrow => (error) => {
+    getByProductIds: (ctx: Api.Product.Id[], statusCode = 500): CatchAndThrow => (error) => {
       log('Get category by product Ids', ctx, error);
       throw httpError(statusCode, 'Error while getting category by product Ids');
     },
@@ -379,7 +379,7 @@ export const httpErrors = {
     },
   },
   product: {
-    save: (doc: Product.Document, statusCode = 500): CatchAndThrow => (error) => {
+    save: (doc: Documents.Product, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate product name', doc, error);
         throw httpError(400, 'Duplicate product name');
@@ -388,7 +388,7 @@ export const httpErrors = {
       log('Save product', doc, error);
       throw httpError(statusCode, 'Error while saving product');
     },
-    getById: (ctx: Product.ProductId, statusCode = 500): CatchAndThrow => (error) => {
+    getById: (ctx: Api.Product.ProductId, statusCode = 500): CatchAndThrow => (error) => {
       log('Get product', ctx, error);
       throw httpError(statusCode, 'Error while getting product');
     },
@@ -396,33 +396,33 @@ export const httpErrors = {
       log('List products', undefined, error);
       throw httpError(statusCode, 'Error while listing products');
     },
-    listByIds: (ctx: Product.Id[], statusCode = 500): CatchAndThrow => (error) => {
+    listByIds: (ctx: Api.Product.Id[], statusCode = 500): CatchAndThrow => (error) => {
       log('List products by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing products by ids');
     },
-    notFound: (ctx: Product.ProductId & {product: Product.Document}, statusCode = 404) => {
+    notFound: (ctx: Api.Product.ProductId & {product: Documents.Product}, statusCode = 404) => {
       if (ctx.productId && !ctx.product) {
         log('No product found', ctx);
         throw httpError(statusCode, 'No product found');
       }
     },
-    multipleNotFound: (ctx: { productIds: Product.Id[]; products: Product.Document[] }, statusCode = 400) => {
+    multipleNotFound: (ctx: { productIds: Api.Product.Id[]; products: Documents.Product[] }, statusCode = 400) => {
       if (ctx.productIds.length !== ctx.products.length) {
         log('Some of the products are not found', ctx);
         throw httpError(statusCode, 'Some of the products are not found');
       }
     },
-    delete: (ctx: Product.ProductId, statusCode = 500): CatchAndThrow => (error) => {
+    delete: (ctx: Api.Product.ProductId, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete product', ctx, error);
       throw httpError(statusCode, 'Error while deleting product');
     },
-    categoryRelation: (ctx: Api.Category.CategoryId & {product: Product.Document}, statusCode = 400) => {
+    categoryRelation: (ctx: Api.Category.CategoryId & {product: Documents.Product}, statusCode = 400) => {
       if (getCategoryId(ctx.product.category) !== ctx.categoryId) {
         log('Product belongs to different category', ctx);
         throw httpError(statusCode, 'Product belongs to different category');
       }
     },
-    update: (ctx: Product.ProductId & {update: UpdateQuery<Product.Document>}, statusCode = 500): CatchAndThrow => (error) => {
+    update: (ctx: Api.Product.ProductId & {update: UpdateQuery<Documents.Product>}, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate product name', ctx, error);
         throw httpError(400, 'Duplicate product name');
@@ -431,13 +431,13 @@ export const httpErrors = {
       log('Update product', ctx, error);
       throw httpError(statusCode, 'Error while updating product');
     },
-    mergeTargetAmongSource: (ctx: {target: Product.Id; source: Product.Id[]}, statusCode = 400) => {
+    mergeTargetAmongSource: (ctx: {target: Api.Product.Id; source: Api.Product.Id[]}, statusCode = 400) => {
       if (ctx.source.includes(ctx.target)) {
         log('Target product is among the source product Ids', ctx);
         throw httpError(statusCode, 'Target product is among the source product Ids');
       }
     },
-    notSameCategory: (products: Product.Document[], statusCode = 400) => {
+    notSameCategory: (products: Documents.Product[], statusCode = 400) => {
       const categoryId = getCategoryId(products[0].category);
 
       if (!products.every(p => getCategoryId(p.category) === categoryId)) {
@@ -446,8 +446,8 @@ export const httpErrors = {
       }
     },
     merge: (ctx: {
-      targetProductId: Product.Id;
-      sourceProductIds: Product.Id[];
+      targetProductId: Api.Product.Id;
+      sourceProductIds: Api.Product.Id[];
     }, statusCode = 500): CatchAndThrow => (error) => {
       log('Merge products', ctx, error);
       throw httpError(statusCode, 'Error while merging products');

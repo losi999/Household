@@ -1296,6 +1296,317 @@
           }
         }
       }
+    },
+    "/product/v1/categories/{categoryId}/products": {
+      "post": {
+        "tags": [
+          "Product"
+        ],
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "brand": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "measurement": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "unitOfMeasurement": {
+                    "type": "string",
+                    "enum": [
+                      "cm",
+                      "db",
+                      "g",
+                      "kg",
+                      "l",
+                      "m",
+                      "ml"
+                    ]
+                  }
+                },
+                "required": [
+                  "brand",
+                  "measurement",
+                  "unitOfMeasurement"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "productId"
+                  ],
+                  "properties": {
+                    "productId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/product/v1/products": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of products grouped by category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "categoryId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "fullName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "products": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "brand": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "measurement": {
+                              "type": "number",
+                              "exclusiveMinimum": 0
+                            },
+                            "unitOfMeasurement": {
+                              "type": "string",
+                              "enum": [
+                                "cm",
+                                "db",
+                                "g",
+                                "kg",
+                                "l",
+                                "m",
+                                "ml"
+                              ]
+                            },
+                            "productId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "fullName": {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          },
+                          "required": [
+                            "brand",
+                            "measurement",
+                            "unitOfMeasurement",
+                            "productId",
+                            "fullName"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "categoryId",
+                      "fullName",
+                      "products"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/product/v1/products/{productId}": {
+      "put": {
+        "tags": [
+          "Product"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "brand": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "measurement": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "unitOfMeasurement": {
+                    "type": "string",
+                    "enum": [
+                      "cm",
+                      "db",
+                      "g",
+                      "kg",
+                      "l",
+                      "m",
+                      "ml"
+                    ]
+                  }
+                },
+                "required": [
+                  "brand",
+                  "measurement",
+                  "unitOfMeasurement"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "productId"
+                  ],
+                  "properties": {
+                    "productId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Product"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Product deleted"
+          }
+        }
+      }
+    },
+    "/product/v1/products/{productId}/merge": {
+      "post": {
+        "tags": [
+          "Product"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{24}$"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Products merged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "productId"
+                  ],
+                  "properties": {
+                    "productId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

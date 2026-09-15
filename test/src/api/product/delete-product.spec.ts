@@ -26,7 +26,7 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(productApiTest, accountDbTest, transactionDbTest, categoryDbTest, productDbTest);
 
 test.describe('DELETE /product/v1/products/{productId}', () => {
-  let productDocument: Product.Document;
+  let productDocument: Documents.Product;
   let categoryDocument: Documents.Category;
 
   test.beforeEach(async () => {
@@ -70,7 +70,7 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
         });
 
         test.describe('in related transactions inventory', () => {
-          let unrelatedProductDocument: Product.Document;
+          let unrelatedProductDocument: Documents.Product;
           let paymentTransactionDocument: Transaction.PaymentDocument;
           let deferredTransactionDocument: Transaction.DeferredDocument;
           let reimbursementTransactionDocument: Transaction.ReimbursementDocument;

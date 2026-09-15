@@ -1,7 +1,7 @@
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Auth, Calendar, Customer, File, Price, Product, Report, Setting, Transaction, User } from '@household/shared/types/types';
+import { Auth, Calendar, Customer, File, Price, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -35,7 +35,7 @@ export const createTransactionId = (id?: string): Transaction.Id => {
   return createId(id);
 };
 
-export const createProductId = (id?: string): Product.Id => {
+export const createProductId = (id?: string): Api.Product.Id => {
   return createId(id);
 };
 
@@ -87,7 +87,7 @@ export const createRecipientDocument: DataFactoryFunction<Documents.Recipient> =
   };
 };
 
-export const createProductDocument: DataFactoryFunction<Product.Document> = (doc) => {
+export const createProductDocument: DataFactoryFunction<Documents.Product> = (doc) => {
   return {
     _id: createId(),
     brand: 'product brand',
@@ -290,7 +290,7 @@ export const createRecipientRequest: DataFactoryFunction<Requests.Recipient> = (
   };
 };
 
-export const createProductRequest: DataFactoryFunction<Product.Request> = (req) => {
+export const createProductRequest: DataFactoryFunction<Requests.Product> = (req) => {
   return {
     brand: 'product brand',
     measurement: 300,
@@ -540,7 +540,7 @@ export const createRecipientResponse: DataFactoryFunction<Responses.Recipient> =
   };
 };
 
-export const createProductResponse: DataFactoryFunction<Product.Response> = (resp) => {
+export const createProductResponse: DataFactoryFunction<Responses.Product> = (resp) => {
   return {
     productId: createProductId(),
     brand: 'product brand',
@@ -551,7 +551,7 @@ export const createProductResponse: DataFactoryFunction<Product.Response> = (res
   };
 };
 
-export const createProductGroupedResponse: DataFactoryFunction<Product.GroupedResponse> = (resp) => {
+export const createProductGroupedResponse: DataFactoryFunction<Responses.ProductGroupedResponse> = (resp) => {
   return {
     fullName: 'category:name',
     categoryId: createCategoryId(),
@@ -694,7 +694,7 @@ export const createProjectReport: DataFactoryFunction<Responses.ProjectReport> =
   };
 };
 
-export const createProductReport: DataFactoryFunction<Product.Report> = (rep) => {
+export const createProductReport: DataFactoryFunction<Responses.ProductReport> = (rep) => {
   return {
     productId: createProductId(),
     fullName: 'product name 100 g',

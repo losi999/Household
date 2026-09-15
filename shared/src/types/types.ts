@@ -196,6 +196,7 @@ export namespace Category {
   //   & ParentCategoryId;
 }
 
+/** @deprecated */
 export namespace Product {
   export type Id = Branding<string, 'product'>;
 
@@ -232,7 +233,7 @@ export namespace Product {
   export type Report = ProductId
     & FullName;
 
-  export type Request = Base;
+  // export type Request = Base;
 }
 
 export namespace Transaction {

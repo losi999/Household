@@ -1,8 +1,8 @@
 import { unitsOfMeasurement } from '@household/shared/constants';
-import { Product } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-export const productSchema = new Schema<Product.Document>({
+export const productSchema = new Schema<Documents.Product>({
   unitOfMeasurement: {
     type: String,
     enum: [...unitsOfMeasurement],

@@ -135,9 +135,9 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
                   categoryType,
                 },
               });
-              let productOfSourceCategoryDocument: Product.Document;
-              let productOfTargetCategoryDocument: Product.Document;
-              let unrelatedProductDocument: Product.Document;
+              let productOfSourceCategoryDocument: Documents.Product;
+              let productOfTargetCategoryDocument: Documents.Product;
+              let unrelatedProductDocument: Documents.Product;
 
               if (categoryType === CategoryType.Inventory) {
                 productOfSourceCategoryDocument = productDataFactory.document({

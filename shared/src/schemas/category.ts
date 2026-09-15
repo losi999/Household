@@ -53,7 +53,7 @@ const parentCategoryId: ObjectSchema<Api.Category.ParentCategoryId> = {
   },
 };
 
-const fullName: ObjectSchema<Api.Category.FullName> = {
+export const fullName: ObjectSchema<Api.Category.FullName> = {
   type: 'object',
   additionalProperties: false,
   required: ['fullName'],

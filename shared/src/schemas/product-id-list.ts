@@ -1,8 +1,9 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Product } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { default as productId } from '@household/shared/schemas/product-id';
 
-const schema: StrictJSONSchema7<Product.Id[]> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Api.Product.Id[]> = {
   type: 'array',
   minItems: 1,
   items: {

@@ -107,7 +107,7 @@ export const expect = baseExpect.extend({
   toHaveRelatedDocumentsChangedInSplitTransaction(originalDocument: Transaction.SplitDocument, currentDocument: Transaction.SplitDocument, reassignments: {
     recipient?: Reassignment<Api.Recipient.Id>;
     project?: Reassignment<Api.Project.Id>;
-    product?: Reassignment<Product.Id>;
+    product?: Reassignment<Api.Product.Id>;
     category?: Reassignment<Documents.Category>;
   }) {
 
@@ -124,7 +124,7 @@ export const expect = baseExpect.extend({
         let expectedInvoiceNumber: string;
         let expectedBillingStartDate: string;
         let expectedBillingEndDate: string;
-        let expectedProduct: Product.Id;
+        let expectedProduct: Api.Product.Id;
         let expectedCategory: Api.Category.Id;
 
         if (reassignments.category && getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from)) {
@@ -161,7 +161,7 @@ export const expect = baseExpect.extend({
         let expectedInvoiceNumber: string;
         let expectedBillingStartDate: string;
         let expectedBillingEndDate: string;
-        let expectedProduct: Product.Id;
+        let expectedProduct: Api.Product.Id;
         let expectedCategory: Api.Category.Id;
 
         if (reassignments.category && getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from)) {

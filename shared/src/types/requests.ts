@@ -5,4 +5,5 @@ export namespace Requests {
   export type Project = Api.Project.Base;
   export type Recipient = Api.Recipient.Base;
   export type Category = Api.Category.Base & Api.Category.ParentCategoryId;
+  export type Product = Api.Product.Base;
 }

@@ -43,4 +43,16 @@ export namespace Responses {
 
   export type CategoryReport = Api.Category.CategoryId &
     Api.Category.FullName;
+
+  export type Product = Api.Product.Base &
+    Api.Product.ProductId &
+    Api.Product.FullName;
+
+  export type ProductReport = Api.Product.ProductId &
+    Api.Product.FullName;
+
+  export type ProductGroupedResponse = Api.Category.CategoryId &
+    Api.Category.FullName & {
+      products: Product[];
+    };
 }

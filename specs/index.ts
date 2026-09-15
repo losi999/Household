@@ -23,6 +23,11 @@ import { getCategory } from './paths/category/get-category';
 import { updateCategory } from './paths/category/update-category';
 import { deleteCategory } from './paths/category/delete-category';
 import { mergeCategories } from './paths/category/merge-categories';
+import { createProduct } from './paths/product/create-product';
+import { listProducts } from './paths/product/list-products';
+import { updateProduct } from './paths/product/update-product';
+import { deleteProduct } from './paths/product/delete-product';
+import { mergeProducts } from './paths/product/merge-products';
 
 const document = new OpenApiBuilder()
   .addOpenApiVersion('3.1.0')
@@ -74,6 +79,19 @@ const document = new OpenApiBuilder()
   })
   .addPath('/category/v1/categories/{categoryId}/merge', {
     ...mergeCategories,
+  })
+  .addPath('/product/v1/categories/{categoryId}/products', {
+    ...createProduct,
+  })
+  .addPath('/product/v1/products', {
+    ...listProducts,
+  })
+  .addPath('/product/v1/products/{productId}', {
+    ...updateProduct,
+    ...deleteProduct,
+  })
+  .addPath('/product/v1/products/{productId}/merge', {
+    ...mergeProducts,
   });
 
 writeFileSync('specs/household.json', document.getSpecAsJson(undefined, 2));

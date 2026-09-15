@@ -29,9 +29,9 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
   let accountDocument: Documents.Account;
   let loanAccountDocument: Documents.Account;
   let categoryDocument: Documents.Category;
-  let targetProductDocument: Product.Document;
-  let sourceProductDocument: Product.Document;
-  let unrelatedProductDocument: Product.Document;
+  let targetProductDocument: Documents.Product;
+  let sourceProductDocument: Documents.Product;
+  let unrelatedProductDocument: Documents.Product;
   let paymentTransactionDocument: Transaction.PaymentDocument;
   let deferredTransactionDocument: Transaction.DeferredDocument;
   let reimbursementTransactionDocument: Transaction.ReimbursementDocument;

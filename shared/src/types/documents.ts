@@ -1,5 +1,4 @@
 import { Api } from '@household/shared/types/api';
-import { Product } from '@household/shared/types/types';
 import type { Types } from 'mongoose';
 
 export namespace Documents {
@@ -21,6 +20,10 @@ export namespace Documents {
 
   export type Category = Id & Timestamps & Api.Category.Base & {
     ancestors: Category[];
-    products?: Product.Document[];
+    products?: Product[];
+  };
+
+  export type Product = Id & Timestamps & Api.Product.Base & Api.Product.FullName & {
+    category: Category;
   };
 }

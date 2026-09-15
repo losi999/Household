@@ -11,7 +11,7 @@ export const reimbursementTransactionDataFactory = (() => {
     account: Documents.Account;
     loanAccount: Documents.Account;
     category?: Documents.Category;
-    product?: Product.Document;
+    product?: Documents.Product;
     project?: Documents.Project;
     recipient?: Documents.Recipient;
   }): Transaction.ReimbursementDocument => {
