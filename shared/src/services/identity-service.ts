@@ -1,21 +1,22 @@
-import { Auth, User } from '@household/shared/types/types';
 import { AdminGetUserResponse, AdminListGroupsForUserResponse, AuthFlowType, ListUsersInGroupResponse, MessageActionType, type AdminInitiateAuthResponse, type CognitoIdentityProvider, type ListUsersResponse } from '@aws-sdk/client-cognito-identity-provider';
 import { UserType } from '@household/shared/enums';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IIdentityService {
-  login(body: Auth.Login.Request): Promise<AdminInitiateAuthResponse>;
-  createUser(body: User.Email & Partial<Auth.Password & Auth.TemporaryPassword>, userType?: UserType, suppressEmail?: boolean): Promise<unknown>;
-  deleteUser(ctx: User.Email): Promise<unknown>;
-  refreshToken(body: Auth.RefreshToken.Request): Promise<AdminInitiateAuthResponse>;
-  getUser(ctx: User.Email): Promise<AdminGetUserResponse>;
+  login(body: Requests.Login): Promise<AdminInitiateAuthResponse>;
+  createUser(body: Api.User.Email & Partial<Api.Auth.Password & Api.Auth.TemporaryPassword>, userType?: UserType, suppressEmail?: boolean): Promise<unknown>;
+  deleteUser(ctx: Api.User.Email): Promise<unknown>;
+  refreshToken(body: Requests.RefreshToken): Promise<AdminInitiateAuthResponse>;
+  getUser(ctx: Api.User.Email): Promise<AdminGetUserResponse>;
   listUsers(): Promise<ListUsersResponse>;
   listUsersByGroupName(userType: UserType): Promise<ListUsersInGroupResponse>;
   listGroupsByUser(email: string): Promise<AdminListGroupsForUserResponse>;
   addUserToGroup(email: string, userType: UserType): Promise<unknown>;
   removeUserFromGroup(email: string, userType: UserType): Promise<unknown>;
-  forgotPassword(body: Auth.ForgotPassword.Request): Promise<unknown>;
-  confirmUser(ctx: User.Email & Auth.ConfirmUser.Request): Promise<any>;
-  confirmForgotPassword(ctx: User.Email & Auth.ConfirmForgotPassword.Request): Promise<unknown>;
+  forgotPassword(body: Requests.ForgotPassword): Promise<unknown>;
+  confirmUser(ctx: Api.User.Email & Requests.ConfirmUser): Promise<any>;
+  confirmForgotPassword(ctx: Api.User.Email & Requests.ConfirmForgotPassword): Promise<unknown>;
 }
 
 export const identityServiceFactory = (

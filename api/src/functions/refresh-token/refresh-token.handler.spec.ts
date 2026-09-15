@@ -1,7 +1,7 @@
 import { default as handler } from '@household/api/functions/refresh-token/refresh-token.handler';
 import { IRefreshTokenService } from '@household/api/functions/refresh-token/refresh-token.service';
 import { MockBusinessService } from '@household/shared/common/unit-testing';
-import { Auth } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 describe('Refresh token handler', () => {
   let mockRefreshTokenLoginService: MockBusinessService<IRefreshTokenService>;
@@ -35,7 +35,7 @@ describe('Refresh token handler', () => {
     const handlerEvent = {
       body: '{}',
     } as AWSLambda.APIGatewayProxyEvent;
-    const tokens: Auth.RefreshToken.Response = {
+    const tokens: Responses.RefreshToken = {
       idToken: 'some.id.token',
     };
     mockRefreshTokenLoginService.mockResolvedValue(tokens);

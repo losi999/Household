@@ -55,4 +55,24 @@ export namespace Responses {
     Api.Category.FullName & {
       products: Product[];
     };
+
+  export type File = Api.File.FileId &
+    Api.File.FileType &
+    Api.File.DraftCount &
+    Api.File.UploadedAt;
+
+  export type FileUploadUrl = Api.File.FileId &
+    Api.File.Url;
+
+  export type Setting = Api.Setting.SettingKey &
+    Api.Setting.Value;
+
+  export type User = Api.User.Email &
+    Api.User.Status &
+    Api.User.Groups;
+
+  export type Login = Api.Auth.IdToken &
+    Api.Auth.RefreshToken;
+
+  export type RefreshToken = Api.Auth.IdToken;
 }

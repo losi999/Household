@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { User } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateUserService {
   (ctx: {
-    body: User.Request;
+    body: Requests.User;
     suppressEmail: boolean;
   }): Promise<unknown>;
 }

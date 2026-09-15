@@ -2,7 +2,7 @@ import { GroupType } from '@aws-sdk/client-cognito-identity-provider';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey, UserType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Calendar, Common, Customer, File, Price, Setting, Transaction, User } from '@household/shared/types/types';
+import { Calendar, Common, Customer, Price, Transaction } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
@@ -40,7 +40,7 @@ export const httpErrors = {
       log('List transactions by account', ctx, error);
       throw httpError(statusCode, 'Error while getting transactions');
     },
-    listByFileId: (ctx: File.FileId, statusCode = 500): CatchAndThrow => (error) => {
+    listByFileId: (ctx: Api.File.FileId, statusCode = 500): CatchAndThrow => (error) => {
       log('List transactions by file', ctx, error);
       throw httpError(statusCode, 'Error while getting transactions');
     },
@@ -458,32 +458,30 @@ export const httpErrors = {
       log('List files', undefined, error);
       throw httpError(statusCode, 'Error while listing files');
     },
-    save: (doc: File.Document, statusCode = 500): CatchAndThrow => (error) => {
+    save: (doc: Documents.File, statusCode = 500): CatchAndThrow => (error) => {
       log('Save file', doc, error);
       throw httpError(statusCode, 'Error while saving file document');
     },
-    getById: (ctx: File.FileId, statusCode = 500): CatchAndThrow => (error) => {
+    getById: (ctx: Api.File.FileId, statusCode = 500): CatchAndThrow => (error) => {
       log('Get file', ctx, error);
       throw httpError(statusCode, 'Error while getting file document');
     },
-    delete: (ctx: File.FileId, statusCode = 500): CatchAndThrow => (error) => {
+    delete: (ctx: Api.File.FileId, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete file', ctx, error);
       throw httpError(statusCode, 'Error while deleting file');
     },
-    readFile: (ctx: {
-      fileId: string;
-    }, statusCode = 500): CatchAndThrow => (error) => {
+    readFile: (ctx: Api.File.FileId, statusCode = 500): CatchAndThrow => (error) => {
       log('Read file', ctx, error);
       throw httpError(statusCode, 'Error while reading file');
     },
-    getUploadUrl: (ctx: File.FileType & File.FileId, statusCode = 500): CatchAndThrow => (error) => {
+    getUploadUrl: (ctx: Api.File.FileType & Api.File.FileId, statusCode = 500): CatchAndThrow => (error) => {
       log('Get upload URL', ctx, error);
       throw httpError(statusCode, 'Error while getting URL for file upload');
     },
-    deleteFile: (ctx: File.FileId): CatchAndLog => (error) => {
+    deleteFile: (ctx: Api.File.FileId): CatchAndLog => (error) => {
       log('Delete file from S3', ctx, error);
     },
-    update: (ctx: File.FileId & UpdateQuery<File.Document>, statusCode = 500): CatchAndThrow => (error) => {
+    update: (ctx: Api.File.FileId & UpdateQuery<Documents.File>, statusCode = 500): CatchAndThrow => (error) => {
       log('Update file', ctx, error);
       throw httpError(statusCode, 'Error while updating file document');
     },
@@ -493,11 +491,11 @@ export const httpErrors = {
       log('List settings', ctx, error);
       throw httpError(statusCode, 'Error while listing settings');
     },
-    delete: (ctx: Setting.SettingKey, statusCode = 500): CatchAndThrow => (error) => {
+    delete: (ctx: Api.Setting.SettingKey, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete setting', ctx, error);
       throw httpError(statusCode, 'Error while deleting setting');
     },
-    update: (ctx: Setting.SettingKey & UpdateQuery<Setting.Document>, statusCode = 500): CatchAndThrow => (error) => {
+    update: (ctx: Api.Setting.SettingKey & UpdateQuery<Documents.Setting>, statusCode = 500): CatchAndThrow => (error) => {
       log('Update setting', ctx, error);
       throw httpError(statusCode, 'Error while updating setting document');
     },
@@ -721,7 +719,7 @@ export const httpErrors = {
     },
   },
   cognito: {
-    createUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+    createUser: (ctx: Api.User.Email, statusCode = 500): CatchAndThrow => (error) => {
       if (error.name === 'UsernameExistsException') {
         log('Duplicate user email', ctx, error);
         throw httpError(400, 'Duplicate user email');
@@ -729,15 +727,15 @@ export const httpErrors = {
       log('Create user in cognito', ctx, error);
       throw httpError(statusCode, 'Error while creating user in cognito');
     },
-    confirmUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+    confirmUser: (ctx: Api.User.Email, statusCode = 500): CatchAndThrow => (error) => {
       log('Confirm user in cognito', ctx, error);
       throw httpError(statusCode, 'Error while confirming user in cognito');
     },
-    confirmForgotPassword: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+    confirmForgotPassword: (ctx: Api.User.Email, statusCode = 500): CatchAndThrow => (error) => {
       log('Confirm forgot password in cognito', ctx, error);
       throw httpError(statusCode, 'Error while confirming forgot password in cognito');
     },
-    deleteUser: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+    deleteUser: (ctx: Api.User.Email, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete user from cognito', ctx, error);
       throw httpError(statusCode, 'Error while deleting user from cognito');
     },
@@ -761,7 +759,7 @@ export const httpErrors = {
       log('Remove user from group in cognito', undefined, error);
       throw httpError(statusCode, 'Error while removing user from group in cognito');
     },
-    login: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+    login: (ctx: Api.User.Email, statusCode = 500): CatchAndThrow => (error) => {
       if (error.name === 'NotAuthorizedException') {
         log('Incorrect email or password', ctx, error);
         throw httpError(401, 'Incorrect email or password');
@@ -773,7 +771,7 @@ export const httpErrors = {
       log('Refresh token', error);
       throw httpError(statusCode, 'Error while getting refresh token');
     },
-    forgotPassword: (ctx: User.Email, statusCode = 500): CatchAndThrow => (error) => {
+    forgotPassword: (ctx: Api.User.Email, statusCode = 500): CatchAndThrow => (error) => {
       log('Forgot password', ctx, error);
       throw httpError(statusCode, 'Error while resetting password');
     },

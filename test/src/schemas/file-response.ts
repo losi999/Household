@@ -1,9 +1,9 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { File } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { default as fileId } from '@household/shared/schemas/file-id';
 import { default as file } from '@household/shared/schemas/file-request';
 
-const schema: StrictJSONSchema7<File.Response> = {
+const schema: StrictJSONSchema7<Responses.File> = {
   type: 'object',
   additionalProperties: false,
   required: [

@@ -1,7 +1,8 @@
 import { ILoginService, loginServiceFactory } from '@household/api/functions/login/login.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
 import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { Auth } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 describe('Login service', () => {
   let service: ILoginService;
@@ -14,7 +15,7 @@ describe('Login service', () => {
   });
 
   it('should return with login credentials', async () => {
-    const body = {} as Auth.Login.Request;
+    const body = {} as Requests.Login;
     const idToken = 'some.id.token';
     const refreshToken = 'some.refresh.token';
 
@@ -25,7 +26,7 @@ describe('Login service', () => {
       },
     });
 
-    const expectedResult: Auth.Login.Response = {
+    const expectedResult: Responses.Login = {
       idToken,
       refreshToken,
     };
@@ -38,7 +39,7 @@ describe('Login service', () => {
   });
 
   it('should throw error if unable to login', async () => {
-    const body = {} as Auth.Login.Request;
+    const body = {} as Requests.Login;
 
     mockIdentityService.functions.login.mockRejectedValue('This is a cognito error');
 

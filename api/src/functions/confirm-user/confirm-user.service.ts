@@ -1,11 +1,12 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Auth, User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IConfirmUserService {
   (ctx: {
-    body: Auth.ConfirmUser.Request;
-  } & User.Email): Promise<unknown>;
+    body: Requests.ConfirmUser;
+  } & Api.User.Email): Promise<unknown>;
 }
 
 export const confirmUserServiceFactory = (identityService: IIdentityService): IConfirmUserService => {

@@ -1,9 +1,9 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Setting } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { default as settingKey } from '@household/shared/schemas/setting-key';
 import { default as setting } from '@household/shared/schemas/setting-request';
 
-const schema: StrictJSONSchema7<Setting.Response> = {
+const schema: StrictJSONSchema7<Responses.Setting> = {
   type: 'object',
   additionalProperties: false,
   required: [

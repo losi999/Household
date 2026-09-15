@@ -22,7 +22,7 @@ type TransactionApiFixture = {
   requestGetTransaction(accountId: Api.Account.Id, transactionId: Transaction.Id): Promise<APIResponse>;
   requestGetTransactionListByAccount(accountId: Api.Account.Id, querystring?: Partial<Common.Pagination<number>>): Promise<APIResponse>;
   requestGetTransactionReports(report: Report.Request): Promise<APIResponse>;
-  requestGetTransactionListByFile(fileId: File.Id): Promise<APIResponse>;
+  requestGetTransactionListByFile(fileId: Api.File.Id): Promise<APIResponse>;
 };
 
 export const test = baseTest.extend<TransactionApiFixture>({
@@ -152,7 +152,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestGetTransactionListByFile: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (fileId: File.Id) => {
+    const fn = async (fileId: Api.File.Id) => {
       return loggedRequest.get(`${process.env.BASE_URL}/transaction/v1/files/${fileId}/transactions`, {
         headers: {
           Authorization: authToken, 

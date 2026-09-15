@@ -1,6 +1,7 @@
 import { Branding } from '@household/shared/types/common';
 import * as Enum from '@household/shared/enums';
 import { unitsOfMeasurement } from '@household/shared/constants';
+import type { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
 
 export namespace Api {
   export type IsArchived = {
@@ -127,5 +128,93 @@ export namespace Api {
     };
 
     export type Base = Brand & Measurement & UnitOfMeasurement;
+  }
+
+  export namespace File {
+    export type Id = Branding<string, 'file'>;
+
+    export type FileId = {
+      fileId: Id;
+    };
+
+    export type FileType = {
+      fileType: Enum.FileType;
+    };
+
+    export type Timezone = {
+      timezone: string;
+    };
+
+    export type Url = {
+      url: string;
+    };
+
+    export type ProcessingStatus = {
+      processingStatus: Enum.FileProcessingStatus;
+    };
+
+    export type DraftCount = {
+      draftCount: number;
+    };
+
+    export type UploadedAt = {
+      uploadedAt: string;
+    };
+
+    export type Base = FileType & Timezone;
+  }
+
+  export namespace Setting {
+    export type SettingKey = {
+      settingKey: Enum.SettingKey;
+    };
+
+    export type Value = {
+      value: string | number | boolean;
+    };
+  }
+
+  export namespace User {
+    export type Email = {
+      email: string;
+    };
+
+    export type Group = {
+      group: Enum.UserType;
+    };
+
+    export type Status = {
+      status: UserStatusType;
+    };
+
+    export type Groups = {
+      groups: Enum.UserType[];
+    };
+  }
+
+  export namespace Auth {
+    export type Password = {
+      password: string;
+    };
+
+    export type TemporaryPassword = {
+      temporaryPassword: string;
+    };
+
+    export type ConfirmationCode = {
+      confirmationCode: string;
+    };
+
+    export type RequiredUserType = {
+      requiredUserType?: Enum.UserType;
+    };
+
+    export type IdToken = {
+      idToken: string;
+    };
+
+    export type RefreshToken = {
+      refreshToken: string;
+    };
   }
 }

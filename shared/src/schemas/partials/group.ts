@@ -1,8 +1,9 @@
 import { UserType } from '@household/shared/enums';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
-const schema: StrictJSONSchema7<User.Group> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Api.User.Group> = {
   type: 'object',
   required: ['group'],
   additionalProperties: false,

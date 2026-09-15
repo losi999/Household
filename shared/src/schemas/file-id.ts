@@ -1,8 +1,9 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { File } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { default as mongoId } from '@household/shared/schemas/partials/mongo-id';
 
-const schema: StrictJSONSchema7<File.FileId> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Api.File.FileId> = {
   type: 'object',
   additionalProperties: false,
   required: ['fileId'],

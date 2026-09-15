@@ -1,7 +1,7 @@
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Auth, Calendar, Customer, File, Price, Report, Setting, Transaction, User } from '@household/shared/types/types';
+import { Calendar, Customer, Price, Report, Transaction } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -39,7 +39,7 @@ export const createProductId = (id?: string): Api.Product.Id => {
   return createId(id);
 };
 
-export const createFileId = (id?: string): File.Id => {
+export const createFileId = (id?: string): Api.File.Id => {
   return createId(id);
 };
 
@@ -386,7 +386,7 @@ export const createTransferPaymentItemRequest: DataFactoryFunction<Transaction.T
   };
 };
 
-export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req) => {
+export const createLoginRequest: DataFactoryFunction<Requests.Login> = (req) => {
   return {
     email: 'aaa@email.com',
     password: 'password123',
@@ -394,7 +394,7 @@ export const createLoginRequest: DataFactoryFunction<Auth.Login.Request> = (req)
   };
 };
 
-export const createConfirmUserRequest: DataFactoryFunction<Auth.ConfirmUser.Request> = (req) => {
+export const createConfirmUserRequest: DataFactoryFunction<Requests.ConfirmUser> = (req) => {
   return {
     temporaryPassword: 'temp123',
     password: 'password123',
@@ -402,7 +402,7 @@ export const createConfirmUserRequest: DataFactoryFunction<Auth.ConfirmUser.Requ
   };
 };
 
-export const createConfirmForgotPasswordRequest: DataFactoryFunction<Auth.ConfirmForgotPassword.Request> = (req) => {
+export const createConfirmForgotPasswordRequest: DataFactoryFunction<Requests.ConfirmForgotPassword> = (req) => {
   return {
     confirmationCode: '123456',
     password: 'password123',
@@ -488,14 +488,14 @@ export const createProjectResponse: DataFactoryFunction<Responses.Project> = (re
   };
 };
 
-export const createSettingRequest: DataFactoryFunction<Setting.Request> = (doc) => {
+export const createSettingRequest: DataFactoryFunction<Requests.Setting> = (doc) => {
   return {
     value: 123,
     ...doc,
   };
 };
 
-export const createSettingDocument: DataFactoryFunction<Setting.Document> = (doc) => {
+export const createSettingDocument: DataFactoryFunction<Documents.Setting> = (doc) => {
   return {
     settingKey: createSettingKey(),
     value: 123,
@@ -504,7 +504,7 @@ export const createSettingDocument: DataFactoryFunction<Setting.Document> = (doc
   };
 };
 
-export const createSettingResponse: DataFactoryFunction<Setting.Response> = (resp) => {
+export const createSettingResponse: DataFactoryFunction<Responses.Setting> = (resp) => {
   return {
     settingKey: createSettingKey(),
     value: 123,
@@ -729,7 +729,7 @@ export const createTransactionReport: DataFactoryFunction<Transaction.Report> = 
   };
 };
 
-export const createFileRequest: DataFactoryFunction<File.Request> = (req) => {
+export const createFileRequest: DataFactoryFunction<Requests.File> = (req) => {
   return {
     timezone: 'Europe/Budapest',
     fileType: FileType.Otp,
@@ -737,7 +737,7 @@ export const createFileRequest: DataFactoryFunction<File.Request> = (req) => {
   };
 };
 
-export const createFileDocument: DataFactoryFunction<File.Document> = (doc) => {
+export const createFileDocument: DataFactoryFunction<Documents.File> = (doc) => {
   return {
     _id: createId(),
     expiresAt: undefined,
@@ -747,7 +747,7 @@ export const createFileDocument: DataFactoryFunction<File.Document> = (doc) => {
   };
 };
 
-export const createFileResponse: DataFactoryFunction<File.Response> = (doc) => {
+export const createFileResponse: DataFactoryFunction<Responses.File> = (doc) => {
   return {
     fileId: createFileId(),
     draftCount: 0,
@@ -768,7 +768,7 @@ export const createDocumentUpdate: DataFactoryFunction<DocumentUpdate<any>> = (u
   };
 };
 
-export const createUserResponse: DataFactoryFunction<User.Response> = (resp) => {
+export const createUserResponse: DataFactoryFunction<Responses.User> = (resp) => {
   return {
     email: 'user@email.com',
     status: 'CONFIRMED',

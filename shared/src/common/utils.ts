@@ -1,7 +1,7 @@
 import { WORKDAY_LENGTH } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Dictionary } from '@household/shared/types/common';
-import { Calendar, Customer, File, Internal, Price, Transaction } from '@household/shared/types/types';
+import { Calendar, Customer, Internal, Price, Transaction } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { PopulateOptions, Types } from 'mongoose';
@@ -87,7 +87,7 @@ export const getRecipientId = (doc: Documents.Recipient | Types.ObjectId): Api.R
 export const getCustomerId = (doc: Customer.Document | Types.ObjectId): Customer.Id => getId(doc) as Customer.Id;
 export const getProductId = (doc: Documents.Product | Types.ObjectId): Api.Product.Id => getId(doc) as Api.Product.Id;
 export const getCategoryId = (doc: Documents.Category | Types.ObjectId): Api.Category.Id => getId(doc) as Api.Category.Id;
-export const getFileId = (doc: File.Document | Types.ObjectId): File.Id => getId(doc) as File.Id;
+export const getFileId = (doc: Documents.File | Types.ObjectId): Api.File.Id => getId(doc) as Api.File.Id;
 export const getPriceId = (doc: Price.Document | Types.ObjectId): Price.Id => getId(doc) as Price.Id;
 export const getCalendarEntryId = (doc: Calendar.Entry.Document | Types.ObjectId): Calendar.Entry.Id => getId(doc) as Calendar.Entry.Id;
 

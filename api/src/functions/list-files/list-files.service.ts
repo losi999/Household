@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { IFileService } from '@household/shared/services/file-service';
-import { File } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListFilesService {
-  (): Promise<File.Response[]>;
+  (): Promise<Responses.File[]>;
 }
 
 export const listFilesServiceFactory = (

@@ -1,8 +1,8 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { File } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { default as file } from '@household/test/schemas/file-response';
 
-const schema: StrictJSONSchema7<File.Response[]> = {
+const schema: StrictJSONSchema7<Responses.File[]> = {
   type: 'array',
   items: file,
 };

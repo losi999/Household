@@ -1,9 +1,9 @@
 import { default as schema } from '@household/shared/schemas/refresh-token-request';
-import { Auth } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 
 describe('Refresh token schema', () => {
-  const tester = jsonSchemaTesterFactory<Auth.RefreshToken.Request>(schema);
+  const tester = jsonSchemaTesterFactory<Requests.RefreshToken>(schema);
 
   tester.validateSuccess({
     refreshToken: 'some.refresh.token',

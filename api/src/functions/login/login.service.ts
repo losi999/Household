@@ -1,11 +1,12 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Auth } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 export interface ILoginService {
   (CTX: {
-    body: Auth.Login.Request
-  }): Promise<Auth.Login.Response>;
+    body: Requests.Login
+  }): Promise<Responses.Login>;
 }
 
 export const loginServiceFactory = (identityService: IIdentityService): ILoginService => {

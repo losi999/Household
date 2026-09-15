@@ -1,12 +1,13 @@
 import { draftTransactionDocumentConverter } from '@household/shared/dependencies/converters/draft-transaction-document-converter';
-import { File, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/utils';
 
 export const draftTransactionDataFactory = (() => {
   const createDraftTransactionDocument = (ctx: {
     body?: Pick<Transaction.DraftDocument, 'amount' | 'description' | 'issuedAt'>;
-    file: File.Document;
+    file: Documents.File;
   }): Transaction.DraftDocument => {
     return draftTransactionDocumentConverter.create({
       body: {

@@ -1,10 +1,10 @@
 import { default as schema } from '@household/shared/schemas/login-request';
-import { Auth } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 import { createLoginRequest } from '@household/shared/common/test-data-factory';
 
 describe('Login request schema', () => {
-  const tester = jsonSchemaTesterFactory<Auth.Login.Request>(schema);
+  const tester = jsonSchemaTesterFactory<Requests.Login>(schema);
 
   tester.validateSuccess(createLoginRequest());
 

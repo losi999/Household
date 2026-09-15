@@ -1,11 +1,11 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
-import { File } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeleteFileService {
   (ctx: {
-    fileId: File.Id;
+    fileId: Api.File.Id;
   }): Promise<unknown>;
 }
 

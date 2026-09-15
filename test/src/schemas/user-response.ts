@@ -1,10 +1,10 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { User } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { default as email } from '@household/shared/schemas/partials/email';
 import { default as group } from '@household/shared/schemas/partials/group';
 import { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
 
-const schema: StrictJSONSchema7<User.Response> = {
+const schema: StrictJSONSchema7<Responses.User> = {
   type: 'object',
   additionalProperties: false,
   required: [

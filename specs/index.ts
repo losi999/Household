@@ -28,6 +28,21 @@ import { listProducts } from './paths/product/list-products';
 import { updateProduct } from './paths/product/update-product';
 import { deleteProduct } from './paths/product/delete-product';
 import { mergeProducts } from './paths/product/merge-products';
+import { createUploadUrl } from './paths/file/create-upload-url';
+import { listFiles } from './paths/file/list-files';
+import { deleteFile } from './paths/file/delete-file';
+import { listSettings } from './paths/setting/list-settings';
+import { updateSetting } from './paths/setting/update-setting';
+import { createUser } from './paths/user/create-user';
+import { deleteUser } from './paths/user/delete-user';
+import { listUsers } from './paths/user/list-users';
+import { confirmUser } from './paths/user/confirm-user';
+import { addUserToGroup } from './paths/user/add-user-to-group';
+import { removeUserFromGroup } from './paths/user/remove-user-from-group';
+import { login } from './paths/user/login';
+import { refreshToken } from './paths/user/refresh-token';
+import { forgotPassword } from './paths/user/forgot-password';
+import { confirmForgotPassword } from './paths/user/confirm-forgot-password';
 
 const document = new OpenApiBuilder()
   .addOpenApiVersion('3.1.0')
@@ -92,6 +107,45 @@ const document = new OpenApiBuilder()
   })
   .addPath('/product/v1/products/{productId}/merge', {
     ...mergeProducts,
+  })
+  .addPath('/file/v1/files', {
+    ...listFiles,
+    ...createUploadUrl,
+  })
+  .addPath('/file/v1/files/{fileId}', {
+    ...deleteFile,
+  })
+  .addPath('/setting/v1/settings', {
+    ...listSettings,
+  })
+  .addPath('/setting/v1/settings/{settingKey}', {
+    ...updateSetting,
+  })
+  .addPath('/user/v1/users', {
+    ...listUsers,
+    ...createUser,
+  })
+  .addPath('/user/v1/users/{email}', {
+    ...deleteUser,
+  })
+  .addPath('/user/v1/users/{email}/confirm', {
+    ...confirmUser,
+  })
+  .addPath('/user/v1/users/{email}/groups/{group}', {
+    ...addUserToGroup,
+    ...removeUserFromGroup,
+  })
+  .addPath('/user/v1/users/{email}/confirmForgotPassword', {
+    ...confirmForgotPassword,
+  })
+  .addPath('/user/v1/login', {
+    ...login,
+  })
+  .addPath('/user/v1/refreshToken', {
+    ...refreshToken,
+  })
+  .addPath('/user/v1/forgotPassword', {
+    ...forgotPassword,
   });
 
 writeFileSync('specs/household.json', document.getSpecAsJson(undefined, 2));

@@ -1,10 +1,10 @@
 import { default as schema } from '@household/shared/schemas/confirm-forgot-password-request';
-import { Auth } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 import { createConfirmForgotPasswordRequest } from '@household/shared/common/test-data-factory';
 
 describe('Confirm forgot password request schema', () => {
-  const tester = jsonSchemaTesterFactory<Auth.ConfirmForgotPassword.Request>(schema);
+  const tester = jsonSchemaTesterFactory<Requests.ConfirmForgotPassword>(schema);
 
   tester.validateSuccess(createConfirmForgotPasswordRequest());
 

@@ -13,14 +13,14 @@ Keep this list current — check a domain off here in the same change that migra
 - [ ] Calendar
 - [x] Category
 - [ ] Customer
-- [ ] File
+- [x] File
 - [ ] Price
 - [x] Product
 - [x] Project
 - [x] Recipient
-- [ ] Setting
+- [x] Setting
 - [ ] Transaction
-- [ ] User
+- [x] User (includes the legacy `Auth` namespace — see "Domains without a branded `Id`" below)
 
 ## Why this exists
 
@@ -335,17 +335,30 @@ types, used across `*.spec.ts` files instead of hand-rolled fixtures.
    to match, and drop the domain from this file's legacy `types.ts` import once nothing else in
    the file still needs it (check each remaining use, not just this one function, before removing
    the import).
-10. **`api/src/functions/<verb>-<domain>/`** — one folder per endpoint (`*.service.ts`,
+10. **`shared/src/common/aws-utils.ts`** and **`shared/src/services/mongodb-service.ts`** — the
+    same class of gap as step 9, found while migrating `File`/`Setting`: `aws-utils.ts`'s
+    `castPathParameters` has one big intersection type with an `<Domain>.<Field>Id`-shaped member
+    per domain (retype yours to `Api.<Domain>.<Field>Id`), and `mongodb-service.ts`'s
+    `CollectionMapping` has one `<collection>: <Domain>.Document` entry per Mongo-backed domain
+    (retype yours to `Documents.<Domain>`). Both files are easy to miss for the same reason as
+    step 9 — not under any domain's own folder — and both were found to still have *four* stale
+    entries (`Project`/`Category`/`Recipient`/`Product`) left over from earlier migrations that
+    never touched them; backfill any you find, not just your own domain's entry. Also worth a
+    quick grep: `shared/src/common/type-guards.ts` sometimes has a domain-specific predicate
+    (e.g. `isInvoiceCategory(category: Category.Response)`) that needs the same retype — it won't
+    always have one for a given domain, unlike the two files above which always do for a
+    Mongo-backed domain.
+11. **`api/src/functions/<verb>-<domain>/`** — one folder per endpoint (`*.service.ts`,
     `*.handler.ts`, `*.index.ts`), validator schemas imported from step 5.
-11. **`api/src/common/error-handlers.ts`** — add an `httpErrors.<domain>` block. Also grep the
+12. **`api/src/common/error-handlers.ts`** — add an `httpErrors.<domain>` block. Also grep the
     *whole* file for stray `<Domain>.<Member>` references outside that block — e.g. another
     domain's `httpErrors` entry taking a `<Domain>.Id[]` parameter — and fix those too.
-12. **`shared/src/common/test-data-factory.ts`** — add the `create<Domain>*` builders.
-13. **`specs/paths/<domain>/<verb>-<domain>.ts`** — one `PathItemObject` per endpoint from step
-    10, embedding the layer-5 schema exports directly (no cast); wire into `specs/index.ts`.
-14. Wire the SAM/CloudFormation route (`sam.<domain>.yaml` or equivalent) to the new Lambda —
+13. **`shared/src/common/test-data-factory.ts`** — add the `create<Domain>*` builders.
+14. **`specs/paths/<domain>/<verb>-<domain>.ts`** — one `PathItemObject` per endpoint from step
+    11, embedding the layer-5 schema exports directly (no cast); wire into `specs/index.ts`.
+15. Wire the SAM/CloudFormation route (`sam.<domain>.yaml` or equivalent) to the new Lambda —
     unrelated to this pattern but needed for the endpoint to actually exist.
-15. **`test/`** (the Playwright suite) — replace every remaining `<Domain>.<Member>` reference
+16. **`test/`** (the Playwright suite) — replace every remaining `<Domain>.<Member>` reference
     from the legacy `types.ts` namespace with its new-pattern equivalent, the same mapping as
     everywhere else (`Document`→`Documents.<Domain>`, `Request`→`Requests.<Domain>`,
     `Response`→`Responses.<Domain>`, `Report`→`Responses.<Domain>Report`, everything else→
@@ -368,13 +381,58 @@ types, used across `*.spec.ts` files instead of hand-rolled fixtures.
       unit tests still pass — the Playwright suite itself needs a live backend and isn't run
       here, so this step is a pure type-safety migration, not a behavior-verified one).
 
-**Scope of one pass**: steps 1–15 are the domain's own layers, `test/` included. One thing is
+**Scope of one pass**: steps 1–16 are the domain's own layers, `test/` included. One thing is
 deliberately *not* part of migrating a domain, and should be flagged to the user as available
 follow-up work rather than done silently in the same pass: other domains'/`Transaction`'s
 converters, services, and `error-handlers.ts` entries that reference the migrated domain's
 `Document`/`Response` through `Transaction`'s still-legacy types (see "Legacy pattern" below) —
 that's cross-domain cleanup belonging to whichever domain migrates next (`Transaction` itself,
 ultimately), not to this one.
+
+## Domains that don't fit the standard shape
+
+Two real domains broke assumptions baked into the recipe above — both migrated successfully by
+adapting, not by forcing the standard shape.
+
+**No branded `Id` (`Setting`)**: `Setting`'s real-world identifier is `Enum.SettingKey`, a
+string enum with a couple of members — not a Mongo `ObjectId`. Its `Api.Setting` namespace has
+no `Id` type at all; `Api.Setting.SettingKey = { settingKey: Enum.SettingKey }` is the sole
+key-carrying type, used everywhere a `<Domain>Id`-style type would normally appear (path
+parameters, `error-handlers.ts` ctx types, etc.). Recipe step 9 (`get<Domain>Id` in `utils.ts`)
+is a no-op for a domain shaped like this — there's no `Types.ObjectId` to convert, so skip it
+rather than inventing a helper that has nothing to do. If a field's TypeScript type is a
+narrower union than JSON Schema's `type` keyword can express as a single string (`Setting`'s
+`value: string | number | boolean`), `StrictSchema<T>` distributes the union into
+`StringSchema | NumberSchema | BooleanSchema`, none of which alone models JSON Schema's
+multi-type array syntax (`type: ['string', 'number', 'boolean']`) — write the literal schema
+object as normal and cast just that one property with
+`as unknown as StrictSchema<Api.<Domain>.<Field>['<field>']>`, with a one-line comment explaining
+why. This is a narrow, deliberate exception to the "no cast needed" rule (see layer 13) — the gap
+is in the generic schema type's coverage of multi-primitive unions, not a mistake to work around.
+
+**No MongoDB persistence at all (`User`, plus the tightly-coupled legacy `Auth` namespace)**:
+`User`'s identity lives in Cognito behind one hand-rolled `identity-service.ts` — there is no
+`Documents.User`, no mongoose schema, no document-converter, and no dedicated `user-service.ts`.
+Recipe steps 6–9 (mongoose schema, converter, service + its dependency singleton) are all skipped
+for a domain shaped like this; `identity-service.ts` itself is the layer that gets retyped in
+their place (its interface's `User.*`/`Auth.*`-typed parameters move to `Api.User.*`/
+`Requests.Auth*`, same as any other service's interface). `User` was migrated together with
+`Auth` in one pass, not separately, because they share this one service, one
+`error-handlers.ts` block (`httpErrors.cognito`, not `httpErrors.user` — an existing, working key
+name that doesn't need renaming just because its parameter types moved), and one SAM template —
+migrating one without the other would leave the shared surface area half-cast. `Auth` isn't a
+single record with fields; it's five unrelated action payloads (login, refresh-token,
+forgot-password, confirm-forgot-password, confirm-user), so each flow gets its own flat,
+domain-prefixed type name (`Requests.AuthLogin`, `Responses.AuthLogin`, ...) rather than a nested
+`Requests.Auth.Login` sub-namespace — this matches the existing convention for a domain with
+multiple response shapes (`Responses.AccountReport`, `Responses.ProductGroupedResponse`), just
+applied to requests too.
+
+If some other, `web/`-only surface still depends on the domain's legacy types after migration
+(true for `User`/`Auth` — `web/projects/shared/src/lib/services/auth-service.ts` and
+`.../state/auth/auth-events.ts`), leave it on the legacy (now `@deprecated`) types and flag it as
+follow-up rather than expanding the pass's scope — `web/` has never been part of this recipe's
+`tsc`/lint verification gate for any domain, and there's no reason to start with this one.
 
 ## Legacy pattern — do not replicate
 
@@ -393,6 +451,11 @@ Transaction` (e.g. `Account<Account.Document>`, `Project<Project.Response>` — 
 grepping `types.ts` for `<Domain><<Domain>.` before assuming otherwise). Only `Request` reliably
 has zero remaining consumers once a domain's own layers stop using it — comment that one out
 (`// export type Request = Base;`), not delete, so it stays visible as "removed, not forgotten."
+Grep the *whole* repo (including `web/`, if it exists) before commenting out, not just `shared/`/
+`api/`/`test/` — `Auth.Login.Request`/`Auth.ConfirmUser.Request`/`Auth.RefreshToken.Request`
+turned out to have a permanent `web/`-only consumer each and had to stay live, while
+`Auth.ForgotPassword.Request`/`Auth.ConfirmForgotPassword.Request` (same domain, no `web/`
+consumer) were safe to comment out — the check has to be per-type, not per-domain.
 The three legacy AJV schema files for the domain (`<domain>-id.ts`, `<domain>-id-list.ts` if it
 has one, `<domain>-request.ts`) usually stay too, retyped to the new `Api.<Domain>.*`/
 `Requests.<Domain>` types and marked `@deprecated` — other still-unmigrated domains' legacy
@@ -405,7 +468,7 @@ migration work is needed there. Expect it to keep firing inside `types.ts` itsel
 embedding, described above) and inside `Transaction`'s own converters/services/`error-handlers.ts`
 entries that consume a migrated domain's document/response through `Transaction`'s still-legacy
 types — that cross-domain cleanup is a separate follow-up belonging to `Transaction`'s own
-migration, not to the domain you just finished (recipe step 15 already covers `test/`, so no
+migration, not to the domain you just finished (recipe step 16 already covers `test/`, so no
 `no-deprecated` warnings for the migrated domain should remain there).
 
 ### Keep a fixed-but-sometimes-absent field a *required key*, not an optional one

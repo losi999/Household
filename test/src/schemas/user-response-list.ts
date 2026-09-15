@@ -1,8 +1,8 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { User } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { default as user } from '@household/test/schemas/user-response';
 
-const schema: StrictJSONSchema7<User.Response[]> = {
+const schema: StrictJSONSchema7<Responses.User[]> = {
   type: 'array',
   items: user,
 };

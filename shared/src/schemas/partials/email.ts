@@ -1,7 +1,8 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
-const schema: StrictJSONSchema7<User.Email> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Api.User.Email> = {
   type: 'object',
   required: ['email'],
   additionalProperties: false,

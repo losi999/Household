@@ -1,5 +1,5 @@
 import { default as schema } from '@household/test/schemas/setting-response-list';
-import { Setting } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 import { settingDataFactory } from '@household/test/api/setting/data-factory';
 import { forbidUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
@@ -18,8 +18,8 @@ const test = mergeTests(settingApiTest, settingDbTest);
 test.describe('GET /setting/v1/settings', () => {
   let settingKey1: SettingKey;
   let settingKey2: SettingKey;
-  let settingRequest2: Setting.Request;
-  let settingRequest1: Setting.Request;
+  let settingRequest2: Requests.Setting;
+  let settingRequest1: Requests.Setting;
 
   test.beforeEach(async () => {
     settingKey1 = settingDataFactory.key();

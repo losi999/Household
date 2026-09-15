@@ -1,8 +1,8 @@
 import { FileProcessingStatus, FileType } from '@household/shared/enums';
-import { File } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-export const fileSchema = new Schema<File.Document>({
+export const fileSchema = new Schema<Documents.File>({
   fileType: {
     type: String,
     required: true,

@@ -26,4 +26,8 @@ export namespace Documents {
   export type Product = Id & Timestamps & Api.Product.Base & Api.Product.FullName & {
     category: Category;
   };
+
+  export type File = Id & Timestamps & Api.File.FileType & Api.File.Timezone & Partial<Api.File.ProcessingStatus> & Partial<Api.File.DraftCount>;
+
+  export type Setting<V extends string | number | boolean = string | number | boolean> = Partial<Id> & Timestamps & Api.Setting.SettingKey & { value: V };
 }

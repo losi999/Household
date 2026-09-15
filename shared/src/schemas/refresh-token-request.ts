@@ -1,7 +1,8 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Auth } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 
-const schema: StrictJSONSchema7<Auth.RefreshToken.Request> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Requests.RefreshToken> = {
   type: 'object',
   additionalProperties: false,
   required: ['refreshToken'],

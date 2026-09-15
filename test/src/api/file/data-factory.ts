@@ -1,5 +1,8 @@
 import { DataFactoryFunction } from '@household/shared/types/common';
-import { File, Import } from '@household/shared/types/types';
+import { Import } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Documents } from '@household/shared/types/documents';
 import { FileType } from '@household/shared/enums';
 import { faker } from '@faker-js/faker';
 import { utils, WorkSheet, write } from 'xlsx';
@@ -14,7 +17,7 @@ type File<R> = {
 };
 
 export const fileDataFactory = (() => {
-  const createFileRequest: DataFactoryFunction<File.Request> = (req) => {
+  const createFileRequest: DataFactoryFunction<Requests.File> = (req) => {
     return {
       fileType: FileType.Revolut,
       timezone: 'Europe/Budapest',
@@ -143,12 +146,12 @@ export const fileDataFactory = (() => {
     return toExcelFile(worksheet, 'Sheet0');
   };
 
-  const createFileDocument: DataFactoryFunction<File.Request, File.Document> = (req) => {
+  const createFileDocument: DataFactoryFunction<Requests.File, Documents.File> = (req) => {
     return fileDocumentConverter.create(createFileRequest(req), Number(process.env.EXPIRES_IN), true);
   };
 
   return {
-    id: (createId<File.Id>),
+    id: (createId<Api.File.Id>),
     request: createFileRequest,
     document: createFileDocument,
     revolut: {

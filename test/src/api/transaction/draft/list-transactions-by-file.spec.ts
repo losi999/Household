@@ -27,7 +27,7 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest);
 
 test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
-  let fileDocument: File.Document;
+  let fileDocument: Documents.File;
   let accountDocument: Documents.Account;
   let loanAccountDocument: Documents.Account;
   let draftDocument: Transaction.DraftDocument;

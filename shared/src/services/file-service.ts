@@ -1,13 +1,14 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { File } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 
 export interface IFileService {
-  saveFile(doc: File.Document): Promise<File.Document>;
-  findFileById(fileId: File.Id): Promise<File.Document>;
-  deleteFile(fileId: File.Id): Promise<unknown>;
-  updateFile(fileId: File.Id, updateQuery: DocumentUpdate<File.Document>): Promise<unknown>;
-  listFiles(): Promise<File.Document[]>;
+  saveFile(doc: Documents.File): Promise<Documents.File>;
+  findFileById(fileId: Api.File.Id): Promise<Documents.File>;
+  deleteFile(fileId: Api.File.Id): Promise<unknown>;
+  updateFile(fileId: Api.File.Id, updateQuery: DocumentUpdate<Documents.File>): Promise<unknown>;
+  listFiles(): Promise<Documents.File[]>;
 }
 
 export const fileServiceFactory = (mongodbService: IMongodbService): IFileService => {

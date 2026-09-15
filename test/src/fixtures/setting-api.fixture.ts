@@ -1,12 +1,14 @@
 import { headerExpiresIn } from '@household/shared/constants';
 import { SettingKey } from '@household/shared/enums';
-import { Setting } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Documents } from '@household/shared/types/documents';
+import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
 import { APIResponse } from '@playwright/test';
 
 type SettingApiFixture = {
-  requestUpdateSetting(settingKey: SettingKey, setting: Setting.Request): Promise<APIResponse>;
+  requestUpdateSetting(settingKey: SettingKey, setting: Requests.Setting): Promise<APIResponse>;
   requestListSettings(): Promise<APIResponse>;
 };
 
@@ -14,7 +16,7 @@ export const test = baseTest.extend<SettingApiFixture>({
   requestUpdateSetting: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestUpdateSetting = async (settingKey: SettingKey, setting: Setting.Request) => {
+    const requestUpdateSetting = async (settingKey: SettingKey, setting: Requests.Setting) => {
       return loggedRequest.post(`${process.env.BASE_URL}/setting/v1/settings/${settingKey}`, {
         headers: {
           Authorization: authToken,
@@ -42,7 +44,7 @@ export const test = baseTest.extend<SettingApiFixture>({
 });
 
 export const expect = baseExpect.extend({
-  async toHaveBeenSavedAsSettingDocument(req: Setting.Request, settingKey: SettingKey, document: Setting.Document) {
+  async toHaveBeenSavedAsSettingDocument(req: Requests.Setting, settingKey: SettingKey, document: Documents.Setting) {
     if (!document) {
       return {
         pass: false,
@@ -62,8 +64,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected setting to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingSettingDocument(received: APIResponse, document: Setting.Document) {
-    const response = await received.json() as Setting.Response[];
+  async toContainMatchingSettingDocument(received: APIResponse, document: Documents.Setting) {
+    const response = await received.json() as Responses.Setting[];
   
     const matchingResponse = response.find(r => r.settingKey === document.settingKey);
   

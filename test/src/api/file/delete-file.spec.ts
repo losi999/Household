@@ -1,4 +1,5 @@
-import { File, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { fileDataFactory } from '@household/test/api/file/data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
 import { entries, getFileId, getTransactionId } from '@household/shared/common/utils';
@@ -18,7 +19,7 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(fileApiTest, transactionDbTest, fileDbTest, storageTest);  
 
 test.describe('DELETE /file/v1/files/{fileId}', () => {
-  let fileDocument: File.Document;
+  let fileDocument: Documents.File;
   let draftDocument: Transaction.DraftDocument;
 
   test.beforeEach(async () => {

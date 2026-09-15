@@ -647,6 +647,7 @@ export namespace Setting {
   export type Response = Base & SettingKey;
 }
 
+/** @deprecated */
 export namespace User {
   export type Email = {
     email: string;
@@ -656,7 +657,7 @@ export namespace User {
     group: Enum.UserType;
   };
 
-  export type Request = Email;
+  // export type Request = Email;
 
   export type Response = Email & {
     status: UserStatusType;
@@ -664,6 +665,7 @@ export namespace User {
   };
 }
 
+/** @deprecated */
 export namespace Auth {
   export type Password = {
     password: string;
@@ -678,13 +680,13 @@ export namespace Auth {
   };
 
   export namespace ForgotPassword {
-    export type Request = User.Email;
+    // export type Request = User.Email;
   }
 
   export namespace ConfirmForgotPassword {
-    export type Request = Password & {
-      confirmationCode: string;
-    };
+    // export type Request = Password & {
+    //   confirmationCode: string;
+    // };
   }
 
   export namespace ConfirmUser {

@@ -1,7 +1,8 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Setting } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
-const schema: StrictJSONSchema7<Setting.SettingKey> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Api.Setting.SettingKey> = {
   type: 'object',
   additionalProperties: false,
   required: ['settingKey'],

@@ -1,16 +1,17 @@
 import { DataFactoryFunction } from '@household/shared/types/common';
-import { Auth, User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 import { faker } from '@faker-js/faker';
 
 export const userDataFactory = (() => {
-  const createUserRequest: DataFactoryFunction<User.Request> = (req) => {
+  const createUserRequest: DataFactoryFunction<Requests.User> = (req) => {
     return {
       email: faker.internet.email(),
       ...req,
     };
   };
 
-  const createConfirmedUser: DataFactoryFunction<User.Request & Auth.Password & User.Group> = (req) => {
+  const createConfirmedUser: DataFactoryFunction<Requests.User & Api.Auth.Password & Api.User.Group> = (req) => {
     return {
       email: faker.internet.email(),
       password: faker.internet.password(),
@@ -19,7 +20,7 @@ export const userDataFactory = (() => {
     };
   };
 
-  const createPendingUser: DataFactoryFunction<User.Request & Auth.TemporaryPassword> = (req) => {
+  const createPendingUser: DataFactoryFunction<Requests.User & Api.Auth.TemporaryPassword> = (req) => {
     return {
       email: faker.internet.email(),
       temporaryPassword: faker.internet.password(),
@@ -27,7 +28,7 @@ export const userDataFactory = (() => {
     };
   };
 
-  const createConfirmRequest: DataFactoryFunction<Auth.ConfirmUser.Request> = (req) => {
+  const createConfirmRequest: DataFactoryFunction<Requests.ConfirmUser> = (req) => {
     return {
       password: faker.internet.password(),
       temporaryPassword: faker.internet.password(),

@@ -1,5 +1,6 @@
 import { CategoryType } from '@household/shared/enums';
-import { Category, Price, Transaction } from '@household/shared/types/types';
+import { Price, Transaction } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export const isSplitTransaction = (transaction: Transaction.Response): transaction is Transaction.SplitResponse => {
   return transaction?.transactionType === 'split';
@@ -21,11 +22,11 @@ export const isDeferredTransaction = (transaction: Transaction.Document | Transa
   return (transaction as Transaction.DeferredDocument).transactionType === 'deferred';
 };
 
-export const isInvoiceCategory = (category: Category.Response): boolean => {
+export const isInvoiceCategory = (category: Responses.Category): boolean => {
   return category?.categoryType === CategoryType.Invoice;
 };
 
-export const isInventoryCategory = (category: Category.Response): boolean => {
+export const isInventoryCategory = (category: Responses.Category): boolean => {
   return category?.categoryType === CategoryType.Inventory;
 };
 

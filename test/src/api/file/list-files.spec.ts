@@ -1,5 +1,6 @@
 import { default as schema } from '@household/test/schemas/file-response-list';
-import { File, Transaction } from '@household/shared/types/types';
+import { Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { fileDataFactory } from '@household/test/api/file/data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
 import { allowUsers } from '@household/test/utils';
@@ -18,7 +19,7 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(fileApiTest, transactionDbTest, fileDbTest);
 
 test.describe('GET /file/v1/files', () => {
-  let fileDocument: File.Document;
+  let fileDocument: Documents.File;
   let draftDocument: Transaction.DraftDocument;
 
   test.beforeEach(async () => {

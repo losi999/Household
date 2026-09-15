@@ -1,9 +1,10 @@
-import { File, Import, Transaction } from '@household/shared/types/types';
+import { Import, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { read as Read, utils as Utils, WorkBook } from 'xlsx';
 import { default as Moment } from 'moment-timezone';
 
 export interface IExcelParserService {
-  parse(params: { fileContent: Uint8Array; } & File.Timezone & File.FileType): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[];
+  parse(params: { fileContent: Uint8Array; } & Api.File.Timezone & Api.File.FileType): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[];
 }
 
 export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils, moment: typeof Moment): IExcelParserService => {

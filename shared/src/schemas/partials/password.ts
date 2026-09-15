@@ -1,7 +1,8 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Auth } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
-const schema: StrictJSONSchema7<Auth.Password> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Api.Auth.Password> = {
   type: 'object',
   required: ['password'],
   additionalProperties: false,

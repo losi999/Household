@@ -1,5 +1,6 @@
 import { default as schema } from '@household/test/schemas/user-response-list';
-import { Auth, User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 import { userDataFactory } from '@household/test/api/user/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
@@ -16,10 +17,10 @@ const test = mergeTests(identityTest, userApiTest);
 const permissionMap = allowUsers('editor') ;
 
 test.describe('GET /user/v1/users', () => {
-  let pendingUser: User.Request;
-  let editorUser: User.Request & User.Group & Auth.Password;
-  let viewerUser: User.Request & User.Group & Auth.Password;
-  let hairdresserUser: User.Request & User.Group & Auth.Password;
+  let pendingUser: Requests.User;
+  let editorUser: Requests.User & Api.User.Group & Api.Auth.Password;
+  let viewerUser: Requests.User & Api.User.Group & Api.Auth.Password;
+  let hairdresserUser: Requests.User & Api.User.Group & Api.Auth.Password;
 
   test.beforeEach(async () => {
     pendingUser = userDataFactory.request();

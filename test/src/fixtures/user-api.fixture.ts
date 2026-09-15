@@ -1,15 +1,17 @@
 import { AdminGetUserResponse, AdminListGroupsForUserResponse } from '@aws-sdk/client-cognito-identity-provider';
 import { headerSuppressEmail } from '@household/shared/constants';
 import { UserType } from '@household/shared/enums';
-import { Auth, User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
 import { APIResponse } from '@playwright/test';
 
 type UserApiFixture = {
-  requestCreateUser(user: User.Request): Promise<APIResponse>;
-  requestConfirmUser(email: User.Email['email'], requestBody: Auth.ConfirmUser.Request): Promise<APIResponse>;
-  requestDeleteUser(email: User.Email['email']): Promise<APIResponse>;
+  requestCreateUser(user: Requests.User): Promise<APIResponse>;
+  requestConfirmUser(email: Api.User.Email['email'], requestBody: Requests.ConfirmUser): Promise<APIResponse>;
+  requestDeleteUser(email: Api.User.Email['email']): Promise<APIResponse>;
   requestListUsers(): Promise<APIResponse>;
   requestAddUserToGroup(email: string, group: UserType): Promise<APIResponse>;
   requestRemoveUserFromGroup(email: string, group: UserType): Promise<APIResponse>;
@@ -19,7 +21,7 @@ export const test = baseTest.extend<UserApiFixture>({
   requestCreateUser: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestCreateUser = async (user: User.Request) => {
+    const requestCreateUser = async (user: Requests.User) => {
       return loggedRequest.post(`${process.env.BASE_URL}/user/v1/users`, {
         headers: {
           Authorization: authToken,
@@ -32,7 +34,7 @@ export const test = baseTest.extend<UserApiFixture>({
     await use(requestCreateUser);
   },
   requestConfirmUser: async ({ loggedRequest }, use) => {
-    const requestConfirmUser = async (email: User.Email['email'], requestBody: Auth.ConfirmUser.Request) => {
+    const requestConfirmUser = async (email: Api.User.Email['email'], requestBody: Requests.ConfirmUser) => {
       return loggedRequest.post(`${process.env.BASE_URL}/user/v1/users/${email}/confirm`, {
         data: requestBody,
       });
@@ -43,7 +45,7 @@ export const test = baseTest.extend<UserApiFixture>({
   requestDeleteUser: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeleteUser = async (email: User.Email['email']) => {
+    const requestDeleteUser = async (email: Api.User.Email['email']) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/user/v1/users/${email}`, {
         headers: {
           Authorization: authToken,
@@ -129,8 +131,8 @@ export const expect = baseExpect.extend({
       pass: !user,
     };  
   },
-  async toContainMatchingUser(received: APIResponse, user: User.Request & Partial<User.Group & Auth.Password>) {
-    const response = await received.json() as User.Response[];
+  async toContainMatchingUser(received: APIResponse, user: Requests.User & Partial<Api.User.Group & Api.Auth.Password>) {
+    const response = await received.json() as Responses.User[];
 
     const matchingResponse = response.find(u => u.email === user.email);
 
