@@ -1,4 +1,4 @@
-import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Product, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { entries, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { default as schema } from '@household/test/schemas/transaction-report-list';
@@ -71,10 +71,10 @@ test.describe('POST /transaction/v1/transactionReports', () => {
           let secondaryProjectDocument: Documents.Project;
           let recipientDocument: Documents.Recipient;
           let secondaryRecipientDocument: Documents.Recipient;
-          let regularCategoryDocument: Category.Document;
-          let inventoryCategoryDocument: Category.Document;
-          let invoiceCategoryDocument: Category.Document;
-          let secondaryCategoryDocument: Category.Document;
+          let regularCategoryDocument: Documents.Category;
+          let inventoryCategoryDocument: Documents.Category;
+          let invoiceCategoryDocument: Documents.Category;
+          let secondaryCategoryDocument: Documents.Category;
           let productDocument: Product.Document;
           let secondaryProductDocument: Product.Document;
 

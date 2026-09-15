@@ -7,7 +7,9 @@ import { expect as productApiExpect } from '@household/test/fixtures/product-api
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { Category, Product } from '@household/shared/types/types';
+import { Product } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -27,8 +29,8 @@ const expect = mergeExpects(categoryApiExpect, apiExpect, productApiExpect, tran
 const test = mergeTests(categoryApiTest, accountDbTest, transactionDbTest, categoryDbTest, productDbTest);
 
 test.describe('POST category/v1/categories/{categoryId}/merge', () => {
-  let sourceCategoryDocument: Category.Document;
-  let targetCategoryDocument: Category.Document;
+  let sourceCategoryDocument: Documents.Category;
+  let targetCategoryDocument: Documents.Category;
 
   test.beforeEach(async () => {
     sourceCategoryDocument = categoryDataFactory.document();
@@ -346,7 +348,7 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
 
           test.describe('is categoryId', () => {
             test('is not a valid mongo id', async ({ requestMergeCategories }) => {
-              const res = await requestMergeCategories('not-valid' as Category.Id, [categoryDataFactory.id()]);
+              const res = await requestMergeCategories('not-valid' as Api.Category.Id, [categoryDataFactory.id()]);
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('pathParameters', 'categoryId');
             });

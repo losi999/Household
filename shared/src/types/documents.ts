@@ -1,4 +1,5 @@
 import { Api } from '@household/shared/types/api';
+import { Product } from '@household/shared/types/types';
 import type { Types } from 'mongoose';
 
 export namespace Documents {
@@ -17,4 +18,9 @@ export namespace Documents {
   export type Project = Id & Timestamps & Api.Project.Base;
 
   export type Recipient = Id & Timestamps & Api.Recipient.Base;
+
+  export type Category = Id & Timestamps & Api.Category.Base & {
+    ancestors: Category[];
+    products?: Product.Document[];
+  };
 }

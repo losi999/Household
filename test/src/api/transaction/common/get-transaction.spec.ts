@@ -1,4 +1,4 @@
-import { Category, Product, Project, Recipient } from '@household/shared/types/types';
+import { Product } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { default as paymentTransactionSchema } from '@household/test/schemas/transaction-payment-response';
 import { default as deferredTransactionSchema } from '@household/test/schemas/transaction-deferred-response';
@@ -41,9 +41,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
   let transferAccountDocument: Documents.Account;
   let projectDocument: Documents.Project;
   let recipientDocument: Documents.Recipient;
-  let regularCategoryDocument: Category.Document;
-  let inventoryCategoryDocument: Category.Document;
-  let invoiceCategoryDocument: Category.Document;
+  let regularCategoryDocument: Documents.Category;
+  let inventoryCategoryDocument: Documents.Category;
+  let invoiceCategoryDocument: Documents.Category;
   let productDocument: Product.Document;
 
   test.beforeEach(async () => {

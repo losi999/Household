@@ -1,7 +1,7 @@
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Auth, Calendar, Category, Customer, File, Price, Product, Report, Setting, Transaction, User } from '@household/shared/types/types';
+import { Auth, Calendar, Customer, File, Price, Product, Report, Setting, Transaction, User } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -19,7 +19,7 @@ export const createAccountId = (id?: string): Api.Account.Id => {
   return createId(id);
 };
 
-export const createCategoryId = (id?: string): Category.Id => {
+export const createCategoryId = (id?: string): Api.Category.Id => {
   return createId(id);
 };
 
@@ -68,7 +68,7 @@ export const createProjectDocument: DataFactoryFunction<Documents.Project> = (do
     ...doc,
   };
 };
-export const createCategoryDocument: DataFactoryFunction<Category.Document> = (doc) => {
+export const createCategoryDocument: DataFactoryFunction<Documents.Category> = (doc) => {
   return {
     _id: createId(),
     name: 'category name',
@@ -275,7 +275,7 @@ export const createProjectRequest: DataFactoryFunction<Requests.Project> = (req)
     ...req,
   };
 };
-export const createCategoryRequest: DataFactoryFunction<Category.Request> = (req) => {
+export const createCategoryRequest: DataFactoryFunction<Requests.Category> = (req) => {
   return {
     name: 'category name',
     parentCategoryId: createCategoryId(),
@@ -512,7 +512,7 @@ export const createSettingResponse: DataFactoryFunction<Setting.Response> = (res
   };
 };
 
-export const createCategoryResponseBase: DataFactoryFunction<Category.ResponseAncestor> = (resp) => {
+export const createCategoryResponseBase: DataFactoryFunction<Responses.CategoryAncestor> = (resp) => {
   return {
     categoryId: createCategoryId(),
     name: 'category name',
@@ -521,7 +521,7 @@ export const createCategoryResponseBase: DataFactoryFunction<Category.ResponseAn
   };
 };
 
-export const createCategoryResponse: DataFactoryFunction<Category.Response> = (resp) => {
+export const createCategoryResponse: DataFactoryFunction<Responses.Category> = (resp) => {
   return {
     categoryId: createCategoryId(),
     name: 'category name',
@@ -678,7 +678,7 @@ export const createAccountReport: DataFactoryFunction<Responses.AccountReport> =
   };
 };
 
-export const createCategoryReport: DataFactoryFunction<Category.Report> = (rep) => {
+export const createCategoryReport: DataFactoryFunction<Responses.CategoryReport> = (rep) => {
   return {
     categoryId: createCategoryId(),
     fullName: 'category:name',

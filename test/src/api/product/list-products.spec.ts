@@ -1,5 +1,6 @@
 import { default as schema } from '@household/test/schemas/product-response-list';
-import { Category, Product } from '@household/shared/types/types';
+import { Product } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { CategoryType } from '@household/shared/enums';
@@ -21,8 +22,8 @@ const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
 test.describe('GET /product/v1/products', () => {
   let productDocument1: Product.Document;
   let productDocument2: Product.Document;
-  let categoryDocument1: Category.Document;
-  let categoryDocument2: Category.Document;
+  let categoryDocument1: Documents.Category;
+  let categoryDocument2: Documents.Category;
 
   test.beforeEach(async () => {
     categoryDocument1 = categoryDataFactory.document({

@@ -11,7 +11,7 @@ export const recipientId: ObjectSchema<Api.Recipient.RecipientId> = {
   properties: {
     recipientId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$',
+      pattern: '^[a-f0-9]{24}$',
     },
   },
 };

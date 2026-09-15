@@ -27,4 +27,20 @@ export namespace Responses {
 
   export type RecipientReport = Api.Recipient.RecipientId &
     Api.Recipient.Name;
+
+  export type CategoryAncestor = Api.Category.CategoryType &
+    Api.Category.Name &
+    Api.Category.CategoryId;
+
+  export type CategoryParent = CategoryAncestor &
+    Api.Category.FullName;
+
+  export type Category = CategoryAncestor &
+    Api.Category.FullName & {
+      ancestors: CategoryAncestor[];
+      parentCategory: CategoryParent;
+    };
+
+  export type CategoryReport = Api.Category.CategoryId &
+    Api.Category.FullName;
 }

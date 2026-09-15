@@ -4,7 +4,9 @@ import { allowUsers } from '@household/test/utils';
 import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { Category } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
@@ -15,8 +17,8 @@ const expect = mergeExpects(categoryApiExpect, apiExpect);
 const test = mergeTests(categoryApiTest, categoryDbTest);
 
 test.describe('PUT /category/v1/categories/{categoryId}', () => {
-  let categoryDocument: Category.Document;
-  let req: Category.Request;
+  let categoryDocument: Documents.Category;
+  let req: Requests.Category;
 
   test.beforeEach(async () => {
     req = categoryDataFactory.request();
@@ -52,14 +54,14 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
           const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
           expect(res).toBeCreatedResponse();
 
-          const { categoryId } = (await res.json()) as Category.CategoryId;
+          const { categoryId } = (await res.json()) as Api.Category.CategoryId;
           expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId));
         });
 
         test.describe('children should be reassigned', () => {
-          let childCategory: Category.Document;
-          let grandChildCategory: Category.Document;
-          let otherParentCategory: Category.Document;
+          let childCategory: Documents.Category;
+          let grandChildCategory: Documents.Category;
+          let otherParentCategory: Documents.Category;
 
           test.beforeEach(async () => {
             childCategory = categoryDataFactory.document({
@@ -246,7 +248,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
 
           test.describe('if categoryId', () => {
             test('is not mongo id', async ({ requestUpdateCategory }) => {
-              const res = await requestUpdateCategory('not-valid' as Category.Id, req);
+              const res = await requestUpdateCategory('not-valid' as Api.Category.Id, req);
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('pathParameters', 'categoryId');
             });

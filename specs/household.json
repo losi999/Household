@@ -23,7 +23,7 @@
                     "properties": {
                       "accountId": {
                         "type": "string",
-                        "pattern": "^[a-zA-Z0-9]{24}$"
+                        "pattern": "^[a-f0-9]{24}$"
                       },
                       "isOpen": {
                         "type": "boolean"
@@ -133,7 +133,7 @@
                   "properties": {
                     "accountId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
                     }
                   }
                 }
@@ -155,7 +155,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -170,7 +170,7 @@
                   "properties": {
                     "accountId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
                     },
                     "isOpen": {
                       "type": "boolean"
@@ -232,7 +232,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -290,7 +290,7 @@
                   "properties": {
                     "accountId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
                     }
                   }
                 }
@@ -310,7 +310,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -339,7 +339,7 @@
                     "properties": {
                       "projectId": {
                         "type": "string",
-                        "pattern": "^[a-zA-Z0-9]{24}$"
+                        "pattern": "^[a-f0-9]{24}$"
                       },
                       "name": {
                         "type": "string",
@@ -402,7 +402,7 @@
                   "properties": {
                     "projectId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
                     }
                   }
                 }
@@ -424,7 +424,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -439,7 +439,7 @@
                   "properties": {
                     "projectId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
                     },
                     "name": {
                       "type": "string",
@@ -471,7 +471,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -512,7 +512,7 @@
                   "properties": {
                     "projectId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
                     }
                   }
                 }
@@ -532,7 +532,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -555,7 +555,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -567,7 +567,7 @@
                 "minItems": 1,
                 "items": {
                   "type": "string",
-                  "pattern": "^[a-zA-Z0-9]{24}$"
+                  "pattern": "^[a-f0-9]{24}$"
                 }
               }
             }
@@ -587,7 +587,7 @@
                   "properties": {
                     "projectId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
                     }
                   }
                 }
@@ -615,7 +615,7 @@
                     "properties": {
                       "recipientId": {
                         "type": "string",
-                        "pattern": "^[a-zA-Z0-9]{24}$"
+                        "pattern": "^[a-f0-9]{24}$"
                       },
                       "name": {
                         "type": "string",
@@ -670,7 +670,7 @@
                   "properties": {
                     "recipientId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
                     }
                   }
                 }
@@ -692,7 +692,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -707,7 +707,7 @@
                   "properties": {
                     "recipientId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
                     },
                     "name": {
                       "type": "string",
@@ -735,7 +735,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -772,7 +772,7 @@
                   "properties": {
                     "recipientId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
                     }
                   }
                 }
@@ -792,7 +792,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -815,7 +815,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-zA-Z0-9]{24}$"
+              "pattern": "^[a-f0-9]{24}$"
             }
           }
         ],
@@ -827,7 +827,7 @@
                 "minItems": 1,
                 "items": {
                   "type": "string",
-                  "pattern": "^[a-zA-Z0-9]{24}$"
+                  "pattern": "^[a-f0-9]{24}$"
                 }
               }
             }
@@ -847,7 +847,447 @@
                   "properties": {
                     "recipientId": {
                       "type": "string",
-                      "pattern": "^[a-zA-Z0-9]{24}$"
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/category/v1/categories": {
+      "get": {
+        "tags": [
+          "Category"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of categories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "categoryId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "categoryType": {
+                        "type": "string",
+                        "enum": [
+                          "regular",
+                          "invoice",
+                          "inventory"
+                        ]
+                      },
+                      "fullName": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "ancestors": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "categoryId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "name": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "categoryType": {
+                              "type": "string",
+                              "enum": [
+                                "regular",
+                                "invoice",
+                                "inventory"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "categoryId",
+                            "name",
+                            "categoryType"
+                          ]
+                        }
+                      },
+                      "parentCategory": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "categoryId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "categoryType": {
+                            "type": "string",
+                            "enum": [
+                              "regular",
+                              "invoice",
+                              "inventory"
+                            ]
+                          },
+                          "fullName": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "categoryId",
+                          "name",
+                          "categoryType",
+                          "fullName"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "categoryId",
+                      "name",
+                      "categoryType",
+                      "fullName",
+                      "ancestors"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Category"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "categoryType": {
+                    "type": "string",
+                    "enum": [
+                      "regular",
+                      "invoice",
+                      "inventory"
+                    ]
+                  },
+                  "parentCategoryId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "name",
+                  "categoryType"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "categoryId"
+                  ],
+                  "properties": {
+                    "categoryId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/category/v1/categories/{categoryId}": {
+      "get": {
+        "tags": [
+          "Category"
+        ],
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "categoryId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "categoryType": {
+                      "type": "string",
+                      "enum": [
+                        "regular",
+                        "invoice",
+                        "inventory"
+                      ]
+                    },
+                    "fullName": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "ancestors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "categoryId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "categoryType": {
+                            "type": "string",
+                            "enum": [
+                              "regular",
+                              "invoice",
+                              "inventory"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "categoryId",
+                          "name",
+                          "categoryType"
+                        ]
+                      }
+                    },
+                    "parentCategory": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "categoryId": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{24}$"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "categoryType": {
+                          "type": "string",
+                          "enum": [
+                            "regular",
+                            "invoice",
+                            "inventory"
+                          ]
+                        },
+                        "fullName": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": [
+                        "categoryId",
+                        "name",
+                        "categoryType",
+                        "fullName"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "categoryId",
+                    "name",
+                    "categoryType",
+                    "fullName",
+                    "ancestors"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Category"
+        ],
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "categoryType": {
+                    "type": "string",
+                    "enum": [
+                      "regular",
+                      "invoice",
+                      "inventory"
+                    ]
+                  },
+                  "parentCategoryId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "name",
+                  "categoryType"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Category updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "categoryId"
+                  ],
+                  "properties": {
+                    "categoryId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Category"
+        ],
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Category deleted"
+          }
+        }
+      }
+    },
+    "/category/v1/categories/{categoryId}/merge": {
+      "post": {
+        "tags": [
+          "Category"
+        ],
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{24}$"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Categories merged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "categoryId"
+                  ],
+                  "properties": {
+                    "categoryId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
                     }
                   }
                 }

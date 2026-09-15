@@ -17,6 +17,12 @@ import { getRecipient } from './paths/recipient/get-recipient';
 import { updateRecipient } from './paths/recipient/update-recipient';
 import { deleteRecipient } from './paths/recipient/delete-recipient';
 import { mergeRecipients } from './paths/recipient/merge-recipients';
+import { listCategories } from './paths/category/list-categories';
+import { createCategory } from './paths/category/create-category';
+import { getCategory } from './paths/category/get-category';
+import { updateCategory } from './paths/category/update-category';
+import { deleteCategory } from './paths/category/delete-category';
+import { mergeCategories } from './paths/category/merge-categories';
 
 const document = new OpenApiBuilder()
   .addOpenApiVersion('3.1.0')
@@ -56,6 +62,18 @@ const document = new OpenApiBuilder()
   })
   .addPath('/recipient/v1/recipients/{recipientId}/merge', {
     ...mergeRecipients,
+  })
+  .addPath('/category/v1/categories', {
+    ...listCategories,
+    ...createCategory,
+  })
+  .addPath('/category/v1/categories/{categoryId}', {
+    ...getCategory,
+    ...updateCategory,
+    ...deleteCategory,
+  })
+  .addPath('/category/v1/categories/{categoryId}/merge', {
+    ...mergeCategories,
   });
 
 writeFileSync('specs/household.json', document.getSpecAsJson(undefined, 2));

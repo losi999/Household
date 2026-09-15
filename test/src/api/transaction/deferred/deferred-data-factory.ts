@@ -1,5 +1,5 @@
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
-import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { deferredTransactionDocumentConverter } from '@household/shared/dependencies/converters/deferred-transaction-document-converter';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
@@ -10,7 +10,7 @@ export const deferredTransactionDataFactory = (() => {
     body?: Partial<Transaction.PaymentRequest>;
     account: Documents.Account;
     loanAccount: Documents.Account;
-    category?: Category.Document;
+    category?: Documents.Category;
     product?: Product.Document;
     project?: Documents.Project;
     recipient?: Documents.Recipient;

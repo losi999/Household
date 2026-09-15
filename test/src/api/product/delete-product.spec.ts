@@ -1,6 +1,6 @@
 import { entries, getProductId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
-import { Category, Product, Transaction } from '@household/shared/types/types';
+import { Product, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -27,7 +27,7 @@ const test = mergeTests(productApiTest, accountDbTest, transactionDbTest, catego
 
 test.describe('DELETE /product/v1/products/{productId}', () => {
   let productDocument: Product.Document;
-  let categoryDocument: Category.Document;
+  let categoryDocument: Documents.Category;
 
   test.beforeEach(async () => {
     categoryDocument = categoryDataFactory.document({

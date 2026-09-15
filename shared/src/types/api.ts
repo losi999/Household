@@ -75,4 +75,30 @@ export namespace Api {
 
     export type Base = Name;
   }
+
+  export namespace Category {
+    export type Id = Branding<string, 'category'>;
+
+    export type CategoryId = {
+      categoryId: Id;
+    };
+
+    export type FullName = {
+      fullName: string;
+    };
+
+    export type ParentCategoryId = {
+      parentCategoryId: Id;
+    };
+
+    export type CategoryType = {
+      categoryType: Enum.CategoryType;
+    };
+
+    export type Name = {
+      name: string;
+    };
+
+    export type Base = CategoryType & Name;
+  }
 }

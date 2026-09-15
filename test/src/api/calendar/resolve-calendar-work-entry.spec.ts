@@ -1,6 +1,6 @@
 import { entries, getCalendarEntryId, getTransactionId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Calendar, Category, Customer, Price } from '@household/shared/types/types';
+import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
@@ -117,7 +117,7 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
               issuedAt: expectedIssuedAt.toISOString(),
               description: calendarWorkEntryDocument.title,
               accountId: (await getSettingByKey<Api.Account.Id>(SettingKey.HairdressingIncomeAccount)).value,
-              categoryId: (await getSettingByKey<Category.Id>(SettingKey.HairdressingIncomeCategory)).value,
+              categoryId: (await getSettingByKey<Api.Category.Id>(SettingKey.HairdressingIncomeCategory)).value,
             });
             expect(paymentRequest).toHaveBeenSavedAsPaymentTransactionDocument(await findTransactionById(transactionId));
           });

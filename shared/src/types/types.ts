@@ -138,6 +138,7 @@ export namespace Account {
   // export type Request = Base;
 }
 
+/** @deprecated */
 export namespace Category {
   export type Id = Branding<string, 'category'>;
 
@@ -190,9 +191,9 @@ export namespace Category {
       parentCategory: ResponseParent;
     };
 
-  export type Request = CategoryType
-    & Name
-    & ParentCategoryId;
+  // export type Request = CategoryType
+  //   & Name
+  //   & ParentCategoryId;
 }
 
 export namespace Product {

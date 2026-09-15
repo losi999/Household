@@ -1,5 +1,6 @@
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { Category, Product, Recipient, Transaction } from '@household/shared/types/types';
+import { Product, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
@@ -66,7 +67,7 @@ export const expect = baseExpect.extend({
     recipient?: Reassignment<Api.Recipient.Id>;
     project?: Reassignment<Api.Project.Id>;
     product?: Reassignment<Product.Id>;
-    category?: Reassignment<Category.Document>;
+    category?: Reassignment<Documents.Category>;
   }) {
 
     let expectedQuantity: number;

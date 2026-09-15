@@ -1,13 +1,15 @@
 
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { Category, Product } from '@household/shared/types/types';
+import { Product } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 import { Comparer } from '@household/test/comparer';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
 
 type ProductApiFixture = {
-  requestCreateProduct(product: Product.Request, categoryId: Category.Id): Promise<APIResponse>;
+  requestCreateProduct(product: Product.Request, categoryId: Api.Category.Id): Promise<APIResponse>;
   requestUpdateProduct(productId: Product.Id, product: Product.Request): Promise<APIResponse>;
   requestDeleteProduct(productId: Product.Id): Promise<APIResponse>;
   requestMergeProducts(productId: Product.Id, sourceProductIds: Product.Id[]): Promise<APIResponse>;
@@ -18,7 +20,7 @@ export const test = baseTest.extend<ProductApiFixture>({
   requestCreateProduct: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestCreateProduct = async (product: Product.Request, categoryId: Category.Id) => {
+    const requestCreateProduct = async (product: Product.Request, categoryId: Api.Category.Id) => {
       return loggedRequest.post(`${process.env.BASE_URL}/product/v1/categories/${categoryId}/products`, {
         headers: {
           Authorization: authToken,
@@ -98,7 +100,7 @@ export const validateProductResponse = (response: Product.Response, document: Pr
 };
 
 export const expect = baseExpect.extend({
-  toHaveBeenSavedAsProductDocument(req: Product.Request, document: Product.Document, categoryId: Category.Id) {
+  toHaveBeenSavedAsProductDocument(req: Product.Request, document: Product.Document, categoryId: Api.Category.Id) {
     if (!document) {
       return {
         pass: false,
@@ -128,7 +130,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected product to be deleted from database, but it was found with id ${getProductId(document)}`,
     };
   },
-  toHaveItsCategoryReassigned(originalDocument: Product.Document, currentDocument: Product.Document, expectedCategoryDocument: Category.Document) {
+  toHaveItsCategoryReassigned(originalDocument: Product.Document, currentDocument: Product.Document, expectedCategoryDocument: Documents.Category) {
 
     const comparer = new Comparer(currentDocument, {
       brand: originalDocument.brand,
@@ -145,7 +147,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected product to have its category reassigned, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingProductDocument(received: APIResponse, document: Product.Document, categoryId: Category.Id) {
+  async toContainMatchingProductDocument(received: APIResponse, document: Product.Document, categoryId: Api.Category.Id) {
     const response = await received.json() as Product.GroupedResponse[];
     const categoryResponse = response.find(r => r.categoryId === categoryId);
     const matchingResponse = categoryResponse?.products.find(r => r.productId === getProductId(document));

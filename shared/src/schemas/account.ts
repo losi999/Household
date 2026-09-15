@@ -12,7 +12,7 @@ export const accountId: ObjectSchema<Api.Account.AccountId> = {
   properties: {
     accountId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$',
+      pattern: '^[a-f0-9]{24}$',
     },
   },
 };

@@ -1,7 +1,7 @@
 import { addSeconds, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { splitTransactionDocumentConverter } from '@household/shared/dependencies/converters/split-transaction-document-converter';
 import { DataFactoryFunction, Dictionary } from '@household/shared/types/common';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/utils';
@@ -92,11 +92,11 @@ export const splitTransactionDataFactory = (() => {
     body?: Partial<Omit<Transaction.SplitRequest, 'splits' | 'loans'>>;
     splits?: Partial<Transaction.SplitRequestItem &
     Transaction.Project<Documents.Project> &
-    Transaction.Category<Category.Document> &
+    Transaction.Category<Documents.Category> &
     Transaction.Product<Product.Document>>[];
     loans?: (Partial<Transaction.LoanRequestItem &
     Transaction.Project<Documents.Project> &
-    Transaction.Category<Category.Document> &
+    Transaction.Category<Documents.Category> &
     Transaction.Product<Product.Document>> &
     {
       loanAccount: Documents.Account;
@@ -111,7 +111,7 @@ export const splitTransactionDataFactory = (() => {
     const accounts: Dictionary<Documents.Account> = {
       [getAccountId(ctx.account)]: ctx.account,
     };
-    const categories: Dictionary<Category.Document> = {};
+    const categories: Dictionary<Documents.Category> = {};
     const products: Dictionary<Product.Document> = {};
     const projects: Dictionary<Documents.Project> = {};
 

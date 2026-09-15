@@ -1,25 +1,27 @@
 import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { DocumentUpdate, Restrict } from '@household/shared/types/common';
-import { Category } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
+import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
 
 export interface ICategoryDocumentConverter {
   create(data: {
-    body: Category.Request;
-    parentCategory: Category.Document
-  }, expiresIn: number, generateId?: boolean): Category.Document;
+    body: Requests.Category;
+    parentCategory: Documents.Category
+  }, expiresIn: number, generateId?: boolean): Documents.Category;
   update(data: {
-    body: Restrict<Category.Request, 'parentCategoryId'>;
-    parentCategory: Category.Document;
-  }, expiresIn: number): DocumentUpdate<Category.Document>;
-  toResponse(doc: Category.Document): Category.Response;
-  toReport(doc: Category.Document): Category.Report;
-  toResponseList(docs: Category.Document[]): Category.Response[];
+    body: Restrict<Requests.Category, 'parentCategoryId'>;
+    parentCategory: Documents.Category;
+  }, expiresIn: number): DocumentUpdate<Documents.Category>;
+  toResponse(doc: Documents.Category): Responses.Category;
+  toReport(doc: Documents.Category): Responses.CategoryReport;
+  toResponseList(docs: Documents.Category[]): Responses.Category[];
 }
 
 export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter => {
-  const toResponseBase = ({ name, categoryType, _id }: Category.Document): Category.ResponseAncestor => {
+  const toResponseBase = ({ name, categoryType, _id }: Documents.Category): Responses.CategoryAncestor => {
     return {
       categoryType,
       name,
@@ -41,7 +43,7 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
       };
     },
     update: ({ body, parentCategory }, expiresIn) => {
-      const update: UpdateQuery<Category.Document> = {
+      const update: UpdateQuery<Documents.Category> = {
         $set: {
           ...body,
           ancestors: parentCategory ? [

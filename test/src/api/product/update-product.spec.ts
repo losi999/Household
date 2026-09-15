@@ -1,6 +1,7 @@
 import { entries, getCategoryId, getProductId } from '@household/shared/common/utils';
 import { CategoryType } from '@household/shared/enums';
-import { Category, Product } from '@household/shared/types/types';
+import { Product } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { allowUsers } from '@household/test/utils';
@@ -19,7 +20,7 @@ const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
 test.describe('PUT /product/v1/products/{productId}', () => {
   let request: Product.Request;
   let productDocument: Product.Document;
-  let categoryDocument: Category.Document;
+  let categoryDocument: Documents.Category;
 
   test.beforeEach(async () => {
     request = productDataFactory.request();

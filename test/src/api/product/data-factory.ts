@@ -1,5 +1,6 @@
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Category, Product } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { faker } from '@faker-js/faker';
 import { createId } from '@household/test/utils';
 import { productDocumentConverter } from '@household/shared/dependencies/converters/product-document-converter';
@@ -21,7 +22,7 @@ export const productDataFactory = (() => {
 
   const createProductDocument = (ctx: {
     body?: Partial<Product.Request>;
-    category: Category.Document;
+    category: Documents.Category;
   }): Product.Document => {
     if (ctx.category.categoryType !== CategoryType.Inventory) {
       throw 'Category must be of inventory type';

@@ -1,9 +1,10 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Category } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 import { default as categoryId } from '@household/shared/schemas/category-id';
 import { CategoryType } from '@household/shared/enums';
 
-const schema: StrictJSONSchema7<Category.Request> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Requests.Category> = {
   type: 'object',
   additionalProperties: false,
   required: [

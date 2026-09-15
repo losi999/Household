@@ -1,8 +1,9 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Category } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { default as mongoId } from '@household/shared/schemas/partials/mongo-id';
 
-const schema: StrictJSONSchema7<Category.CategoryId> = {
+/** @deprecated */
+const schema: StrictJSONSchema7<Api.Category.CategoryId> = {
   type: 'object',
   additionalProperties: false,
   required: ['categoryId'],

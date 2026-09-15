@@ -11,7 +11,7 @@ export const projectId: ObjectSchema<Api.Project.ProjectId> = {
   properties: {
     projectId: {
       type: 'string',
-      pattern: '^[a-zA-Z0-9]{24}$',
+      pattern: '^[a-f0-9]{24}$',
     },
   },
 };

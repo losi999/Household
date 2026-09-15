@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
-import { Category } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListCategoriesService {
-  (): Promise<Category.Response[]>;
+  (): Promise<Responses.Category[]>;
 }
 
 export const listCategoriesServiceFactory = (

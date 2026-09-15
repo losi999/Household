@@ -2,7 +2,7 @@ import { GroupType } from '@aws-sdk/client-cognito-identity-provider';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey, UserType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Calendar, Category, Common, Customer, File, Price, Product, Setting, Transaction, User } from '@household/shared/types/types';
+import { Calendar, Common, Customer, File, Price, Product, Setting, Transaction, User } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
@@ -209,7 +209,7 @@ export const httpErrors = {
     },
   },
   category: {
-    save: (doc: Category.Document, statusCode = 500): CatchAndThrow => (error) => {
+    save: (doc: Documents.Category, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate category name', doc, error);
         throw httpError(400, 'Duplicate category name');
@@ -218,7 +218,7 @@ export const httpErrors = {
       log('Save category', doc, error);
       throw httpError(statusCode, 'Error while saving category');
     },
-    getById: (ctx: Category.CategoryId & Partial<Category.ParentCategoryId>, statusCode = 500): CatchAndThrow => (error) => {
+    getById: (ctx: Api.Category.CategoryId & Partial<Api.Category.ParentCategoryId>, statusCode = 500): CatchAndThrow => (error) => {
       log('Get category', ctx, error);
       throw httpError(statusCode, 'Error while getting category');
     },
@@ -230,52 +230,52 @@ export const httpErrors = {
       log('List categories', undefined, error);
       throw httpError(statusCode, 'Error while listing categories');
     },
-    listByIds: (ctx: Category.Id[], statusCode = 500): CatchAndThrow => (error) => {
+    listByIds: (ctx: Api.Category.Id[], statusCode = 500): CatchAndThrow => (error) => {
       log('List categories by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing categories by ids');
     },
-    notFound: (ctx: Category.CategoryId & { category: Category.Document }, statusCode = 404) => {
+    notFound: (ctx: Api.Category.CategoryId & { category: Documents.Category }, statusCode = 404) => {
       if (ctx.categoryId && !ctx.category) {
         log('No category found', ctx);
         throw httpError(statusCode, 'No category found');
       }
     },
-    delete: (ctx: Category.CategoryId, statusCode = 500): CatchAndThrow => (error) => {
+    delete: (ctx: Api.Category.CategoryId, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete category', ctx, error);
       throw httpError(statusCode, 'Error while deleting category');
     },
-    notInventoryType: (ctx: Category.Document, statusCode = 400) => {
+    notInventoryType: (ctx: Documents.Category, statusCode = 400) => {
       if(ctx.categoryType !== CategoryType.Inventory) {
         log('Category must be "inventory" type', ctx);
         throw httpError(statusCode, 'Category must be "inventory" type');
       }
     },
-    notSameType: (ctx: Category.Document[], statusCode = 400) => {
+    notSameType: (ctx: Documents.Category[], statusCode = 400) => {
       const categoryType = ctx[0].categoryType;
       if (ctx.some(c => c.categoryType !== categoryType)) {
         log('All categories must be of same type', ctx);
         throw httpError(statusCode, 'All categories must be of same type');
       }
     },
-    multipleNotFound: (ctx: { categoryIds: Category.Id[]; categories: Category.Document[] }, statusCode = 400) => {
+    multipleNotFound: (ctx: { categoryIds: Api.Category.Id[]; categories: Documents.Category[] }, statusCode = 400) => {
       if (ctx.categories.length !== ctx.categoryIds.length) {
         log('Some of the categories are not found', ctx);
         throw httpError(statusCode, 'Some of the categories are not found');
       }
     },
-    parentNotFound: (ctx: Category.ParentCategoryId & {parentCategory: Category.Document}, statusCode = 400) => {
+    parentNotFound: (ctx: Api.Category.ParentCategoryId & {parentCategory: Documents.Category}, statusCode = 400) => {
       if (ctx.parentCategoryId && !ctx.parentCategory) {
         log('Parent category not found', ctx);
         throw httpError(statusCode, 'Parent category not found');
       }
     },
-    parentIsSelf: (ctx: Category.CategoryId & Category.ParentCategoryId, statusCode = 400) => { 
+    parentIsSelf: (ctx: Api.Category.CategoryId & Api.Category.ParentCategoryId, statusCode = 400) => {
       if (ctx.categoryId === ctx.parentCategoryId) {
         log('Parent category cannot be the category itself', ctx);
         throw httpError(statusCode, 'Parent category cannot be the category itself');
       }
     },
-    parentIsAChild: (parentCategory: Category.Document, categoryId: Category.Id, statusCode = 400) => {
+    parentIsAChild: (parentCategory: Documents.Category, categoryId: Api.Category.Id, statusCode = 400) => {
       if (parentCategory?.ancestors.some((category) => getCategoryId(category) === categoryId)) {
         log('Parent category is already a child of the current category', {
           categoryId,
@@ -284,7 +284,7 @@ export const httpErrors = {
         throw httpError(statusCode, 'Parent category is already a child of the current category');
       }
     },
-    update: (ctx: Category.CategoryId & {update: UpdateQuery<Category.Document>;}, statusCode = 500): CatchAndThrow => (error) => {
+    update: (ctx: Api.Category.CategoryId & {update: UpdateQuery<Documents.Category>;}, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate category name', ctx, error);
         throw httpError(400, 'Duplicate category name');
@@ -293,15 +293,15 @@ export const httpErrors = {
       log('Update category', ctx, error);
       throw httpError(statusCode, 'Error while updating category');
     },
-    mergeTargetAmongSource: (ctx: {target: Category.Id; source: Category.Id[]}, statusCode = 400) => {
+    mergeTargetAmongSource: (ctx: {target: Api.Category.Id; source: Api.Category.Id[]}, statusCode = 400) => {
       if (ctx.source.includes(ctx.target)) {
         log('Target category is among the source category Ids', ctx);
         throw httpError(statusCode, 'Target category is among the source category Ids');
       }
     },
     mergeSourceIsAnAncestor: (ctx: {
-      target: Category.Document;
-      source: Category.Id[];
+      target: Documents.Category;
+      source: Api.Category.Id[];
     }, statusCode = 400) => {
       console.log('CTX', ctx);
       if (ctx.target.ancestors.some((c) => ctx.source.includes(getCategoryId(c)))) {
@@ -310,8 +310,8 @@ export const httpErrors = {
       }
     },
     merge: (ctx: {
-      targetCategoryId: Category.Id;
-      sourceCategoryIds: Category.Id[];
+      targetCategoryId: Api.Category.Id;
+      sourceCategoryIds: Api.Category.Id[];
     }, statusCode = 500): CatchAndThrow => (error) => {
       log('Merge categories', ctx, error);
       throw httpError(statusCode, 'Error while merging categories');
@@ -416,7 +416,7 @@ export const httpErrors = {
       log('Delete product', ctx, error);
       throw httpError(statusCode, 'Error while deleting product');
     },
-    categoryRelation: (ctx: Category.CategoryId & {product: Product.Document}, statusCode = 400) => {
+    categoryRelation: (ctx: Api.Category.CategoryId & {product: Product.Document}, statusCode = 400) => {
       if (getCategoryId(ctx.product.category) !== ctx.categoryId) {
         log('Product belongs to different category', ctx);
         throw httpError(statusCode, 'Product belongs to different category');

@@ -1,6 +1,6 @@
 import { entries, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { CategoryType, AccountType } from '@household/shared/enums';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Account, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -37,9 +37,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
   let recipientDocument: Documents.Recipient;
   let accountDocument: Documents.Account;
   let secondaryAccountDocument: Documents.Account;
-  let regularCategoryDocument: Category.Document;
-  let invoiceCategoryDocument: Category.Document;
-  let inventoryCategoryDocument: Category.Document;
+  let regularCategoryDocument: Documents.Category;
+  let invoiceCategoryDocument: Documents.Category;
+  let inventoryCategoryDocument: Documents.Category;
   let productDocument: Product.Document;
   let relatedDocumentIds: Pick<Transaction.SplitRequest, 'accountId' | 'recipientId'>;
   let relatedDocumentItemIds: Pick<Transaction.SplitRequestItem, 'categoryId' | 'productId' | 'projectId'>;

@@ -11,7 +11,7 @@ Keep this list current — check a domain off here in the same change that migra
 
 - [x] Account
 - [ ] Calendar
-- [ ] Category
+- [x] Category
 - [ ] Customer
 - [ ] File
 - [ ] Price
@@ -88,6 +88,19 @@ Add a variant (`<Domain>Lean`, `<Domain>Report`, ...) per distinct shape some co
 `AccountReport` is a real example: nothing calls `GET /account/.../report` directly, but
 `account-document-converter.ts`'s `toReport` returns it, and it's embedded inside `Transaction`'s
 (still legacy-pattern) report response.
+
+**A field the converter always computes, but whose value can genuinely be absent (`Category`'s
+`parentCategory` — `undefined` for a top-level category), is a required key, not an optional
+one** — `parentCategory: CategoryParent`, never `parentCategory?: CategoryParent`. `?:` means the
+*key* may be missing from the object entirely, so code building the response can forget to set it
+and `tsc` says nothing; a plain required key forces every construction site to make an explicit
+choice, catching the accidental omission as a compile error instead of a runtime bug. This is
+different from a field that's genuinely optional *input* (`Requests.<Domain>`'s
+`parentCategoryId` legitimately uses `?:`/`Partial<...>` — a client may validly omit it from the
+request body; that's not the same case). And never write `T | undefined` to express this — this
+repo's `tsconfig.json` has `"strict": false` (so `strictNullChecks` is off), which means every
+type already implicitly accepts `undefined` as a value; a plain required `field: T` already lets
+`field` be assigned `undefined`, so `T | undefined` is redundant noise, not a correctness fix.
 
 ### 4. `shared/src/types/documents.ts` — MongoDB persisted shape
 
@@ -178,6 +191,27 @@ export const idList: StrictSchema<Api.Project.Id[]> = {
 `apiRequestValidator`'s `RequestSchemaTypes` (`api/src/handlers/api-request-validator.handler.ts`)
 both accept `StrictSchema<any>` (not just `ObjectSchema<any>`) so an array-typed `body` schema
 type-checks through the same `apiRequestValidator({ body })` wiring as everything else.
+
+A response shape with a nested array or nested object (`Category`'s `ancestors: CategoryAncestor[]`
+and `parentCategory: CategoryParent`) composes through `combine()` the same way scalar fields
+do — wrap the nested value in its own single-key `ObjectSchema`, exactly like every atomic field:
+
+```ts
+const ancestorsField: ObjectSchema<{ ancestors: Responses.CategoryAncestor[] }> = {
+  type: 'object', additionalProperties: false, required: ['ancestors'],
+  properties: { ancestors: { type: 'array', items: categoryAncestor } },
+};
+export const response = combine<Responses.Category>([categoryAncestor, fullName, ancestorsField, parentCategoryField], { optional: ['parentCategory'] });
+```
+No special-casing in `combine()` itself — it only ever merges flat `properties`/`required`, so
+"nested" is just a property whose own schema happens to be `{type:'array', items: ...}` or
+another full object schema, built from a smaller `combine()` result the same way `categoryAncestor`
+(itself `combine()`d from `categoryId`/`name`/`categoryType`) feeds into the outer one. Note this
+`overrides.optional` is at the **AJV/OpenAPI schema level only** — it controls whether
+`parentCategory` is in the JSON Schema's `required` array (i.e. whether the JSON response may omit
+the key), which is unrelated to and does not need to match the *TypeScript* type's own
+required/optional-key choice (see layer 3's note on `parentCategory` — the TS type keeps it a
+required key even though the wire-level schema doesn't require it).
 
 ### 8. `shared/src/mongodb-schemas/<domain>.schema.ts` — mongoose schema
 
@@ -363,3 +397,42 @@ entries that consume a migrated domain's document/response through `Transaction`
 types — that cross-domain cleanup is a separate follow-up belonging to `Transaction`'s own
 migration, not to the domain you just finished (recipe step 14 already covers `test/`, so no
 `no-deprecated` warnings for the migrated domain should remain there).
+
+### Keep a fixed-but-sometimes-absent field a *required key*, not an optional one
+
+A field a converter always computes but whose value can genuinely be absent (`Category.
+toResponse`'s `parentCategory`, `undefined` for a top-level category) belongs on
+`Responses.<Domain>` as a plain required key — `parentCategory: CategoryParent` — never
+`parentCategory?: CategoryParent` and never `parentCategory: CategoryParent | undefined`.
+
+- `?:` means the *key* may be missing from the object entirely. Code building the response can
+  forget to set it and `tsc` says nothing — the exact bug this pattern exists to prevent.
+- `| undefined` is redundant here: this repo's `tsconfig.json` has `"strict": false`
+  (`strictNullChecks` off), so *every* type already implicitly accepts `undefined` as a value —
+  a plain required `field: T` already lets `field` be `undefined`. Writing `T | undefined` adds
+  nothing but noise.
+- A required key (no `?`, no `| undefined`) is also what keeps the new type structurally
+  identical to the legacy one for this field, so downstream *unmigrated* consumers that still
+  embed the converter's return value into a legacy-typed slot (e.g. `Transaction`'s converters
+  embedding `categoryDocumentConverter.toResponse(...)`) keep compiling with **no cast needed** —
+  matching `Account`/`Project`/`Recipient`, whose response types were exact structural matches
+  for their legacy counterparts for the same reason. Making the field merely `?:` was tried during
+  `Category`'s migration and broke 4 unmigrated `Transaction` files' assignability; switching to a
+  plain required key fixed the new type's accuracy *and* removed the need for any cast — do this
+  from the start rather than reaching for a cast to paper over an `?:` choice.
+
+This is unrelated to a field that's genuinely optional *input* — `Requests.<Domain>`'s
+`parentCategoryId` legitimately stays `?:`/`Partial<...>`, since a client omitting a key from a
+JSON request body is a different, real case (no value was sent at all), not "our own code forgot
+to set something it always computes."
+
+### Before dropping a legacy field as dead, grep the *whole* repo
+
+`Category.Document.products` looked unused from inside Category's own converter/service/schema
+files, but `product-document-converter.ts` (a different, unmigrated domain) reads
+`category.products`, populated by a `product-service.ts` aggregation that reuses the
+`Category.Document` shape as a convenient carrier for grouped results. Carrying a field forward
+into the new `Documents.<Domain>` type only because another domain's aggregation happens to bolt
+it on is legitimate — narrowing it there breaks real, working code for no accuracy gain. Grep for
+the field name across `api/` and `shared/` (not just the domain's own files) before deciding it's
+vestigial.

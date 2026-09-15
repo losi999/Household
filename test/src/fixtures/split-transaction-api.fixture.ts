@@ -1,5 +1,6 @@
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
@@ -107,7 +108,7 @@ export const expect = baseExpect.extend({
     recipient?: Reassignment<Api.Recipient.Id>;
     project?: Reassignment<Api.Project.Id>;
     product?: Reassignment<Product.Id>;
-    category?: Reassignment<Category.Document>;
+    category?: Reassignment<Documents.Category>;
   }) {
 
     const comparer = new Comparer(currentDocument, {
@@ -124,7 +125,7 @@ export const expect = baseExpect.extend({
         let expectedBillingStartDate: string;
         let expectedBillingEndDate: string;
         let expectedProduct: Product.Id;
-        let expectedCategory: Category.Id;
+        let expectedCategory: Api.Category.Id;
 
         if (reassignments.category && getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from)) {
           expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.invoiceNumber : undefined;
@@ -161,7 +162,7 @@ export const expect = baseExpect.extend({
         let expectedBillingStartDate: string;
         let expectedBillingEndDate: string;
         let expectedProduct: Product.Id;
-        let expectedCategory: Category.Id;
+        let expectedCategory: Api.Category.Id;
 
         if (reassignments.category && getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from)) {
           expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.invoiceNumber : undefined;
