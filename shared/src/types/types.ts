@@ -22,572 +22,575 @@ export namespace Internal {
 }
 
 /** @deprecated */
-export namespace Project {
-  export type Id = Branding<string, 'project'>;
+// export namespace Project {
+//   export type Id = Branding<string, 'project'>;
 
-  export type ProjectId = {
-    projectId: Id;
-  };
+//   export type ProjectId = {
+//     projectId: Id;
+//   };
 
-  type Name = {
-    name: string;
-  };
+//   type Name = {
+//     name: string;
+//   };
 
-  type Description = {
-    description: string;
-  };
+//   type Description = {
+//     description: string;
+//   };
 
-  type Base = Name
-    & Description;
+//   type Base = Name
+//     & Description;
 
-  export type Document = Internal.Id
-    & Internal.Timestamps
-    & Base;
+//   export type Document = Internal.Id
+//     & Internal.Timestamps
+//     & Base;
 
-  export type Response = Base
-    & ProjectId;
+//   export type Response = Base
+//     & ProjectId;
 
-  export type Report = ProjectId
-    & Name;
+//   export type Report = ProjectId
+//     & Name;
 
-  // export type Request = Base;
-}
-
-/** @deprecated */
-export namespace Recipient {
-  export type Id = Branding<string, 'recipient'>;
-
-  export type RecipientId = {
-    recipientId: Id;
-  };
-
-  type Name = {
-    name: string;
-  };
-
-  export type Document = Internal.Id
-    & Internal.Timestamps
-    & Name;
-
-  export type Response = Name
-    & RecipientId;
-
-  export type Report = RecipientId
-    & Name;
-
-  // export type Request = Name;
-}
+//   // export type Request = Base;
+// }
 
 /** @deprecated */
-export namespace Account {
-  export type Id = Branding<string, 'account'>;
+// export namespace Recipient {
+//   export type Id = Branding<string, 'recipient'>;
 
-  export type AccountId = {
-    accountId: Id;
-  };
+//   export type RecipientId = {
+//     recipientId: Id;
+//   };
 
-  export type IsOpen = {
-    isOpen: boolean;
-  };
+//   type Name = {
+//     name: string;
+//   };
 
-  export type Name = {
-    name: string;
-  };
+//   export type Document = Internal.Id
+//     & Internal.Timestamps
+//     & Name;
 
-  export type Currency = {
-    currency: string;
-  };
+//   export type Response = Name
+//     & RecipientId;
 
-  export type AccountType = {
-    accountType: Enum.AccountType;
-  };
+//   export type Report = RecipientId
+//     & Name;
 
-  export type Owner = {
-    owner: string;
-  };
-
-  export type FullName = {
-    fullName: string;
-  };
-
-  export type Base = Name
-    & Currency
-    & AccountType
-    & Owner;
-
-  export type Balance = {
-    balance: number;
-  };
-
-  export type Document = Internal.Id
-    & Internal.Timestamps
-    & Base
-    & IsOpen
-    & Partial<Balance>;
-
-  export type Response = Base
-    & IsOpen
-    & AccountId
-    & FullName
-    & Balance;
-
-  export type Report = AccountId
-    & FullName
-    & Currency;
-
-  // export type Request = Base;
-}
+//   // export type Request = Name;
+// }
 
 /** @deprecated */
-export namespace Category {
-  export type Id = Branding<string, 'category'>;
+// export namespace Account {
+//   export type Id = Branding<string, 'account'>;
 
-  export type CategoryId = {
-    categoryId: Id;
-  };
+//   export type AccountId = {
+//     accountId: Id;
+//   };
 
-  export type FullName = {
-    fullName: string;
-  };
+//   export type IsOpen = {
+//     isOpen: boolean;
+//   };
 
-  export type ParentCategoryId = {
-    parentCategoryId: Id;
-  };
+//   export type Name = {
+//     name: string;
+//   };
 
-  export type ParentCategory = {
-    parentCategory: Document;
-  };
+//   export type Currency = {
+//     currency: string;
+//   };
 
-  export type CategoryType = {
-    categoryType: Enum.CategoryType;
-  };
+//   export type AccountType = {
+//     accountType: Enum.AccountType;
+//   };
 
-  type Name = {
-    name: string;
-  };
+//   export type Owner = {
+//     owner: string;
+//   };
 
-  export type Document = Internal.Id
-    & Internal.Timestamps
-    & CategoryType
-    & Name
-    & {
-      ancestors: Document[];
-      products?: Product.Document[];
-    };
+//   export type FullName = {
+//     fullName: string;
+//   };
 
-  export type Report = CategoryId
-    & FullName;
+//   export type Base = Name
+//     & Currency
+//     & AccountType
+//     & Owner;
 
-  export type ResponseAncestor = CategoryType
-    & Name
-    & CategoryId;
+//   export type Balance = {
+//     balance: number;
+//   };
 
-  export type ResponseParent = ResponseAncestor & FullName;
+//   export type Document = Internal.Id
+//     & Internal.Timestamps
+//     & Base
+//     & IsOpen
+//     & Partial<Balance>;
 
-  export type Response = ResponseAncestor
-    & FullName
-    & {
-      ancestors: ResponseAncestor[];
-      parentCategory: ResponseParent;
-    };
+//   export type Response = Base
+//     & IsOpen
+//     & AccountId
+//     & FullName
+//     & Balance;
 
-  // export type Request = CategoryType
-  //   & Name
-  //   & ParentCategoryId;
-}
+//   export type Report = AccountId
+//     & FullName
+//     & Currency;
+
+//   // export type Request = Base;
+// }
 
 /** @deprecated */
-export namespace Product {
-  export type Id = Branding<string, 'product'>;
+// export namespace Category {
+//   export type Id = Branding<string, 'category'>;
 
-  export type ProductId = {
-    productId: Id;
-  };
+//   export type CategoryId = {
+//     categoryId: Id;
+//   };
 
-  type Base = {
-    brand: string;
-    unitOfMeasurement: typeof unitsOfMeasurement[number];
-    measurement: number;
-  };
+//   export type FullName = {
+//     fullName: string;
+//   };
 
-  export type FullName = {
-    fullName: string;
-  };
+//   export type ParentCategoryId = {
+//     parentCategoryId: Id;
+//   };
 
-  export type Document = Internal.Id
-    & Internal.Timestamps
-    & Base
-    & FullName
-    & {
-      category: Category.Document;
-    };
+//   export type ParentCategory = {
+//     parentCategory: Document;
+//   };
 
-  export type Response = Base
-    & ProductId
-    & FullName;
+//   export type CategoryType = {
+//     categoryType: Enum.CategoryType;
+//   };
 
-  export type GroupedResponse = Category.FullName & Category.CategoryId & {
-    products: Response[];
-  };
+//   type Name = {
+//     name: string;
+//   };
 
-  export type Report = ProductId
-    & FullName;
+//   export type Document = Internal.Id
+//     & Internal.Timestamps
+//     & CategoryType
+//     & Name
+//     & {
+//       ancestors: Document[];
+//       products?: Product.Document[];
+//     };
 
-  // export type Request = Base;
-}
+//   export type Report = CategoryId
+//     & FullName;
+
+//   export type ResponseAncestor = CategoryType
+//     & Name
+//     & CategoryId;
+
+//   export type ResponseParent = ResponseAncestor & FullName;
+
+//   export type Response = ResponseAncestor
+//     & FullName
+//     & {
+//       ancestors: ResponseAncestor[];
+//       parentCategory: ResponseParent;
+//     };
+
+//   // export type Request = CategoryType
+//   //   & Name
+//   //   & ParentCategoryId;
+// }
+
+/** @deprecated */
+// export namespace Product {
+//   export type Id = Branding<string, 'product'>;
+
+//   export type ProductId = {
+//     productId: Id;
+//   };
+
+//   type Base = {
+//     brand: string;
+//     unitOfMeasurement: typeof unitsOfMeasurement[number];
+//     measurement: number;
+//   };
+
+//   export type FullName = {
+//     fullName: string;
+//   };
+
+//   export type Document = Internal.Id
+//     & Internal.Timestamps
+//     & Base
+//     & FullName
+//     & {
+//       category: Category.Document;
+//     };
+
+//   export type Response = Base
+//     & ProductId
+//     & FullName;
+
+//   export type GroupedResponse = Category.FullName & Category.CategoryId & {
+//     products: Response[];
+//   };
+
+//   export type Report = ProductId
+//     & FullName;
+
+//   // export type Request = Base;
+// }
 
 export namespace Transaction {
-  export type Id = Branding<string, 'transaction'>;
+  // export type Id = Branding<string, 'transaction'>;
 
-  export type TransactionId = {
-    transactionId: Id;
-  };
+  // export type TransactionId = {
+  //   transactionId: Id;
+  // };
 
-  export type IssuedAt<D extends string | Date> = {
-    issuedAt: D;
-  };
+  // export type IssuedAt<D extends string | Date> = {
+  //   issuedAt: D;
+  // };
 
-  export type TransactionType<T extends Enum.TransactionType> = {
-    transactionType: T;
-  };
+  // export type TransactionType<T extends Enum.TransactionType> = {
+  //   transactionType: T;
+  // };
 
-  export type LoanAccountId = {
-    loanAccountId: Account.Id;
-  };
+  // export type LoanAccountId = {
+  //   loanAccountId: Account.Id;
+  // };
 
-  export type Amount = {
-    amount: number;
-  };
+  // export type Amount = {
+  //   amount: number;
+  // };
 
-  export type Description = {
-    description: string;
-  };
+  // export type Description = {
+  //   description: string;
+  // };
 
-  export type Quantity = {
-    quantity: number;
-  };
+  // export type Quantity = {
+  //   quantity: number;
+  // };
 
-  export type InvoiceNumber = {
-    invoiceNumber: string;
-  };
+  // export type InvoiceNumber = {
+  //   invoiceNumber: string;
+  // };
 
-  export type InvoiceDate<D extends string | Date> = {
-    billingStartDate: D;
-    billingEndDate: D;
-  };
+  // export type InvoiceDate<D extends string | Date> = {
+  //   billingStartDate: D;
+  //   billingEndDate: D;
+  // };
 
-  export type TransferAccountId = {
-    transferAccountId: Account.Id;
-  };
+  // export type TransferAccountId = {
+  //   transferAccountId: Account.Id;
+  // };
 
-  export type TransferAmount = {
-    transferAmount: number;
-  };
+  // export type TransferAmount = {
+  //   transferAmount: number;
+  // };
 
-  type RemainingAmount = {
-    remainingAmount: number;
-  };
+  // type RemainingAmount = {
+  //   remainingAmount: number;
+  // };
 
-  export type Category<C extends Category.Document | Category.Response | Category.Report> = {
-    category: C;
-  };
+  // export type Category<C extends Category.Document | Category.Response | Category.Report> = {
+  //   category: C;
+  // };
 
-  export type Project<P extends Project.Document | Project.Response | Project.Report> = {
-    project: P;
-  };
+  // export type Project<P extends Project.Document | Project.Response | Project.Report> = {
+  //   project: P;
+  // };
 
-  export type Account<A extends Account.Document | Account.Response | Account.Report> = {
-    account: A;
-  };
+  // export type Account<A extends Account.Document | Account.Response | Account.Report> = {
+  //   account: A;
+  // };
 
-  export type Recipient<R extends Recipient.Document | Recipient.Response | Recipient.Report> = {
-    recipient: R;
-  };
+  // export type Recipient<R extends Recipient.Document | Recipient.Response | Recipient.Report> = {
+  //   recipient: R;
+  // };
 
-  export type Product<P extends Product.Document | Product.Response | Product.Report> = {
-    product: P;
-  };
+  // export type Product<P extends Product.Document | Product.Response | Product.Report> = {
+  //   product: P;
+  // };
 
-  export type TransferAccount<A extends Account.Document | Account.Response> = {
-    transferAccount: A;
-  };
+  // export type TransferAccount<A extends Account.Document | Account.Response> = {
+  //   transferAccount: A;
+  // };
 
-  export type PayingAccount<A extends Account.Document | Account.Response> = {
-    payingAccount: A;
-  };
+  // export type PayingAccount<A extends Account.Document | Account.Response> = {
+  //   payingAccount: A;
+  // };
 
-  export type OwnerAccount<A extends Account.Document | Account.Response> = {
-    ownerAccount: A;
-  };
+  // export type OwnerAccount<A extends Account.Document | Account.Response> = {
+  //   ownerAccount: A;
+  // };
 
-  export type IsSettled = {
-    isSettled: boolean;
-  };
+  // export type IsSettled = {
+  //   isSettled: boolean;
+  // };
 
-  type Payments = {
-    payments?: {
-      transaction: Transaction.DeferredDocument;
-      amount: number;
-    }[]
-  };
+  // type Payments = {
+  //   payments?: {
+  //     transaction: Transaction.DeferredDocument;
+  //     amount: number;
+  //   }[]
+  // };
+  
+  /**
+ * @deprecated
+ */
+  // export type PaymentRequest = Account.AccountId
+  //   & Category.CategoryId
+  //   & Project.ProjectId
+  //   & Recipient.RecipientId
+  //   & IssuedAt<string>
+  //   & InvoiceNumber
+  //   & InvoiceDate<string>
+  //   & Quantity
+  //   & Product.ProductId
+  //   & Amount
+  //   & Description
+  //   & LoanAccountId
+  //   & IsSettled;
 
-  export type PaymentRequest = Account.AccountId
-    & Category.CategoryId
-    & Project.ProjectId
-    & Recipient.RecipientId
-    & IssuedAt<string>
-    & InvoiceNumber
-    & InvoiceDate<string>
-    & Quantity
-    & Product.ProductId
-    & Amount
-    & Description
-    & LoanAccountId
-    & IsSettled;
+  // export type TransferRequest = Account.AccountId
+  //   & IssuedAt<string>
+  //   & Amount
+  //   & Description
+  //   & TransferAccountId
+  //   & TransferAmount
+  //   & {
+  //     payments: (TransactionId & Amount)[];
+  //   };
 
-  export type TransferRequest = Account.AccountId
-    & IssuedAt<string>
-    & Amount
-    & Description
-    & TransferAccountId
-    & TransferAmount
-    & {
-      payments: (TransactionId & Amount)[];
-    };
+  // export type SplitRequestItem = Category.CategoryId
+  //   & Project.ProjectId
+  //   & InvoiceNumber
+  //   & InvoiceDate<string>
+  //   & Quantity
+  //   & Product.ProductId
+  //   & Amount
+  //   & Description;
 
-  export type SplitRequestItem = Category.CategoryId
-    & Project.ProjectId
-    & InvoiceNumber
-    & InvoiceDate<string>
-    & Quantity
-    & Product.ProductId
-    & Amount
-    & Description;
+  // export type LoanRequestItem = Category.CategoryId
+  //   & Project.ProjectId
+  //   & InvoiceNumber
+  //   & InvoiceDate<string>
+  //   & Quantity
+  //   & Product.ProductId
+  //   & Amount
+  //   & Description
+  //   & LoanAccountId
+  //   & IsSettled
+  //   & TransactionId;
 
-  export type LoanRequestItem = Category.CategoryId
-    & Project.ProjectId
-    & InvoiceNumber
-    & InvoiceDate<string>
-    & Quantity
-    & Product.ProductId
-    & Amount
-    & Description
-    & LoanAccountId
-    & IsSettled
-    & TransactionId;
+  // export type SplitRequest = Account.AccountId
+  //   & Recipient.RecipientId
+  //   & IssuedAt<string>
+  //   & Amount
+  //   & Description
+  //   & {
+  //     splits: SplitRequestItem[];
+  //     loans: LoanRequestItem[];
+  //   };
 
-  export type SplitRequest = Account.AccountId
-    & Recipient.RecipientId
-    & IssuedAt<string>
-    & Amount
-    & Description
-    & {
-      splits: SplitRequestItem[];
-      loans: LoanRequestItem[];
-    };
+  // export type DraftDocument<D extends Date | string = Date> = Internal.Id
+  //   & Internal.Timestamps
+  //   & TransactionType<Enum.TransactionType.Draft>
+  //   & Amount
+  //   & Description
+  //   & IssuedAt<D> & {
+  //     file: File.Document
+  //     potentialDuplicates?: (PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>)[];
+  //   };
 
-  export type DraftDocument<D extends Date | string = Date> = Internal.Id
-    & Internal.Timestamps
-    & TransactionType<Enum.TransactionType.Draft>
-    & Amount
-    & Description
-    & IssuedAt<D> & {
-      file: File.Document
-      potentialDuplicates?: (PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>)[];
-    };
+  // type LoanDocument<D extends Date | string = Date> = Internal.Id
+  //   & Internal.Timestamps
+  //   & Category<Category.Document>
+  //   & Project<Project.Document>
+  //   & Recipient<Recipient.Document>
+  //   & IssuedAt<D>
+  //   & InvoiceNumber
+  //   & InvoiceDate<D>
+  //   & Quantity
+  //   & Product<Product.Document>
+  //   & Amount
+  //   & Description
+  //   & PayingAccount<Account.Document>
+  //   & OwnerAccount<Account.Document>;
 
-  type LoanDocument<D extends Date | string = Date> = Internal.Id
-    & Internal.Timestamps
-    & Category<Category.Document>
-    & Project<Project.Document>
-    & Recipient<Recipient.Document>
-    & IssuedAt<D>
-    & InvoiceNumber
-    & InvoiceDate<D>
-    & Quantity
-    & Product<Product.Document>
-    & Amount
-    & Description
-    & PayingAccount<Account.Document>
-    & OwnerAccount<Account.Document>;
+  // export type DeferredDocument<D extends Date | string = Date> = LoanDocument<D>
+  //   & TransactionType<Enum.TransactionType.Deferred>
+  //   & IsSettled
+  //   & Partial<RemainingAmount>;
 
-  export type DeferredDocument<D extends Date | string = Date> = LoanDocument<D>
-    & TransactionType<Enum.TransactionType.Deferred>
-    & IsSettled
-    & Partial<RemainingAmount>;
+  // export type ReimbursementDocument<D extends Date | string = Date> = LoanDocument<D>
+  //   & TransactionType<Enum.TransactionType.Reimbursement>;
 
-  export type ReimbursementDocument<D extends Date | string = Date> = LoanDocument<D>
-    & TransactionType<Enum.TransactionType.Reimbursement>;
+  // export type PaymentDocument<D extends Date | string = Date> = Internal.Id
+  //   & Internal.Timestamps
+  //   & TransactionType<Enum.TransactionType.Payment>
+  //   & Account<Account.Document>
+  //   & Category<Category.Document>
+  //   & Project<Project.Document>
+  //   & Recipient<Recipient.Document>
+  //   & IssuedAt<D>
+  //   & InvoiceNumber
+  //   & InvoiceDate<D>
+  //   & Quantity
+  //   & Product<Product.Document>
+  //   & Amount
+  //   & Description;
 
-  export type PaymentDocument<D extends Date | string = Date> = Internal.Id
-    & Internal.Timestamps
-    & TransactionType<Enum.TransactionType.Payment>
-    & Account<Account.Document>
-    & Category<Category.Document>
-    & Project<Project.Document>
-    & Recipient<Recipient.Document>
-    & IssuedAt<D>
-    & InvoiceNumber
-    & InvoiceDate<D>
-    & Quantity
-    & Product<Product.Document>
-    & Amount
-    & Description;
+  // export type TransferDocument<D extends Date | string = Date> = Internal.Id
+  //   & Internal.Timestamps
+  //   & TransactionType<Enum.TransactionType.Transfer>
+  //   & Account<Account.Document>
+  //   & TransferAccount<Account.Document>
+  //   & IssuedAt<D>
+  //   & TransferAmount
+  //   & Amount
+  //   & Description
+  //   & Payments;
 
-  export type TransferDocument<D extends Date | string = Date> = Internal.Id
-    & Internal.Timestamps
-    & TransactionType<Enum.TransactionType.Transfer>
-    & Account<Account.Document>
-    & TransferAccount<Account.Document>
-    & IssuedAt<D>
-    & TransferAmount
-    & Amount
-    & Description
-    & Payments;
+  // export type SplitDocumentItem<D extends Date | string = Date> = Project<Project.Document>
+  //   & Category<Category.Document>
+  //   & InvoiceNumber
+  //   & InvoiceDate<D>
+  //   & Quantity
+  //   & Product<Product.Document>
+  //   & Amount
+  //   & Description;
 
-  export type SplitDocumentItem<D extends Date | string = Date> = Project<Project.Document>
-    & Category<Category.Document>
-    & InvoiceNumber
-    & InvoiceDate<D>
-    & Quantity
-    & Product<Product.Document>
-    & Amount
-    & Description;
+  // export type Splits<D extends Date | string = Date> = {
+  //   splits: SplitDocumentItem<D>[];
+  //   deferredSplits: DeferredDocument<D>[];
+  // };
 
-  export type Splits<D extends Date | string = Date> = {
-    splits: SplitDocumentItem<D>[];
-    deferredSplits: DeferredDocument<D>[];
-  };
+  // export type SplitDocument<D extends Date | string = Date> = Internal.Id
+  //   & Internal.Timestamps
+  //   & TransactionType<Enum.TransactionType.Split>
+  //   & Account<Account.Document>
+  //   & Recipient<Recipient.Document>
+  //   & IssuedAt<D>
+  //   & Amount
+  //   & Description
+  //   & Splits<D>;
 
-  export type SplitDocument<D extends Date | string = Date> = Internal.Id
-    & Internal.Timestamps
-    & TransactionType<Enum.TransactionType.Split>
-    & Account<Account.Document>
-    & Recipient<Recipient.Document>
-    & IssuedAt<D>
-    & Amount
-    & Description
-    & Splits<D>;
+  // export type RawReport = Internal.Id
+  //   & Account<Account.Document>
+  //   & Category<Category.Document>
+  //   & Project<Project.Document>
+  //   & Recipient<Recipient.Document>
+  //   & IssuedAt<Date>
+  //   & InvoiceNumber
+  //   & InvoiceDate<Date>
+  //   & Quantity
+  //   & Product<Product.Document>
+  //   & Amount
+  //   & Description;
 
-  export type RawReport = Internal.Id
-    & Account<Account.Document>
-    & Category<Category.Document>
-    & Project<Project.Document>
-    & Recipient<Recipient.Document>
-    & IssuedAt<Date>
-    & InvoiceNumber
-    & InvoiceDate<Date>
-    & Quantity
-    & Product<Product.Document>
-    & Amount
-    & Description;
+  // export type Document<D extends Date | string = Date> = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>;
 
-  export type Document<D extends Date | string = Date> = PaymentDocument<D> | TransferDocument<D> | SplitDocument<D> | DraftDocument<D> | DeferredDocument<D> | ReimbursementDocument<D>;
+  // export type PaymentResponse = TransactionId
+  //   & Amount
+  //   & Description
+  //   & IssuedAt<string>
+  //   & InvoiceNumber
+  //   & InvoiceDate<string>
+  //   & Quantity
+  //   & Product<Product.Response>
+  //   & TransactionType<Enum.TransactionType.Payment>
+  //   & Account<Account.Response>
+  //   & Category<Category.Response>
+  //   & Project<Project.Response>
+  //   & Recipient<Recipient.Response>;
 
-  export type PaymentResponse = TransactionId
-    & Amount
-    & Description
-    & IssuedAt<string>
-    & InvoiceNumber
-    & InvoiceDate<string>
-    & Quantity
-    & Product<Product.Response>
-    & TransactionType<Enum.TransactionType.Payment>
-    & Account<Account.Response>
-    & Category<Category.Response>
-    & Project<Project.Response>
-    & Recipient<Recipient.Response>;
+  // export type DeferredResponse = TransactionId
+  //   & Amount
+  //   & Description
+  //   & IssuedAt<string>
+  //   & InvoiceNumber
+  //   & InvoiceDate<string>
+  //   & Quantity
+  //   & IsSettled
+  //   & Product<Product.Response>
+  //   & TransactionType<Enum.TransactionType.Deferred>
+  //   & PayingAccount<Account.Response>
+  //   & OwnerAccount<Account.Response>
+  //   & Category<Category.Response>
+  //   & Project<Project.Response>
+  //   & Recipient<Recipient.Response>
+  //   & RemainingAmount;
 
-  export type DeferredResponse = TransactionId
-    & Amount
-    & Description
-    & IssuedAt<string>
-    & InvoiceNumber
-    & InvoiceDate<string>
-    & Quantity
-    & IsSettled
-    & Product<Product.Response>
-    & TransactionType<Enum.TransactionType.Deferred>
-    & PayingAccount<Account.Response>
-    & OwnerAccount<Account.Response>
-    & Category<Category.Response>
-    & Project<Project.Response>
-    & Recipient<Recipient.Response>
-    & RemainingAmount;
+  // export type ReimbursementResponse = TransactionId
+  //   & Amount
+  //   & Description
+  //   & IssuedAt<string>
+  //   & InvoiceNumber
+  //   & InvoiceDate<string>
+  //   & Quantity
+  //   & Product<Product.Response>
+  //   & TransactionType<Enum.TransactionType.Reimbursement>
+  //   & PayingAccount<Account.Response>
+  //   & OwnerAccount<Account.Response>
+  //   & Category<Category.Response>
+  //   & Project<Project.Response>
+  //   & Recipient<Recipient.Response>;
 
-  export type ReimbursementResponse = TransactionId
-    & Amount
-    & Description
-    & IssuedAt<string>
-    & InvoiceNumber
-    & InvoiceDate<string>
-    & Quantity
-    & Product<Product.Response>
-    & TransactionType<Enum.TransactionType.Reimbursement>
-    & PayingAccount<Account.Response>
-    & OwnerAccount<Account.Response>
-    & Category<Category.Response>
-    & Project<Project.Response>
-    & Recipient<Recipient.Response>;
+  // export type TransferResponse = TransactionId
+  //   & Amount
+  //   & Description
+  //   & IssuedAt<string>
+  //   & TransactionType<Enum.TransactionType.Transfer>
+  //   & Account<Account.Response>
+  //   & TransferAccount<Account.Response>
+  //   & TransferAmount
+  //   & {
+  //     payments: ({
+  //       transaction: Transaction.DeferredResponse;
+  //     } & Amount)[];
+  //   };
 
-  export type TransferResponse = TransactionId
-    & Amount
-    & Description
-    & IssuedAt<string>
-    & TransactionType<Enum.TransactionType.Transfer>
-    & Account<Account.Response>
-    & TransferAccount<Account.Response>
-    & TransferAmount
-    & {
-      payments: ({
-        transaction: Transaction.DeferredResponse;
-      } & Amount)[];
-    };
+  // export type SplitResponseItem = Amount
+  //   & Description
+  //   & InvoiceNumber
+  //   & InvoiceDate<string>
+  //   & Quantity
+  //   & Product<Product.Response>
+  //   & Project<Project.Response>
+  //   & Category<Category.Response>;
 
-  export type SplitResponseItem = Amount
-    & Description
-    & InvoiceNumber
-    & InvoiceDate<string>
-    & Quantity
-    & Product<Product.Response>
-    & Project<Project.Response>
-    & Category<Category.Response>;
+  // export type SplitResponse = TransactionId
+  //   & Amount
+  //   & Description
+  //   & IssuedAt<string>
+  //   & TransactionType<Enum.TransactionType.Split>
+  //   & Account<Account.Response>
+  //   & Recipient<Recipient.Response>
+  //   & {
+  //     splits: SplitResponseItem[];
+  //     deferredSplits: DeferredResponse[];
+  //   };
 
-  export type SplitResponse = TransactionId
-    & Amount
-    & Description
-    & IssuedAt<string>
-    & TransactionType<Enum.TransactionType.Split>
-    & Account<Account.Response>
-    & Recipient<Recipient.Response>
-    & {
-      splits: SplitResponseItem[];
-      deferredSplits: DeferredResponse[];
-    };
+  // export type DraftResponse = TransactionId
+  //   & Amount
+  //   & Description
+  //   & IssuedAt<string>
+  //   & TransactionType<Enum.TransactionType.Draft>
+  //   & {
+  //     potentialDuplicates: Response[];
+  //   };
 
-  export type DraftResponse = TransactionId
-    & Amount
-    & Description
-    & IssuedAt<string>
-    & TransactionType<Enum.TransactionType.Draft>
-    & {
-      potentialDuplicates: Response[];
-    };
+  // export type Response = PaymentResponse | TransferResponse | SplitResponse | DeferredResponse | ReimbursementResponse;
 
-  export type Response = PaymentResponse | TransferResponse | SplitResponse | DeferredResponse | ReimbursementResponse;
-
-  export type Report = TransactionId
-    & Amount
-    & Description
-    & IssuedAt<string>
-    & Account<Account.Report>
-    & Category<Category.Report>
-    & Project<Project.Report>
-    & Recipient<Recipient.Report>
-    & Product<Product.Report>
-    & Quantity
-    & InvoiceNumber
-    & InvoiceDate<string>;
+  // export type Report = TransactionId
+  //   & Amount
+  //   & Description
+  //   & IssuedAt<string>
+  //   & Account<Account.Report>
+  //   & Category<Category.Report>
+  //   & Project<Project.Report>
+  //   & Recipient<Recipient.Report>
+  //   & Product<Product.Report>
+  //   & Quantity
+  //   & InvoiceNumber
+  //   & InvoiceDate<string>;
 }
 
 export namespace Report {
@@ -628,6 +631,7 @@ export namespace Report {
   export type Request = Filter[];
 }
 
+/** @deprecated */
 export namespace Setting {
   type Base<V extends string | number | boolean = string | number | boolean> = {
     value: V;
@@ -714,6 +718,7 @@ export namespace Auth {
   }
 }
 
+/** @deprecated */
 export namespace File {
   export type Id = Branding<string, 'file'>;
 
@@ -1028,9 +1033,9 @@ export namespace Calendar {
   }
 }
 
-export namespace Common {
-  export type Pagination<P extends string | number> = {
-    pageSize: P;
-    pageNumber: P;
-  };
-}
+// export namespace Common {
+//   export type Pagination<P extends string | number> = {
+//     pageSize: P;
+//     pageNumber: P;
+//   };
+// }

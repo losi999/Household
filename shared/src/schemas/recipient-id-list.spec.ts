@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/recipient-id-list';
-import { Recipient } from '@household/shared/types/types';
+import { idList as schema } from '@household/shared/schemas/recipient';
+import { Api } from '@household/shared/types/api';
 import { createRecipientId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Recipient id list schema', () => {
-  const tester = jsonSchemaTesterFactory<Recipient.Id[]>(schema);
+  const tester = schemaTesterFactory<Api.Recipient.Id[]>(schema);
 
   tester.validateSuccess([createRecipientId()]);
 

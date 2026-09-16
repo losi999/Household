@@ -1,5 +1,5 @@
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
-import { default as amount } from '@household/shared/schemas/partials/transaction-amount';
+import { amount } from '@household/shared/schemas/transaction';
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Calendar } from '@household/shared/types/types';
 

@@ -1,11 +1,10 @@
 import { default as schema } from '@household/shared/schemas/get-transaction';
-import { Transaction } from '@household/shared/types/types';
 import { createAccountId, createTransactionId } from '@household/shared/common/test-data-factory';
 import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 import { Api } from '@household/shared/types/api';
 
 describe('Get transaction schema', () => {
-  const tester = schemaTesterFactory<Api.Account.AccountId & Transaction.TransactionId>(schema);
+  const tester = schemaTesterFactory<Api.Account.AccountId & Api.Transaction.TransactionId>(schema);
 
   tester.validateSuccess({
     accountId: createAccountId(),

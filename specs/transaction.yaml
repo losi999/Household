@@ -12,12 +12,12 @@ components:
         transactionId:
           type: string
           minLength: 1
-    SplitId:
-      type: object
-      properties:
-        splitId:
-          type: string
-          minLength: 1
+    # SplitId:
+    #   type: object
+    #   properties:
+    #     splitId:
+    #       type: string
+    #       minLength: 1
     IssuedAt:
       type: object
       required:
@@ -200,7 +200,7 @@ components:
         - $ref: "#/components/schemas/Description"
     LoanRequestItem:
       allOf:
-        - $ref: "#/components/schemas/SplitId"
+        # - $ref: "#/components/schemas/SplitId"
         - $ref: "category.yaml#/components/schemas/CategoryId"
         - $ref: "project.yaml#/components/schemas/ProjectId"
         - $ref: "#/components/schemas/InvoiceNumber"

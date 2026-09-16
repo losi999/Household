@@ -1,11 +1,11 @@
 
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IListDeferredTransactionsService } from '@household/api/functions/list-deferred-transactions/list-deferred-transactions.service';
-import { Transaction } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (listDeferredTransactions: IListDeferredTransactionsService): AWSLambda.APIGatewayProxyHandler => {
   return async () => {
-    let transactions: Transaction.Response[];
+    let transactions: Responses.Transaction[];
 
     try {
       transactions = await listDeferredTransactions();

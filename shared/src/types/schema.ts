@@ -5,6 +5,9 @@ type StringSchema = {
   pattern?: string;
   format?: 'date' | 'date-time' | 'email' | 'hostname' | 'ipv4' | 'ipv6' | 'uri';
   enum?: string[];
+  formatExclusiveMinimum?: {
+    $data: string;
+  };
 };    
 
 type NumberSchema = {
@@ -30,10 +33,14 @@ type ArraySchema<T> = {
 };
 
 export type ObjectSchema<T> = {
-  type: 'object';
-  properties: { [prop in keyof T]?: StrictSchema<T[prop]> };
+  type: 'object' | ['object', 'null'];
+  properties?: { [prop in keyof T]?: StrictSchema<T[prop]> };
   required?: (keyof T)[];
   additionalProperties?: boolean;
+  dependencies?: {
+    [prop in keyof T]?: Partial<ObjectSchema<object>> | (keyof T)[];
+  };
+  anyOf?: ObjectSchema<T>[];
 };
 
 export type StrictSchema<T> =

@@ -7,14 +7,14 @@ import { IAccountService } from '@household/shared/services/account-service';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { ISettingService } from '@household/shared/services/setting-service';
-import { Calendar, Category, Transaction } from '@household/shared/types/types';
+import { Calendar } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 
 export interface IResolveCalendarWorkEntryService {
   (ctx: {
     body: Calendar.Entry.ResolutionRequest;
     expiresIn: number;
-  } & Calendar.Entry.CalendarEntryId): Promise<Transaction.Id>;
+  } & Calendar.Entry.CalendarEntryId): Promise<Api.Transaction.Id>;
 }
 
 export const resolveCalendarWorkEntryServiceFactory = (
@@ -61,7 +61,7 @@ export const resolveCalendarWorkEntryServiceFactory = (
     ]));
 
     const accountId = settings.find(s => s.settingKey === SettingKey.HairdressingIncomeAccount).value as Api.Account.Id;
-    const categoryId = settings.find(s => s.settingKey === SettingKey.HairdressingIncomeCategory).value as Category.Id;
+    const categoryId = settings.find(s => s.settingKey === SettingKey.HairdressingIncomeCategory).value as Api.Category.Id;
 
     const [
       account,

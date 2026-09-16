@@ -1,13 +1,19 @@
-import { default as schema } from '@household/shared/schemas/transaction-split-request';
-import { Transaction } from '@household/shared/types/types';
+import { splitRequest } from '@household/shared/schemas/transaction';
 import { createAccountId, createCategoryId, createLoanRequestItem, createProductId, createProjectId, createRecipientId, createSplitRequestItem as createSplitRequestItem, createSplitTransactionRequest, createTransactionId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { Requests } from '@household/shared/types/requests';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Split transaction schema', () => {
-  const tester = jsonSchemaTesterFactory<Transaction.SplitRequest>(schema);
+  const tester = schemaTesterFactory<Requests.SplitTransaction>(splitRequest);
 
   describe('should accept', () => {
-    tester.validateSuccess(createSplitTransactionRequest(), 'without splits.loanAccountId');
+    tester.validateSuccess(createSplitTransactionRequest({
+      splits: undefined,
+    }), 'without splits');
+
+    tester.validateSuccess(createSplitTransactionRequest({
+      loans: undefined,
+    }), 'with loans');
 
     tester.validateSuccess(createSplitTransactionRequest({
       description: undefined,
@@ -16,16 +22,6 @@ describe('Split transaction schema', () => {
     tester.validateSuccess(createSplitTransactionRequest({
       recipientId: undefined,
     }), 'without recipientId');
-
-    tester.validateSuccess(createSplitTransactionRequest({
-      loans: [
-        createLoanRequestItem({
-          loanAccountId: createAccountId(),
-          amount: -100,
-          isSettled: false,
-        }),
-      ],
-    }), 'with splits.loanAccountId');
 
     tester.validateSuccess(createSplitTransactionRequest({
       splits: [
@@ -77,6 +73,57 @@ describe('Split transaction schema', () => {
         }),
       ],
     }), 'without splits.invoiceNumber');
+
+    tester.validateSuccess(createSplitTransactionRequest({
+      loans: [
+        createLoanRequestItem({
+          categoryId: undefined,
+        }),
+      ],
+    }), 'without loans.categoryId');
+
+    tester.validateSuccess(createSplitTransactionRequest({
+      loans: [
+        createLoanRequestItem({
+          projectId: undefined,
+        }),
+      ],
+    }), 'without loans.projectId');
+
+    tester.validateSuccess(createSplitTransactionRequest({
+      loans: [
+        createLoanRequestItem({
+          description: undefined,
+        }),
+      ],
+    }), 'without loans.description');
+
+    tester.validateSuccess(createSplitTransactionRequest({
+      loans: [
+        createLoanRequestItem({
+          quantity: undefined,
+          productId: undefined,
+        }),
+      ],
+    }), 'without loans.inventory');
+
+    tester.validateSuccess(createSplitTransactionRequest({
+      loans: [
+        createLoanRequestItem({
+          invoiceNumber: undefined,
+          billingEndDate: undefined,
+          billingStartDate: undefined,
+        }),
+      ],
+    }), 'without loans.invoice');
+
+    tester.validateSuccess(createSplitTransactionRequest({
+      loans: [
+        createLoanRequestItem({
+          invoiceNumber: undefined,
+        }),
+      ],
+    }), 'without loans.invoiceNumber');
   });
 
   describe('should deny', () => {
@@ -425,7 +472,6 @@ describe('Split transaction schema', () => {
           createLoanRequestItem({
             amount: 1,
             loanAccountId: createAccountId(),
-            isSettled: false,
           }),
         ],
       }), 'loans/0/amount', 0);
@@ -626,6 +672,13 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.loans[0].loanAccountId', () => {
+      tester.required(createSplitTransactionRequest({
+        loans: [
+          createLoanRequestItem({
+            loanAccountId: undefined,
+          }),
+        ],
+      }), 'loanAccountId');
       tester.type(createSplitTransactionRequest({
         loans: [
           createLoanRequestItem({
@@ -659,16 +712,6 @@ describe('Split transaction schema', () => {
           }),
         ],
       }), 'loans/0/transactionId');
-    });
-
-    describe('if data.loans[0].isSettled', () => {
-      tester.type(createSplitTransactionRequest({
-        loans: [
-          createLoanRequestItem({
-            isSettled: 1 as any,
-          }),
-        ],
-      }), 'loans/0/isSettled', 'boolean');
     });
   });
 });

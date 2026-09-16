@@ -8,14 +8,14 @@ import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Category, Product, Project, Transaction } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateSplitTransactionService {
   (ctx: {
-    body: Transaction.SplitRequest;
+    body: Requests.SplitTransaction;
     expiresIn: number;
-  }): Promise<Transaction.Id>;
+  }): Promise<Api.Transaction.Id>;
 }
 
 export const createSplitTransactionServiceFactory = (
@@ -32,9 +32,9 @@ export const createSplitTransactionServiceFactory = (
     const splits = body.splits ?? [];
     const loans = body.loans ?? [];
     let total = 0;
-    const categoryIds: Category.Id[] = [];
-    const projectIds: Project.Id[] = [];
-    const productIds: Product.Id[] = [];
+    const categoryIds: Api.Category.Id[] = [];
+    const projectIds: Api.Project.Id[] = [];
+    const productIds: Api.Product.Id[] = [];
     const accountIds: Api.Account.Id[] = [accountId];
 
     splits.forEach(({ amount, categoryId, productId, projectId }) => {

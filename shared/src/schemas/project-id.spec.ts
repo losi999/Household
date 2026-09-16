@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/project-id';
-import { Project } from '@household/shared/types/types';
+import { projectId as schema } from '@household/shared/schemas/project';
 import { createProjectId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Api } from '@household/shared/types/api';
 
 describe('Project id schema', () => {
-  const tester = jsonSchemaTesterFactory<Project.ProjectId>(schema);
+  const tester = schemaTesterFactory<Api.Project.ProjectId>(schema);
 
   tester.validateSuccess({
     projectId: createProjectId(),

@@ -1,7 +1,8 @@
 import { getCustomerId } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar, Customer, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Calendar, Customer } from '@household/shared/types/types';
 import { PopulateOptions } from 'mongoose';
 
 export interface ICalendarEntryService {
@@ -10,7 +11,7 @@ export interface ICalendarEntryService {
   getCalendarEntryById(calendarEntryId: Calendar.Entry.Id): Promise<Calendar.Entry.Document>;
   deleteCalendarEntry(calendarEntryId: Calendar.Entry.Id): Promise<unknown>;
   updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, updateQuery: DocumentUpdate<Calendar.Entry.Document>): Promise<unknown>;
-  updateCalendarEntryWithPayment(calendarEntryId: Calendar.Entry.Id, updateQuery: DocumentUpdate<Calendar.Entry.Document>): Promise<Transaction.Document>;
+  updateCalendarEntryWithPayment(calendarEntryId: Calendar.Entry.Id, updateQuery: DocumentUpdate<Calendar.Entry.Document>): Promise<Documents.Transaction>;
   listCalendarEntries(data: Calendar.DateRange): Promise<Calendar.Entry.Document[]>;
   listCalendarWorkEntriesByCustomerId(customerId: Customer.Id): Promise<Calendar.Entry.Document[]>;
 }

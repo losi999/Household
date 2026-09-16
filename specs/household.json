@@ -1608,6 +1608,607 @@
         }
       }
     },
+    "/transaction/v1/transactions/payment": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "issuedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "amount": {
+                    "type": "number"
+                  },
+                  "billingStartDate": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "billingEndDate": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "invoiceNumber": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "productId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "quantity": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "loanAccountId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "isSettled": {
+                    "type": "boolean"
+                  },
+                  "accountId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "categoryId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "projectId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "recipientId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  }
+                },
+                "required": [
+                  "amount",
+                  "issuedAt",
+                  "accountId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "transactionId"
+                  ],
+                  "properties": {
+                    "transactionId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/v1/transactions/transfer": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "issuedAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "amount": {
+                    "type": "number"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "transferAccountId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "transferAmount": {
+                    "type": "number"
+                  },
+                  "accountId": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{24}$"
+                  },
+                  "payments": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "transactionId": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{24}$"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "exclusiveMaximum": 0
+                        }
+                      },
+                      "required": [
+                        "transactionId",
+                        "amount"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "amount",
+                  "issuedAt",
+                  "accountId",
+                  "transferAccountId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "transactionId"
+                  ],
+                  "properties": {
+                    "transactionId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/v1/transactions/split": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "issuedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "amount": {
+                        "type": "number",
+                        "exclusiveMaximum": 0
+                      },
+                      "description": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "accountId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "recipientId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "splits": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "amount": {
+                              "type": "number"
+                            },
+                            "description": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "categoryId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "projectId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "billingStartDate": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "billingEndDate": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "invoiceNumber": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "productId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "quantity": {
+                              "type": "number",
+                              "exclusiveMinimum": 0
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "dependencies": {
+                            "invoiceNumber": [
+                              "billingEndDate",
+                              "billingStartDate"
+                            ],
+                            "billingStartDate": [
+                              "billingEndDate"
+                            ],
+                            "billingEndDate": [
+                              "billingStartDate"
+                            ],
+                            "quantity": [
+                              "productId"
+                            ],
+                            "productId": [
+                              "quantity"
+                            ]
+                          }
+                        }
+                      },
+                      "loans": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "amount": {
+                              "type": "number",
+                              "exclusiveMaximum": 0
+                            },
+                            "description": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "categoryId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "projectId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "billingStartDate": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "billingEndDate": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "invoiceNumber": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "productId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "quantity": {
+                              "type": "number",
+                              "exclusiveMinimum": 0
+                            },
+                            "loanAccountId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "isSettled": {
+                              "type": "boolean"
+                            },
+                            "transactionId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "loanAccountId"
+                          ],
+                          "dependencies": {
+                            "invoiceNumber": [
+                              "billingEndDate",
+                              "billingStartDate"
+                            ],
+                            "billingStartDate": [
+                              "billingEndDate"
+                            ],
+                            "billingEndDate": [
+                              "billingStartDate"
+                            ],
+                            "quantity": [
+                              "productId"
+                            ],
+                            "productId": [
+                              "quantity"
+                            ],
+                            "loanAccountId": {
+                              "properties": {
+                                "amount": {
+                                  "type": "number",
+                                  "exclusiveMaximum": 0
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "amount",
+                      "issuedAt",
+                      "accountId",
+                      "splits"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "issuedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "amount": {
+                        "type": "number",
+                        "exclusiveMaximum": 0
+                      },
+                      "description": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "accountId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "recipientId": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{24}$"
+                      },
+                      "splits": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "amount": {
+                              "type": "number"
+                            },
+                            "description": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "categoryId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "projectId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "billingStartDate": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "billingEndDate": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "invoiceNumber": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "productId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "quantity": {
+                              "type": "number",
+                              "exclusiveMinimum": 0
+                            }
+                          },
+                          "required": [
+                            "amount"
+                          ],
+                          "dependencies": {
+                            "invoiceNumber": [
+                              "billingEndDate",
+                              "billingStartDate"
+                            ],
+                            "billingStartDate": [
+                              "billingEndDate"
+                            ],
+                            "billingEndDate": [
+                              "billingStartDate"
+                            ],
+                            "quantity": [
+                              "productId"
+                            ],
+                            "productId": [
+                              "quantity"
+                            ]
+                          }
+                        }
+                      },
+                      "loans": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "amount": {
+                              "type": "number",
+                              "exclusiveMaximum": 0
+                            },
+                            "description": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "categoryId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "projectId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "billingStartDate": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "billingEndDate": {
+                              "type": "string",
+                              "format": "date"
+                            },
+                            "invoiceNumber": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "productId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "quantity": {
+                              "type": "number",
+                              "exclusiveMinimum": 0
+                            },
+                            "loanAccountId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            },
+                            "isSettled": {
+                              "type": "boolean"
+                            },
+                            "transactionId": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{24}$"
+                            }
+                          },
+                          "required": [
+                            "amount",
+                            "loanAccountId"
+                          ],
+                          "dependencies": {
+                            "invoiceNumber": [
+                              "billingEndDate",
+                              "billingStartDate"
+                            ],
+                            "billingStartDate": [
+                              "billingEndDate"
+                            ],
+                            "billingEndDate": [
+                              "billingStartDate"
+                            ],
+                            "quantity": [
+                              "productId"
+                            ],
+                            "productId": [
+                              "quantity"
+                            ],
+                            "loanAccountId": {
+                              "properties": {
+                                "amount": {
+                                  "type": "number",
+                                  "exclusiveMaximum": 0
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "amount",
+                      "issuedAt",
+                      "accountId",
+                      "loans"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "transactionId"
+                  ],
+                  "properties": {
+                    "transactionId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{24}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/file/v1/files": {
       "get": {
         "tags": [

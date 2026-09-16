@@ -7,31 +7,32 @@ import { IProjectDocumentConverter } from '@household/shared/converters/project-
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { DocumentUpdate, Unset } from '@household/shared/types/common';
-import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { UpdateQuery } from 'mongoose';
 
 export interface IReimbursementTransactionDocumentConverter {
   create(data: {
-    body: Transaction.PaymentRequest;
+    body: Requests.PaymentTransaction;
     payingAccount: Documents.Account;
     ownerAccount: Documents.Account;
-    category: Category.Document;
-    recipient: Recipient.Document;
-    project: Project.Document;
-    product: Product.Document;
-  }, expiresIn: number, generateId?: boolean): Transaction.ReimbursementDocument;
+    category: Documents.Category;
+    recipient: Documents.Recipient;
+    project: Documents.Project;
+    product: Documents.Product;
+  }, expiresIn: number, generateId?: boolean): Documents.ReimbursementTransaction;
   update(data: {
-    body: Transaction.PaymentRequest;
+    body: Requests.PaymentTransaction;
     payingAccount: Documents.Account;
     ownerAccount: Documents.Account;
-    category: Category.Document;
-    recipient: Recipient.Document;
-    project: Project.Document;
-    product: Product.Document;
-  }, expiresIn: number): DocumentUpdate<Transaction.Document>;
-  toResponse(document: Transaction.ReimbursementDocument): Transaction.ReimbursementResponse;
-  toResponseList(documents: Transaction.ReimbursementDocument[]): Transaction.ReimbursementResponse[];
+    category: Documents.Category;
+    recipient: Documents.Recipient;
+    project: Documents.Project;
+    product: Documents.Product;
+  }, expiresIn: number): DocumentUpdate<Documents.Transaction>;
+  toResponse(document: Documents.ReimbursementTransaction): Responses.ReimbursementTransaction;
+  toResponseList(documents: Documents.ReimbursementTransaction[]): Responses.ReimbursementTransaction[];
 }
 
 export const reimbursementTransactionDocumentConverterFactory = (
@@ -42,14 +43,11 @@ export const reimbursementTransactionDocumentConverterFactory = (
   productDocumentConverter: IProductDocumentConverter,
 ): IReimbursementTransactionDocumentConverter => {
   const transactionType = TransactionType.Reimbursement;
-  const defaultUnset: Unset<Transaction.Document, Transaction.ReimbursementDocument> = {
+  const defaultUnset: Unset<Documents.Transaction, Documents.ReimbursementTransaction> = {
     transferAccount: true,
     transferAmount: true,
     file: true,
     potentialDuplicates: true,
-    isSettled: true,
-    payments: true,
-    remainingAmount: true,
     deferredSplits: true,
     splits: true,
     account: true,
@@ -77,7 +75,7 @@ export const reimbursementTransactionDocumentConverterFactory = (
       };
     },
     update: ({ body: { issuedAt, quantity, invoiceNumber, billingEndDate, billingStartDate, amount, description }, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn) => {
-      const optionalSet: UpdateQuery<Transaction.Document>['$set'] = {
+      const optionalSet: UpdateQuery<Documents.Transaction>['$set'] = {
         recipient,
         category,
         project,

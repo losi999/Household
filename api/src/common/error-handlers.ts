@@ -2,10 +2,11 @@ import { GroupType } from '@aws-sdk/client-cognito-identity-provider';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey, UserType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
-import { Calendar, Common, Customer, Price, Transaction } from '@household/shared/types/types';
+import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
+import { Requests } from '@household/shared/types/requests';
 
 type CatchAndThrow = (error: any) => never;
 type CatchAndLog = (error: any) => void;
@@ -20,15 +21,15 @@ const httpError = (statusCode: number, message: string): HttpError => ({
 
 export const httpErrors = {
   transaction: {
-    save: (doc: Transaction.Document, statusCode = 500): CatchAndThrow => (error) => {
+    save: (doc: Documents.Transaction, statusCode = 500): CatchAndThrow => (error) => {
       log('Save transaction', doc, error);
       throw httpError(statusCode, 'Error while saving transaction');
     },
-    saveMultiple: (docs: Transaction.Document[], statusCode = 500): CatchAndThrow => (error) => {
+    saveMultiple: (docs: Documents.Transaction[], statusCode = 500): CatchAndThrow => (error) => {
       log('Save transactions', docs, error);
       throw httpError(statusCode, 'Error while saving transactions');
     },
-    getById: (ctx: Transaction.TransactionId & Partial<Api.Account.AccountId>, statusCode = 500): CatchAndThrow => (error) => {
+    getById: (ctx: Api.Transaction.TransactionId & Partial<Api.Account.AccountId>, statusCode = 500): CatchAndThrow => (error) => {
       log('Get transaction', ctx, error);
       throw httpError(statusCode, 'Error while getting transaction');
     },
@@ -36,7 +37,7 @@ export const httpErrors = {
       log('List transactions', undefined, error);
       throw httpError(statusCode, 'Error while listing transactions');
     },
-    listByAccountId: (ctx: Api.Account.AccountId & Common.Pagination<number>, statusCode = 500): CatchAndThrow => (error) => {
+    listByAccountId: (ctx: Api.Account.AccountId & Api.Pagination<number>, statusCode = 500): CatchAndThrow => (error) => {
       log('List transactions by account', ctx, error);
       throw httpError(statusCode, 'Error while getting transactions');
     },
@@ -44,19 +45,19 @@ export const httpErrors = {
       log('List transactions by file', ctx, error);
       throw httpError(statusCode, 'Error while getting transactions');
     },
-    notFound: (ctx: Transaction.TransactionId & Partial<Api.Account.AccountId> & {transaction: Transaction.Document}, statusCode = 404) => {
+    notFound: (ctx: Api.Transaction.TransactionId & Partial<Api.Account.AccountId> & {transaction: Documents.Transaction}, statusCode = 404) => {
       if (ctx.transactionId && !ctx.transaction) {
         log('No transaction found', ctx);
         throw httpError(statusCode, 'No transaction found');
       }
     },
-    multipleNotFound: (ctx: { transactionIds: Transaction.Id[]; transactions: Transaction.Document[] }, statusCode = 400) => {
+    multipleNotFound: (ctx: { transactionIds: Api.Transaction.Id[]; transactions: Documents.Transaction[] }, statusCode = 400) => {
       if (ctx.transactionIds.length !== ctx.transactions.length) {
         log('Some of the transactions are not found', ctx);
         throw httpError(statusCode, 'Some of the transactions are not found');
       }
     },
-    update: (update: UpdateQuery<Transaction.Document>, statusCode = 500): CatchAndThrow => (error) => {
+    update: (update: UpdateQuery<Documents.Transaction>, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
         log('Duplicate transaction name', update, error);
         throw httpError(400, 'Duplicate transaction name');
@@ -65,23 +66,23 @@ export const httpErrors = {
       log('Update transaction', update, error);
       throw httpError(statusCode, 'Error while updating transaction');
     },
-    delete: (ctx: Transaction.TransactionId, statusCode = 500): CatchAndThrow => (error) => {
+    delete: (ctx: Api.Transaction.TransactionId, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete transaction', ctx, error);
       throw httpError(statusCode, 'Error while deleting transaction');
     },
-    sumOfSplits: (ctx: {body: Transaction.SplitRequest; total: number;}, statusCode = 400) => {
+    sumOfSplits: (ctx: {body: Requests.SplitTransaction; total: number;}, statusCode = 400) => {
       if(ctx.body.amount !== ctx.total) {
         log('Sum of splits must equal to total amount', ctx);
         throw httpError(statusCode, 'Sum of splits must equal to total amount');
       }
     },
-    sameAccountTransfer: (ctx: Api.Account.AccountId & Transaction.TransferAccountId, statusCode = 400) => {
+    sameAccountTransfer: (ctx: Api.Account.AccountId & Api.Transaction.TransferAccountId, statusCode = 400) => {
       if (ctx.accountId === ctx.transferAccountId) {
         log('Cannot transfer to same account', ctx);
         throw httpError(statusCode, 'Cannot transfer to same account');
       }
     },
-    sameAccountLoan: (ctx: Api.Account.AccountId & Transaction.LoanAccountId, statusCode = 400) => {
+    sameAccountLoan: (ctx: Api.Account.AccountId & Api.Transaction.LoanAccountId, statusCode = 400) => {
       if (ctx.accountId === ctx.loanAccountId) {
         log('Cannot loan to same account', ctx);
         throw httpError(statusCode, 'Cannot loan to same account');
@@ -675,7 +676,7 @@ export const httpErrors = {
       log('Update calendar entry', ctx, error);
       throw httpError(statusCode, 'Error while updating calendar entry');
     },
-    updateWithPayment: (ctx: Calendar.Entry.CalendarEntryId & {transaction: Transaction.PaymentDocument}, statusCode = 500): CatchAndThrow => (error) => {
+    updateWithPayment: (ctx: Calendar.Entry.CalendarEntryId & {transaction: Documents.PaymentTransaction}, statusCode = 500): CatchAndThrow => (error) => {
       log('Update calendar entry with payment', ctx, error);
       throw httpError(statusCode, 'Error while updating calendar entry with payment');
     },

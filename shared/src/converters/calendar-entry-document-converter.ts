@@ -4,7 +4,8 @@ import { addSeconds } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar, Customer, Price, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { AnyKeys, AnyObject } from 'mongoose';
 
 export interface ICalendarEntryDocumentConverter {
@@ -20,7 +21,7 @@ export interface ICalendarEntryDocumentConverter {
   }, expiresIn: number): DocumentUpdate<Calendar.Entry.Document>;
   resolve(data: {
     body: Calendar.Entry.ResolutionRequest;
-    transaction?: Transaction.PaymentDocument;
+    transaction?: Documents.PaymentTransaction;
   }, expiresIn: number): DocumentUpdate<Calendar.Entry.Document>;
   toResponseBase(doc: Calendar.Entry.Document): Calendar.Entry.ResponseBase;
   toWorkEntryResponseBase(doc: Calendar.Entry.Document): Calendar.Entry.WorkEntryResponseBase;

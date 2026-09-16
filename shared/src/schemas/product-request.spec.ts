@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/product-request';
+import { request as schema } from '@household/shared/schemas/product';
 import { Requests } from '@household/shared/types/requests';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 import { createProductRequest } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Product schema', () => {
-  const tester = jsonSchemaTesterFactory<Requests.Product>(schema);
+  const tester = schemaTesterFactory<Requests.Product>(schema);
 
   tester.validateSuccess(createProductRequest());
 

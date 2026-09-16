@@ -6,9 +6,9 @@ import { createMockService, MockService, validateFunctionCall } from '@household
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
-import { Transaction } from '@household/shared/types/types';
 import { IPaymentTransactionDocumentConverter, paymentTransactionDocumentConverterFactory } from '@household/shared/converters/payment-transaction-document-converter';
 import { CategoryType } from '@household/shared/enums';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Payment transaction document converter', () => {
   let converter: IPaymentTransactionDocumentConverter;
@@ -61,7 +61,7 @@ describe('Payment transaction document converter', () => {
   const recipientResponse = createRecipientResponse();
   const productResponse = createProductResponse();
 
-  let body: Transaction.PaymentRequest;
+  let body: Requests.PaymentTransaction;
 
   beforeEach(() => {
     body = createPaymentTransactionRequest({

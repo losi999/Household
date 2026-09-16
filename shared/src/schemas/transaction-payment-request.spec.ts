@@ -1,11 +1,11 @@
-import { default as schema } from '@household/shared/schemas/transaction-payment-request';
-import { Transaction } from '@household/shared/types/types';
+import { paymentRequest } from '@household/shared/schemas/transaction';
 import { createAccountId, createCategoryId, createPaymentTransactionRequest, createProductId, createProjectId, createRecipientId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Payment transaction schema', () => {
 
-  const tester = jsonSchemaTesterFactory<Transaction.PaymentRequest>(schema);
+  const tester = schemaTesterFactory<Requests.PaymentTransaction>(paymentRequest);
 
   describe('should accept', () => {
     tester.validateSuccess(createPaymentTransactionRequest(), 'without loanAccountId');
@@ -13,7 +13,6 @@ describe('Payment transaction schema', () => {
     tester.validateSuccess(createPaymentTransactionRequest({
       loanAccountId: createAccountId(),
       amount: -100,
-      isSettled: false,
     }), 'with loanAccountId');
 
     tester.validateSuccess(createPaymentTransactionRequest({
@@ -68,7 +67,6 @@ describe('Payment transaction schema', () => {
       tester.exclusiveMaximum(createPaymentTransactionRequest({
         loanAccountId: createAccountId(),
         amount: 100,
-        isSettled: false,
       }), 'amount', 0, 'if loanAccountId is set');
     });
 
@@ -225,12 +223,6 @@ describe('Payment transaction schema', () => {
       tester.pattern(createPaymentTransactionRequest({
         loanAccountId: createAccountId('not-valid'),
       }), 'loanAccountId');
-    });
-
-    describe('if data.isSettled', () => {
-      tester.type(createPaymentTransactionRequest({
-        isSettled: 1 as any,
-      }), 'isSettled', 'boolean');
     });
   });
 });

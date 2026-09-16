@@ -3,25 +3,25 @@ import { populate } from '@household/shared/common/utils';
 import { TransactionType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Common, File, Transaction } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { PipelineStage, Types } from 'mongoose';
+import { Documents } from '@household/shared/types/documents';
 
 export interface ITransactionService {
-  saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
-  saveTransactions(...docs: Transaction.Document[]): Promise<any>;
-  findTransactionById<T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T>;
-  getTransactionById<T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T>;
-  getTransactionByIdAndAccountId(query: Transaction.TransactionId & Api.Account.AccountId): Promise<Transaction.Document>;
-  deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
-  updateTransaction(transactionId: Transaction.Id, updateQuery: DocumentUpdate<Transaction.Document>): Promise<unknown>;
-  listTransactions(match: PipelineStage.Match): Promise<Transaction.RawReport[]>;
+  saveTransaction(doc: Documents.Transaction): Promise<Documents.Transaction>;
+  saveTransactions(...docs: Documents.Transaction[]): Promise<any>;
+  findTransactionById<T extends Documents.Transaction = Documents.Transaction>(transactionId: Api.Transaction.Id): Promise<T>;
+  getTransactionById<T extends Documents.Transaction = Documents.Transaction>(transactionId: Api.Transaction.Id): Promise<T>;
+  getTransactionByIdAndAccountId(query: Api.Transaction.TransactionId & Api.Account.AccountId): Promise<Documents.Transaction>;
+  deleteTransaction(transactionId: Api.Transaction.Id): Promise<unknown>;
+  updateTransaction(transactionId: Api.Transaction.Id, updateQuery: DocumentUpdate<Documents.Transaction>): Promise<unknown>;
+  listTransactions(match: PipelineStage.Match): Promise<Documents.RawTransaction[]>;
   listDeferredTransactions(ctx?: {
-    deferredTransactionIds?: Transaction.Id[];
-    excludedTransferTransactionId?: Transaction.Id
-  }): Promise<Transaction.DeferredDocument[]>;
-  listDraftTransactionsByFileId(fileId: File.Id): Promise<Transaction.DraftDocument[]>;
-  listTransactionsByAccountId(data: Api.Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
+    deferredTransactionIds?: Api.Transaction.Id[];
+    excludedTransferTransactionId?: Api.Transaction.Id
+  }): Promise<Documents.DeferredTransaction[]>;
+  listDraftTransactionsByFileId(fileId: Api.File.Id): Promise<Documents.DraftTransaction[]>;
+  listTransactionsByAccountId(data: Api.Account.AccountId & Api.Pagination<number>): Promise<Documents.Transaction[]>;
 }
 
 export const transactionServiceFactory = (mongodbService: IMongodbService): ITransactionService => {
@@ -43,7 +43,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         });
       });
     },
-    findTransactionById: <T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T> => {
+    findTransactionById: <T extends Documents.Transaction = Documents.Transaction>(transactionId: Api.Transaction.Id): Promise<T> => {
       if (transactionId) {
         return mongodbService.transactions(async (model, session) => {
           return await model.findById(transactionId).session(session)
@@ -51,7 +51,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         });
       }
     },
-    getTransactionById: <T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T> => {
+    getTransactionById: <T extends Documents.Transaction = Documents.Transaction>(transactionId: Api.Transaction.Id): Promise<T> => {
       if (transactionId) {
         return mongodbService.transactions(async (model, session) => {
           return await model.findById(transactionId)
@@ -85,7 +85,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       }
 
       const [transaction] = await mongodbService.transactions(async (model, session) => {
-        return model.aggregate<Transaction.Document>(
+        return model.aggregate<Documents.Transaction>(
           [
             {
               $match: {
@@ -308,7 +308,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     listDeferredTransactions: ({ deferredTransactionIds, excludedTransferTransactionId } = {}) => {
       return mongodbService.transactions(async (model, session) => {
-        return model.aggregate<Transaction.DeferredDocument>([
+        return model.aggregate<Documents.DeferredTransaction>([
           {
             $unwind: {
               path: '$deferredSplits',

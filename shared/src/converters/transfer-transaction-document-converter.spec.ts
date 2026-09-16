@@ -1,23 +1,20 @@
-import { createAccountDocument, createAccountResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse, createDeferredTransactionDocument } from '@household/shared/common/test-data-factory';
-import { addSeconds, getTransactionId, toDictionary, getAccountId } from '@household/shared/common/utils';
+import { createAccountDocument, createAccountResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse } from '@household/shared/common/test-data-factory';
+import { addSeconds, getTransactionId, getAccountId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { createMockService, MockService, validateNthFunctionCall } from '@household/shared/common/unit-testing';
-import { Transaction } from '@household/shared/types/types';
 import { ITransferTransactionDocumentConverter, transferTransactionDocumentConverterFactory } from '@household/shared/converters/transfer-transaction-document-converter';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Transfer transaction document converter', () => {
   let converter: ITransferTransactionDocumentConverter;
   let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
-  let mockDeferredTransactionDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
   const now = new Date();
 
   beforeEach(() => {
     mockAccountDocumentConverter = createMockService('toResponse');
-    mockDeferredTransactionDocumentConverter = createMockService('toResponse');
 
     vi.useFakeTimers().setSystemTime(now);
-    converter = transferTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockDeferredTransactionDocumentConverter.service);
+    converter = transferTransactionDocumentConverterFactory(mockAccountDocumentConverter.service);
   });
 
   afterEach(() => {
@@ -41,7 +38,7 @@ describe('Transfer transaction document converter', () => {
     name: transferAccountName,
   });
 
-  let body: Transaction.TransferRequest;
+  let body: Requests.TransferTransaction;
 
   const queriedDocument = createTransferTransactionDocument({
     account,
@@ -69,7 +66,6 @@ describe('Transfer transaction document converter', () => {
         body,
         account,
         transferAccount,
-        transactions: undefined,
       }, undefined);
       expect(result).toEqual(createTransferTransactionDocument({
         account,
@@ -80,42 +76,6 @@ describe('Transfer transaction document converter', () => {
         issuedAt: now,
         expiresAt: undefined,
         _id: undefined,
-      }));
-    });
-
-    it('should return document with payments', () => {
-      const deferredTransaction = createDeferredTransactionDocument();
-      const paymentAmount = -10;
-      body = createTransferTransactionRequest({
-        ...body,
-        payments: [
-          {
-            amount: paymentAmount,
-            transactionId: getTransactionId(deferredTransaction),
-          },
-        ],
-      });
-      const result = converter.create({
-        body,
-        account,
-        transferAccount,
-        transactions: toDictionary([deferredTransaction], '_id'),
-      }, undefined);
-      expect(result).toEqual(createTransferTransactionDocument({
-        account,
-        transferAccount,
-        transferAmount,
-        amount,
-        description,
-        issuedAt: now,
-        expiresAt: undefined,
-        _id: undefined,
-        payments: [
-          {
-            amount: paymentAmount,
-            transaction: deferredTransaction,
-          },
-        ],
       }));
     });
 
@@ -127,7 +87,6 @@ describe('Transfer transaction document converter', () => {
         },
         account,
         transferAccount,
-        transactions: undefined,
       }, undefined);
       expect(result).toEqual(createTransferTransactionDocument({
         account,
@@ -146,7 +105,6 @@ describe('Transfer transaction document converter', () => {
         body,
         account,
         transferAccount,
-        transactions: undefined,
       }, expiresIn);
       expect(result).toEqual(createTransferTransactionDocument({
         account,

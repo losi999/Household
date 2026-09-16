@@ -416,17 +416,25 @@ is in the generic schema type's coverage of multi-primitive unions, not a mistak
 Recipe steps 6–9 (mongoose schema, converter, service + its dependency singleton) are all skipped
 for a domain shaped like this; `identity-service.ts` itself is the layer that gets retyped in
 their place (its interface's `User.*`/`Auth.*`-typed parameters move to `Api.User.*`/
-`Requests.Auth*`, same as any other service's interface). `User` was migrated together with
+`Requests.*`, same as any other service's interface). `User` was migrated together with
 `Auth` in one pass, not separately, because they share this one service, one
 `error-handlers.ts` block (`httpErrors.cognito`, not `httpErrors.user` — an existing, working key
 name that doesn't need renaming just because its parameter types moved), and one SAM template —
-migrating one without the other would leave the shared surface area half-cast. `Auth` isn't a
-single record with fields; it's five unrelated action payloads (login, refresh-token,
-forgot-password, confirm-forgot-password, confirm-user), so each flow gets its own flat,
-domain-prefixed type name (`Requests.AuthLogin`, `Responses.AuthLogin`, ...) rather than a nested
-`Requests.Auth.Login` sub-namespace — this matches the existing convention for a domain with
-multiple response shapes (`Responses.AccountReport`, `Responses.ProductGroupedResponse`), just
-applied to requests too.
+migrating one without the other would leave the shared surface area half-cast.
+
+`Auth` isn't a single record with fields; it's five unrelated action payloads (login,
+refresh-token, forgot-password, confirm-forgot-password, confirm-user). The *field* types still
+live under one `Api.Auth` namespace (`Api.Auth.Password`, `Api.Auth.TemporaryPassword`,
+`Api.Auth.ConfirmationCode`, `Api.Auth.IdToken`, `Api.Auth.RefreshToken`, ...), but each flow's
+request/response gets a flat, **un-prefixed** name in `Requests`/`Responses` — `Requests.Login`,
+`Requests.ConfirmUser`, `Requests.ForgotPassword`, `Requests.ConfirmForgotPassword`,
+`Requests.RefreshToken`, `Responses.Login`, `Responses.RefreshToken`. `Requests`/`Responses` are
+already flat namespaces spanning every domain, so the flow name alone is unambiguous; don't prefix
+these with the owning namespace (`Requests.AuthLogin` was tried and reverted). Contrast
+`Responses.AccountReport`/`Responses.ProductGroupedResponse`, where the prefix is doing real work:
+those are *variants of one domain's record*, so the domain name distinguishes them from
+`Responses.Account`/`Responses.Product`. A standalone action payload has no such sibling to
+disambiguate against.
 
 If some other, `web/`-only surface still depends on the domain's legacy types after migration
 (true for `User`/`Auth` — `web/projects/shared/src/lib/services/auth-service.ts` and

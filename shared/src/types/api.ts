@@ -8,6 +8,11 @@ export namespace Api {
     isArchived: boolean;
   };
 
+  export type Pagination<P extends string | number> = {
+    pageSize: P;
+    pageNumber: P;
+  };
+
   export namespace Account {
     export type Id = Branding<string, 'account'>;
 
@@ -128,6 +133,55 @@ export namespace Api {
     };
 
     export type Base = Brand & Measurement & UnitOfMeasurement;
+  }
+
+  export namespace Transaction {
+    export type Id = Branding<string, 'transaction'>;
+
+    export type TransactionId = {
+      transactionId: Id;
+    };
+
+    export type IssuedAt<D extends string | Date> = {
+      issuedAt: D;
+    };
+
+    export type TransactionType<T extends Enum.TransactionType> = {
+      transactionType: T;
+    };
+
+    export type LoanAccountId = {
+      loanAccountId: Account.Id;
+    };
+
+    export type Amount = {
+      amount: number;
+    };
+
+    export type Description = {
+      description: string;
+    };
+
+    export type Quantity = {
+      quantity: number;
+    };
+
+    export type InvoiceNumber = {
+      invoiceNumber: string;
+    };
+
+    export type InvoiceDate<D extends string | Date> = {
+      billingStartDate: D;
+      billingEndDate: D;
+    };
+
+    export type TransferAccountId = {
+      transferAccountId: Account.Id;
+    };
+
+    export type TransferAmount = {
+      transferAmount: number;
+    };
   }
 
   export namespace File {

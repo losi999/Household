@@ -1,8 +1,8 @@
 import { TransactionType } from '@household/shared/enums';
-import { Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema, SchemaDefinition, SchemaDefinitionType } from 'mongoose';
 
-const splitItemSchema = new Schema<Transaction.SplitDocumentItem>({
+const splitItemSchema = new Schema<Documents.SplitItem>({
   amount: {
     type: Number,
     required: true,
@@ -43,14 +43,10 @@ const splitItemSchema = new Schema<Transaction.SplitDocumentItem>({
   _id: false,
 });
 
-const deferredSplitSchema = new Schema<Transaction.DeferredDocument>({
+const deferredSplitSchema = new Schema<Documents.DeferredTransaction>({
   transactionType: {
     type: String,
     enum: ['deferred'],
-  },
-  isSettled: {
-    type: Boolean,
-    default: false,
   },
   payingAccount: {
     type: Schema.Types.ObjectId,
@@ -101,7 +97,7 @@ const deferredSplitSchema = new Schema<Transaction.DeferredDocument>({
   },
 });
 
-const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Document>, Transaction.Document> = {
+const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Documents.Transaction>, Documents.Transaction> = {
   transactionType: {
     type: String,
     enum: TransactionType,
@@ -134,12 +130,6 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
     type: Schema.Types.ObjectId,
     ref: 'accounts',
     index: true,
-  },
-  isSettled: {
-    type: Boolean,
-    default: function() {
-      return this.transactionType === 'deferred' ? false : undefined;
-    },
   },
   description: {
     type: String,
@@ -178,24 +168,6 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
     ref: 'recipients',
     index: true,
   },
-  payments: {
-    type: [
-      {
-        transaction: {
-          type: Schema.Types.ObjectId,
-          ref: 'transactions',
-          required: true,
-          index: true,
-        },
-        amount: {
-          type: Number,
-          required: true,
-        },
-      },
-    ],
-    default: undefined,
-    _id: false,
-  },
   transferAmount: {
     type: Number,
   },
@@ -217,7 +189,7 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Transaction.Docume
   },
 };
 
-export const transactionSchema = new Schema<Transaction.Document>(schemaDefinition, {
+export const transactionSchema = new Schema<Documents.Transaction>(schemaDefinition, {
   versionKey: false,
   timestamps: {
     createdAt: true,

@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/transaction-id';
-import { Transaction } from '@household/shared/types/types';
+import { transactionId as schema } from '@household/shared/schemas/transaction';
 import { createTransactionId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Api } from '@household/shared/types/api';
 
 describe('Transaction id schema', () => {
-  const tester = jsonSchemaTesterFactory<Transaction.TransactionId>(schema);
+  const tester = schemaTesterFactory<Api.Transaction.TransactionId>(schema);
 
   tester.validateSuccess({
     transactionId: createTransactionId(),

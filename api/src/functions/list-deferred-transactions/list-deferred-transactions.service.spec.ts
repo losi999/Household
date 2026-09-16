@@ -16,9 +16,7 @@ describe('List deferred transactions service', () => {
     service = listDeferredTransactionsServiceFactory(mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const settledDocument = createDeferredTransactionDocument({
-    remainingAmount: 0,
-  });
+  const settledDocument = createDeferredTransactionDocument();
   const explicitDocument = createDeferredTransactionDocument();
   const notSettledocument = createDeferredTransactionDocument();
   const convertedResponse = createDeferredTransactionResponse();

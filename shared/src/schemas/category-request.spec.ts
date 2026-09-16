@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/category-request';
+import { request as schema } from '@household/shared/schemas/category';
 import { Requests } from '@household/shared/types/requests';
 import { createCategoryId, createCategoryRequest } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Category request schema', () => {
-  const tester = jsonSchemaTesterFactory<Requests.Category>(schema);
+  const tester = schemaTesterFactory<Requests.Category>(schema);
 
   describe('should accept', () => {
     tester.validateSuccess(createCategoryRequest());

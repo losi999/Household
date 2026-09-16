@@ -10,7 +10,7 @@ import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Transaction } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Update to split transaction service', () => {
   let service: IUpdateToSplitTransactionService;
@@ -52,7 +52,7 @@ describe('Update to split transaction service', () => {
   const queriedAccount = createAccountDocument();
   const queriedRecipient = createRecipientDocument();
 
-  let body: Transaction.SplitRequest;
+  let body: Requests.SplitTransaction;
   const queriedDocument = createSplitTransactionDocument();
   const transactionId = getTransactionId(queriedDocument);
   const updateQuery = createDocumentUpdate();

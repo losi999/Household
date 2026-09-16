@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/recipient-request';
+import { request as schema } from '@household/shared/schemas/recipient';
 import { Requests } from '@household/shared/types/requests';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 import { createRecipientRequest } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Recipient schema', () => {
-  const tester = jsonSchemaTesterFactory<Requests.Recipient>(schema);
+  const tester = schemaTesterFactory<Requests.Recipient>(schema);
   tester.validateSuccess(createRecipientRequest());
 
   describe('should deny', () => {

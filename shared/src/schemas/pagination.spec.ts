@@ -1,9 +1,9 @@
 import { default as schema } from '@household/shared/schemas/pagination';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
-import { Common } from '@household/shared/types/types';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Api } from '@household/shared/types/api';
 
 describe('Pagination schema', () => {
-  const tester = jsonSchemaTesterFactory<Common.Pagination<string>>(schema);
+  const tester = schemaTesterFactory<Api.Pagination<string>>(schema);
 
   tester.validateSuccess({
     pageNumber: '1',
@@ -20,10 +20,10 @@ describe('Pagination schema', () => {
     });
 
     describe('if data.pageNumber', () => {
-      tester.required({
-        pageNumber: undefined,
-        pageSize: '23',
-      }, 'pageNumber');
+      tester.dependentRequired({
+        pageNumber: '1',
+        pageSize: undefined,
+      }, 'pageNumber', 'pageSize');
 
       tester.type({
         pageNumber: 1 as any,
@@ -37,10 +37,10 @@ describe('Pagination schema', () => {
     });
 
     describe('if data.pageSize', () => {
-      tester.required({
-        pageNumber: '1',
-        pageSize: undefined,
-      }, 'pageSize');
+      tester.dependentRequired({
+        pageNumber: undefined,
+        pageSize: '23',
+      }, 'pageSize', 'pageNumber');
 
       tester.type({
         pageNumber: '1',

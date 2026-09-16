@@ -18,7 +18,7 @@ import { calendarDaySchema } from '@household/shared/mongodb-schemas/calendar-da
 type CollectionMapping = {
   recipients: Documents.Recipient;
   projects: Documents.Project;
-  transactions: Transaction.Document;
+  transactions: Documents.Transaction;
   accounts: Documents.Account;
   categories: Documents.Category;
   products: Documents.Product;

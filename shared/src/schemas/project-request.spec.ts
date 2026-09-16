@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/project-request';
+import { request as schema } from '@household/shared/schemas/project';
 import { Requests } from '@household/shared/types/requests';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 import { createProjectRequest } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Project schema', () => {
-  const tester = jsonSchemaTesterFactory<Requests.Project>(schema);
+  const tester = schemaTesterFactory<Requests.Project>(schema);
   describe('should accept', () => {
     tester.validateSuccess(createProjectRequest());
 

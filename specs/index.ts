@@ -43,6 +43,9 @@ import { login } from './paths/user/login';
 import { refreshToken } from './paths/user/refresh-token';
 import { forgotPassword } from './paths/user/forgot-password';
 import { confirmForgotPassword } from './paths/user/confirm-forgot-password';
+import { createPaymentTransaction } from './paths/transaction/create-payment-transaction';
+import { createTransferTransaction } from './paths/transaction/create-transfer-transaction';
+import { createSplitTransaction } from './paths/transaction/create-split-transaction';
 
 const document = new OpenApiBuilder()
   .addOpenApiVersion('3.1.0')
@@ -107,6 +110,15 @@ const document = new OpenApiBuilder()
   })
   .addPath('/product/v1/products/{productId}/merge', {
     ...mergeProducts,
+  })
+  .addPath('/transaction/v1/transactions/payment', {
+    ...createPaymentTransaction,
+  })
+  .addPath('/transaction/v1/transactions/transfer', {
+    ...createTransferTransaction,
+  })
+  .addPath('/transaction/v1/transactions/split', {
+    ...createSplitTransaction,
   })
   .addPath('/file/v1/files', {
     ...listFiles,

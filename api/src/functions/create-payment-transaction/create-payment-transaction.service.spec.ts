@@ -12,8 +12,8 @@ import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Create payment transaction service', () => {
   let service: ICreatePaymentTransactionService;
@@ -41,13 +41,13 @@ describe('Create payment transaction service', () => {
     service = createPaymentTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockPaymentTransactionDocumentConverter.service, mockReimbursementTransactionDocumentConverter.service, mockDeferredTransactionDocumentConverter.service);
   });
 
-  let body: Transaction.PaymentRequest;
+  let body: Requests.PaymentTransaction;
   let queriedAccount: Documents.Account;
   let queriedLoanAccount: Documents.Account;
-  let queriedCategory: Category.Document;
-  let queriedProject: Project.Document;
-  let queriedRecipient: Recipient.Document;
-  let queriedProduct: Product.Document;
+  let queriedCategory: Documents.Category;
+  let queriedProject: Documents.Project;
+  let queriedRecipient: Documents.Recipient;
+  let queriedProduct: Documents.Product;
   const createdPaymentDocument = createPaymentTransactionDocument();
   const createdDeferredDocument = createDeferredTransactionDocument();
   const createdReimbursementDocument = createReimbursementTransactionDocument();

@@ -10,14 +10,15 @@ import { IReimbursementTransactionDocumentConverter } from '@household/shared/co
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
 import { TransactionType } from '@household/shared/enums';
-import { Transaction } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Responses } from '@household/shared/types/responses';
 
 export interface ITransactionDocumentConverter {
-  toResponse(document: Transaction.Document, viewingAccountId?: Api.Account.Id): Transaction.Response;
-  toResponseList(documents: Transaction.Document[], viewingAccountId?: Api.Account.Id): Transaction.Response[];
-  toReport(document: Transaction.RawReport): Transaction.Report;
-  toReportList(documents: (Transaction.RawReport)[]): Transaction.Report[];
+  toResponse(document: Documents.Transaction, viewingAccountId?: Api.Account.Id): Responses.Transaction;
+  toResponseList(documents: Documents.Transaction[], viewingAccountId?: Api.Account.Id): Responses.Transaction[];
+  toReport(document: Documents.RawTransaction): Responses.TransactionReport;
+  toReportList(documents: (Documents.RawTransaction)[]): Responses.TransactionReport[];
 }
 
 export const transactionDocumentConverterFactory = (

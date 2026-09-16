@@ -1,7 +1,7 @@
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar, Customer, Price, Report, Transaction } from '@household/shared/types/types';
+import { Calendar, Customer, Price, Report } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -31,7 +31,7 @@ export const createRecipientId = (id?: string): Api.Recipient.Id => {
   return createId(id);
 };
 
-export const createTransactionId = (id?: string): Transaction.Id => {
+export const createTransactionId = (id?: string): Api.Transaction.Id => {
   return createId(id);
 };
 
@@ -100,7 +100,7 @@ export const createProductDocument: DataFactoryFunction<Documents.Product> = (do
   };
 };
 
-export const createTransactionRawReport: DataFactoryFunction<Transaction.RawReport> = (doc) => {
+export const createTransactionRawReport: DataFactoryFunction<Documents.RawTransaction> = (doc) => {
   return {
     _id: createId(),
     amount,
@@ -119,7 +119,7 @@ export const createTransactionRawReport: DataFactoryFunction<Transaction.RawRepo
   };
 };
 
-export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.PaymentDocument> = (doc) => {
+export const createPaymentTransactionDocument: DataFactoryFunction<Documents.PaymentTransaction> = (doc) => {
   return {
     _id: createId(),
     transactionType: TransactionType.Payment,
@@ -140,7 +140,7 @@ export const createPaymentTransactionDocument: DataFactoryFunction<Transaction.P
   };
 };
 
-export const createDeferredTransactionDocument: DataFactoryFunction<Transaction.DeferredDocument> = (doc) => {
+export const createDeferredTransactionDocument: DataFactoryFunction<Documents.DeferredTransaction> = (doc) => {
   return {
     _id: createId(),
     transactionType: TransactionType.Deferred,
@@ -158,13 +158,11 @@ export const createDeferredTransactionDocument: DataFactoryFunction<Transaction.
     project: createProjectDocument(),
     recipient: createRecipientDocument(),
     ownerAccount: createAccountDocument(),
-    isSettled: false,
-    remainingAmount: 100,
     ...doc,
   };
 };
 
-export const createReimbursementTransactionDocument: DataFactoryFunction<Transaction.ReimbursementDocument> = (doc) => {
+export const createReimbursementTransactionDocument: DataFactoryFunction<Documents.ReimbursementTransaction> = (doc) => {
   return {
     _id: createId(),
     transactionType: TransactionType.Reimbursement,
@@ -186,7 +184,7 @@ export const createReimbursementTransactionDocument: DataFactoryFunction<Transac
   };
 };
 
-export const createSplitDocumentItem: DataFactoryFunction<Transaction.SplitDocumentItem> = (doc) => {
+export const createSplitDocumentItem: DataFactoryFunction<Documents.SplitItem> = (doc) => {
   return {
     amount,
     category: createCategoryDocument(),
@@ -201,7 +199,7 @@ export const createSplitDocumentItem: DataFactoryFunction<Transaction.SplitDocum
   };
 };
 
-export const createSplitTransactionDocument: DataFactoryFunction<Transaction.SplitDocument> = (doc) => {
+export const createSplitTransactionDocument: DataFactoryFunction<Documents.SplitTransaction> = (doc) => {
   return {
     _id: createId(),
     transactionType: TransactionType.Split,
@@ -217,7 +215,7 @@ export const createSplitTransactionDocument: DataFactoryFunction<Transaction.Spl
   };
 };
 
-export const createTransferTransactionDocument: DataFactoryFunction<Transaction.TransferDocument> = (doc) => {
+export const createTransferTransactionDocument: DataFactoryFunction<Documents.TransferTransaction> = (doc) => {
   return {
     _id: createId(),
     transactionType: TransactionType.Transfer,
@@ -228,12 +226,11 @@ export const createTransferTransactionDocument: DataFactoryFunction<Transaction.
     account: createAccountDocument(),
     transferAccount: createAccountDocument(),
     transferAmount: 1200,
-    payments: [],
     ...doc,
   };
 };
 
-export const createDraftTransactionDocument: DataFactoryFunction<Transaction.DraftDocument> = (doc) => {
+export const createDraftTransactionDocument: DataFactoryFunction<Documents.DraftTransaction> = (doc) => {
   return {
     _id: createId(),
     transactionType: TransactionType.Draft,
@@ -246,7 +243,7 @@ export const createDraftTransactionDocument: DataFactoryFunction<Transaction.Dra
   };
 };
 
-export const createDraftTransactionResponse: DataFactoryFunction<Transaction.DraftResponse> = (doc) => {
+export const createDraftTransactionResponse: DataFactoryFunction<Responses.DraftTransaction> = (doc) => {
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Draft,
@@ -299,7 +296,7 @@ export const createProductRequest: DataFactoryFunction<Requests.Product> = (req)
   };
 };
 
-export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
+export const createPaymentTransactionRequest: DataFactoryFunction<Requests.PaymentTransaction> = (req) => {
   return {
     amount,
     description: 'transaction description',
@@ -314,12 +311,11 @@ export const createPaymentTransactionRequest: DataFactoryFunction<Transaction.Pa
     projectId: createProjectId(),
     recipientId: createRecipientId(),
     loanAccountId: undefined,
-    isSettled: undefined,
     ...req,
   };
 };
 
-export const createSplitRequestItem: DataFactoryFunction<Transaction.SplitRequestItem> = (req) => {
+export const createSplitRequestItem: DataFactoryFunction<Requests.SplitItem> = (req) => {
   return {
     amount,
     categoryId: createCategoryId(),
@@ -334,7 +330,7 @@ export const createSplitRequestItem: DataFactoryFunction<Transaction.SplitReques
   };
 };
 
-export const createLoanRequestItem: DataFactoryFunction<Transaction.LoanRequestItem> = (req) => {
+export const createLoanRequestItem: DataFactoryFunction<Requests.LoanItem> = (req) => {
   return {
     amount,
     categoryId: createCategoryId(),
@@ -346,13 +342,12 @@ export const createLoanRequestItem: DataFactoryFunction<Transaction.LoanRequestI
     billingEndDate: '2022-03-21',
     billingStartDate: '2022-01-01',
     loanAccountId: createAccountId(),
-    isSettled: undefined,
     transactionId: undefined,
     ...req,
   };
 };
 
-export const createSplitTransactionRequest: DataFactoryFunction<Transaction.SplitRequest> = (req) => {
+export const createSplitTransactionRequest: DataFactoryFunction<Requests.SplitTransaction> = (req) => {
   return {
     amount: ((req?.loans?.length ?? 0) + (req?.splits?.length ?? 0)) * amount || amount * 2,
     description: 'transaction description',
@@ -365,7 +360,7 @@ export const createSplitTransactionRequest: DataFactoryFunction<Transaction.Spli
   };
 };
 
-export const createTransferTransactionRequest: DataFactoryFunction<Transaction.TransferRequest> = (req) => {
+export const createTransferTransactionRequest: DataFactoryFunction<Requests.TransferTransaction> = (req) => {
   return {
     amount,
     transferAmount: 1200,
@@ -373,12 +368,12 @@ export const createTransferTransactionRequest: DataFactoryFunction<Transaction.T
     issuedAt: new Date().toISOString(),
     accountId: createAccountId(),
     transferAccountId: createAccountId(),
-    payments: undefined,
     ...req,
   };
 };
 
-export const createTransferPaymentItemRequest: DataFactoryFunction<Transaction.TransactionId & Transaction.Amount> = (req) => {
+/** @deprecated */
+export const createTransferPaymentItemRequest: DataFactoryFunction<Api.Transaction.TransactionId & Api.Transaction.Amount> = (req) => {
   return {
     amount: 10,
     transactionId: createTransactionId(),
@@ -560,7 +555,7 @@ export const createProductGroupedResponse: DataFactoryFunction<Responses.Product
   };
 };
 
-export const createPaymentTransactionResponse: DataFactoryFunction<Transaction.PaymentResponse> = (resp) => {
+export const createPaymentTransactionResponse: DataFactoryFunction<Responses.PaymentTransaction> = (resp) => {
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Payment,
@@ -580,7 +575,7 @@ export const createPaymentTransactionResponse: DataFactoryFunction<Transaction.P
   };
 };
 
-export const createDeferredTransactionResponse: DataFactoryFunction<Transaction.DeferredResponse> = (resp) => {
+export const createDeferredTransactionResponse: DataFactoryFunction<Responses.DeferredTransaction> = (resp) => {
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Deferred,
@@ -597,13 +592,11 @@ export const createDeferredTransactionResponse: DataFactoryFunction<Transaction.
     category: createCategoryResponse(),
     project: createProjectResponse(),
     recipient: createRecipientResponse(),
-    isSettled: false,
-    remainingAmount: 100,
     ...resp,
   };
 };
 
-export const createReimbursementTransactionResponse: DataFactoryFunction<Transaction.ReimbursementResponse> = (resp) => {
+export const createReimbursementTransactionResponse: DataFactoryFunction<Responses.ReimbursementTransaction> = (resp) => {
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Reimbursement,
@@ -624,7 +617,7 @@ export const createReimbursementTransactionResponse: DataFactoryFunction<Transac
   };
 };
 
-export const createSplitResponseItem: DataFactoryFunction<Transaction.SplitResponseItem> = (resp) => {
+export const createSplitResponseItem: DataFactoryFunction<Responses.SplitItem> = (resp) => {
   return {
     amount,
     category: createCategoryResponse(),
@@ -639,7 +632,7 @@ export const createSplitResponseItem: DataFactoryFunction<Transaction.SplitRespo
   };
 };
 
-export const createSplitTransactionResponse: DataFactoryFunction<Transaction.SplitResponse> = (resp) => {
+export const createSplitTransactionResponse: DataFactoryFunction<Responses.SplitTransaction> = (resp) => {
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Split,
@@ -654,7 +647,7 @@ export const createSplitTransactionResponse: DataFactoryFunction<Transaction.Spl
   };
 };
 
-export const createTransferTransactionResponse: DataFactoryFunction<Transaction.TransferResponse> = (resp) => {
+export const createTransferTransactionResponse: DataFactoryFunction<Responses.TransferTransaction> = (resp) => {
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Transfer,
@@ -664,7 +657,6 @@ export const createTransferTransactionResponse: DataFactoryFunction<Transaction.
     issuedAt: new Date().toISOString(),
     account: createAccountResponse(),
     transferAccount: createAccountResponse(),
-    payments: [],
     ...resp,
   };
 };
@@ -710,7 +702,7 @@ export const createRecipientReport: DataFactoryFunction<Responses.RecipientRepor
   };
 };
 
-export const createTransactionReport: DataFactoryFunction<Transaction.Report> = (rep) => {
+export const createTransactionReport: DataFactoryFunction<Responses.TransactionReport> = (rep) => {
   return {
     transactionId: createTransactionId(),
     amount,

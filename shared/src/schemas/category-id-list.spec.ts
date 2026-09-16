@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/category-id-list';
-import { Category } from '@household/shared/types/types';
+import { idList as schema } from '@household/shared/schemas/category';
 import { createCategoryId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { Api } from '@household/shared/types/api';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Category id list schema', () => {
-  const tester = jsonSchemaTesterFactory<Category.Id[]>(schema);
+  const tester = schemaTesterFactory<Api.Category.Id[]>(schema);
 
   tester.validateSuccess([createCategoryId()]);
 

@@ -9,6 +9,7 @@ import { IProductDocumentConverter } from '@household/shared/converters/product-
 import { Transaction } from '@household/shared/types/types';
 import { IDeferredTransactionDocumentConverter, deferredTransactionDocumentConverterFactory } from '@household/shared/converters/deferred-transaction-document-converter';
 import { CategoryType } from '@household/shared/enums';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Deferred transaction document converter', () => {
   let converter: IDeferredTransactionDocumentConverter;
@@ -63,7 +64,7 @@ describe('Deferred transaction document converter', () => {
   const recipientResponse = createRecipientResponse();
   const productResponse = createProductResponse();
 
-  let body: Transaction.PaymentRequest;
+  let body: Requests.PaymentTransaction;
 
   beforeEach(() => {
     body = createPaymentTransactionRequest({
@@ -119,7 +120,6 @@ describe('Deferred transaction document converter', () => {
         billingStartDate: undefined,
         expiresAt: undefined,
         _id: undefined,
-        remainingAmount: undefined,
       }));
     });
 
@@ -149,7 +149,6 @@ describe('Deferred transaction document converter', () => {
         billingStartDate: undefined,
         expiresAt: addSeconds(expiresIn, now),
         _id: undefined,
-        remainingAmount: undefined,
       }));
     });
 
@@ -182,7 +181,6 @@ describe('Deferred transaction document converter', () => {
         issuedAt: now,
         expiresAt: undefined,
         _id: undefined,
-        remainingAmount: undefined,
       }));
     });
     it('should return document with invoice properties', () => {
@@ -215,7 +213,6 @@ describe('Deferred transaction document converter', () => {
         issuedAt: now,
         expiresAt: undefined,
         _id: undefined,
-        remainingAmount: undefined,
       }));
     });
   });

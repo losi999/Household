@@ -1,4 +1,5 @@
 import { Api } from '@household/shared/types/api';
+import * as Enum from '@household/shared/enums';
 
 export namespace Responses {
   export type Account = Api.Account.Base &
@@ -54,6 +55,116 @@ export namespace Responses {
   export type ProductGroupedResponse = Api.Category.CategoryId &
     Api.Category.FullName & {
       products: Product[];
+    };
+
+  export type PaymentTransaction = Api.Transaction.TransactionId
+    & Api.Transaction.Amount
+    & Api.Transaction.Description
+    & Api.Transaction.IssuedAt<string>
+    & Api.Transaction.InvoiceNumber
+    & Api.Transaction.InvoiceDate<string>
+    & Api.Transaction.Quantity
+    & Api.Transaction.TransactionType<Enum.TransactionType.Payment>
+    & {
+      product: Product;
+      account: Account;
+      category: Category;
+      project: Project;
+      recipient: Recipient;
+    };
+
+  export type DeferredTransaction = Api.Transaction.TransactionId
+    & Api.Transaction.Amount
+    & Api.Transaction.Description
+    & Api.Transaction.IssuedAt<string>
+    & Api.Transaction.InvoiceNumber
+    & Api.Transaction.InvoiceDate<string>
+    & Api.Transaction.Quantity
+    & Api.Transaction.TransactionType<Enum.TransactionType.Deferred>
+    & {
+      product: Product;
+      payingAccount: Account;
+      ownerAccount: Account;
+      category: Category;
+      project: Project;
+      recipient: Recipient;
+    };
+
+  export type ReimbursementTransaction = Api.Transaction.TransactionId
+    & Api.Transaction.Amount
+    & Api.Transaction.Description
+    & Api.Transaction.IssuedAt<string>
+    & Api.Transaction.InvoiceNumber
+    & Api.Transaction.InvoiceDate<string>
+    & Api.Transaction.Quantity
+    & Api.Transaction.TransactionType<Enum.TransactionType.Reimbursement>
+    & {
+      product: Product;
+      payingAccount: Account;
+      ownerAccount: Account;
+      category: Category;
+      project: Project;
+      recipient: Recipient;
+    };
+
+  export type TransferTransaction = Api.Transaction.TransactionId
+    & Api.Transaction.Amount
+    & Api.Transaction.Description
+    & Api.Transaction.IssuedAt<string>
+    & Api.Transaction.TransactionType<Enum.TransactionType.Transfer>
+    & Api.Transaction.TransferAmount
+    & {
+      account: Account;
+      transferAccount: Account;
+    };
+
+  export type SplitItem = Api.Transaction.Amount
+    & Api.Transaction.Description
+    & Api.Transaction.InvoiceNumber
+    & Api.Transaction.InvoiceDate<string>
+    & Api.Transaction.Quantity
+    & {
+      product: Product;
+      category: Category;
+      project: Project;
+    };
+
+  export type SplitTransaction = Api.Transaction.TransactionId
+    & Api.Transaction.Amount
+    & Api.Transaction.Description
+    & Api.Transaction.IssuedAt<string>
+    & Api.Transaction.TransactionType<Enum.TransactionType.Split>
+    & {
+      account: Account;
+      recipient: Recipient;
+      splits: SplitItem[];
+      deferredSplits: DeferredTransaction[];
+    };
+
+  export type DraftTransaction = Api.Transaction.TransactionId
+    & Api.Transaction.Amount
+    & Api.Transaction.Description
+    & Api.Transaction.IssuedAt<string>
+    & Api.Transaction.TransactionType<Enum.TransactionType.Draft>
+    & {
+      potentialDuplicates: Transaction[];
+    };
+
+  export type Transaction = PaymentTransaction | TransferTransaction | DeferredTransaction | ReimbursementTransaction | SplitTransaction;
+
+  export type TransactionReport = Api.Transaction.TransactionId
+    & Api.Transaction.Amount
+    & Api.Transaction.Description
+    & Api.Transaction.IssuedAt<string>
+    & Api.Transaction.Quantity
+    & Api.Transaction.InvoiceNumber
+    & Api.Transaction.InvoiceDate<string>
+    & {
+      product: ProductReport;
+      account: AccountReport;
+      category: CategoryReport;
+      project: ProjectReport;
+      recipient: RecipientReport;
     };
 
   export type File = Api.File.FileId &

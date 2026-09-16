@@ -1,6 +1,6 @@
 import { StrictJSONSchema7 } from '@household/shared/types/common';
 import { Report } from '@household/shared/types/types';
-import { default as issuedAt } from '@household/shared/schemas/partials/transaction-issued-at';
+import { issuedAt } from '@household/shared/schemas/transaction';
 import { default as mongoId } from '@household/shared/schemas/partials/mongo-id';
 
 const schema: StrictJSONSchema7<Report.Request> = {
