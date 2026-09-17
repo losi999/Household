@@ -1,10 +1,9 @@
 import { Api } from '@household/shared/types/api';
-import { Internal } from '@household/shared/types/types';
 import type { Types } from 'mongoose';
 import * as Enum from '@household/shared/enums';
 
 export namespace Documents {
-  type Id = {
+  export type Id = {
     _id: Types.ObjectId;
   };
 
@@ -29,8 +28,8 @@ export namespace Documents {
     category: Category;
   };
   
-  export type PaymentTransaction = Internal.Id
-    & Internal.Timestamps
+  export type PaymentTransaction = Id
+    & Timestamps
     & Api.Transaction.Amount
     & Api.Transaction.Description
     & Api.Transaction.IssuedAt<Date>
@@ -46,8 +45,8 @@ export namespace Documents {
       recipient: Recipient;
     };
   
-  export type DeferredTransaction = Internal.Id
-    & Internal.Timestamps
+  export type DeferredTransaction = Id
+    & Timestamps
     & Api.Transaction.Amount
     & Api.Transaction.Description
     & Api.Transaction.IssuedAt<Date>
@@ -64,8 +63,8 @@ export namespace Documents {
       recipient: Recipient;
     };
   
-  export type ReimbursementTransaction = Internal.Id
-    & Internal.Timestamps
+  export type ReimbursementTransaction = Id
+    & Timestamps
     & Api.Transaction.Amount
     & Api.Transaction.Description
     & Api.Transaction.IssuedAt<Date>
@@ -82,8 +81,8 @@ export namespace Documents {
       recipient: Recipient;
     };
   
-  export type TransferTransaction = Internal.Id
-    & Internal.Timestamps
+  export type TransferTransaction = Id
+    & Timestamps
     & Api.Transaction.Amount
     & Api.Transaction.Description
     & Api.Transaction.IssuedAt<Date>
@@ -105,8 +104,8 @@ export namespace Documents {
       project: Project;
     };
   
-  export type SplitTransaction = Internal.Id
-    & Internal.Timestamps
+  export type SplitTransaction = Id
+    & Timestamps
     & Api.Transaction.Amount
     & Api.Transaction.Description
     & Api.Transaction.IssuedAt<Date>
@@ -118,8 +117,8 @@ export namespace Documents {
       deferredSplits: DeferredTransaction[];
     };
   
-  export type DraftTransaction = Internal.Id
-    & Internal.Timestamps
+  export type DraftTransaction = Id
+    & Timestamps
     & Api.Transaction.Amount
     & Api.Transaction.Description
     & Api.Transaction.IssuedAt<Date>
@@ -131,7 +130,7 @@ export namespace Documents {
   
   export type Transaction = PaymentTransaction | TransferTransaction | DeferredTransaction | ReimbursementTransaction | SplitTransaction | DraftTransaction;
 
-  export type RawTransaction = Internal.Id
+  export type RawTransaction = Id
   & Api.Transaction.IssuedAt<Date>
   & Api.Transaction.InvoiceNumber
   & Api.Transaction.InvoiceDate<Date>
@@ -149,4 +148,44 @@ export namespace Documents {
   export type File = Id & Timestamps & Api.File.FileType & Api.File.Timezone & Partial<Api.File.ProcessingStatus> & Partial<Api.File.DraftCount>;
 
   export type Setting<V extends string | number | boolean = string | number | boolean> = Partial<Id> & Timestamps & Api.Setting.SettingKey & { value: V };
+
+  export type Price = Id
+    & Timestamps
+    & Api.Price.Base
+    & Api.IsArchived;
+
+  type CustomerJobCost = Api.Customer.Job.AdditionalPrice & {
+    prices: ({
+      price: Price
+    } & Api.Customer.Job.Quantity)[];
+  };
+
+  export type CustomerJob = Api.Customer.Job.Base & CustomerJobCost;
+
+  export type Customer = Id 
+    & Timestamps
+    & Api.IsArchived
+    & Api.Customer.Base
+    & {
+      blacklistedCustomers: Customer[];
+      jobs: CustomerJob[];
+    };
+
+  export type CalendarDay = Partial<Id> // TODO ???
+    & Timestamps
+    & Api.Calendar.DayType
+    & Api.Calendar.Day
+    & Api.Calendar.TimeInterval;
+
+  export type CalendarEntry = Id
+    & Timestamps
+    & Api.Calendar.Entry.Base
+    & Api.Calendar.Day
+    & Api.Calendar.Entry.EntryType
+    & CustomerJobCost
+    & {
+      resolution: Api.Calendar.Entry.Delay & Api.Calendar.Entry.Status
+      transaction: PaymentTransaction;
+      customer: Customer;
+    };
 }

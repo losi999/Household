@@ -2,10 +2,11 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
-import { Calendar } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListCalendarDaysService {
-  (ctx: Calendar.DateRange): Promise<Calendar.Day.Response[]>;
+  (ctx: Api.Calendar.DateRange): Promise<Responses.CalendarDay[]>;
 }
 
 export const listCalendarDaysServiceFactory = (

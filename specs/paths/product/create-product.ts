@@ -1,34 +1,21 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Category from '@household/shared/schemas/category';
 import * as Product from '@household/shared/schemas/product';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const createProduct: PathItemObject = {
-  post: {
-    tags: ['Product'],
-    parameters: [
-      {
-        name: 'categoryId',
-        in: 'path',
-        required: true,
-        schema: Category.categoryId.properties.categoryId,
-      },
-    ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Product.request,
-        },
-      },
+export const createProduct = createPath({
+  method: 'post',
+  tags: ['Product'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'categoryId',
+      schema: Category.categoryId.properties.categoryId,
     },
-    responses: {
-      201: {
-        description: 'Product created',
-        content: {
-          'application/json': {
-            schema: Product.productId,
-          },
-        },
-      },
-    },
+  ],
+  requestBodySchema: Product.request,
+  response: {
+    statusCode: 201,
+    description: 'Product created',
+    schema: Product.productId,
   },
-};
+});

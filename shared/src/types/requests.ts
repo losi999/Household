@@ -1,4 +1,5 @@
 import { Api } from '@household/shared/types/api';
+import * as Enum from '@household/shared/enums';
 
 export namespace Requests {
   export type Account = Api.Account.Base;
@@ -64,4 +65,45 @@ export namespace Requests {
   export type ConfirmForgotPassword = Api.Auth.Password & Api.Auth.ConfirmationCode;
   export type ConfirmUser = Api.Auth.Password & Api.Auth.TemporaryPassword;
   export type RefreshToken = Api.Auth.RefreshToken;
+
+  export type Report = Api.Report.Filter[];
+
+  export type Price = Api.Price.Base;
+
+  type CustomerJobCost = Api.Customer.Job.AdditionalPrice & {
+    prices: (Api.Price.PriceId & Api.Customer.Job.Quantity)[];
+  };
+
+  export type CustomerJob = Api.Customer.Job.Base & CustomerJobCost;
+
+  export type Customer = Api.Customer.Base;
+
+  export type CalendarDayVacation = Api.Calendar.DayType<Enum.CalendarDayType.Vacation>;
+  export type CalendarDayWorkday = Api.Calendar.DayType<Enum.CalendarDayType.Workday> & Api.Calendar.TimeInterval;
+
+  export type CalendarDay = CalendarDayVacation | CalendarDayWorkday;
+
+  export type CalendarEntryIssue = Api.Calendar.Entry.Base
+    & Api.Calendar.Day
+    & Api.Calendar.Entry.EntryType<Enum.CalendarEntryType.Issue>;
+
+  export type CalendarEntryPersonal = Api.Calendar.Entry.Base
+    & Api.Calendar.Day
+    & Api.Calendar.Entry.EntryType<Enum.CalendarEntryType.Personal>;
+    
+  export type CalendarEntryWork = Api.Calendar.Entry.Base
+    & Api.Calendar.Day
+    & Api.Customer.CustomerId
+    & CustomerJobCost
+    & Api.Calendar.Entry.EntryType<Enum.CalendarEntryType.Work>;    
+
+  export type CalendarEntry = CalendarEntryIssue | CalendarEntryPersonal | CalendarEntryWork;
+
+  export type CalendarEntryResolutionPaid = Api.Calendar.Entry.Delay & Api.Transaction.Amount & Api.Calendar.Entry.Status<Enum.CalendarEntryResolutionStatus.Paid>;
+
+  export type CalendarEntryResolutionPendingTransfer = Api.Calendar.Entry.Delay& Api.Calendar.Entry.Status<Enum.CalendarEntryResolutionStatus.PendingTransfer>;
+
+  export type CalendarEntryResolutionNoShow = Api.Calendar.Entry.Status<Enum.CalendarEntryResolutionStatus.NoShow>;
+
+  export type CalendarEntryResolution = CalendarEntryResolutionPaid |CalendarEntryResolutionPendingTransfer | CalendarEntryResolutionNoShow;
 }

@@ -1,33 +1,20 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Project from '@household/shared/schemas/project';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const mergeProjects: PathItemObject = {
-  post: {
-    tags: ['Project'],
-    parameters: [
-      {
-        name: 'projectId',
-        in: 'path',
-        required: true,
-        schema: Project.projectId.properties.projectId,
-      },
-    ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Project.idList,
-        },
-      },
+export const mergeProjects = createPath({
+  method: 'post',
+  tags: ['Project'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'projectId',
+      schema: Project.projectId.properties.projectId,
     },
-    responses: {
-      201: {
-        description: 'Projects merged',
-        content: {
-          'application/json': {
-            schema: Project.projectId,
-          },
-        },
-      },
-    },
+  ],
+  requestBodySchema: Project.idList,
+  response: {
+    statusCode: 201,
+    description: 'Projects merged',
+    schema: Project.projectId,
   },
-};
+});

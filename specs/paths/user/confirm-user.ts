@@ -1,29 +1,20 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as User from '@household/shared/schemas/user';
 import * as Auth from '@household/shared/schemas/auth';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const confirmUser: PathItemObject = {
-  post: {
-    tags: ['User'],
-    parameters: [
-      {
-        name: 'email',
-        in: 'path',
-        required: true,
-        schema: User.email.properties.email,
-      },
-    ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Auth.confirmUserRequest,
-        },
-      },
+export const confirmUser = createPath({
+  method: 'post',
+  tags: ['User'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'email',
+      schema: User.email.properties.email,
     },
-    responses: {
-      200: {
-        description: 'User confirmed',
-      },
-    },
+  ],
+  requestBodySchema: Auth.confirmUserRequest,
+  response: {
+    statusCode: 200,
+    description: 'User confirmed',
   },
-};
+});

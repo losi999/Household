@@ -1,21 +1,18 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Project from '@household/shared/schemas/project';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const deleteProject: PathItemObject = {
-  delete: {
-    tags: ['Project'],
-    parameters: [
-      {
-        name: 'projectId',
-        in: 'path',
-        required: true,
-        schema: Project.projectId.properties.projectId,
-      },
-    ],
-    responses: {
-      204: {
-        description: 'Project deleted',
-      },
+export const deleteProject = createPath({
+  method: 'delete',
+  tags: ['Project'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'projectId',
+      schema: Project.projectId.properties.projectId,
     },
+  ],
+  response: {
+    statusCode: 204,
+    description: 'Project deleted',
   },
-};
+});

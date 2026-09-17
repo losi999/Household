@@ -1,21 +1,12 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Account from '@household/shared/schemas/account';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const listAccounts: PathItemObject = {
-  get: {
-    tags: ['Account'],
-    responses: {
-      200: {
-        description: 'List of accounts',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'array',
-              items: Account.response,
-            },
-          },
-        },
-      },
-    },
+export const listAccounts = createPath({
+  method: 'get',
+  tags: ['Account'],
+  response: {
+    statusCode: 200,
+    description: 'List of accounts',
+    schema: Account.responseList,
   },
-};
+});

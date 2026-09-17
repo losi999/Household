@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
-import { Calendar } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeleteCalendarEntryService {
   (ctx: {
-    calendarEntryId: Calendar.Entry.Id;
+    calendarEntryId: Api.Calendar.Entry.Id;
   }): Promise<unknown>;
 }
 

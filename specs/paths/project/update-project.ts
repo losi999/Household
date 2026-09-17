@@ -1,33 +1,20 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Project from '@household/shared/schemas/project';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const updateProject: PathItemObject = {
-  put: {
-    tags: ['Project'],
-    parameters: [
-      {
-        name: 'projectId',
-        in: 'path',
-        required: true,
-        schema: Project.projectId.properties.projectId,
-      },
-    ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Project.request,
-        },
-      },
+export const updateProject = createPath({
+  method: 'put',
+  tags: ['Project'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'projectId',
+      schema: Project.projectId.properties.projectId,
     },
-    responses: {
-      201: {
-        description: 'Project updated',
-        content: {
-          'application/json': {
-            schema: Project.projectId,
-          },
-        },
-      },
-    },
+  ],
+  requestBodySchema: Project.request,
+  response: {
+    statusCode: 201,
+    description: 'Project updated',
+    schema: Project.projectId,
   },
-};
+});

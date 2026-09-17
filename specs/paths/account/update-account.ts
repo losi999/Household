@@ -1,33 +1,20 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Account from '@household/shared/schemas/account';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const updateAccount: PathItemObject = {
-  put: {
-    tags: ['Account'],
-    parameters: [
-      {
-        name: 'accountId',
-        in: 'path',
-        required: true,
-        schema: Account.accountId.properties.accountId,
-      },
-    ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Account.request,
-        },
-      },
+export const updateAccount = createPath({
+  method: 'put',
+  tags: ['Account'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'accountId',
+      schema: Account.accountId.properties.accountId,
     },
-    responses: {
-      201: {
-        description: 'Account updated',
-        content: {
-          'application/json': {
-            schema: Account.accountId,
-          },
-        },
-      },
-    },
+  ],
+  requestBodySchema: Account.request,
+  response: {
+    statusCode: 201,
+    description: 'Account updated',
+    schema: Account.accountId,
   },
-};
+});

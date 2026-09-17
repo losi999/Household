@@ -1,21 +1,12 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Recipient from '@household/shared/schemas/recipient';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const listRecipients: PathItemObject = {
-  get: {
-    tags: ['Recipient'],
-    responses: {
-      200: {
-        description: 'List of recipients',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'array',
-              items: Recipient.response,
-            },
-          },
-        },
-      },
-    },
+export const listRecipients = createPath({
+  method: 'get',
+  tags: ['Recipient'],
+  response: {
+    statusCode: 200,
+    description: 'List of recipients',
+    schema: Recipient.responseList,
   },
-};
+});

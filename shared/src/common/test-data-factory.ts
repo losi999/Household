@@ -1,7 +1,6 @@
 import { addDays, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar, Customer, Price, Report } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -405,7 +404,7 @@ export const createConfirmForgotPasswordRequest: DataFactoryFunction<Requests.Co
   };
 };
 
-export const createReportAccountFilter: DataFactoryFunction<Report.AccountFilter> = (req) => {
+export const createReportAccountFilter: DataFactoryFunction<Api.Report.AccountFilter> = (req) => {
   return {
     filterType: 'account',
     include: true,
@@ -414,7 +413,7 @@ export const createReportAccountFilter: DataFactoryFunction<Report.AccountFilter
   };
 };
 
-export const createReportCategoryFilter: DataFactoryFunction<Report.CategoryFilter> = (req) => {
+export const createReportCategoryFilter: DataFactoryFunction<Api.Report.CategoryFilter> = (req) => {
   return {
     filterType: 'category',
     include: true,
@@ -423,7 +422,7 @@ export const createReportCategoryFilter: DataFactoryFunction<Report.CategoryFilt
   };
 };
 
-export const createReportProjectFilter: DataFactoryFunction<Report.ProjectFilter> = (req) => {
+export const createReportProjectFilter: DataFactoryFunction<Api.Report.ProjectFilter> = (req) => {
   return {
     filterType: 'project',
     include: true,
@@ -432,7 +431,7 @@ export const createReportProjectFilter: DataFactoryFunction<Report.ProjectFilter
   };
 };
 
-export const createReportProductFilter: DataFactoryFunction<Report.ProductFilter> = (req) => {
+export const createReportProductFilter: DataFactoryFunction<Api.Report.ProductFilter> = (req) => {
   return {
     filterType: 'product',
     include: true,
@@ -441,7 +440,7 @@ export const createReportProductFilter: DataFactoryFunction<Report.ProductFilter
   };
 };
 
-export const createReportRecipientFilter: DataFactoryFunction<Report.RecipientFilter> = (req) => {
+export const createReportRecipientFilter: DataFactoryFunction<Api.Report.RecipientFilter> = (req) => {
   return {
     filterType: 'recipient',
     include: true,
@@ -450,7 +449,7 @@ export const createReportRecipientFilter: DataFactoryFunction<Report.RecipientFi
   };
 };
 
-export const createReportIssuedAtFilter: DataFactoryFunction<Report.IssuedAtFilter> = (req) => {
+export const createReportIssuedAtFilter: DataFactoryFunction<Api.Report.IssuedAtFilter> = (req) => {
   return {
     filterType: 'issuedAt',
     include: true,
@@ -769,9 +768,9 @@ export const createUserResponse: DataFactoryFunction<Responses.User> = (resp) =>
   };
 };
 
-const createPriceId = createId<Price.Id>;
+const createPriceId = createId<Api.Price.Id>;
 
-const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
+const createPriceRequest: DataFactoryFunction<Requests.Price> = (req) => {
   return {
     name: `${faker.commerce.department()} ${faker.string.uuid()}`,
     amount: faker.number.int({
@@ -783,7 +782,7 @@ const createPriceRequest: DataFactoryFunction<Price.Request> = (req) => {
   };
 };
 
-const createPriceDocument: DataFactoryFunction<Price.Document> = (doc) => {
+const createPriceDocument: DataFactoryFunction<Documents.Price> = (doc) => {
   return {
     _id: createId(),
     ...createPriceRequest(),
@@ -793,7 +792,7 @@ const createPriceDocument: DataFactoryFunction<Price.Document> = (doc) => {
   };
 };
 
-const createPriceResponse: DataFactoryFunction<Price.Response> = (resp) => {
+const createPriceResponse: DataFactoryFunction<Responses.Price> = (resp) => {
   return {
     priceId: createPriceId(),
     ...createPriceRequest(),
@@ -801,9 +800,9 @@ const createPriceResponse: DataFactoryFunction<Price.Response> = (resp) => {
   };
 };
 
-const createCustomerId = createId<Customer.Id>;
+const createCustomerId = createId<Api.Customer.Id>;
 
-const createCustomerRequest: DataFactoryFunction<Customer.Request> = (req) => {
+const createCustomerRequest: DataFactoryFunction<Requests.Customer> = (req) => {
   return {
     name: `${faker.person.firstName()} ${faker.string.uuid()}`,
     description: faker.word.words({
@@ -822,17 +821,17 @@ const createCustomerRequest: DataFactoryFunction<Customer.Request> = (req) => {
 };
 
 const createCustomerDocument = (ctx?: {
-  body?: Partial<Customer.Request>
+  body?: Partial<Requests.Customer>
   jobs?: {
-    body?: Partial<Omit<Customer.Job.Request, 'prices'>>;
-    prices?: (Customer.Job.Quantity & {price?: Price.Document})[];
+    body?: Partial<Omit<Requests.CustomerJob, 'prices'>>;
+    prices?: (Api.Customer.Job.Quantity & {price?: Documents.Price})[];
   }[];
-  blacklistedCustomers?: Customer.Document[];
-}): Customer.Document => {
+  blacklistedCustomers?: Documents.Customer[];
+}): Documents.Customer => {
   return {
     _id: createId(),
     ...createCustomerRequest(),
-    jobs: ctx?.jobs?.map<Customer.Job.Document>((j) => {
+    jobs: ctx?.jobs?.map<Documents.CustomerJob>((j) => {
       return {
         ...createCustomerJobRequest(),
         ...j.body,
@@ -863,7 +862,7 @@ const createCustomerDocument = (ctx?: {
   };
 };
 
-const createCustomerResponse: DataFactoryFunction<Customer.Response> = (resp) => {
+const createCustomerResponse: DataFactoryFunction<Responses.Customer> = (resp) => {
   return {
     customerId: createCustomerId(),
     ...createCustomerRequest(),
@@ -875,9 +874,9 @@ const createCustomerResponse: DataFactoryFunction<Customer.Response> = (resp) =>
 };
 
 const createCustomerJobRequest = (ctx?: {
-  body?: Partial<Omit<Customer.Job.Request, 'prices'>>;
-  prices?: Partial<Price.PriceId & Customer.Job.Quantity>[];
-}): Customer.Job.Request => {
+  body?: Partial<Omit<Requests.CustomerJob, 'prices'>>;
+  prices?: Partial<Api.Price.PriceId & Api.Customer.Job.Quantity>[];
+}): Requests.CustomerJob => {
   return {
     name: `${faker.company.buzzVerb()} ${faker.string.uuid()}`,
     description: faker.word.words({
@@ -916,7 +915,7 @@ const createCustomerJobRequest = (ctx?: {
   };
 };
 
-const createCustomerJobResponse: DataFactoryFunction<Customer.Job.Response> = (data) => {
+const createCustomerJobResponse: DataFactoryFunction<Responses.CustomerJob> = (data) => {
   const name = `${faker.company.buzzVerb()} ${faker.string.uuid()}`;
   return {
     name,
@@ -997,11 +996,11 @@ const createFutureWeekend = () => {
   return dateToISODateString(addDays(nearestWeekendOffset, date));
 };
 
-const createCalendarEntryId = (id?: string): Calendar.Entry.Id => {
-  return (id ?? createId().toString()) as Calendar.Entry.Id;
+const createCalendarEntryId = (id?: string): Api.Calendar.Entry.Id => {
+  return (id ?? createId().toString()) as Api.Calendar.Entry.Id;
 };
 
-const createCalendarPersonalEntryRequest: DataFactoryFunction<Calendar.Entry.PersonalEntryRequest> = (req) => {
+const createCalendarPersonalEntryRequest: DataFactoryFunction<Requests.CalendarEntryPersonal> = (req) => {
   const start = faker.number.int({
     min: WORKDAY_START,
     max: WORKDAY_END - 1,
@@ -1025,7 +1024,7 @@ const createCalendarPersonalEntryRequest: DataFactoryFunction<Calendar.Entry.Per
   };
 };
 
-const createCalendarIssueEntryRequest: DataFactoryFunction<Calendar.Entry.IssueEntryRequest> = (req) => {
+const createCalendarIssueEntryRequest: DataFactoryFunction<Requests.CalendarEntryIssue> = (req) => {
   const start = faker.number.int({
     min: WORKDAY_START,
     max: WORKDAY_END - 1,
@@ -1050,9 +1049,9 @@ const createCalendarIssueEntryRequest: DataFactoryFunction<Calendar.Entry.IssueE
 };
 
 const createCalendarWorkEntryRequest = (ctx?: {
-  body?: Partial<Omit<Calendar.Entry.WorkEntryRequest, 'prices'>>;
-  prices?: Partial<Price.PriceId & Customer.Job.Quantity>[];
-}): Calendar.Entry.WorkEntryRequest => {
+  body?: Partial<Omit<Requests.CalendarEntryWork, 'prices'>>;
+  prices?: Partial<Api.Price.PriceId & Api.Customer.Job.Quantity>[];
+}): Requests.CalendarEntryWork => {
   const start = faker.number.int({
     min: WORKDAY_START,
     max: WORKDAY_END - 1,
@@ -1092,7 +1091,7 @@ const createCalendarWorkEntryRequest = (ctx?: {
   };
 };
 
-const createCalendarEntryDocument: DataFactoryFunction<Calendar.Entry.Document> = (data) => {
+const createCalendarEntryDocument: DataFactoryFunction<Documents.CalendarEntry> = (data) => {
 
   return {
     ...createCalendarPersonalEntryRequest(),
@@ -1107,7 +1106,7 @@ const createCalendarEntryDocument: DataFactoryFunction<Calendar.Entry.Document> 
   };
 };
 
-const createCalendarEntryResponseBase: DataFactoryFunction<Calendar.Entry.ResponseBase> = (data) => {
+const createCalendarEntryResponseBase: DataFactoryFunction<Responses.CalendarEntryLean> = (data) => {
   const { entryType, ...base } = createCalendarPersonalEntryRequest();
   return {
     calendarEntryId: createCalendarEntryId(),
@@ -1116,7 +1115,7 @@ const createCalendarEntryResponseBase: DataFactoryFunction<Calendar.Entry.Respon
   };
 };
 
-const createCalendarPersonalEntryResponse: DataFactoryFunction<Calendar.Entry.PersonalEntryResponse> = (data) => {
+const createCalendarPersonalEntryResponse: DataFactoryFunction<Responses.CalendarEntryPersonal> = (data) => {
   return {
     calendarEntryId: createCalendarEntryId(),
     ...createCalendarPersonalEntryRequest(),
@@ -1124,7 +1123,7 @@ const createCalendarPersonalEntryResponse: DataFactoryFunction<Calendar.Entry.Pe
   };
 };
 
-const createCalendarIssueEntryResponse: DataFactoryFunction<Calendar.Entry.IssueEntryResponse> = (data) => {
+const createCalendarIssueEntryResponse: DataFactoryFunction<Responses.CalendarEntryIssue> = (data) => {
   return {
     calendarEntryId: createCalendarEntryId(),
     ...createCalendarIssueEntryRequest(),
@@ -1132,7 +1131,7 @@ const createCalendarIssueEntryResponse: DataFactoryFunction<Calendar.Entry.Issue
   };
 };
 
-const createCalendarWorkEntryResponseBase: DataFactoryFunction<Calendar.Entry.WorkEntryResponseBase> = (data) => {
+const createCalendarWorkEntryResponseBase: DataFactoryFunction<Responses.CalendarEntryWorkLean> = (data) => {
   const { customerId, prices, ...req } = createCalendarWorkEntryRequest();
   return {
     calendarEntryId: createCalendarEntryId(),
@@ -1142,7 +1141,7 @@ const createCalendarWorkEntryResponseBase: DataFactoryFunction<Calendar.Entry.Wo
   };
 };
 
-const createCalendarWorkEntryResponse: DataFactoryFunction<Calendar.Entry.WorkEntryResponse> = (data) => {
+const createCalendarWorkEntryResponse: DataFactoryFunction<Responses.CalendarEntryWork> = (data) => {
   const { customerId, prices, ...req } = createCalendarWorkEntryRequest();
   return {
     calendarEntryId: createCalendarEntryId(),
@@ -1154,7 +1153,7 @@ const createCalendarWorkEntryResponse: DataFactoryFunction<Calendar.Entry.WorkEn
   };
 };
 
-const createCalendarEntryResolutionRequest: DataFactoryFunction<Calendar.Entry.ResolutionRequest> = (data) => {
+const createCalendarEntryResolutionRequest: DataFactoryFunction<Requests.CalendarEntryResolution> = (data) => {
   const status = data?.status ?? CalendarEntryResolutionStatus.Paid;
     
   return {
@@ -1171,7 +1170,7 @@ const createCalendarEntryResolutionRequest: DataFactoryFunction<Calendar.Entry.R
   };
 };
 
-const createCalendarWorkdayRequest: DataFactoryFunction<Calendar.Day.WorkdayRequest> = (req) => {
+const createCalendarWorkdayRequest: DataFactoryFunction<Requests.CalendarDayWorkday> = (req) => {
   const start = faker.number.int({
     min: WORKDAY_START,
     max: WORKDAY_END - 1,
@@ -1188,13 +1187,13 @@ const createCalendarWorkdayRequest: DataFactoryFunction<Calendar.Day.WorkdayRequ
   };
 };
 
-const createCalendarVacationRequest = (): Calendar.Day.VacationRequest => {
+const createCalendarVacationRequest = (): Requests.CalendarDayVacation => {
   return {
     dayType: CalendarDayType.Vacation,
   };
 };
 
-const createCalendarDayDocument: DataFactoryFunction<Calendar.Day.Document> = (data) => {
+const createCalendarDayDocument: DataFactoryFunction<Documents.CalendarDay> = (data) => {
   return {
     ...createCalendarWorkdayRequest(),
     day: createFutureCalendarDay(),
@@ -1203,7 +1202,7 @@ const createCalendarDayDocument: DataFactoryFunction<Calendar.Day.Document> = (d
   };
 };
 
-const createCalendarWorkdayResponse: DataFactoryFunction<Calendar.Day.WorkdayResponse> = (data) => {
+const createCalendarWorkdayResponse: DataFactoryFunction<Responses.CalendarDayWorkday> = (data) => {
   return {
     ...createCalendarWorkdayRequest(),
     day: createPastCalendarDay(),
@@ -1212,7 +1211,7 @@ const createCalendarWorkdayResponse: DataFactoryFunction<Calendar.Day.WorkdayRes
   };
 };
 
-const createCalendarWeekendResponse: DataFactoryFunction<Calendar.Day.WeekendResponse> = (data) => {
+const createCalendarWeekendResponse: DataFactoryFunction<Responses.CalendarDayWeekend> = (data) => {
   return {
     ...createCalendarWorkdayRequest(),
     day: createPastCalendarDay(),
@@ -1222,7 +1221,7 @@ const createCalendarWeekendResponse: DataFactoryFunction<Calendar.Day.WeekendRes
   };
 };
 
-const createCalendarVacationResponse: DataFactoryFunction<Calendar.Day.VacationResponse> = (data) => {
+const createCalendarVacationResponse: DataFactoryFunction<Responses.CalendarDayVacation> = (data) => {
   return {
     dayType: CalendarDayType.Vacation,
     day: createPastCalendarDay(),
@@ -1231,7 +1230,7 @@ const createCalendarVacationResponse: DataFactoryFunction<Calendar.Day.VacationR
   };
 };
 
-const createCalendarHolidayResponse: DataFactoryFunction<Calendar.Day.HolidayResponse> = (data) => {
+const createCalendarHolidayResponse: DataFactoryFunction<Responses.CalendarDayHoliday> = (data) => {
   return {
     dayType: CalendarDayType.Holiday,
     day: createPastCalendarDay(),

@@ -1,21 +1,18 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Category from '@household/shared/schemas/category';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const deleteCategory: PathItemObject = {
-  delete: {
-    tags: ['Category'],
-    parameters: [
-      {
-        name: 'categoryId',
-        in: 'path',
-        required: true,
-        schema: Category.categoryId.properties.categoryId,
-      },
-    ],
-    responses: {
-      204: {
-        description: 'Category deleted',
-      },
+export const deleteCategory = createPath({
+  method: 'delete',
+  tags: ['Category'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'categoryId',
+      schema: Category.categoryId.properties.categoryId,
     },
+  ],
+  response: {
+    statusCode: 204,
+    description: 'Category deleted',
   },
-};
+});

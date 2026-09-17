@@ -1,20 +1,12 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Auth from '@household/shared/schemas/auth';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const forgotPassword: PathItemObject = {
-  post: {
-    tags: ['User'],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Auth.forgotPasswordRequest,
-        },
-      },
-    },
-    responses: {
-      200: {
-        description: 'Password reset initiated',
-      },
-    },
+export const forgotPassword = createPath({
+  method: 'post',
+  tags: ['User'],
+  requestBodySchema: Auth.forgotPasswordRequest,
+  response: {
+    statusCode: 200,
+    description: 'Password reset initiated',
   },
-};
+});

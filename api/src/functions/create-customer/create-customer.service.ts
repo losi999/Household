@@ -2,13 +2,14 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { getCustomerId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateCustomerService {
   (ctx: {
-    body: Customer.Request;
+    body: Requests.Customer;
     expiresIn: number;
-  }): Promise<Customer.Id>;
+  }): Promise<Api.Customer.Id>;
 }
 
 export const createCustomerServiceFactory = (

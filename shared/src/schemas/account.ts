@@ -1,7 +1,7 @@
 import { Api } from '@household/shared/types/api';
 import * as Enum from '@household/shared/enums';
 import { combine } from '@household/shared/common/schema-utils';
-import { ObjectSchema } from '@household/shared/types/schema';
+import { ObjectSchema, StrictSchema } from '@household/shared/types/schema';
 import { Responses } from '@household/shared/types/responses';
 import { Requests } from '@household/shared/types/requests';
 
@@ -106,7 +106,7 @@ const base = combine<Api.Account.Base>([
   owner,
 ]);
 
-export const leanResponse = combine<Responses.AccountLean>([
+export const responseLean = combine<Responses.AccountLean>([
   accountId,
   isOpen,
   base,
@@ -114,9 +114,14 @@ export const leanResponse = combine<Responses.AccountLean>([
 ]);
 
 export const response = combine<Responses.Account>([
-  leanResponse,
+  responseLean,
   balance,
 ]);
+
+export const responseList: StrictSchema<Responses.Account[]> = {
+  type: 'array',
+  items: response,
+};
 
 export const report = combine<Responses.AccountReport>([
   accountId,

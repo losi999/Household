@@ -1,21 +1,12 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as File from '@household/shared/schemas/file';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const listFiles: PathItemObject = {
-  get: {
-    tags: ['File'],
-    responses: {
-      200: {
-        description: 'List of files',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'array',
-              items: File.response,
-            },
-          },
-        },
-      },
-    },
+export const listFiles = createPath({
+  method: 'get',
+  tags: ['File'],
+  response: {
+    statusCode: 200,
+    description: 'List of files',
+    schema: File.responseList,
   },
-};
+});

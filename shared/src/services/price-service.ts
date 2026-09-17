@@ -1,15 +1,16 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 
 export interface IPriceService {
-  savePrice(doc: Price.Document): Promise<Price.Document>;
-  savePrices(...docs: Price.Document[]): Promise<unknown>;
-  findPriceById(priceId: Price.Id): Promise<Price.Document>;
-  deletePrice(priceId: Price.Id): Promise<unknown>;
-  updatePrice(priceId: Price.Id, updateQuery: DocumentUpdate<Price.Document>): Promise<unknown>;
-  listPrices(): Promise<Price.Document[]>;
-  findPricesByIds(priceIds: Price.Id[]): Promise<Price.Document[]>;
+  savePrice(doc: Documents.Price): Promise<Documents.Price>;
+  savePrices(...docs: Documents.Price[]): Promise<unknown>;
+  findPriceById(priceId: Api.Price.Id): Promise<Documents.Price>;
+  deletePrice(priceId: Api.Price.Id): Promise<unknown>;
+  updatePrice(priceId: Api.Price.Id, updateQuery: DocumentUpdate<Documents.Price>): Promise<unknown>;
+  listPrices(): Promise<Documents.Price[]>;
+  findPricesByIds(priceIds: Api.Price.Id[]): Promise<Documents.Price[]>;
 }
 
 export const priceServiceFactory = (mongodbService: IMongodbService): IPriceService => {

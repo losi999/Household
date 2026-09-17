@@ -1,21 +1,12 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Product from '@household/shared/schemas/product';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const listProducts: PathItemObject = {
-  get: {
-    tags: ['Product'],
-    responses: {
-      200: {
-        description: 'List of products grouped by category',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'array',
-              items: Product.groupedResponse,
-            },
-          },
-        },
-      },
-    },
+export const listProducts = createPath({
+  method: 'get',
+  tags: ['Product'],
+  response: {
+    statusCode: 200,
+    description: 'List of products grouped by category',
+    schema: Product.groupedResponseList,
   },
-};
+});

@@ -35,6 +35,11 @@ export const response = combine<Responses.Recipient>([
   base,
 ]);
 
+export const responseList: StrictSchema<Responses.Recipient[]> = {
+  type: 'array',
+  items: response,
+};
+
 export const report = combine<Responses.RecipientReport>([
   recipientId,
   name,

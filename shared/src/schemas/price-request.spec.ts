@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/price-request';
-import { Price } from '@household/shared/types/types';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { request as schema } from '@household/shared/schemas/price';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Price schema', () => {
-  const tester = jsonSchemaTesterFactory<Price.Request>(schema);
+  const tester = schemaTesterFactory<Requests.Price>(schema);
   describe('should accept', () => {
     tester.validateSuccess(testDataFactory.price.request());
   });

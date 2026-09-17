@@ -6,7 +6,7 @@ import { Responses } from '@household/shared/types/responses';
 import * as Enum from '@household/shared/enums';
 import { email } from '@household/shared/schemas/user';
 
-export const password: ObjectSchema<Api.Auth.Password> = {
+const password: ObjectSchema<Api.Auth.Password> = {
   type: 'object',
   additionalProperties: false,
   required: ['password'],
@@ -18,7 +18,7 @@ export const password: ObjectSchema<Api.Auth.Password> = {
   },
 };
 
-export const temporaryPassword: ObjectSchema<Api.Auth.TemporaryPassword> = {
+const temporaryPassword: ObjectSchema<Api.Auth.TemporaryPassword> = {
   type: 'object',
   additionalProperties: false,
   required: ['temporaryPassword'],
@@ -30,7 +30,7 @@ export const temporaryPassword: ObjectSchema<Api.Auth.TemporaryPassword> = {
   },
 };
 
-export const confirmationCode: ObjectSchema<Api.Auth.ConfirmationCode> = {
+const confirmationCode: ObjectSchema<Api.Auth.ConfirmationCode> = {
   type: 'object',
   additionalProperties: false,
   required: ['confirmationCode'],
@@ -43,7 +43,7 @@ export const confirmationCode: ObjectSchema<Api.Auth.ConfirmationCode> = {
   },
 };
 
-export const refreshTokenValue: ObjectSchema<Api.Auth.RefreshToken> = {
+const refreshToken: ObjectSchema<Api.Auth.RefreshToken> = {
   type: 'object',
   additionalProperties: false,
   required: ['refreshToken'],
@@ -87,7 +87,7 @@ export const confirmUserRequest = combine<Requests.ConfirmUser>([
   temporaryPassword,
 ]);
 
-export const refreshTokenRequest = combine<Requests.RefreshToken>([refreshTokenValue]);
+export const refreshTokenRequest = combine<Requests.RefreshToken>([refreshToken]);
 
 const idToken: ObjectSchema<Api.Auth.IdToken> = {
   type: 'object',
@@ -102,7 +102,7 @@ const idToken: ObjectSchema<Api.Auth.IdToken> = {
 
 export const loginResponse = combine<Responses.Login>([
   idToken,
-  refreshTokenValue,
+  refreshToken,
 ]);
 
 export const refreshTokenResponse = combine<Responses.RefreshToken>([idToken]);

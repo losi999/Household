@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/report-request';
-import { Report } from '@household/shared/types/types';
+import { request as schema } from '@household/shared/schemas/report';
 import { createReportAccountFilter, createReportCategoryFilter, createReportIssuedAtFilter, createReportProductFilter, createReportProjectFilter, createReportRecipientFilter } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Report request schema', () => {
-  const tester = jsonSchemaTesterFactory<Report.Request>(schema);
+  const tester = schemaTesterFactory<Requests.Report>(schema);
 
   tester.validateSuccess([
     createReportAccountFilter(),

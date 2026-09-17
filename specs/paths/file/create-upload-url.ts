@@ -1,25 +1,13 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as File from '@household/shared/schemas/file';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const createUploadUrl: PathItemObject = {
-  post: {
-    tags: ['File'],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: File.request,
-        },
-      },
-    },
-    responses: {
-      201: {
-        description: 'File created, upload URL returned',
-        content: {
-          'application/json': {
-            schema: File.uploadUrl,
-          },
-        },
-      },
-    },
+export const createUploadUrl = createPath({
+  method: 'post',
+  tags: ['File'],
+  requestBodySchema: File.request,
+  response: {
+    statusCode: 201,
+    description: 'File created, upload URL returned',
+    schema: File.uploadUrl,
   },
-};
+});

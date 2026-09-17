@@ -1,6 +1,6 @@
 import { CalendarDayType } from '@household/shared/enums';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
-import { Calendar } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { fetch } from 'undici';
 
 export interface IStorePublicHolidaysService {
@@ -19,7 +19,7 @@ export const storePublicHolidaysServiceFactory = (calendarDayService: ICalendarD
           date: string
         })[];    
 
-        return body.map<Calendar.Day.Document>(({ date }) => {
+        return body.map<Documents.CalendarDay>(({ date }) => {
           return {
             day: date,
             dayType: CalendarDayType.Holiday,

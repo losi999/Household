@@ -1,21 +1,18 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Product from '@household/shared/schemas/product';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const deleteProduct: PathItemObject = {
-  delete: {
-    tags: ['Product'],
-    parameters: [
-      {
-        name: 'productId',
-        in: 'path',
-        required: true,
-        schema: Product.productId.properties.productId,
-      },
-    ],
-    responses: {
-      204: {
-        description: 'Product deleted',
-      },
+export const deleteProduct = createPath({
+  method: 'delete',
+  tags: ['Product'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'productId',
+      schema: Product.productId.properties.productId,
     },
+  ],
+  response: {
+    statusCode: 204,
+    description: 'Product deleted',
   },
-};
+});

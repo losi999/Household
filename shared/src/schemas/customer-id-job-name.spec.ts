@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/customer-id-job-name';
-import { Customer } from '@household/shared/types/types';
+import { customerIdJobName as schema } from '@household/shared/schemas/customer';
+import { Api } from '@household/shared/types/api';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Customer id and job name schema', () => {
-  const tester = jsonSchemaTesterFactory<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(schema);
+  const tester = schemaTesterFactory<Api.Customer.CustomerId & {jobName: Api.Customer.Job.Name['name']}>(schema);
 
   const jobName = 'vágás';
 

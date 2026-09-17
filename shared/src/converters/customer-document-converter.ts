@@ -2,22 +2,25 @@ import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { getPriceId } from '@household/shared/common/utils';
 import { addSeconds, getCustomerId } from '@household/shared/common/utils';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
+import { Api } from '@household/shared/types/api';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Customer, Price } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 export interface ICustomerDocumentConverter {
-  createJobPriceList(prices: Customer.Job.Request['prices'], priceDocuments: Price.Document[]): Customer.Job.Document['prices'];
-  create(body: Customer.Request, expiresIn: number, generateId?: boolean): Customer.Document;
-  update(body: Customer.Request, expiresIn: number): DocumentUpdate<Customer.Document>;
-  addBlacklistedCustomer(customer: Customer.Document): DocumentUpdate<Customer.Document>;
-  removeBlacklistedCustomer(customerId: Customer.Id): DocumentUpdate<Customer.Document>;
-  addJob(job: Customer.Job.Request, priceDocuments: Price.Document[]): DocumentUpdate<Customer.Document>;
-  updateJob(jobName: string, job: Customer.Job.Request, priceDocuments: Price.Document[]): DocumentUpdate<Customer.Document>;
-  deleteJob(name: Customer.Job.Name['name']): DocumentUpdate<Customer.Document>;
-  toResponseBase(doc: Customer.Document): Customer.ResponseBase;
-  toResponse(doc: Customer.Document): Customer.Response;
-  toResponseList(docs: Customer.Document[]): Customer.Response[];
-  toResponseJobPriceList(docs: Customer.Job.Document['prices']): Customer.Job.Response['prices'];
+  createJobPriceList(prices: Requests.CustomerJob['prices'], priceDocuments: Documents.Price[]): Documents.CustomerJob['prices'];
+  create(body: Requests.Customer, expiresIn: number, generateId?: boolean): Documents.Customer;
+  update(body: Requests.Customer, expiresIn: number): DocumentUpdate<Documents.Customer>;
+  addBlacklistedCustomer(customer: Documents.Customer): DocumentUpdate<Documents.Customer>;
+  removeBlacklistedCustomer(customerId: Api.Customer.Id): DocumentUpdate<Documents.Customer>;
+  addJob(job: Requests.CustomerJob, priceDocuments: Documents.Price[]): DocumentUpdate<Documents.Customer>;
+  updateJob(jobName: string, job: Requests.CustomerJob, priceDocuments: Documents.Price[]): DocumentUpdate<Documents.Customer>;
+  deleteJob(name: Api.Customer.Job.Name['name']): DocumentUpdate<Documents.Customer>;
+  toResponseBase(doc: Documents.Customer): Responses.CustomerLean;
+  toResponse(doc: Documents.Customer): Responses.Customer;
+  toResponseList(docs: Documents.Customer[]): Responses.Customer[];
+  toResponseJobPriceList(docs: Documents.CustomerJob['prices']): Responses.CustomerJob['prices'];
 }
 
 export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceDocumentConverter): ICustomerDocumentConverter => {
@@ -75,7 +78,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
       };
     },
     addJob: ({ description, duration, name, prices, additionalPrice }, priceDocuments) => {
-      const job: Customer.Job.Document = {
+      const job: Documents.CustomerJob = {
         name,
         duration,
         description,
@@ -92,7 +95,7 @@ export const customerDocumentConverterFactory = (priceDocumentConverter: IPriceD
       };
     },
     updateJob: (jobName, { description, duration, name, prices, additionalPrice }, priceDocuments) => {
-      const job: Customer.Job.Document = {
+      const job: Documents.CustomerJob = {
         name,
         duration,
         description,

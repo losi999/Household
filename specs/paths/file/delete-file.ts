@@ -1,21 +1,18 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as File from '@household/shared/schemas/file';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const deleteFile: PathItemObject = {
-  delete: {
-    tags: ['File'],
-    parameters: [
-      {
-        name: 'fileId',
-        in: 'path',
-        required: true,
-        schema: File.fileId.properties.fileId,
-      },
-    ],
-    responses: {
-      204: {
-        description: 'File deleted',
-      },
+export const deleteFile = createPath({
+  method: 'delete',
+  tags: ['File'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'fileId',
+      schema: File.fileId.properties.fileId,
     },
+  ],
+  response: {
+    statusCode: 204,
+    description: 'File deleted',
   },
-};
+});

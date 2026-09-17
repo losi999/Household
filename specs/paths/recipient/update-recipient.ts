@@ -1,33 +1,20 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Recipient from '@household/shared/schemas/recipient';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const updateRecipient: PathItemObject = {
-  put: {
-    tags: ['Recipient'],
-    parameters: [
-      {
-        name: 'recipientId',
-        in: 'path',
-        required: true,
-        schema: Recipient.recipientId.properties.recipientId,
-      },
-    ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Recipient.request,
-        },
-      },
+export const updateRecipient = createPath({
+  method: 'put',
+  tags: ['Recipient'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'recipientId',
+      schema: Recipient.recipientId.properties.recipientId,
     },
-    responses: {
-      201: {
-        description: 'Recipient updated',
-        content: {
-          'application/json': {
-            schema: Recipient.recipientId,
-          },
-        },
-      },
-    },
+  ],
+  requestBodySchema: Recipient.request,
+  response: {
+    statusCode: 201,
+    description: 'Recipient updated',
+    schema: Recipient.recipientId,
   },
-};
+});

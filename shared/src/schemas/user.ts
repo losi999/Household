@@ -1,6 +1,6 @@
 import { Api } from '@household/shared/types/api';
 import { combine } from '@household/shared/common/schema-utils';
-import { ObjectSchema } from '@household/shared/types/schema';
+import { ObjectSchema, StrictSchema } from '@household/shared/types/schema';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import * as Enum from '@household/shared/enums';
@@ -66,3 +66,8 @@ export const response = combine<Responses.User>([
   status,
   groups,
 ]);
+
+export const responseList: StrictSchema<Responses.User[]> = {
+  type: 'array',
+  items: response,
+};

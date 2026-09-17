@@ -85,23 +85,25 @@ export const report = combine<Responses.ProductReport>([
   fullName,
 ]);
 
-const productsField: ObjectSchema<{ products: Responses.Product[] }> = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['products'],
-  properties: {
-    products: {
-      type: 'array',
-      items: response,
-    },
-  },
-};
-
 export const groupedResponse = combine<Responses.ProductGroupedResponse>([
   categoryId,
   categoryFullName,
-  productsField,
+  {
+    type: 'object',
+    required: ['products'],
+    properties: {
+      products: {
+        type: 'array',
+        items: response,
+      },
+    },
+  },
 ]);
+
+export const groupedResponseList: StrictSchema<Responses.ProductGroupedResponse[]> = {
+  type: 'array',
+  items: groupedResponse,
+};
 
 export const idList: StrictSchema<Api.Product.Id[]> = {
   type: 'array',

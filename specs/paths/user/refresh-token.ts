@@ -1,25 +1,13 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Auth from '@household/shared/schemas/auth';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const refreshToken: PathItemObject = {
-  post: {
-    tags: ['User'],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Auth.refreshTokenRequest,
-        },
-      },
-    },
-    responses: {
-      200: {
-        description: 'Refreshed token',
-        content: {
-          'application/json': {
-            schema: Auth.refreshTokenResponse,
-          },
-        },
-      },
-    },
+export const refreshToken = createPath({
+  method: 'post',
+  tags: ['User'],
+  requestBodySchema: Auth.refreshTokenRequest,
+  response: {
+    statusCode: 200,
+    description: 'Refreshed token',
+    schema: Auth.refreshTokenResponse,
   },
-};
+});

@@ -52,6 +52,11 @@ export const response = combine<Responses.Project>([
   base,
 ]);
 
+export const responseList: StrictSchema<Responses.Project[]> = {
+  type: 'array',
+  items: response,
+};
+
 export const report = combine<Responses.ProjectReport>([
   projectId,
   name,

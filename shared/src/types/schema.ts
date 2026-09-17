@@ -1,4 +1,4 @@
-type StringSchema = {
+export type StringSchema = {
   type: 'string';
   minLength?: number;
   maxLength?: number;
@@ -8,13 +8,18 @@ type StringSchema = {
   formatExclusiveMinimum?: {
     $data: string;
   };
+  formatMinimum?: {
+    $data: string;
+  };
 };    
 
 type NumberSchema = {
   type: 'number' | 'integer';
   minimum?: number;
   maximum?: number;
-  exclusiveMinimum?: number;
+  exclusiveMinimum?: number | {
+    $data: string;
+  };
   exclusiveMaximum?: number;
   multipleOf?: number;
   enum?: number[];
@@ -24,7 +29,7 @@ type BooleanSchema = {
   type: 'boolean';
 };
 
-type ArraySchema<T> = {
+export type ArraySchema<T> = {
   type: 'array';
   items: StrictSchema<T>;
   minItems?: number;
@@ -41,12 +46,13 @@ export type ObjectSchema<T> = {
     [prop in keyof T]?: Partial<ObjectSchema<object>> | (keyof T)[];
   };
   anyOf?: ObjectSchema<T>[];
+  oneOf?: ObjectSchema<any>[]; // CLAUDE TODO: replace any with T and try to fix the compile error
 };
 
 export type StrictSchema<T> =
   T extends string ? StringSchema : 
     T extends number ? NumberSchema :
       T extends boolean ? BooleanSchema :
-        T extends any[] ? ArraySchema<T[0]> :
+        T extends any[] ? ArraySchema<T[number]> :
           T extends object ? ObjectSchema<T> :
             never;

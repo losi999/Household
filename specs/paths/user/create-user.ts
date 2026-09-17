@@ -1,20 +1,12 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as User from '@household/shared/schemas/user';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const createUser: PathItemObject = {
-  post: {
-    tags: ['User'],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: User.request,
-        },
-      },
-    },
-    responses: {
-      201: {
-        description: 'User created',
-      },
-    },
+export const createUser = createPath({
+  method: 'post',
+  tags: ['User'],
+  requestBodySchema: User.request,
+  response: {
+    statusCode: 201,
+    description: 'User created',
   },
-};
+});

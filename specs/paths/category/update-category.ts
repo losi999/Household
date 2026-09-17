@@ -1,33 +1,20 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Category from '@household/shared/schemas/category';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const updateCategory: PathItemObject = {
-  put: {
-    tags: ['Category'],
-    parameters: [
-      {
-        name: 'categoryId',
-        in: 'path',
-        required: true,
-        schema: Category.categoryId.properties.categoryId,
-      },
-    ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Category.request,
-        },
-      },
+export const updateCategory = createPath({
+  method: 'put',
+  tags: ['Category'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'categoryId',
+      schema: Category.categoryId.properties.categoryId,
     },
-    responses: {
-      201: {
-        description: 'Category updated',
-        content: {
-          'application/json': {
-            schema: Category.categoryId,
-          },
-        },
-      },
-    },
+  ],
+  requestBodySchema: Category.request,
+  response: {
+    statusCode: 201,
+    description: 'Category updated',
+    schema: Category.categoryId,
   },
-};
+});

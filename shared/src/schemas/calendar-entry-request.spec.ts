@@ -1,12 +1,12 @@
-import { default as schema } from '@household/shared/schemas/calendar-entry-request';
-import { Calendar } from '@household/shared/types/types';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { request as schema } from '@household/shared/schemas/calendar-entry';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { CalendarEntryType } from '@household/shared/enums';
 import { DAY_END, DAY_START } from '@household/shared/constants';
+import { Requests } from '@household/shared/types/requests';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Calendar personal entry request schema', () => {
-  const tester = jsonSchemaTesterFactory<Calendar.Entry.PersonalEntryRequest>(schema);
+  const tester = schemaTesterFactory<Requests.CalendarEntry>(schema);
   tester.validateSuccess(testDataFactory.calendar.entry.request.personal());
   tester.validateSuccess(testDataFactory.calendar.entry.request.personal({
     description: undefined,
@@ -63,7 +63,7 @@ describe('Calendar personal entry request schema', () => {
         entryType: 1 as any,
       }), 'entryType', 'string');
 
-      tester.const(testDataFactory.calendar.entry.request.personal({
+      tester.enum(testDataFactory.calendar.entry.request.personal({
         entryType: CalendarEntryType.Work as any,
       }), 'entryType');
     });
@@ -112,7 +112,7 @@ describe('Calendar personal entry request schema', () => {
 });
 
 describe('Calendar issue entry request schema', () => {
-  const tester = jsonSchemaTesterFactory<Calendar.Entry.IssueEntryRequest>(schema);
+  const tester = schemaTesterFactory<Requests.CalendarEntry>(schema);
   tester.validateSuccess(testDataFactory.calendar.entry.request.issue());
   tester.validateSuccess(testDataFactory.calendar.entry.request.issue({
     description: undefined,
@@ -169,7 +169,7 @@ describe('Calendar issue entry request schema', () => {
         entryType: 1 as any,
       }), 'entryType', 'string');
 
-      tester.const(testDataFactory.calendar.entry.request.issue({
+      tester.enum(testDataFactory.calendar.entry.request.issue({
         entryType: CalendarEntryType.Work as any,
       }), 'entryType');
     });
@@ -218,7 +218,7 @@ describe('Calendar issue entry request schema', () => {
 });
 
 describe('Calendar work entry request schema', () => {
-  const tester = jsonSchemaTesterFactory<Calendar.Entry.WorkEntryRequest>(schema);
+  const tester = schemaTesterFactory<Requests.CalendarEntry>(schema);
   tester.validateSuccess(testDataFactory.calendar.entry.request.work({
     prices: [{}],
   }));
@@ -303,6 +303,12 @@ describe('Calendar work entry request schema', () => {
           entryType: 1 as any,
         },
       }), 'entryType', 'string');
+
+      tester.enum(testDataFactory.calendar.entry.request.work({
+        body: {
+          entryType: CalendarEntryType.Issue as any,
+        },
+      }), 'entryType');
     });
 
     describe('if data.start', () => {

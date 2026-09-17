@@ -7,14 +7,14 @@ import { IAccountService } from '@household/shared/services/account-service';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { ISettingService } from '@household/shared/services/setting-service';
-import { Calendar } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IResolveCalendarWorkEntryService {
   (ctx: {
-    body: Calendar.Entry.ResolutionRequest;
+    body: Requests.CalendarEntryResolution;
     expiresIn: number;
-  } & Calendar.Entry.CalendarEntryId): Promise<Api.Transaction.Id>;
+  } & Api.Calendar.Entry.CalendarEntryId): Promise<Api.Transaction.Id>;
 }
 
 export const resolveCalendarWorkEntryServiceFactory = (

@@ -1,5 +1,5 @@
 import { CategoryType } from '@household/shared/enums';
-import { Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { Responses } from '@household/shared/types/responses';
 import { Documents } from '@household/shared/types/documents';
 
@@ -31,6 +31,6 @@ export const isInventoryCategory = (category: Responses.Category): boolean => {
   return category?.categoryType === CategoryType.Inventory;
 };
 
-export const hasPriceId = (price: {price: Price.Document;} | Price.PriceId): price is Price.PriceId => {
-  return !!(price as Price.PriceId).priceId;
+export const hasPriceId = (price: {price: Documents.Price;} | Api.Price.PriceId): price is Api.Price.PriceId => {
+  return !!(price as Api.Price.PriceId).priceId;
 };

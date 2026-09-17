@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/confirm-user-request';
+import { confirmUserRequest as schema } from '@household/shared/schemas/auth';
 import { Requests } from '@household/shared/types/requests';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
 import { createConfirmUserRequest } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Confirm user request schema', () => {
-  const tester = jsonSchemaTesterFactory<Requests.ConfirmUser>(schema);
+  const tester = schemaTesterFactory<Requests.ConfirmUser>(schema);
 
   tester.validateSuccess(createConfirmUserRequest());
 

@@ -1,4 +1,4 @@
-import { Import } from '@household/shared/types/types';
+import { Import } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
 import { read as Read, utils as Utils, WorkBook } from 'xlsx';
 import { default as Moment } from 'moment-timezone';

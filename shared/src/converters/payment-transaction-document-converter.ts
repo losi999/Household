@@ -12,7 +12,6 @@ import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
 import { default as moment } from 'moment-timezone';
 import { Requests } from '@household/shared/types/requests';
-import { Calendar } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Responses } from '@household/shared/types/responses';
 
@@ -28,7 +27,7 @@ export interface IPaymentTransactionDocumentConverter {
   createFromEntry(data: {
     account: Documents.Account;
     category: Documents.Category;
-    calendarEntry: Calendar.Entry.Document;
+    calendarEntry: Documents.CalendarEntry;
   } & Api.Transaction.Amount, expiresIn: number): Documents.PaymentTransaction;
   update(data: {
     body: Requests.PaymentTransaction;

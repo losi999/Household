@@ -1,17 +1,18 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 
 export interface ICustomerService {
-  saveCustomer(doc: Customer.Document): Promise<Customer.Document>;
-  saveCustomers(...docs: Customer.Document[]): Promise<unknown>;
-  findCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
-  deleteCustomer(customerId: Customer.Id): Promise<unknown>;
-  getCustomerById(customerId: Customer.Id): Promise<Customer.Document>;
-  updateCustomer(customerId: Customer.Id, update: DocumentUpdate<Customer.Document>): Promise<unknown>;
-  updateCustomers(ctx: {customerId: Customer.Id; update: DocumentUpdate<Customer.Document>}[]): Promise<unknown>;
-  listCustomers(): Promise<Customer.Document[]>;
-  findCustomersByIds(customerIds: Customer.Id[]): Promise<Customer.Document[]>;
+  saveCustomer(doc: Documents.Customer): Promise<Documents.Customer>;
+  saveCustomers(...docs: Documents.Customer[]): Promise<unknown>;
+  findCustomerById(customerId: Api.Customer.Id): Promise<Documents.Customer>;
+  deleteCustomer(customerId: Api.Customer.Id): Promise<unknown>;
+  getCustomerById(customerId: Api.Customer.Id): Promise<Documents.Customer>;
+  updateCustomer(customerId: Api.Customer.Id, update: DocumentUpdate<Documents.Customer>): Promise<unknown>;
+  updateCustomers(ctx: {customerId: Api.Customer.Id; update: DocumentUpdate<Documents.Customer>}[]): Promise<unknown>;
+  listCustomers(): Promise<Documents.Customer[]>;
+  findCustomersByIds(customerIds: Api.Customer.Id[]): Promise<Documents.Customer[]>;
 }
 
 export const customerServiceFactory = (mongodbService: IMongodbService): ICustomerService => {

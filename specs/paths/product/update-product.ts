@@ -1,33 +1,20 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
+import { createPath } from '@household/shared/common/schema-utils';
 import * as Product from '@household/shared/schemas/product';
 
-export const updateProduct: PathItemObject = {
-  put: {
-    tags: ['Product'],
-    parameters: [
-      {
-        name: 'productId',
-        in: 'path',
-        required: true,
-        schema: Product.productId.properties.productId,
-      },
-    ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Product.request,
-        },
-      },
+export const updateProduct = createPath({
+  method: 'put',
+  tags: ['Product'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'productId',
+      schema: Product.productId.properties.productId,
     },
-    responses: {
-      201: {
-        description: 'Product updated',
-        content: {
-          'application/json': {
-            schema: Product.productId,
-          },
-        },
-      },
-    },
+  ],
+  requestBodySchema: Product.request,
+  response: {
+    statusCode: 201,
+    description: 'Product updated',
+    schema: Product.productId,
   },
-};
+});

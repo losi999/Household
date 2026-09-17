@@ -46,6 +46,38 @@ import { confirmForgotPassword } from './paths/user/confirm-forgot-password';
 import { createPaymentTransaction } from './paths/transaction/create-payment-transaction';
 import { createTransferTransaction } from './paths/transaction/create-transfer-transaction';
 import { createSplitTransaction } from './paths/transaction/create-split-transaction';
+import { updateToPaymentTransaction } from './paths/transaction/update-to-payment-transaction';
+import { updateToSplitTransaction } from './paths/transaction/update-to-split-transaction';
+import { updateToTransferTransaction } from './paths/transaction/update-to-transfer-transaction';
+import { listTransactionsByAccount } from './paths/transaction/list-transactions-by-account';
+import { getTransaction } from './paths/transaction/get-transaction';
+import { listDeferredTransactions } from './paths/transaction/list-deferred-transactions';
+import { deleteTransaction } from './paths/transaction/delete-transaction';
+import { listTransactionsByFile } from './paths/transaction/list-transactions-by-file';
+import { listCustomers } from './paths/customer/list-customers';
+import { createCustomer } from './paths/customer/create-customer';
+import { getCustomer } from './paths/customer/get-customer';
+import { updateCustomer } from './paths/customer/update-customer';
+import { deleteCustomer } from './paths/customer/delete-customer';
+import { listCustomerWorks } from './paths/customer/list-customer-works';
+import { createCustomerJob } from './paths/customer/create-customer-job';
+import { addCustomerToBlacklist } from './paths/customer/add-customer-to-blacklist';
+import { removeCustomerFromBlacklist } from './paths/customer/remove-customer-from-blacklist';
+import { updateCustomerJob } from './paths/customer/update-customer-job';
+import { deleteCustomerJob } from './paths/customer/delete-customer-job';
+import { listPrices } from './paths/price/list-prices';
+import { createPrice } from './paths/price/create-price';
+import { updatePrice } from './paths/price/update-price';
+import { deletePrice } from './paths/price/delete-price';
+import { listCalendarDays } from './paths/calendar/list-calendar-days';
+import { updateCalendarDay } from './paths/calendar/update-calendar-day';
+import { createCalendarEntry } from './paths/calendar/create-calendar-entry';
+import { getCalendarEntry } from './paths/calendar/get-calendar-entry';
+import { updateCalendarEntry } from './paths/calendar/update-calendar-entry';
+import { deleteCalendarDay } from './paths/calendar/delete-calendar-day';
+import { deleteCalendarEntry } from './paths/calendar/delete-calendar-entry';
+import { resolveCalendarWorkEntry } from './paths/calendar/resolve-calendar-work-entry';
+import { reportTransactions } from './paths/transaction/report-transactions';
 
 const document = new OpenApiBuilder()
   .addOpenApiVersion('3.1.0')
@@ -111,6 +143,12 @@ const document = new OpenApiBuilder()
   .addPath('/product/v1/products/{productId}/merge', {
     ...mergeProducts,
   })
+  .addPath('/transaction/v1/accounts/{accountId}/transactions', {
+    ...listTransactionsByAccount,
+  })
+  .addPath('/transaction/v1/accounts/{accountId}/transactions/{transactionId}', {
+    ...getTransaction,
+  })
   .addPath('/transaction/v1/transactions/payment', {
     ...createPaymentTransaction,
   })
@@ -119,6 +157,27 @@ const document = new OpenApiBuilder()
   })
   .addPath('/transaction/v1/transactions/split', {
     ...createSplitTransaction,
+  })
+  .addPath('/transaction/v1/transactions/deferred', {
+    ...listDeferredTransactions,
+  })
+  .addPath('/transaction/v1/transactions/{transactionId}/payment', {
+    ...updateToPaymentTransaction,
+  })
+  .addPath('/transaction/v1/transactions/{transactionId}/transfer', {
+    ...updateToTransferTransaction,
+  })
+  .addPath('/transaction/v1/transactions/{transactionId}/split', {
+    ...updateToSplitTransaction,
+  })
+  .addPath('/transaction/v1/transactions/{transactionId}', {
+    ...deleteTransaction,
+  }) 
+  .addPath('/transaction/v1/transactionReports', {
+    ...reportTransactions,
+  })
+  .addPath('/transaction/v1/files/{fileId}/transactions', {
+    ...listTransactionsByFile,
   })
   .addPath('/file/v1/files', {
     ...listFiles,
@@ -158,6 +217,55 @@ const document = new OpenApiBuilder()
   })
   .addPath('/user/v1/forgotPassword', {
     ...forgotPassword,
+  })
+  .addPath('/customer/v1/customers', {
+    ...listCustomers,
+    ...createCustomer,
+  })
+  .addPath('/customer/v1/customers/{customerId}', {
+    ...getCustomer,
+    ...updateCustomer,
+    ...deleteCustomer,
+  })
+  .addPath('/customer/v1/customers/{customerId}/works', {
+    ...listCustomerWorks,
+  })
+  .addPath('/customer/v1/customers/{customerId}/jobs', {
+    ...createCustomerJob,
+  })
+  .addPath('/customer/v1/customers/{customerId}/jobs/{jobName}', {
+    ...updateCustomerJob,
+    ...deleteCustomerJob,
+  })
+  .addPath('/customer/v1/customers/blacklist', {
+    ...addCustomerToBlacklist,
+    ...removeCustomerFromBlacklist,
+  })
+  .addPath('/price/v1/prices', {
+    ...listPrices,
+    ...createPrice,
+  })
+  .addPath('/price/v1/prices/{priceId}', {
+    ...updatePrice,
+    ...deletePrice,
+  })
+  .addPath('/calendar/v1/days', {
+    ...listCalendarDays,
+  })
+  .addPath('/calendar/v1/days/{day}', {
+    ...updateCalendarDay,
+    ...deleteCalendarDay,
+  })
+  .addPath('/calendar/v1/entries', {
+    ...createCalendarEntry,
+  })
+  .addPath('/calendar/v1/entries/{calendarEntryId}', {
+    ...getCalendarEntry,
+    ...updateCalendarEntry,
+    ...deleteCalendarEntry,
+  })
+  .addPath('/calendar/v1/entries/{calendarEntryId}/resolution', {
+    ...resolveCalendarWorkEntry,
   });
 
 writeFileSync('specs/household.json', document.getSpecAsJson(undefined, 2));

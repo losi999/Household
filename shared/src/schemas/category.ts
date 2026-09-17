@@ -88,35 +88,26 @@ const categoryParent = combine<Responses.CategoryParent>([
   fullName,
 ]);
 
-const ancestorsField: ObjectSchema<{ ancestors: Responses.CategoryAncestor[] }> = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['ancestors'],
-  properties: {
-    ancestors: {
-      type: 'array',
-      items: categoryAncestor,
-    },
-  },
-};
-
-const parentCategoryField: ObjectSchema<{ parentCategory: Responses.CategoryParent }> = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['parentCategory'],
-  properties: {
-    parentCategory: categoryParent,
-  },
-};
-
 export const response = combine<Responses.Category>([
   categoryAncestor,
   fullName,
-  ancestorsField,
-  parentCategoryField,
-], {
-  optional: ['parentCategory'],
-});
+  {
+    type: 'object',
+    required: ['ancestors'],
+    properties: {
+      ancestors: {
+        type: 'array',
+        items: categoryAncestor,
+      },
+      parentCategory: categoryParent,
+    },
+  },
+]);
+
+export const responseList: StrictSchema<Responses.Category[]> = {
+  type: 'array',
+  items: response,
+};
 
 export const report = combine<Responses.CategoryReport>([
   categoryId,

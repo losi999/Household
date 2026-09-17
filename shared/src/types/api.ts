@@ -1,6 +1,6 @@
 import { Branding } from '@household/shared/types/common';
 import * as Enum from '@household/shared/enums';
-import { unitsOfMeasurement } from '@household/shared/constants';
+import { priceUnitsOfMeasurement, unitsOfMeasurement } from '@household/shared/constants';
 import type { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
 
 export namespace Api {
@@ -270,5 +270,149 @@ export namespace Api {
     export type RefreshToken = {
       refreshToken: string;
     };
+  }
+
+  export namespace Report {
+    type FilterBase<T extends string> = {
+      include: boolean;
+      filterType: T
+    };
+
+    export type IssuedAtFilter = FilterBase<'issuedAt'> & {
+      from: string;
+      to: string;
+    };
+
+    export type AccountFilter = FilterBase<'account'> & {
+      items: Account.Id[];
+    };
+
+    export type CategoryFilter = FilterBase<'category'> & {
+      items: Category.Id[];
+    };
+
+    export type ProjectFilter = FilterBase<'project'> & {
+      items: Project.Id[];
+    };
+
+    export type ProductFilter = FilterBase<'product'> & {
+      items: Product.Id[];
+    };
+
+    export type RecipientFilter = FilterBase<'recipient'> & {
+      items: Recipient.Id[];
+    };
+
+    export type CatalogItemFilter = AccountFilter | CategoryFilter | ProjectFilter | ProductFilter | RecipientFilter;
+
+    export type Filter = IssuedAtFilter | CatalogItemFilter;
+  }
+
+  export namespace Price {
+    export type Id = Branding<string, 'price'>;
+    
+    export type PriceId = {
+      priceId: Id;
+    };
+    
+    export type Base = {
+      name: string;
+      amount: number;
+      unitOfMeasurement: typeof priceUnitsOfMeasurement[number];
+    };
+  }
+
+  export namespace Customer {
+    export type Id = Branding<string, 'customer'>;
+
+    export type CustomerId = {
+      customerId: Id;
+    };
+
+    export type Name = {
+      name: string;
+    };
+
+    export type IsGroup = {
+      isGroup: boolean;
+    };
+
+    export type Base = Name
+    & IsGroup
+    & {
+      description: string;
+      rating: number;
+    };
+
+    export namespace Job {
+      export type Name = {
+        name: string;
+      };
+
+      export type Duration = {
+        duration: number;
+      };
+      
+      export type Base = Name & Duration & {
+        description: string;
+      };
+
+      export type AdditionalPrice = {
+        additionalPrice: number;
+      };
+
+      export type Quantity = {
+        quantity: number;
+      };
+
+      export type Title = {
+        title: string;
+      };
+    }
+  }
+
+  export namespace Calendar {
+    export type DateRange = {
+      dateFrom: string;
+      dateTo: string;
+    };
+
+    export type Day = {
+      day: string;
+    };
+
+    export type TimeInterval = {
+      start: number;
+      end: number;
+    };
+
+    export type DayType<T extends Enum.CalendarDayType = Enum.CalendarDayType> = {
+      dayType: T
+    };
+
+    export namespace Entry {
+      export type Id = Branding<string, 'calendarEntry'>;
+      
+      export type CalendarEntryId = {
+        calendarEntryId: Id;
+      };
+      
+      export type EntryType<T extends Enum.CalendarEntryType = Enum.CalendarEntryType> = {
+        entryType: T;
+      };
+      
+      export type Base = TimeInterval & {
+        title: string;
+        description: string;
+      };
+
+      export type Delay = {
+        delay: number;
+      };
+      
+      export type Status<S extends Enum.CalendarEntryResolutionStatus = Enum.CalendarEntryResolutionStatus> = {
+        status: S
+      };
+    }
   }
 }

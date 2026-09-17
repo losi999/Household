@@ -1,21 +1,18 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as User from '@household/shared/schemas/user';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const deleteUser: PathItemObject = {
-  delete: {
-    tags: ['User'],
-    parameters: [
-      {
-        name: 'email',
-        in: 'path',
-        required: true,
-        schema: User.email.properties.email,
-      },
-    ],
-    responses: {
-      204: {
-        description: 'User deleted',
-      },
+export const deleteUser = createPath({
+  method: 'delete',
+  tags: ['User'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'email',
+      schema: User.email.properties.email,
     },
+  ],
+  response: {
+    statusCode: 204,
+    description: 'User deleted',
   },
-};
+});

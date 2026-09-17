@@ -2,7 +2,7 @@ import { default as handler } from '@household/api/functions/list-calendar-days/
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { listCalendarDaysServiceFactory } from '@household/api/functions/list-calendar-days/list-calendar-days.service';
 import { default as index } from '@household/api/handlers/index.handler';
-import { default as queryStringParameters } from '@household/shared/schemas/date-range';
+import { dateRange as queryStringParameters } from '@household/shared/schemas/calendar';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';

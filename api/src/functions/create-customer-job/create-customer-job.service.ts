@@ -2,12 +2,13 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateCustomerJobService {
   (ctx: {
-    body: Customer.Job.Request; 
-  } & Customer.CustomerId): Promise<void>;
+    body: Requests.CustomerJob; 
+  } & Api.Customer.CustomerId): Promise<void>;
 }
 
 export const createCustomerJobServiceFactory = (

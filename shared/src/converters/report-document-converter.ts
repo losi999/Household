@@ -1,10 +1,10 @@
-import { Report } from '@household/shared/types/types';
 import { PipelineStage, Types } from 'mongoose';
 import { Filter, FilterOperators } from 'mongodb';
 import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IReportDocumentConverter {
-  createFilterQuery(body: Report.Request): PipelineStage.Match;
+  createFilterQuery(body: Requests.Report): PipelineStage.Match;
 }
 
 export const reportDocumentConverterFactory = (): IReportDocumentConverter => {

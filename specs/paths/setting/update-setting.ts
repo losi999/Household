@@ -1,28 +1,19 @@
-import { PathItemObject } from 'openapi3-ts/oas32';
 import * as Setting from '@household/shared/schemas/setting';
+import { createPath } from '@household/shared/common/schema-utils';
 
-export const updateSetting: PathItemObject = {
-  post: {
-    tags: ['Setting'],
-    parameters: [
-      {
-        name: 'settingKey',
-        in: 'path',
-        required: true,
-        schema: Setting.settingKey.properties.settingKey,
-      },
-    ],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: Setting.request,
-        },
-      },
+export const updateSetting = createPath({
+  method: 'post',
+  tags: ['Setting'],
+  parameters: [
+    {
+      in: 'path',
+      name: 'settingKey',
+      schema: Setting.settingKey.properties.settingKey,
     },
-    responses: {
-      204: {
-        description: 'Setting updated',
-      },
-    },
+  ],
+  requestBodySchema: Setting.request,
+  response: {
+    statusCode: 204,
+    description: 'Setting updated',
   },
-};
+});

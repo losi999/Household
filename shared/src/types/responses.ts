@@ -186,4 +186,57 @@ export namespace Responses {
     Api.Auth.RefreshToken;
 
   export type RefreshToken = Api.Auth.IdToken;
+
+  export type Price = Api.Price.PriceId & Api.Price.Base;
+
+  export type CustomerJobCost = Api.Customer.Job.AdditionalPrice & {
+    prices: (Price & Api.Customer.Job.Quantity)[];
+  };
+
+  export type CustomerJob = Api.Customer.Job.Base 
+    & Api.Customer.Job.Title 
+    & CustomerJobCost;
+
+  export type CustomerLean = Api.Customer.CustomerId & Api.Customer.Base;
+
+  export type Customer = CustomerLean
+    & Api.IsArchived
+    & {
+      jobs: CustomerJob[];
+      blacklistedCustomers: CustomerLean[];
+    };
+
+  type CalendarDayLean = Api.Calendar.Day & {
+    entries: CalendarEntry[];
+  };
+
+  export type CalendarDayWorkday = Api.Calendar.DayType<Enum.CalendarDayType.Workday> & Api.Calendar.TimeInterval & CalendarDayLean;
+  export type CalendarDayWeekend = Api.Calendar.DayType<Enum.CalendarDayType.Weekend> & Api.Calendar.TimeInterval & CalendarDayLean;
+  export type CalendarDayVacation = Api.Calendar.DayType<Enum.CalendarDayType.Vacation> & CalendarDayLean;
+  export type CalendarDayHoliday = Api.Calendar.DayType<Enum.CalendarDayType.Holiday> & CalendarDayLean;
+
+  export type CalendarDay = CalendarDayWorkday | CalendarDayWeekend | CalendarDayVacation | CalendarDayHoliday;
+
+  export type CalendarEntryLean = Api.Calendar.Entry.Base
+    & Api.Calendar.Day
+    & Api.Calendar.Entry.CalendarEntryId;
+
+  export type CalendarEntryWorkLean = CalendarEntryLean & {
+    resolution: Api.Calendar.Entry.Delay & Api.Calendar.Entry.Status;
+  };
+
+  export type CalendarEntryPersonal = CalendarEntryLean
+    & Api.Calendar.Entry.EntryType<Enum.CalendarEntryType.Personal>;
+
+  export type CalendarEntryIssue = CalendarEntryLean
+    & Api.Calendar.Entry.EntryType<Enum.CalendarEntryType.Issue>;    
+
+  export type CalendarEntryWork = CalendarEntryWorkLean
+    & CustomerJobCost
+    & {
+      customer: Customer;
+    }
+    & Api.Calendar.Entry.EntryType<Enum.CalendarEntryType.Work>;    
+
+  export type CalendarEntry = CalendarEntryPersonal | CalendarEntryIssue | CalendarEntryWork;
 }

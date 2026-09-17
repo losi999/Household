@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/file-id';
-import { File } from '@household/shared/types/types';
+import { fileId as schema } from '@household/shared/schemas/file';
 import { createFileId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Api } from '@household/shared/types/api';
 
 describe('File id schema', () => {
-  const tester = jsonSchemaTesterFactory<File.FileId>(schema);
+  const tester = schemaTesterFactory<Api.File.FileId>(schema);
 
   tester.validateSuccess({
     fileId: createFileId(),

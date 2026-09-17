@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/customer-id';
-import { Customer } from '@household/shared/types/types';
+import { customerId as schema } from '@household/shared/schemas/customer';
+import { Api } from '@household/shared/types/api';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Customer id schema', () => {
-  const tester = jsonSchemaTesterFactory<Customer.CustomerId>(schema);
+  const tester = schemaTesterFactory<Api.Customer.CustomerId>(schema);
 
   tester.validateSuccess({
     customerId: testDataFactory.customer.id(),

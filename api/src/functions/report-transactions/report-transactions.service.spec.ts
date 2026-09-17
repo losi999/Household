@@ -4,7 +4,7 @@ import { createMockService, MockService, validateError, validateFunctionCall } f
 import { IReportDocumentConverter } from '@household/shared/converters/report-document-converter';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Report } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 import { PipelineStage } from 'mongoose';
 
 describe('Report transactions service', () => {
@@ -23,7 +23,7 @@ describe('Report transactions service', () => {
 
   const queriedDocument = createTransactionRawReport();
   const convertedReport = createTransactionReport();
-  const body: Report.Request = [
+  const body: Requests.Report = [
     {
       filterType: 'account',
       items: [createAccountId()],

@@ -21,7 +21,7 @@ const value: ObjectSchema<Api.Setting.Value> = {
   additionalProperties: false,
   required: ['value'],
   properties: {
-    // StrictSchema<T> distributes a primitive union into StringSchema | NumberSchema | BooleanSchema,
+    // TODO StrictSchema<T> distributes a primitive union into StringSchema | NumberSchema | BooleanSchema,
     // none of which alone models JSON Schema's multi-type array syntax needed here.
     value: {
       type: [
@@ -40,3 +40,8 @@ export const response = combine<Responses.Setting>([
   settingKey,
   value,
 ]);
+
+export const responseList: StrictSchema<Responses.Setting[]> = {
+  type: 'array',
+  items: response,
+};

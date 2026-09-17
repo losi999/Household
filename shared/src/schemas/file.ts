@@ -1,7 +1,7 @@
 import { Api } from '@household/shared/types/api';
 import * as Enum from '@household/shared/enums';
 import { combine } from '@household/shared/common/schema-utils';
-import { ObjectSchema } from '@household/shared/types/schema';
+import { ObjectSchema, StrictSchema } from '@household/shared/types/schema';
 import { Responses } from '@household/shared/types/responses';
 import { Requests } from '@household/shared/types/requests';
 
@@ -88,6 +88,11 @@ export const response = combine<Responses.File>([
   draftCount,
   uploadedAt,
 ]);
+
+export const responseList: StrictSchema<Responses.File[]> = {
+  type: 'array',
+  items: response,
+};
 
 export const uploadUrl = combine<Responses.FileUploadUrl>([
   fileId,

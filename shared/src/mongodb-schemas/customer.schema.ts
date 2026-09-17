@@ -1,7 +1,7 @@
-import { Customer } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-const jobSchema = new Schema<Customer.Job.Document>({
+const jobSchema = new Schema<Documents.CustomerJob>({
   name: {
     type: String,
     required: true,
@@ -36,7 +36,7 @@ const jobSchema = new Schema<Customer.Job.Document>({
   _id: false,
 });
 
-export const customerSchema = new Schema<Customer.Document>({
+export const customerSchema = new Schema<Documents.Customer>({
   name: {
     type: String,
     required: true,

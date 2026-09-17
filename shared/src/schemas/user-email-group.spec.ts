@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/user-email-group';
-import { User } from '@household/shared/types/types';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { emailGroup as schema } from '@household/shared/schemas/user';
 import { UserType } from '@household/shared/enums';
+import { Api } from '@household/shared/types/api';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Get transaction schema', () => {
-  const tester = jsonSchemaTesterFactory<User.Email & User.Group>(schema);
+  const tester = schemaTesterFactory<Api.User.Email & Api.User.Group>(schema);
 
   const email = 'email@email.com';
   const group = UserType.Editor;
