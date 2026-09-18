@@ -1,23 +1,26 @@
 import { getAccountId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { Account } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
 import { APIResponse } from '@playwright/test';
 
 type AccountApiFixture = {
-  requestGetAccount(accountId: Account.Id): Promise<APIResponse>;
+  requestGetAccount(accountId: Api.Account.Id): Promise<APIResponse>;
   requestListAccounts(): Promise<APIResponse>;
-  requestCreateAccount(account: Account.Request): Promise<APIResponse>;
-  requestUpdateAccount(accountId: Account.Id, account: Account.Request): Promise<APIResponse>;
-  requestDeleteAccount(accountId: Account.Id): Promise<APIResponse>;
+  requestCreateAccount(account: Requests.Account): Promise<APIResponse>;
+  requestUpdateAccount(accountId: Api.Account.Id, account: Requests.Account): Promise<APIResponse>;
+  requestDeleteAccount(accountId: Api.Account.Id): Promise<APIResponse>;
 };
 
 export const test = baseTest.extend<AccountApiFixture>({
   requestGetAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestGetAccount = async (accountId: Account.Id) => {
+    const requestGetAccount = async (accountId: Api.Account.Id) => {
       return loggedRequest.get(`${process.env.BASE_URL}/account/v1/accounts/${accountId}`, {
         headers: {
           Authorization: authToken,
@@ -43,7 +46,7 @@ export const test = baseTest.extend<AccountApiFixture>({
   requestCreateAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     
-    const requestCreateAccount = async (account: Account.Request) => {
+    const requestCreateAccount = async (account: Requests.Account) => {
       return loggedRequest.post(`${process.env.BASE_URL}/account/v1/accounts`, {
         headers: {
           Authorization: authToken,
@@ -58,7 +61,7 @@ export const test = baseTest.extend<AccountApiFixture>({
   requestUpdateAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestUpdateAccount = async (accountId: Account.Id, account: Account.Request) => {
+    const requestUpdateAccount = async (accountId: Api.Account.Id, account: Requests.Account) => {
       return loggedRequest.put(`${process.env.BASE_URL}/account/v1/accounts/${accountId}`, {
         headers: {
           Authorization: authToken,
@@ -73,7 +76,7 @@ export const test = baseTest.extend<AccountApiFixture>({
   requestDeleteAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeleteAccount = async (accountId: Account.Id) => {
+    const requestDeleteAccount = async (accountId: Api.Account.Id) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/account/v1/accounts/${accountId}`, {
         headers: {
           Authorization: authToken,
@@ -85,7 +88,7 @@ export const test = baseTest.extend<AccountApiFixture>({
   },
 });
 
-export const validateAccountResponse = (response: Account.Response, document: Account.Document, expectedBalance?: number) => {
+export const validateAccountResponse = (response: Responses.Account, document: Documents.Account, expectedBalance?: number) => {
   return new Comparer(response, {
     accountId: getAccountId(document),
     name: document.name,
@@ -99,7 +102,7 @@ export const validateAccountResponse = (response: Account.Response, document: Ac
 };
 
 export const expect = baseExpect.extend({
-  async toHaveBeenSavedAsAccountDocument(req: Account.Request, document: Account.Document) {
+  async toHaveBeenSavedAsAccountDocument(req: Requests.Account, document: Documents.Account) {
     if (!document) {
       return {
         pass: false,
@@ -122,14 +125,14 @@ export const expect = baseExpect.extend({
       message: () => `Expected account to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenDeletedFromDatabase(document: Account.Document) {
+  toHaveBeenDeletedFromDatabase(document: Documents.Account) {
     return {
       pass: !document,
       message: () => `Expected account to be deleted from database, but it was found with id ${getAccountId(document)}`,
     };
   },
-  async toMatchAccountDocument(received: APIResponse, document: Account.Document, expectedBalance?: number) {
-    const response = await received.json() as Account.Response;
+  async toMatchAccountDocument(received: APIResponse, document: Documents.Account, expectedBalance?: number) {
+    const response = await received.json() as Responses.Account;
   
     const errors = validateAccountResponse(response, document, expectedBalance).validate();
   
@@ -138,8 +141,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match account document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingAccountDocument(received: APIResponse, document: Account.Document, expectedBalance?: number) {
-    const response = await received.json() as Account.Response[];
+  async toContainMatchingAccountDocument(received: APIResponse, document: Documents.Account, expectedBalance?: number) {
+    const response = await received.json() as Responses.Account[];
   
     const matchingResponse = response.find(r => r.accountId === getAccountId(document));
   

@@ -1,13 +1,14 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
-import { Calendar } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateCalendarDayService {
   (ctx: {
-    body: Calendar.Day.Request;
+    body: Requests.CalendarDay;
     expiresIn: number;
-  } & Calendar.DayProp): Promise<unknown>;
+  } & Api.Calendar.Day): Promise<unknown>;
 }
 
 export const updateCalendarDayServiceFactory = (

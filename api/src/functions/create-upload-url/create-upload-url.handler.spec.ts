@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-upload-url/create-upload-url.handler';
 import { ICreateUploadUrlService } from '@household/api/functions/create-upload-url/create-upload-url.service';
-import { createFileId, createFileRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create upload url handler', () => {
@@ -13,7 +13,7 @@ describe('Create upload url handler', () => {
     handlerFunction = handler(mockCreateUploadUrlService);
   });
 
-  const body = createFileRequest();
+  const body = testDataFactory.file.request();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),
@@ -22,7 +22,7 @@ describe('Create upload url handler', () => {
     } as AWSLambda.APIGatewayProxyEventHeaders,
   } as AWSLambda.APIGatewayProxyEvent;
   const url = 'https://url-to.upload.com';
-  const fileId = createFileId();
+  const fileId = testDataFactory.file.id();
 
   it('should handle business service error', async () => {
 

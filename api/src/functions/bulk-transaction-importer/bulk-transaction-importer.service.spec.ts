@@ -1,5 +1,5 @@
 import { IBulkTransactionImporterService, bulkTransactionImporterServiceFactory } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.service';
-import { createDocumentUpdate, createDraftTransactionDocument, createFileDocument, createFileId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
@@ -35,14 +35,14 @@ describe('Bulk transaction importer service', () => {
   });
 
   const bucketName = 'file-importer-bucket';
-  const fileId = createFileId();
-  const queriedFileDocument = createFileDocument();
+  const fileId = testDataFactory.file.id();
+  const queriedFileDocument = testDataFactory.file.document();
   const fileContent = new Uint8Array();
   const amount = 100;
   const description = 'description';
   const issuedAt = new Date();
-  const draftTransaction = createDraftTransactionDocument();
-  const fileDocumentUpdate = createDocumentUpdate();
+  const draftTransaction = testDataFactory.transaction.document.draft();
+  const fileDocumentUpdate = testDataFactory.documentUpdate();
 
   describe('should return', () => {
     it('if file is processed', async () => {

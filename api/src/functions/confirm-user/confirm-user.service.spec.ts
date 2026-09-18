@@ -1,7 +1,7 @@
 import { confirmUserServiceFactory, IConfirmUserService } from '@household/api/functions/confirm-user/confirm-user.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
 import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { Auth } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Confirm user service', () => {
   let service: IConfirmUserService;
@@ -18,7 +18,7 @@ describe('Confirm user service', () => {
   const body = {
     password,
     temporaryPassword,
-  } as Auth.ConfirmUser.Request;
+  } as Requests.ConfirmUser;
 
   it('should return', async () => {
     mockIdentityService.functions.confirmUser.mockResolvedValue(undefined);

@@ -1,5 +1,4 @@
 import { entries, getPriceId } from '@household/shared/common/utils';
-import { Price } from '@household/shared/types/types';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
@@ -11,6 +10,7 @@ import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { Documents } from '@household/shared/types/documents';
 
 const expect = mergeExpects(priceApiExpect, apiExpect);
 
@@ -19,7 +19,7 @@ const permissionMap = allowUsers('hairdresser') ;
 const test = mergeTests(priceApiTest, priceDbTest, customerDbTest, calendarEntryDbTest);
 
 test.describe('DELETE /price/v1/prices/{priceId}', () => {
-  let priceDocument: Price.Document;
+  let priceDocument: Documents.Price;
 
   test.beforeEach(async () => {
     priceDocument = priceDataFactory.document();

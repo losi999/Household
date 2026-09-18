@@ -1,23 +1,26 @@
 import { getFileId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { FileProcessingStatus } from '@household/shared/enums';
-import { File } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Documents } from '@household/shared/types/documents';
+import { Responses } from '@household/shared/types/responses';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
 import { Comparer } from '@household/test/comparer';
 import { APIResponse } from '@playwright/test';
 
 type FileApiFixture = {
-  requestCreateUploadUrl(file: File.Request): Promise<APIResponse>;
-  requestUploadFile(url: File.Url['url']): Promise<APIResponse>;
+  requestCreateUploadUrl(file: Requests.File): Promise<APIResponse>;
+  requestUploadFile(url: Api.File.Url['url']): Promise<APIResponse>;
   requestListFiles(): Promise<APIResponse>;
-  requestDeleteFile(fileId: File.Id): Promise<APIResponse>;
+  requestDeleteFile(fileId: Api.File.Id): Promise<APIResponse>;
 };
 
 export const test = baseTest.extend<FileApiFixture>({
   requestCreateUploadUrl: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestCreateUploadUrl = async (file: File.Request) => {
+    const requestCreateUploadUrl = async (file: Requests.File) => {
       return loggedRequest.post(`${process.env.BASE_URL}/file/v1/files`, {
         headers: {
           Authorization: authToken,
@@ -30,7 +33,7 @@ export const test = baseTest.extend<FileApiFixture>({
     await use(requestCreateUploadUrl);
   },
   requestUploadFile: async ({ loggedRequest }, use) => {
-    const requestUploadFile = async (url: File.Url['url']) => {
+    const requestUploadFile = async (url: Api.File.Url['url']) => {
       return loggedRequest.put(url);
     };
 
@@ -52,7 +55,7 @@ export const test = baseTest.extend<FileApiFixture>({
   requestDeleteFile: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeleteFile = async (fileId: File.Id) => {
+    const requestDeleteFile = async (fileId: Api.File.Id) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/file/v1/files/${fileId}`, {
         headers: {
           Authorization: authToken,
@@ -65,7 +68,7 @@ export const test = baseTest.extend<FileApiFixture>({
 });
 
 export const expect = baseExpect.extend({
-  async toHaveBeenSavedAsFileDocument(req: File.Request, document: File.Document) {
+  async toHaveBeenSavedAsFileDocument(req: Requests.File, document: Documents.File) {
     if (!document) {
       return {
         pass: false,
@@ -87,7 +90,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected file to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenDeletedFromDatabase(document: File.Document) {
+  toHaveBeenDeletedFromDatabase(document: Documents.File) {
     return {
       pass: !document,
       message: () => `Expected file to be deleted from database, but it was found with id ${getFileId(document)}`,
@@ -105,8 +108,8 @@ export const expect = baseExpect.extend({
       message: () => 'Expected file to be deleted from S3, but it was found',
     };
   },
-  async toContainMatchingFileDocument(received: APIResponse, document: File.Document, draftCount: number) {
-    const response = await received.json() as File.Response[];
+  async toContainMatchingFileDocument(received: APIResponse, document: Documents.File, draftCount: number) {
+    const response = await received.json() as Responses.File[];
     const matchingResponse = response.find(r => r.fileId === getFileId(document));
   
     if (!matchingResponse) {
@@ -129,7 +132,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to contain a matching file document, but it did not:\n${errors.join('\n')}`,
     };
   }, 
-  toHaveBeenProcessed(originalDocument: File.Document, currentDocument: File.Document) {
+  toHaveBeenProcessed(originalDocument: Documents.File, currentDocument: Documents.File) {
 
     const comparer = new Comparer(currentDocument, {
       fileType: originalDocument.fileType,

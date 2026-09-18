@@ -1,5 +1,5 @@
 import { ICreateUploadUrlService, createUploadUrlServiceFactory } from '@household/api/functions/create-upload-url/create-upload-url.service';
-import { createFileDocument, createFileRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { FileProcessingStatus } from '@household/shared/enums';
@@ -23,14 +23,14 @@ describe('Create upload URL service', () => {
   });
 
   const url = 'https://url-for.upload.com';
-  const convertedFileDocument = createFileDocument({
+  const convertedFileDocument = testDataFactory.file.document({
     processingStatus: undefined,
   });
-  const savedFileDocument = createFileDocument({
+  const savedFileDocument = testDataFactory.file.document({
     processingStatus: FileProcessingStatus.Pending,
   });
 
-  const fileRequest = createFileRequest();
+  const fileRequest = testDataFactory.file.request();
 
   describe('should return url', () => {
     it('if upload url is generated', async () => {

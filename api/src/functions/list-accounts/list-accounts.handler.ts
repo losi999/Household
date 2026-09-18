@@ -1,11 +1,11 @@
 
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IListAccountsService } from '@household/api/functions/list-accounts/list-accounts.service';
-import { Account } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (listAccounts: IListAccountsService): AWSLambda.APIGatewayProxyHandler => {
   return async () => {
-    let accounts: Account.Response[];
+    let accounts: Responses.Account[];
     try {
       accounts = await listAccounts();
     } catch (error) {

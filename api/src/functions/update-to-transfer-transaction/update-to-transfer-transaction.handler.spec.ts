@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/update-to-transfer-transaction/update-to-transfer-transaction.handler';
 import { IUpdateToTransferTransactionService } from '@household/api/functions/update-to-transfer-transaction/update-to-transfer-transaction.service';
-import { createTransactionId, createTransferTransactionRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Update to transfer transaction handler', () => {
@@ -13,8 +13,8 @@ describe('Update to transfer transaction handler', () => {
     handlerFunction = handler(mockUpdateToTransferTransactionService);
   });
 
-  const transactionId = createTransactionId();
-  const body = createTransferTransactionRequest();
+  const transactionId = testDataFactory.transaction.id();
+  const body = testDataFactory.transaction.request.transfer();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),

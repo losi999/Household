@@ -1,7 +1,7 @@
 import { default as handler } from '@household/api/functions/update-calendar-day/update-calendar-day.handler';
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
-import { default as pathParameters } from '@household/shared/schemas/calendar-day';
-import { default as body } from '@household/shared/schemas/calendar-day-request';
+import { day as pathParameters } from '@household/shared/schemas/calendar';
+import { request as body } from '@household/shared/schemas/calendar-day';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
 import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';

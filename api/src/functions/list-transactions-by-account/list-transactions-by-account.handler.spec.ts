@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-transactions-by-account/list-transactions-by-account.handler';
 import { IListTransactionsByAccountService } from '@household/api/functions/list-transactions-by-account/list-transactions-by-account.service';
-import { createAccountId, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('List transactions by transaction handler', () => {
   let mockListTransactionsByTransactionService: MockBusinessService<IListTransactionsByAccountService>;
@@ -12,8 +12,8 @@ describe('List transactions by transaction handler', () => {
     handlerFunction = handler(mockListTransactionsByTransactionService);
   });
 
-  const accountId = createAccountId();
-  const transactions = [createPaymentTransactionResponse()];
+  const accountId = testDataFactory.account.id();
+  const transactions = [testDataFactory.transaction.response.payment()];
   const handlerEvent = {
     pathParameters: {
       accountId,

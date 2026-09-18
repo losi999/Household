@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Auth } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IForgotPasswordService {
   (ctx: {
-    body: Auth.ForgotPassword.Request
+    body: Requests.ForgotPassword
   }): Promise<unknown>;
 }
 

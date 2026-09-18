@@ -1,5 +1,5 @@
 import { ICreateProductService, createProductServiceFactory } from '@household/api/functions/create-product/create-product.service';
-import { createProductRequest, createProductDocument, createCategoryDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
@@ -21,12 +21,12 @@ describe('Create product service', () => {
     service = createProductServiceFactory(mockProductService.service, mockCategoryService.service, mockProductDocumentConverter.service);
   });
 
-  const body = createProductRequest();
-  const queriedCategory = createCategoryDocument({
+  const body = testDataFactory.product.request();
+  const queriedCategory = testDataFactory.category.document({
     categoryType: CategoryType.Inventory,
   });
   const categoryId = getCategoryId(queriedCategory);
-  const convertedProductDocument = createProductDocument();
+  const convertedProductDocument = testDataFactory.product.document();
   const productId = getProductId(convertedProductDocument);
 
   it('should return new id', async () => {
@@ -39,7 +39,7 @@ describe('Create product service', () => {
       categoryId,
       expiresIn: undefined,
     });
-    expect(result).toEqual(productId.toString()),
+    expect(result).toEqual(productId.toString());
     validateFunctionCall(mockCategoryService.functions.findCategoryById, categoryId);
     validateFunctionCall(mockProductDocumentConverter.functions.create, {
       body,
@@ -78,7 +78,7 @@ describe('Create product service', () => {
     });
 
     it('if category is not "inventory" type', async () => {
-      mockCategoryService.functions.findCategoryById.mockResolvedValue(createCategoryDocument({
+      mockCategoryService.functions.findCategoryById.mockResolvedValue(testDataFactory.category.document({
         categoryType: CategoryType.Regular,
       }));
       mockProductDocumentConverter.functions.create.mockReturnValue(convertedProductDocument);

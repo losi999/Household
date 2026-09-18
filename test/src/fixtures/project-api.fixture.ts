@@ -1,24 +1,27 @@
 import { getProjectId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { Project } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Responses } from '@household/shared/types/responses';
+import { Requests } from '@household/shared/types/requests';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
 import { Comparer } from '@household/test/comparer';
 
 type ProjectApiFixture ={
-  requestGetProject(projectId: Project.Id): Promise<APIResponse>;
+  requestGetProject(projectId: Api.Project.Id): Promise<APIResponse>;
   requestListProjects(): Promise<APIResponse>;
-  requestCreateProject(project: Project.Request): Promise<APIResponse>;
-  requestUpdateProject(projectId: Project.Id, project: Project.Request): Promise<APIResponse>;
-  requestDeleteProject(projectId: Project.Id): Promise<APIResponse>;
-  requestMergeProjects(projectId: Project.Id, sourceProjectIds: Project.Id[]): Promise<APIResponse>;
+  requestCreateProject(project: Requests.Project): Promise<APIResponse>;
+  requestUpdateProject(projectId: Api.Project.Id, project: Requests.Project): Promise<APIResponse>;
+  requestDeleteProject(projectId: Api.Project.Id): Promise<APIResponse>;
+  requestMergeProjects(projectId: Api.Project.Id, sourceProjectIds: Api.Project.Id[]): Promise<APIResponse>;
 };
 
 export const test = baseTest.extend<ProjectApiFixture>({
   requestGetProject: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestGetProject = async (projectId: Project.Id) => {
+    const requestGetProject = async (projectId: Api.Project.Id) => {
       return loggedRequest.get(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
         headers: {
           Authorization: authToken,
@@ -44,7 +47,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
   requestCreateProject: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestCreateProject = async (project: Project.Request) => {
+    const requestCreateProject = async (project: Requests.Project) => {
       return loggedRequest.post(`${process.env.BASE_URL}/project/v1/projects`, {
         headers: {
           Authorization: authToken,
@@ -59,7 +62,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
   requestUpdateProject: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestUpdateProject = async (projectId: Project.Id, project: Project.Request) => {
+    const requestUpdateProject = async (projectId: Api.Project.Id, project: Requests.Project) => {
       return loggedRequest.put(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
         headers: {
           Authorization: authToken,
@@ -74,7 +77,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
   requestDeleteProject: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeleteProject = async (projectId: Project.Id) => {
+    const requestDeleteProject = async (projectId: Api.Project.Id) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/project/v1/projects/${projectId}`, {
         headers: {
           Authorization: authToken,
@@ -87,7 +90,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
   requestMergeProjects: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestMergeProjects = async (projectId: Project.Id, sourceProjectIds: Project.Id[]) => {
+    const requestMergeProjects = async (projectId: Api.Project.Id, sourceProjectIds: Api.Project.Id[]) => {
       return loggedRequest.post(`${process.env.BASE_URL}/project/v1/projects/${projectId}/merge`, {
         headers: {
           Authorization: authToken,
@@ -100,7 +103,7 @@ export const test = baseTest.extend<ProjectApiFixture>({
   },
 });
 
-export const validateProjectResponse = (response: Project.Response, document: Project.Document) => {
+export const validateProjectResponse = (response: Responses.Project, document: Documents.Project) => {
   return new Comparer(response, {
     projectId: getProjectId(document),
     name: document?.name,
@@ -109,7 +112,7 @@ export const validateProjectResponse = (response: Project.Response, document: Pr
 };
 
 export const expect = baseExpect.extend({
-  async toHaveBeenSavedAsProjectDocument(req: Project.Request, document: Project.Document) {
+  async toHaveBeenSavedAsProjectDocument(req: Requests.Project, document: Documents.Project) {
     if (!document) {
       return {
         pass: false,
@@ -129,14 +132,14 @@ export const expect = baseExpect.extend({
       message: () => `Expected project to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenDeletedFromDatabase(document: Project.Document) {
+  toHaveBeenDeletedFromDatabase(document: Documents.Project) {
     return {
       pass: !document,
       message: () => `Expected project to be deleted from database, but it was found with id ${getProjectId(document)}`,
     };
   },
-  async toMatchProjectDocument(received: APIResponse, document: Project.Document) {
-    const response = await received.json() as Project.Response;
+  async toMatchProjectDocument(received: APIResponse, document: Documents.Project) {
+    const response = await received.json() as Responses.Project;
     
     const errors = validateProjectResponse(response, document).validate();
       
@@ -145,8 +148,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match project document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingProjectDocument(received: APIResponse, document: Project.Document) {
-    const response = await received.json() as Project.Response[];
+  async toContainMatchingProjectDocument(received: APIResponse, document: Documents.Project) {
+    const response = await received.json() as Responses.Project[];
 
     const matchingResponse = response.find(r => r.projectId === getProjectId(document));
 

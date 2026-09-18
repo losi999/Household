@@ -2,16 +2,19 @@ import { addSeconds, dateToISODateString } from '@household/shared/common/utils'
 import { WORKDAY_START, WORKDAY_END } from '@household/shared/constants';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { CalendarDayType } from '@household/shared/enums';
+import { Api } from '@household/shared/types/api';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 export interface ICalendarDayDocumentConverter {
-  update(body: Calendar.Day.Request, expiresIn: number): DocumentUpdate<Calendar.Day.Document>;
-  toResponse(data: Calendar.DateRange & {entries: Calendar.Entry.Document[]; days: Calendar.Day.Document[]}): Calendar.Day.Response[];
+  update(body: Requests.CalendarDay, expiresIn: number): DocumentUpdate<Documents.CalendarDay>;
+  toResponse(data: Api.Calendar.DateRange & {entries: Documents.CalendarEntry[]; days: Documents.CalendarDay[]}): Responses.CalendarDay[];
 }
 
 export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConverter: ICalendarEntryDocumentConverter): ICalendarDayDocumentConverter => {
-  const getDateRangeArray = ({ dateFrom, dateTo }: Calendar.DateRange): Date[] => {
+  const getDateRangeArray = ({ dateFrom, dateTo }: Api.Calendar.DateRange): Date[] => {
     const end = new Date(dateTo);
     const dates = [];
 
@@ -45,7 +48,7 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
       const response = getDateRangeArray({
         dateFrom,
         dateTo,
-      }).map<Calendar.Day.Response>(date => {
+      }).map<Responses.CalendarDay>(date => {
         const isWeekend = [
           0,
           6,

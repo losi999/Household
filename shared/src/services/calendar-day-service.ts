@@ -1,15 +1,16 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { Api } from '@household/shared/types/api';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 
 export interface ICalendarDayService {
-  findCalendarDayByDay(day: Calendar.DayProp['day']): Promise<Calendar.Day.Document>;
-  saveCalendarDays(documents: Calendar.Day.Document[]): Promise<unknown>;
-  saveCalendarDay(document: Calendar.Day.Document): Promise<Calendar.Day.Document>;
-  deleteCalendarDay(day: Calendar.DayProp['day']): Promise<unknown>;
-  updateCalendarDay(day: Calendar.DayProp['day'], updateQuery: DocumentUpdate<Calendar.Day.Document>): Promise<unknown>;
-  listCalendarDays(data: Calendar.DateRange): Promise<Calendar.Day.Document[]>;
-  clearCalendarDay(day: Calendar.DayProp['day']): Promise<unknown>;
+  findCalendarDayByDay(day: Api.Calendar.Day['day']): Promise<Documents.CalendarDay>;
+  saveCalendarDays(documents: Documents.CalendarDay[]): Promise<unknown>;
+  saveCalendarDay(document: Documents.CalendarDay): Promise<Documents.CalendarDay>;
+  deleteCalendarDay(day: Api.Calendar.Day['day']): Promise<unknown>;
+  updateCalendarDay(day: Api.Calendar.Day['day'], updateQuery: DocumentUpdate<Documents.CalendarDay>): Promise<unknown>;
+  listCalendarDays(data: Api.Calendar.DateRange): Promise<Documents.CalendarDay[]>;
+  clearCalendarDay(day: Api.Calendar.Day['day']): Promise<unknown>;
 }
 
 export const calendarDayServiceFactory = (mongodbService: IMongodbService): ICalendarDayService => {

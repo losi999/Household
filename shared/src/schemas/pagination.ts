@@ -1,11 +1,11 @@
 
-import { StrictJSONSchema7 } from '@household/shared/types/common';
-import { Common } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { ObjectSchema } from '@household/shared/types/schema';
 
-const schema: StrictJSONSchema7<Common.Pagination<string>> = {
+const schema: ObjectSchema<Api.Pagination<string>> = {
   type: [
     'object',
-    'null',
+    'null', 
   ],
   additionalProperties: false,
   properties: {
@@ -19,12 +19,8 @@ const schema: StrictJSONSchema7<Common.Pagination<string>> = {
     },
   },
   dependencies: {
-    pageSize: {
-      required: ['pageNumber'],
-    },
-    pageNumber: {
-      required: ['pageSize'],
-    },
+    pageSize: ['pageNumber'],
+    pageNumber: ['pageSize'],
   },
 };
 

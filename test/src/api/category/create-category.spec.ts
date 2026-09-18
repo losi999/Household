@@ -3,7 +3,9 @@ import { allowUsers } from '@household/test/utils';
 import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { Category } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
@@ -14,9 +16,9 @@ const expect = mergeExpects(categoryApiExpect, apiExpect);
 const test = mergeTests(categoryApiTest, categoryDbTest);
 
 test.describe('POST /category/v1/categories', () => {
-  let req: Category.Request;
-  let parentCategoryDocument: Category.Document;
-  let grandparentCategoryDocument: Category.Document;
+  let req: Requests.Category;
+  let parentCategoryDocument: Documents.Category;
+  let grandparentCategoryDocument: Documents.Category;
 
   test.beforeEach(async () => {
     req = categoryDataFactory.request();
@@ -56,7 +58,7 @@ test.describe('POST /category/v1/categories', () => {
           const res = await requestCreateCategory(req);
           expect(res).toBeCreatedResponse();
 
-          const { categoryId } = (await res.json()) as Category.CategoryId;
+          const { categoryId } = (await res.json()) as Api.Category.CategoryId;
           expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId));
         });
 
@@ -70,7 +72,7 @@ test.describe('POST /category/v1/categories', () => {
           const res = await requestCreateCategory(req);
           expect(res).toBeCreatedResponse();
 
-          const { categoryId } = (await res.json()) as Category.CategoryId;
+          const { categoryId } = (await res.json()) as Api.Category.CategoryId;
           expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId), grandparentCategoryDocument, parentCategoryDocument);
         });
 

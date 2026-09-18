@@ -1,0 +1,418 @@
+import { Branding } from '@household/shared/types/common';
+import * as Enum from '@household/shared/enums';
+import { priceUnitsOfMeasurement, unitsOfMeasurement } from '@household/shared/constants';
+import type { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
+
+export namespace Api {
+  export type IsArchived = {
+    isArchived: boolean;
+  };
+
+  export type Pagination<P extends string | number> = {
+    pageSize: P;
+    pageNumber: P;
+  };
+
+  export namespace Account {
+    export type Id = Branding<string, 'account'>;
+
+    export type AccountId = {
+      accountId: Id;
+    };
+
+    export type IsOpen = {
+      isOpen: boolean;
+    };
+
+    export type Name = {
+      name: string;
+    };
+
+    export type Currency = {
+      currency: string;
+    };
+
+    export type AccountType = {
+      accountType: Enum.AccountType;
+    };
+
+    export type Owner = {
+      owner: string;
+    };
+
+    export type FullName = {
+      fullName: string;
+    };
+
+    export type Base = Name & Currency & AccountType & Owner;
+
+    export type Balance = {
+      balance: number;
+    };
+  }
+
+  export namespace Project {
+    export type Id = Branding<string, 'project'>;
+
+    export type ProjectId = {
+      projectId: Id;
+    };
+
+    export type Name = {
+      name: string;
+    };
+
+    export type Description = {
+      description: string;
+    };
+
+    export type Base = Name & Description;
+  }
+
+  export namespace Recipient {
+    export type Id = Branding<string, 'recipient'>;
+
+    export type RecipientId = {
+      recipientId: Id;
+    };
+
+    export type Name = {
+      name: string;
+    };
+
+    export type Base = Name;
+  }
+
+  export namespace Category {
+    export type Id = Branding<string, 'category'>;
+
+    export type CategoryId = {
+      categoryId: Id;
+    };
+
+    export type FullName = {
+      fullName: string;
+    };
+
+    export type ParentCategoryId = {
+      parentCategoryId: Id;
+    };
+
+    export type CategoryType = {
+      categoryType: Enum.CategoryType;
+    };
+
+    export type Name = {
+      name: string;
+    };
+
+    export type Base = CategoryType & Name;
+  }
+
+  export namespace Product {
+    export type Id = Branding<string, 'product'>;
+
+    export type ProductId = {
+      productId: Id;
+    };
+
+    export type FullName = {
+      fullName: string;
+    };
+
+    export type Brand = {
+      brand: string;
+    };
+
+    export type Measurement = {
+      measurement: number;
+    };
+
+    export type UnitOfMeasurement = {
+      unitOfMeasurement: typeof unitsOfMeasurement[number];
+    };
+
+    export type Base = Brand & Measurement & UnitOfMeasurement;
+  }
+
+  export namespace Transaction {
+    export type Id = Branding<string, 'transaction'>;
+
+    export type TransactionId = {
+      transactionId: Id;
+    };
+
+    export type IssuedAt<D extends string | Date> = {
+      issuedAt: D;
+    };
+
+    export type TransactionType<T extends Enum.TransactionType> = {
+      transactionType: T;
+    };
+
+    export type LoanAccountId = {
+      loanAccountId: Account.Id;
+    };
+
+    export type Amount = {
+      amount: number;
+    };
+
+    export type Description = {
+      description: string;
+    };
+
+    export type Quantity = {
+      quantity: number;
+    };
+
+    export type InvoiceNumber = {
+      invoiceNumber: string;
+    };
+
+    export type InvoiceDate<D extends string | Date> = {
+      billingStartDate: D;
+      billingEndDate: D;
+    };
+
+    export type TransferAccountId = {
+      transferAccountId: Account.Id;
+    };
+
+    export type TransferAmount = {
+      transferAmount: number;
+    };
+  }
+
+  export namespace File {
+    export type Id = Branding<string, 'file'>;
+
+    export type FileId = {
+      fileId: Id;
+    };
+
+    export type FileType = {
+      fileType: Enum.FileType;
+    };
+
+    export type Timezone = {
+      timezone: string;
+    };
+
+    export type Url = {
+      url: string;
+    };
+
+    export type ProcessingStatus = {
+      processingStatus: Enum.FileProcessingStatus;
+    };
+
+    export type DraftCount = {
+      draftCount: number;
+    };
+
+    export type UploadedAt = {
+      uploadedAt: string;
+    };
+
+    export type Base = FileType & Timezone;
+  }
+
+  export namespace Setting {
+    export type SettingKey = {
+      settingKey: Enum.SettingKey;
+    };
+
+    export type Value = {
+      value: string | number | boolean;
+    };
+  }
+
+  export namespace User {
+    export type Email = {
+      email: string;
+    };
+
+    export type Group = {
+      group: Enum.UserType;
+    };
+
+    export type Status = {
+      status: UserStatusType;
+    };
+
+    export type Groups = {
+      groups: Enum.UserType[];
+    };
+  }
+
+  export namespace Auth {
+    export type Password = {
+      password: string;
+    };
+
+    export type TemporaryPassword = {
+      temporaryPassword: string;
+    };
+
+    export type ConfirmationCode = {
+      confirmationCode: string;
+    };
+
+    export type RequiredUserType = {
+      requiredUserType?: Enum.UserType;
+    };
+
+    export type IdToken = {
+      idToken: string;
+    };
+
+    export type RefreshToken = {
+      refreshToken: string;
+    };
+  }
+
+  export namespace Report {
+    type FilterBase<T extends string> = {
+      include: boolean;
+      filterType: T
+    };
+
+    export type IssuedAtFilter = FilterBase<'issuedAt'> & {
+      from: string;
+      to: string;
+    };
+
+    export type AccountFilter = FilterBase<'account'> & {
+      items: Account.Id[];
+    };
+
+    export type CategoryFilter = FilterBase<'category'> & {
+      items: Category.Id[];
+    };
+
+    export type ProjectFilter = FilterBase<'project'> & {
+      items: Project.Id[];
+    };
+
+    export type ProductFilter = FilterBase<'product'> & {
+      items: Product.Id[];
+    };
+
+    export type RecipientFilter = FilterBase<'recipient'> & {
+      items: Recipient.Id[];
+    };
+
+    export type CatalogItemFilter = AccountFilter | CategoryFilter | ProjectFilter | ProductFilter | RecipientFilter;
+
+    export type Filter = IssuedAtFilter | CatalogItemFilter;
+  }
+
+  export namespace Price {
+    export type Id = Branding<string, 'price'>;
+    
+    export type PriceId = {
+      priceId: Id;
+    };
+    
+    export type Base = {
+      name: string;
+      amount: number;
+      unitOfMeasurement: typeof priceUnitsOfMeasurement[number];
+    };
+  }
+
+  export namespace Customer {
+    export type Id = Branding<string, 'customer'>;
+
+    export type CustomerId = {
+      customerId: Id;
+    };
+
+    export type Name = {
+      name: string;
+    };
+
+    export type IsGroup = {
+      isGroup: boolean;
+    };
+
+    export type Base = Name
+    & IsGroup
+    & {
+      description: string;
+      rating: number;
+    };
+
+    export namespace Job {
+      export type Name = {
+        name: string;
+      };
+
+      export type Duration = {
+        duration: number;
+      };
+      
+      export type Base = Name & Duration & {
+        description: string;
+      };
+
+      export type AdditionalPrice = {
+        additionalPrice: number;
+      };
+
+      export type Quantity = {
+        quantity: number;
+      };
+
+      export type Title = {
+        title: string;
+      };
+    }
+  }
+
+  export namespace Calendar {
+    export type DateRange = {
+      dateFrom: string;
+      dateTo: string;
+    };
+
+    export type Day = {
+      day: string;
+    };
+
+    export type TimeInterval = {
+      start: number;
+      end: number;
+    };
+
+    export type DayType<T extends Enum.CalendarDayType = Enum.CalendarDayType> = {
+      dayType: T
+    };
+
+    export namespace Entry {
+      export type Id = Branding<string, 'calendarEntry'>;
+      
+      export type CalendarEntryId = {
+        calendarEntryId: Id;
+      };
+      
+      export type EntryType<T extends Enum.CalendarEntryType = Enum.CalendarEntryType> = {
+        entryType: T;
+      };
+      
+      export type Base = TimeInterval & {
+        title: string;
+        description: string;
+      };
+
+      export type Delay = {
+        delay: number;
+      };
+      
+      export type Status<S extends Enum.CalendarEntryResolutionStatus = Enum.CalendarEntryResolutionStatus> = {
+        status: S
+      };
+    }
+  }
+}

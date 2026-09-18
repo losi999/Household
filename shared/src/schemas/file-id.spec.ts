@@ -1,19 +1,19 @@
-import { default as schema } from '@household/shared/schemas/file-id';
-import { File } from '@household/shared/types/types';
-import { createFileId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { fileId as schema } from '@household/shared/schemas/file';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Api } from '@household/shared/types/api';
 
 describe('File id schema', () => {
-  const tester = jsonSchemaTesterFactory<File.FileId>(schema);
+  const tester = schemaTesterFactory<Api.File.FileId>(schema);
 
   tester.validateSuccess({
-    fileId: createFileId(),
+    fileId: testDataFactory.file.id(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        fileId: createFileId(),
+        fileId: testDataFactory.file.id(),
         extra: 1,
       } as any, 'data');
     });
@@ -28,7 +28,7 @@ describe('File id schema', () => {
       }, 'fileId', 'string');
 
       tester.pattern({
-        fileId: createFileId('not-valid'),
+        fileId: testDataFactory.file.id('not-valid'),
       }, 'fileId');
     });
   });

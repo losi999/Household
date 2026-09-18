@@ -1,41 +1,36 @@
 import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { TransactionType } from '@household/shared/enums';
-import { Dictionary, DocumentUpdate, Unset } from '@household/shared/types/common';
-import { Account, Transaction } from '@household/shared/types/types';
+import { DocumentUpdate, Unset } from '@household/shared/types/common';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 export interface ITransferTransactionDocumentConverter {
   create(data: {
-    body: Transaction.TransferRequest;
-    account: Account.Document;
-    transferAccount: Account.Document;
-    transactions: Dictionary<Transaction.DeferredDocument>;
-  }, expiresIn: number, generateId?: boolean): Transaction.TransferDocument;
+    body: Requests.TransferTransaction;
+    account: Documents.Account;
+    transferAccount: Documents.Account;
+  }, expiresIn: number, generateId?: boolean): Documents.TransferTransaction;
   update(data: {
-    body: Transaction.TransferRequest;
-    account: Account.Document;
-    transferAccount: Account.Document;
-    transactions: Dictionary<Transaction.DeferredDocument>;
-  }, expiresIn: number): DocumentUpdate<Transaction.Document>;
-  toResponse(document: Transaction.TransferDocument, viewingAccountId: Account.Id): Transaction.TransferResponse;
-  toResponseList(documents: Transaction.TransferDocument[], viewingAccountId: Account.Id): Transaction.TransferResponse[];
+    body: Requests.TransferTransaction;
+    account: Documents.Account;
+    transferAccount: Documents.Account;
+  }, expiresIn: number): DocumentUpdate<Documents.Transaction>;
+  toResponse(document: Documents.TransferTransaction, viewingAccountId: Api.Account.Id): Responses.TransferTransaction;
+  toResponseList(documents: Documents.TransferTransaction[], viewingAccountId: Api.Account.Id): Responses.TransferTransaction[];
 }
 
-export const transferTransactionDocumentConverterFactory = (
-  accountDocumentConverter: IAccountDocumentConverter,
-  deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
-): ITransferTransactionDocumentConverter => {
+export const transferTransactionDocumentConverterFactory = (accountDocumentConverter: IAccountDocumentConverter): ITransferTransactionDocumentConverter => {
   const transactionType = TransactionType.Transfer;
-  const defaultUnset: Unset<Transaction.Document, Transaction.TransferDocument> = {
+  const defaultUnset: Unset<Documents.Transaction, Documents.TransferTransaction> = {
     file: true,
     potentialDuplicates: true,
-    isSettled: true,
     ownerAccount: true,
     payingAccount: true,
-    remainingAmount: true,
     deferredSplits: true,
     splits: true,
     billingEndDate: true,
@@ -49,28 +44,21 @@ export const transferTransactionDocumentConverterFactory = (
   };
 
   const instance: ITransferTransactionDocumentConverter = {
-    create: ({ body: { amount, description, transferAmount, payments, issuedAt }, account, transferAccount, transactions }, expiresIn, generateId) => {
+    create: ({ body: { amount, description, transferAmount, issuedAt }, account, transferAccount }, expiresIn, generateId) => {
       return {
         amount,
         description,
         transferAmount: transferAmount ?? amount * -1,
         account,
         transferAccount,
-        payments: payments?.map(p => {
-          const transaction = transactions[p.transactionId];
-          return {
-            amount: Math.min(p.amount, Math.abs(transaction.remainingAmount ?? transaction.amount)),
-            transaction: transactions[p.transactionId],
-          };
-        }) ?? [],
         issuedAt: new Date(issuedAt),
         transactionType,
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ body: { amount, description, transferAmount, payments, issuedAt }, account, transferAccount, transactions }, expiresIn) => {
-      const optionalSet: UpdateQuery<Transaction.Document>['$set'] = {
+    update: ({ body: { amount, description, transferAmount, issuedAt }, account, transferAccount }, expiresIn) => {
+      const optionalSet: UpdateQuery<Documents.Transaction>['$set'] = {
         description,
       };
 
@@ -99,13 +87,6 @@ export const transferTransactionDocumentConverterFactory = (
             transferAmount: transferAmount ?? amount * -1,
             issuedAt: new Date(issuedAt),
             transactionType,
-            payments: payments?.map(p => {
-              const transaction = transactions[p.transactionId];
-              return {
-                amount: Math.min(p.amount, Math.abs(transaction.remainingAmount ?? transaction.amount)),
-                transaction: transactions[p.transactionId],
-              };
-            }) ?? [],
             expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
             ...Object.entries(optionalSet).reduce((accumulator, [
               key,
@@ -124,16 +105,12 @@ export const transferTransactionDocumentConverterFactory = (
         },
       };
     },
-    toResponse: ({ description, transactionType, _id, issuedAt, payments, transferAccount, transferAmount, amount, account }, viewingAccountId) => {
+    toResponse: ({ description, transactionType, _id, issuedAt, transferAccount, transferAmount, amount, account }, viewingAccountId) => {
       return {
         description,
         transactionType,
         transactionId: getTransactionId(_id),
         issuedAt: issuedAt.toISOString(),
-        payments: payments?.map(p => ({
-          amount: p.amount,
-          transaction: deferredTransactionDocumentConverter.toResponse(p.transaction),
-        })) ?? undefined,
         amount: viewingAccountId === getAccountId(transferAccount) ? transferAmount : amount,
         transferAmount: viewingAccountId === getAccountId(transferAccount) ? amount : transferAmount,
         account: viewingAccountId === getAccountId(transferAccount) ? accountDocumentConverter.toResponse(transferAccount) : accountDocumentConverter.toResponse(account),

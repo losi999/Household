@@ -1,7 +1,7 @@
 import { IConfirmForgotPasswordService, confirmForgotPasswordServiceFactory } from '@household/api/functions/confirm-forgot-password/confirm-forgot-password-service';
 import { IIdentityService } from '@household/shared/services/identity-service';
 import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { createConfirmForgotPasswordRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Confirm forgot password service', () => {
   let service: IConfirmForgotPasswordService;
@@ -13,7 +13,7 @@ describe('Confirm forgot password service', () => {
     service = confirmForgotPasswordServiceFactory(mockIdentityService.service);
   });
 
-  const body = createConfirmForgotPasswordRequest();
+  const body = testDataFactory.auth.request.confirmForgotPassword();
   const email = 'email@email.com';
 
   it('should return', async () => {

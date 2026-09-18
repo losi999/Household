@@ -1,19 +1,19 @@
-import { default as schema } from '@household/shared/schemas/setting-key';
-import { Setting } from '@household/shared/types/types';
-import { createSettingKey } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { settingKey as schema } from '@household/shared/schemas/setting';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { Api } from '@household/shared/types/api';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Setting key schema', () => {
-  const tester = jsonSchemaTesterFactory<Setting.SettingKey>(schema);
+  const tester = schemaTesterFactory<Api.Setting.SettingKey>(schema);
 
   tester.validateSuccess({
-    settingKey: createSettingKey(),
+    settingKey: testDataFactory.setting.key(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        settingKey: createSettingKey(),
+        settingKey: testDataFactory.setting.key(),
         extra: 1,
       } as any, 'data');
     });

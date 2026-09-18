@@ -1,11 +1,12 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ISettingDocumentConverter } from '@household/shared/converters/setting-document-converter';
 import { ISettingService } from '@household/shared/services/setting-service';
-import { Setting } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateSettingService {
-  (ctx: Setting.Request
-  & Setting.SettingKey
+  (ctx: Requests.Setting
+  & Api.Setting.SettingKey
   & {
     expiresIn: number;
   }): Promise<unknown>;

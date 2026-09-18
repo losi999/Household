@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/update-setting/update-setting.handler';
 import { IUpdateSettingService } from '@household/api/functions/update-setting/update-setting.service';
-import { createSettingKey, createSettingRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Update setting handler', () => {
@@ -13,8 +13,8 @@ describe('Update setting handler', () => {
     handlerFunction = handler(mockUpdateSettingService);
   });
 
-  const settingKey = createSettingKey();
-  const body = createSettingRequest();
+  const settingKey = testDataFactory.setting.key();
+  const body = testDataFactory.setting.request();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),

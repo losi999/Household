@@ -1,8 +1,8 @@
 import { AccountType } from '@household/shared/enums';
-import { Account } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-export const accountSchema = new Schema<Account.Document>({
+export const accountSchema = new Schema<Documents.Account>({
   name: {
     type: String,
     required: true,

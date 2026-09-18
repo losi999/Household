@@ -1,5 +1,5 @@
 import { updateCustomerJobServiceFactory, IUpdateCustomerJobService } from '@household/api/functions/update-customer-job/update-customer-job.service';
-import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getPriceId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -43,7 +43,7 @@ describe('Update customer job service', () => {
       },
     ],
   });
-  const documentUpdate = createDocumentUpdate();
+  const documentUpdate = testDataFactory.documentUpdate();
   const customerId = testDataFactory.customer.id();
 
   it('should return', async () => {

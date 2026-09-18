@@ -1,9 +1,9 @@
-import { default as schema } from '@household/shared/schemas/date-range';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
-import { Calendar } from '@household/shared/types/types';
+import { dateRange as schema } from '@household/shared/schemas/calendar';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Api } from '@household/shared/types/api';
 
 describe('Date range schema', () => {
-  const tester = jsonSchemaTesterFactory<Calendar.DateRange>(schema);
+  const tester = schemaTesterFactory<Api.Calendar.DateRange>(schema);
 
   const dateFrom = '2025-10-10';
   const dateTo = '2025-10-15';

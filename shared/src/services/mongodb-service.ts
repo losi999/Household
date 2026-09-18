@@ -6,7 +6,7 @@ import { recipientSchema } from '@household/shared/mongodb-schemas/recipient.sch
 import { categorySchema } from '@household/shared/mongodb-schemas/category.schema';
 import { productSchema } from '@household/shared/mongodb-schemas/product.schema';
 import { transactionSchema } from '@household/shared/mongodb-schemas/transaction.schema';
-import { Recipient, Project, Account, Category, Transaction, Product, File, Setting, Customer, Price, Calendar } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { fileSchema } from '@household/shared/mongodb-schemas/file.schema';
 import { settingSchema } from '@household/shared/mongodb-schemas/setting.schema';
 import { customerSchema } from '@household/shared/mongodb-schemas/customer.schema';
@@ -15,18 +15,18 @@ import { calendarEntrySchema } from '@household/shared/mongodb-schemas/calendar-
 import { calendarDaySchema } from '@household/shared/mongodb-schemas/calendar-day.schema';
 
 type CollectionMapping = {
-  recipients: Recipient.Document;
-  projects: Project.Document;
-  transactions: Transaction.Document;
-  accounts: Account.Document;
-  categories: Category.Document;
-  products: Product.Document;
-  files: File.Document;
-  settings: Setting.Document;
-  customers: Customer.Document;
-  prices: Price.Document;
-  calendarEntries: Calendar.Entry.Document;
-  calendarDays: Calendar.Day.Document;
+  recipients: Documents.Recipient;
+  projects: Documents.Project;
+  transactions: Documents.Transaction;
+  accounts: Documents.Account;
+  categories: Documents.Category;
+  products: Documents.Product;
+  files: Documents.File;
+  settings: Documents.Setting;
+  customers: Documents.Customer;
+  prices: Documents.Price;
+  calendarEntries: Documents.CalendarEntry;
+  calendarDays: Documents.CalendarDay;
 };
 
 type CollectionModels = {

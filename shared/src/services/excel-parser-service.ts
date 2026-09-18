@@ -1,9 +1,10 @@
-import { File, Import, Transaction } from '@household/shared/types/types';
+import { Import } from '@household/shared/types/common';
+import { Api } from '@household/shared/types/api';
 import { read as Read, utils as Utils, WorkBook } from 'xlsx';
 import { default as Moment } from 'moment-timezone';
 
 export interface IExcelParserService {
-  parse(params: { fileContent: Uint8Array; } & File.Timezone & File.FileType): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[];
+  parse(params: { fileContent: Uint8Array; } & Api.File.Timezone & Api.File.FileType): (Api.Transaction.IssuedAt<Date> & Api.Transaction.Amount & Api.Transaction.Description)[];
 }
 
 export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils, moment: typeof Moment): IExcelParserService => {
@@ -12,7 +13,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
       .join(' ');
   };
 
-  const parseOtpExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
+  const parseOtpExcel = (workbook: WorkBook): (Api.Transaction.IssuedAt<Date> & Api.Transaction.Amount & Api.Transaction.Description)[] => {
     const parsed = utils.sheet_to_json<Import.Otp>(workbook.Sheets.Sheet3);
 
     return parsed.map((p => {
@@ -25,7 +26,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
     }));
   };
 
-  const parseRevolutExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
+  const parseRevolutExcel = (workbook: WorkBook): (Api.Transaction.IssuedAt<Date> & Api.Transaction.Amount & Api.Transaction.Description)[] => {
     const parsed = utils.sheet_to_json<Import.Revolut>(workbook.Sheets.Sheet1);
 
     return parsed.map((p => {
@@ -38,7 +39,7 @@ export const excelParserServiceFactory = (read: typeof Read, utils: typeof Utils
     }));
   };
 
-  const parseErsteExcel = (workbook: WorkBook): (Transaction.IssuedAt<Date> & Transaction.Amount & Transaction.Description)[] => {
+  const parseErsteExcel = (workbook: WorkBook): (Api.Transaction.IssuedAt<Date> & Api.Transaction.Amount & Api.Transaction.Description)[] => {
     const parsed = utils.sheet_to_json<Import.Erste>(workbook.Sheets.Sheet0, {
       range: 3,
     });

@@ -1,5 +1,5 @@
 import { IResolveCalendarWorkEntryService, resolveCalendarWorkEntryServiceFactory } from '@household/api/functions/resolve-calendar-work-entry/resolve-calendar-work-entry.service';
-import { createAccountDocument, createCategoryDocument, createDocumentUpdate, createPaymentTransactionDocument, createSettingDocument, testDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getCategoryId, getTransactionId } from '@household/shared/common/utils';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
@@ -34,7 +34,7 @@ describe('Resolve calendar work entry service', () => {
   const queriedCalendarEntry = testDataFactory.calendar.entry.document({
     entryType: CalendarEntryType.Work,
   });
-  const documentUpdate = createDocumentUpdate();
+  const documentUpdate = testDataFactory.documentUpdate();
   
   describe('payment type is transfer', () => {
     const body = testDataFactory.calendar.entry.resolution.request({
@@ -178,20 +178,20 @@ describe('Resolve calendar work entry service', () => {
       status: CalendarEntryResolutionStatus.Paid,
       amount,
     });
-    const queriedAccount = createAccountDocument();
+    const queriedAccount = testDataFactory.account.document();
     const accountId = getAccountId(queriedAccount);
-    const queriedCategory = createCategoryDocument();
+    const queriedCategory = testDataFactory.category.document();
     const categoryId = getCategoryId(queriedCategory);
-    const paymentTransactionDocument = createPaymentTransactionDocument();
+    const paymentTransactionDocument = testDataFactory.transaction.document.payment();
     
     it('should return transaction Id', async () => {
       mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
       mockSettingService.functions.listSettingsByKeys.mockResolvedValue([
-        createSettingDocument({
+        testDataFactory.setting.document({
           settingKey: SettingKey.HairdressingIncomeAccount,
           value: accountId,
         }),
-        createSettingDocument({
+        testDataFactory.setting.document({
           settingKey: SettingKey.HairdressingIncomeCategory,
           value: categoryId,
         }),
@@ -251,11 +251,11 @@ describe('Resolve calendar work entry service', () => {
       it('if unable to get account', async () => {
         mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
         mockSettingService.functions.listSettingsByKeys.mockResolvedValue([
-          createSettingDocument({
+          testDataFactory.setting.document({
             settingKey: SettingKey.HairdressingIncomeAccount,
             value: accountId,
           }),
-          createSettingDocument({
+          testDataFactory.setting.document({
             settingKey: SettingKey.HairdressingIncomeCategory,
             value: categoryId,
           }),
@@ -282,11 +282,11 @@ describe('Resolve calendar work entry service', () => {
       it('if unable to get category', async () => {
         mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
         mockSettingService.functions.listSettingsByKeys.mockResolvedValue([
-          createSettingDocument({
+          testDataFactory.setting.document({
             settingKey: SettingKey.HairdressingIncomeAccount,
             value: accountId,
           }),
-          createSettingDocument({
+          testDataFactory.setting.document({
             settingKey: SettingKey.HairdressingIncomeCategory,
             value: categoryId,
           }),
@@ -313,11 +313,11 @@ describe('Resolve calendar work entry service', () => {
       it('if unable to update calendar entry', async () => {
         mockCalendarEntryService.functions.findCalendarEntryById.mockResolvedValue(queriedCalendarEntry);
         mockSettingService.functions.listSettingsByKeys.mockResolvedValue([
-          createSettingDocument({
+          testDataFactory.setting.document({
             settingKey: SettingKey.HairdressingIncomeAccount,
             value: accountId,
           }),
-          createSettingDocument({
+          testDataFactory.setting.document({
             settingKey: SettingKey.HairdressingIncomeCategory,
             value: categoryId,
           }),

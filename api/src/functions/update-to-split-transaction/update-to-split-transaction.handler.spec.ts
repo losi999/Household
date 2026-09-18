@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/update-to-split-transaction/update-to-split-transaction.handler';
 import { IUpdateToSplitTransactionService } from '@household/api/functions/update-to-split-transaction/update-to-split-transaction.service';
-import { createSplitTransactionRequest, createTransactionId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Update to split transaction handler', () => {
@@ -13,8 +13,8 @@ describe('Update to split transaction handler', () => {
     handlerFunction = handler(mockUpdateToSplitTransactionService);
   });
 
-  const transactionId = createTransactionId();
-  const body = createSplitTransactionRequest();
+  const transactionId = testDataFactory.transaction.id();
+  const body = testDataFactory.transaction.request.split();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),

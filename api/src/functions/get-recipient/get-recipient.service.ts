@@ -1,12 +1,13 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { IRecipientService } from '@household/shared/services/recipient-service';
-import { Recipient } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IGetRecipientService {
   (ctx: {
-    recipientId: Recipient.Id;
-  }): Promise<Recipient.Response>;
+    recipientId: Api.Recipient.Id;
+  }): Promise<Responses.Recipient>;
 }
 
 export const getRecipientServiceFactory = (

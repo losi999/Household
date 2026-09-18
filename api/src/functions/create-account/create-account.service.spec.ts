@@ -1,5 +1,5 @@
 import { ICreateAccountService, createAccountServiceFactory } from '@household/api/functions/create-account/create-account.service';
-import { createAccountDocument, createAccountRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
@@ -17,8 +17,8 @@ describe('Create account service', () => {
     service = createAccountServiceFactory(mockAccountService.service, mockAccountDocumentConverter.service);
   });
 
-  const body = createAccountRequest();
-  const convertedAccountDocument = createAccountDocument();
+  const body = testDataFactory.account.request();
+  const convertedAccountDocument = testDataFactory.account.document();
   const accountId = getAccountId(convertedAccountDocument);
 
   it('should return new id', async () => {
@@ -29,7 +29,7 @@ describe('Create account service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(accountId),
+    expect(result).toEqual(accountId);
     validateFunctionCall(mockAccountDocumentConverter.functions.create, body, undefined);
     validateFunctionCall(mockAccountService.functions.saveAccount, convertedAccountDocument);
     expect.assertions(3);

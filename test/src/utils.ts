@@ -1,7 +1,4 @@
-import { faker } from '@faker-js/faker';
 import { User, UserPermissionMap } from '@household/test/types';
-
-export const createId = <I>(id?: string): I => (id ?? faker.database.mongodbObjectId()) as I;
 
 export const forbidUsers = (...users: User[]): UserPermissionMap => {
   return {

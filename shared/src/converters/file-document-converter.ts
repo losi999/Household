@@ -2,13 +2,16 @@ import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { getFileId } from '@household/shared/common/utils';
 import { addSeconds } from '@household/shared/common/utils';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { File } from '@household/shared/types/types';
+import { FileProcessingStatus } from '@household/shared/enums';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IFileDocumentConverter {
-  create(body: File.Request, expiresIn: number, generateId?: boolean): File.Document;
-  updateStatus(status: File.ProcessingStatus['processingStatus']): DocumentUpdate<File.Document>;
-  toResponse(document: File.Document): File.Response;
-  toResponseList(documents: File.Document[]): File.Response[]
+  create(body: Requests.File, expiresIn: number, generateId?: boolean): Documents.File;
+  updateStatus(status: FileProcessingStatus): DocumentUpdate<Documents.File>;
+  toResponse(document: Documents.File): Responses.File;
+  toResponseList(documents: Documents.File[]): Responses.File[]
 }
 
 export const fileDocumentConverterFactory = (): IFileDocumentConverter => {

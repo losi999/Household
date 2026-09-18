@@ -1,6 +1,6 @@
 import { entries, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType } from '@household/shared/enums';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
@@ -22,7 +22,7 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(accountApiTest, accountDbTest, transactionDbTest);
 
 test.describe('DELETE /account/v1/accounts/{accountId}', () => {
-  let accountDocument: Account.Document;
+  let accountDocument: Documents.Account;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
@@ -58,21 +58,21 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
         });
 
         test.describe('related transactions', () => {
-          let loanAccountDocument: Account.Document;
-          let secondaryAccountDocument: Account.Document;
-          let paymentTransactionDocument: Transaction.PaymentDocument;
-          let splitTransactionDocument: Transaction.SplitDocument;
-          let transferTransactionDocument: Transaction.TransferDocument;
-          let invertedTransferTransactionDocument: Transaction.TransferDocument;
-          let repayingTransferTransactionDocument: Transaction.TransferDocument;
-          let invertedRepayingTransferTransactionDocument: Transaction.TransferDocument;
-          let loanTransferTransactionDocument: Transaction.TransferDocument;
-          let invertedLoanTransferTransactionDocument: Transaction.TransferDocument;
-          let payingDeferredTransactionDocument: Transaction.DeferredDocument;
-          let owningDeferredTransactionDocument: Transaction.DeferredDocument;
-          let payingDeferredToLoanTransactionDocument: Transaction.DeferredDocument;
-          let owningReimbursementTransactionDocument: Transaction.ReimbursementDocument;
-          let deferredSplitTransactionDocument: Transaction.SplitDocument;
+          let loanAccountDocument: Documents.Account;
+          let secondaryAccountDocument: Documents.Account;
+          let paymentTransactionDocument: Documents.PaymentTransaction;
+          let splitTransactionDocument: Documents.SplitTransaction;
+          let transferTransactionDocument: Documents.TransferTransaction;
+          let invertedTransferTransactionDocument: Documents.TransferTransaction;
+          let repayingTransferTransactionDocument: Documents.TransferTransaction;
+          let invertedRepayingTransferTransactionDocument: Documents.TransferTransaction;
+          let loanTransferTransactionDocument: Documents.TransferTransaction;
+          let invertedLoanTransferTransactionDocument: Documents.TransferTransaction;
+          let payingDeferredTransactionDocument: Documents.DeferredTransaction;
+          let owningDeferredTransactionDocument: Documents.DeferredTransaction;
+          let payingDeferredToLoanTransactionDocument: Documents.DeferredTransaction;
+          let owningReimbursementTransactionDocument: Documents.ReimbursementTransaction;
+          let deferredSplitTransactionDocument: Documents.SplitTransaction;
 
           test.beforeEach(async () => {
             secondaryAccountDocument = accountDataFactory.document();
@@ -143,13 +143,11 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             repayingTransferTransactionDocument = transferTransactionDataFactory.document({
               account: accountDocument,
               transferAccount: secondaryAccountDocument,
-              transactions: [owningDeferredTransactionDocument],
             });
 
             invertedRepayingTransferTransactionDocument = transferTransactionDataFactory.document({
               account: secondaryAccountDocument,
               transferAccount: accountDocument,
-              transactions: [payingDeferredTransactionDocument],
             });
 
           });

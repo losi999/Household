@@ -1,8 +1,8 @@
 import { CategoryType } from '@household/shared/enums';
-import { Category } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-export const categorySchema = new Schema<Category.Document>({
+export const categorySchema = new Schema<Documents.Category>({
   name: {
     type: String,
     required: true,

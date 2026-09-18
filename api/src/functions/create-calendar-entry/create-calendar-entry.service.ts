@@ -5,13 +5,15 @@ import { CalendarEntryType } from '@household/shared/enums';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
-import { Calendar } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateCalendarEntryService {
   (ctx: {
-    body: Calendar.Entry.Request;
+    body: Requests.CalendarEntry;
     expiresIn: number;
-  }): Promise<Calendar.Entry.Id>;
+  }): Promise<Api.Calendar.Entry.Id>;
 }
 
 export const createCalendarEntryServiceFactory = (
@@ -21,7 +23,7 @@ export const createCalendarEntryServiceFactory = (
   priceService: IPriceService,
 ): ICreateCalendarEntryService => {
   return async ({ body, expiresIn }) => {
-    let document: Calendar.Entry.Document;
+    let document: Documents.CalendarEntry;
     if (body.entryType === CalendarEntryType.Work) {
       const customer = await customerService.findCustomerById(body.customerId).catch(httpErrors.customer.getById({
         customerId: body.customerId,

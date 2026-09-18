@@ -1,12 +1,12 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryService } from '@household/shared/services/category-service';
-import { Category } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IMergeCategoriesService {
   (ctx: {
-    body: Category.Id[];
-  } & Category.CategoryId): Promise<unknown>;
+    body: Api.Category.Id[];
+  } & Api.Category.CategoryId): Promise<unknown>;
 }
 
 export const mergeCategoriesServiceFactory = (

@@ -1,4 +1,4 @@
-import { createDraftTransactionDocument, createDraftTransactionResponse, createFileDocument, createPaymentTransactionDocument, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getTransactionId } from '@household/shared/common/utils';
 import { IDraftTransactionDocumentConverter, draftTransactionDocumentConverterFactory } from '@household/shared/converters/draft-transaction-document-converter';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
@@ -23,11 +23,11 @@ describe('Draft transaction document converter', () => {
   const description = 'bevásárlás';
   const issuedAt = new Date(2025, 1, 2, 3, 4, 5);
   const expiresIn = 3600;
-  const fileDocument = createFileDocument();
-  const potentialDuplicateDocument = createPaymentTransactionDocument();
-  const potentialDuplicateResponse = createPaymentTransactionResponse();
+  const fileDocument = testDataFactory.file.document();
+  const potentialDuplicateDocument = testDataFactory.transaction.document.payment();
+  const potentialDuplicateResponse = testDataFactory.transaction.response.payment();
 
-  const queriedDocument = createDraftTransactionDocument({
+  const queriedDocument = testDataFactory.transaction.document.draft({
     amount,
     description,
     potentialDuplicates: [potentialDuplicateDocument],
@@ -46,7 +46,7 @@ describe('Draft transaction document converter', () => {
         },
         file: fileDocument,
       }, undefined);
-      expect(result).toEqual(createDraftTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.draft({
         amount,
         description,
         issuedAt,
@@ -65,7 +65,7 @@ describe('Draft transaction document converter', () => {
         },
         file: fileDocument,
       }, expiresIn);
-      expect(result).toEqual(createDraftTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.draft({
         amount,
         description,
         issuedAt,
@@ -80,7 +80,7 @@ describe('Draft transaction document converter', () => {
     it('should return response', () => {
       mockTransactionDocumentConverter.functions.toResponseList.mockReturnValue([potentialDuplicateResponse]);
       const result = converter.toResponse(queriedDocument);
-      expect(result).toEqual(createDraftTransactionResponse({
+      expect(result).toEqual(testDataFactory.transaction.response.draft({
         transactionId: getTransactionId(queriedDocument),
         description,
         amount,
@@ -97,7 +97,7 @@ describe('Draft transaction document converter', () => {
       mockTransactionDocumentConverter.functions.toResponseList.mockReturnValue([potentialDuplicateResponse]);
       const result = converter.toResponseList([queriedDocument]);
       expect(result).toEqual([
-        createDraftTransactionResponse({
+        testDataFactory.transaction.response.draft({
           transactionId: getTransactionId(queriedDocument),
           description,
           amount,

@@ -1,12 +1,12 @@
-import { default as schema } from '@household/shared/schemas/recipient-id-list';
-import { Recipient } from '@household/shared/types/types';
-import { createRecipientId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { idList as schema } from '@household/shared/schemas/recipient';
+import { Api } from '@household/shared/types/api';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Recipient id list schema', () => {
-  const tester = jsonSchemaTesterFactory<Recipient.Id[]>(schema);
+  const tester = schemaTesterFactory<Api.Recipient.Id[]>(schema);
 
-  tester.validateSuccess([createRecipientId()]);
+  tester.validateSuccess([testDataFactory.recipient.id()]);
 
   describe('should deny', () => {
     describe('if data', () => {
@@ -18,7 +18,7 @@ describe('Recipient id list schema', () => {
     describe('if data[0]', () => {
       tester.type([1 as any], 'data/0', 'string');
 
-      tester.pattern([createRecipientId('not-valid')], 'data/0');
+      tester.pattern([testDataFactory.recipient.id('not-valid')], 'data/0');
     });
   });
 });

@@ -1,10 +1,7 @@
-// @ts-nocheck
-import { default as schema } from '@household/test/schemas/transaction-response-list';
-import { Account, File, Transaction } from '@household/shared/types/types';
+import { responseList as schema } from '@household/shared/schemas/transaction';
 import { fileDataFactory } from '../../file/data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
 import { addSeconds, entries, getFileId } from '@household/shared/common/utils';
-import { createFileId } from '@household/shared/common/test-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { allowUsers } from '@household/test/utils';
@@ -19,6 +16,7 @@ import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
 import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { Documents } from '@household/shared/types/documents';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
@@ -27,18 +25,18 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest);
 
 test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
-  let fileDocument: File.Document;
-  let accountDocument: Account.Document;
-  let loanAccountDocument: Account.Document;
-  let draftDocument: Transaction.DraftDocument;
-  let duplicatedDraftDocument: Transaction.DraftDocument;
-  let duplicatePaymentDocument: Transaction.PaymentDocument;
-  let duplicateInvertedPaymentDocument: Transaction.PaymentDocument;
-  let duplicateSplitDocument: Transaction.SplitDocument;
-  let duplicateTransferDocument: Transaction.TransferDocument;
-  let duplicateInvertedTransferDocument: Transaction.TransferDocument;
-  let duplicateDeferredDocument: Transaction.DeferredDocument;
-  let duplicateReimbursementDocument: Transaction.ReimbursementDocument;
+  let fileDocument: Documents.File;
+  let accountDocument: Documents.Account;
+  let loanAccountDocument: Documents.Account;
+  let draftDocument: Documents.DraftTransaction;
+  let duplicatedDraftDocument: Documents.DraftTransaction;
+  let duplicatePaymentDocument: Documents.PaymentTransaction;
+  let duplicateInvertedPaymentDocument: Documents.PaymentTransaction;
+  let duplicateSplitDocument: Documents.SplitTransaction;
+  let duplicateTransferDocument: Documents.TransferTransaction;
+  let duplicateInvertedTransferDocument: Documents.TransferTransaction;
+  let duplicateDeferredDocument: Documents.DeferredTransaction;
+  let duplicateReimbursementDocument: Documents.ReimbursementTransaction;
 
   test.beforeEach(async () => {
     fileDocument = fileDataFactory.document();
@@ -68,9 +66,13 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
     });
     duplicateSplitDocument = splitTransactionDataFactory.document({
       body: {
-        amount: duplicatedDraftDocument.amount,
         issuedAt: addSeconds(3600, duplicatedDraftDocument.issuedAt).toISOString(),
       },
+      splits: [
+        {
+          amount: duplicatedDraftDocument.amount,
+        },
+      ],
       account: accountDocument,
     });
     duplicateTransferDocument = transferTransactionDataFactory.document({
@@ -144,7 +146,7 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
         test.describe('should return error', () => {
           test.describe('if fileId', () => {
             test('is not mongo id', async ({ requestGetTransactionListByFile }) => {
-              const res = await requestGetTransactionListByFile(createFileId('not-mongo-id'));
+              const res = await requestGetTransactionListByFile(fileDataFactory.id('not-mongo-id'));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('pathParameters', 'fileId');
             });

@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/calendar-entry-id';
-import { Calendar } from '@household/shared/types/types';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { calendarEntryId as schema } from '@household/shared/schemas/calendar-entry';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { Api } from '@household/shared/types/api';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Calendar entry id schema', () => {
-  const tester = jsonSchemaTesterFactory<Calendar.Entry.CalendarEntryId>(schema);
+  const tester = schemaTesterFactory<Api.Calendar.Entry.CalendarEntryId>(schema);
 
   tester.validateSuccess({
     calendarEntryId: testDataFactory.calendar.entry.id(),

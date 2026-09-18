@@ -1,7 +1,7 @@
-import { Setting } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-export const settingSchema = new Schema<Setting.Document>({
+export const settingSchema = new Schema<Documents.Setting>({
   settingKey: {
     type: String,
     required: true,

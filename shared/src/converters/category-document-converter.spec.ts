@@ -1,13 +1,12 @@
-import { createCategoryDocument, createCategoryReport, createCategoryRequest, createCategoryResponse, createDocumentUpdate } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
 import { categoryDocumentConverterFactory, ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 
 describe('Category document converter', () => {
   let converter: ICategoryDocumentConverter;
-  const now = new Date();
 
   beforeEach(() => {
-    vi.useFakeTimers().setSystemTime(now);
+    vi.useFakeTimers().setSystemTime(new Date());
 
     converter = categoryDocumentConverterFactory();
   });
@@ -16,97 +15,104 @@ describe('Category document converter', () => {
     vi.useRealTimers();
   });
 
-  const name = 'child';
   const expiresIn = 3600;
-  const parentCategoryName = 'parent';
-  const body = createCategoryRequest({
-    name,
-  });
-  const queriedDocument = createCategoryDocument({
-    name,
-    createdAt: now,
-    updatedAt: now,
-  });
-  const queriedParentCategory = createCategoryDocument({
-    name: parentCategoryName,
-    createdAt: now,
-    updatedAt: now,
-  });
+
+  const parentCategory = testDataFactory.category.document();
 
   describe('create', () => {
     it('should return document', () => {
+      const body = testDataFactory.category.request();
+
+      const { name, categoryType } = body;
+
       const result = converter.create({
         body,
         parentCategory: undefined,
       }, undefined);
-      expect(result).toEqual(createCategoryDocument({
+      expect(result).toEqual(testDataFactory.category.document({
         _id: undefined,
+        categoryType,
         name,
         expiresAt: undefined,
       }));
     });
 
     it('should return document with parent category', () => {
+      const body = testDataFactory.category.request();
+
+      const { name, categoryType } = body;
+
       const result = converter.create({
         body,
-        parentCategory: queriedParentCategory,
+        parentCategory,
       }, undefined);
-      expect(result).toEqual(createCategoryDocument({
+      expect(result).toEqual(testDataFactory.category.document({
         _id: undefined,
         name,
-        ancestors: [queriedParentCategory],
+        categoryType,
+        ancestors: [parentCategory],
         expiresAt: undefined,
       }));
     });
 
     it('should return expiring document', () => {
+      const body = testDataFactory.category.request();
+
+      const { name, categoryType } = body;
+
       const result = converter.create({
         body,
         parentCategory: undefined,
       }, expiresIn);
-      expect(result).toEqual(createCategoryDocument({
+      expect(result).toEqual(testDataFactory.category.document({
         _id: undefined,
         name,
-        expiresAt: addSeconds(expiresIn, now),
+        categoryType,
+        expiresAt: addSeconds(expiresIn),
       }));
     });
 
   });
 
   describe('update', () => {
-    const { parentCategoryId, ...cleanedBody } = body;
-    it('should update document with parent category', () => {
+    it('should update document with parent category', () => {  
+      const body = testDataFactory.category.request();
+
+      const { parentCategoryId, ...cleanedBody } = body;
+
       const result = converter.update({
         body: cleanedBody,
-        parentCategory: queriedParentCategory,
+        parentCategory,
       }, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
-            ...body,
-            parentCategoryId: undefined,
+            ...cleanedBody,
             ancestors: [
-              ...queriedParentCategory.ancestors,
-              queriedParentCategory,
+              ...parentCategory.ancestors,
+              parentCategory,
             ],
-            expiresAt: addSeconds(expiresIn, now),
+            expiresAt: addSeconds(expiresIn),
           },
         },
       }));
     });
 
     it('should update document', () => {
+      const body = testDataFactory.category.request();
+
+      const { parentCategoryId, ...cleanedBody } = body;
+
       const result = converter.update({
         body: cleanedBody,
         parentCategory: undefined,
       }, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
-            ...body,
-            parentCategoryId: undefined,
+            ...cleanedBody,
             ancestors: [],
-            expiresAt: addSeconds(expiresIn, now),
+            expiresAt: addSeconds(expiresIn),
           },
         },
       }));
@@ -115,30 +121,61 @@ describe('Category document converter', () => {
 
   describe('toResponse', () => {
     it('should return response', () => {
+      const doc = testDataFactory.category.document();
 
-      const result = converter.toResponse({
-        ...queriedDocument,
-      });
-      expect(result).toEqual(createCategoryResponse({
-        categoryId: getCategoryId(queriedDocument),
+      const { name, categoryType } = doc;
+
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(testDataFactory.category.response({
+        categoryId: getCategoryId(doc),
         name,
+        categoryType,
         fullName: name,
+      }));
+    });
+
+    it('should return response with parent', () => {
+      const doc = testDataFactory.category.document({
+        ancestors: [parentCategory],
+      });
+
+      const { name, categoryType } = doc;
+
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(testDataFactory.category.response({
+        categoryId: getCategoryId(doc),
+        name,
+        categoryType,
+        fullName: `${parentCategory.name}:${name}`,
+        ancestors: [
+          {
+            categoryId: getCategoryId(parentCategory),
+            name: parentCategory.name,
+            categoryType: parentCategory.categoryType,
+          },
+        ],
+        parentCategory: {
+          categoryId: getCategoryId(parentCategory),
+          name: parentCategory.name,
+          categoryType: parentCategory.categoryType,
+          fullName: parentCategory.name,
+        },
       }));
     });
   });
 
   describe('toResponseList', () => {
     it('should return response list', () => {
+      const doc = testDataFactory.category.document();
 
-      const result = converter.toResponseList([
-        {
-          ...queriedDocument,
-        },
-      ]);
+      const { name, categoryType } = doc;
+
+      const result = converter.toResponseList([ doc ]);
       expect(result).toEqual([
-        createCategoryResponse({
-          categoryId: getCategoryId(queriedDocument),
+        testDataFactory.category.response({
+          categoryId: getCategoryId(doc),
           name,
+          categoryType,
           fullName: name,
         }),
       ]);
@@ -147,9 +184,13 @@ describe('Category document converter', () => {
 
   describe('toReport', () => {
     it('should return response', () => {
-      const result = converter.toReport(queriedDocument);
-      expect(result).toEqual(createCategoryReport({
-        categoryId: getCategoryId(queriedDocument),
+      const doc = testDataFactory.category.document();
+
+      const { name } = doc;
+
+      const result = converter.toReport(doc);
+      expect(result).toEqual(testDataFactory.category.report({
+        categoryId: getCategoryId(doc),
         fullName: name,
       }));
     });

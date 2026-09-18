@@ -1,18 +1,19 @@
 import { calculateAccountBalances } from '@household/shared/common/aggregate-helpers';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Account } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Types } from 'mongoose';
 
 export interface IAccountService {
-  saveAccount(doc: Account.Document): Promise<Account.Document>;
-  saveAccounts(...docs: Account.Document[]): Promise<unknown>;
-  findAccountById(accountId: Account.Id): Promise<Account.Document>;
-  findAccountsByIds(accountIds: Account.Id[]): Promise<Account.Document[]>;
-  getAccountById(accountId: Account.Id): Promise<Account.Document>;
-  deleteAccount(accountId: Account.Id): Promise<unknown>;
-  updateAccount(accountId: Account.Id, updateQuery: DocumentUpdate<Account.Document>): Promise<unknown>;
-  listAccounts(): Promise<Account.Document[]>;
+  saveAccount(doc: Documents.Account): Promise<Documents.Account>;
+  saveAccounts(...docs: Documents.Account[]): Promise<unknown>;
+  findAccountById(accountId: Api.Account.Id): Promise<Documents.Account>;
+  findAccountsByIds(accountIds: Api.Account.Id[]): Promise<Documents.Account[]>;
+  getAccountById(accountId: Api.Account.Id): Promise<Documents.Account>;
+  deleteAccount(accountId: Api.Account.Id): Promise<unknown>;
+  updateAccount(accountId: Api.Account.Id, updateQuery: DocumentUpdate<Documents.Account>): Promise<unknown>;
+  listAccounts(): Promise<Documents.Account[]>;
 }
 
 export const accountServiceFactory = (mongodbService: IMongodbService): IAccountService => {

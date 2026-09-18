@@ -1,11 +1,12 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { Auth, User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IConfirmForgotPasswordService {
   (ctx: {
-    body: Auth.ConfirmForgotPassword.Request;
-  } & User.Email): Promise<unknown>;
+    body: Requests.ConfirmForgotPassword;
+  } & Api.User.Email): Promise<unknown>;
 }
 
 export const confirmForgotPasswordServiceFactory = (identityService: IIdentityService): IConfirmForgotPasswordService => {

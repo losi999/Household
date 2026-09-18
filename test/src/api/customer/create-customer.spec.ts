@@ -1,4 +1,3 @@
-import { Customer } from '@household/shared/types/types';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries, getCustomerId } from '@household/shared/common/utils';
@@ -7,6 +6,8 @@ import { test as customerApiTest, expect as customerApiExpect } from '@household
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { Requests } from '@household/shared/types/requests';
+import { Api } from '@household/shared/types/api';
 
 const expect = mergeExpects(customerApiExpect, apiExpect);
 
@@ -15,7 +16,7 @@ const permissionMap = allowUsers('hairdresser');
 const test = mergeTests(customerApiTest, customerDbTest);
 
 test.describe('POST customer/v1/customers', () => {
-  let request: Customer.Request;
+  let request: Requests.Customer;
 
   test.beforeEach(async () => {
     request = customerDataFactory.request();
@@ -46,7 +47,7 @@ test.describe('POST customer/v1/customers', () => {
           const res = await requestCreateCustomer(request);
           expect(res).toBeCreatedResponse();
 
-          const { customerId } = (await res.json()) as Customer.CustomerId;
+          const { customerId } = (await res.json()) as Api.Customer.CustomerId;
           expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId));
         });
 
@@ -64,7 +65,7 @@ test.describe('POST customer/v1/customers', () => {
           const res = await requestCreateCustomer(request);
           expect(res).toBeCreatedResponse();
         
-          const { customerId } = (await res.json()) as Customer.CustomerId;
+          const { customerId } = (await res.json()) as Api.Customer.CustomerId;
           expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId));
           expect(archivedCustomerDocument).toHaveBeenRenamed(await findCustomerById(getCustomerId(archivedCustomerDocument)));
         });

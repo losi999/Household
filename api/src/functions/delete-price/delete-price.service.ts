@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IPriceService } from '@household/shared/services/price-service';
-import { Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeletePriceService {
   (ctx: {
-    priceId: Price.Id;
+    priceId: Api.Price.Id;
   }): Promise<unknown>;
 }
 

@@ -1,24 +1,27 @@
 import { getCategoryId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { Category } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
 import { Comparer } from '@household/test/comparer';
 
 type CategoryApiFixture = {
-  requestGetCategory(categoryId: Category.Id): Promise<APIResponse>;
+  requestGetCategory(categoryId: Api.Category.Id): Promise<APIResponse>;
   requestListCategories(): Promise<APIResponse>;
-  requestCreateCategory(category: Category.Request): Promise<APIResponse>;
-  requestUpdateCategory(categoryId: Category.Id, category: Category.Request): Promise<APIResponse>;
-  requestDeleteCategory(categoryId: Category.Id): Promise<APIResponse>;
-  requestMergeCategories(categoryId: Category.Id, sourceCategoryIds: Category.Id[]): Promise<APIResponse>;
+  requestCreateCategory(category: Requests.Category): Promise<APIResponse>;
+  requestUpdateCategory(categoryId: Api.Category.Id, category: Requests.Category): Promise<APIResponse>;
+  requestDeleteCategory(categoryId: Api.Category.Id): Promise<APIResponse>;
+  requestMergeCategories(categoryId: Api.Category.Id, sourceCategoryIds: Api.Category.Id[]): Promise<APIResponse>;
 };
 
 export const test = baseTest.extend<CategoryApiFixture>({
   requestGetCategory: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestGetCategory = async (categoryId: Category.Id) => {
+    const requestGetCategory = async (categoryId: Api.Category.Id) => {
       return loggedRequest.get(`${process.env.BASE_URL}/category/v1/categories/${categoryId}`, {
         headers: {
           Authorization: authToken,
@@ -44,7 +47,7 @@ export const test = baseTest.extend<CategoryApiFixture>({
   requestCreateCategory: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestCreateCategory = async (category: Category.Request) => {
+    const requestCreateCategory = async (category: Requests.Category) => {
       return loggedRequest.post(`${process.env.BASE_URL}/category/v1/categories`, {
         headers: {
           Authorization: authToken,
@@ -59,7 +62,7 @@ export const test = baseTest.extend<CategoryApiFixture>({
   requestUpdateCategory: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestUpdateCategory = async (categoryId: Category.Id, category: Category.Request) => {
+    const requestUpdateCategory = async (categoryId: Api.Category.Id, category: Requests.Category) => {
       return loggedRequest.put(`${process.env.BASE_URL}/category/v1/categories/${categoryId}`, {
         headers: {
           Authorization: authToken,
@@ -74,7 +77,7 @@ export const test = baseTest.extend<CategoryApiFixture>({
   requestDeleteCategory: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeleteCategory = async (categoryId: Category.Id) => {
+    const requestDeleteCategory = async (categoryId: Api.Category.Id) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/category/v1/categories/${categoryId}`, {
         headers: {
           Authorization: authToken,
@@ -87,7 +90,7 @@ export const test = baseTest.extend<CategoryApiFixture>({
   requestMergeCategories: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestMergeCategories = async (categoryId: Category.Id, sourceCategoryIds: Category.Id[]) => {
+    const requestMergeCategories = async (categoryId: Api.Category.Id, sourceCategoryIds: Api.Category.Id[]) => {
       return loggedRequest.post(`${process.env.BASE_URL}/category/v1/categories/${categoryId}/merge`, {
         headers: {
           Authorization: authToken,
@@ -100,7 +103,7 @@ export const test = baseTest.extend<CategoryApiFixture>({
   },
 });
 
-export const validateCategoryResponse = (response: Category.Response, document: Category.Document, ...ancestorDocuments: Category.Document[]) => {
+export const validateCategoryResponse = (response: Responses.Category, document: Documents.Category, ...ancestorDocuments: Documents.Category[]) => {
   const expectedFullName = [
     ...ancestorDocuments,
     document,
@@ -131,13 +134,13 @@ export const validateCategoryResponse = (response: Category.Response, document: 
 };
 
 export const expect = baseExpect.extend({
-  toHaveBeenDeletedFromDatabase(document: Category.Document) {
+  toHaveBeenDeletedFromDatabase(document: Documents.Category) {
     return {
       pass: !document,
       message: () => `Expected category to be deleted from database, but it was found with id ${getCategoryId(document)}`,
     };
   },
-  toHaveBeenSavedAsCategoryDocument(req: Category.Request, document: Category.Document, ...ancestorDocuments: Category.Document[]) {
+  toHaveBeenSavedAsCategoryDocument(req: Requests.Category, document: Documents.Category, ...ancestorDocuments: Documents.Category[]) {
     if (!document) {
       return {
         pass: false,
@@ -160,8 +163,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected category to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  async toMatchCategoryDocument(received: APIResponse, document: Category.Document, ...ancestorDocuments: Category.Document[]) {
-    const response = await received.json() as Category.Response;
+  async toMatchCategoryDocument(received: APIResponse, document: Documents.Category, ...ancestorDocuments: Documents.Category[]) {
+    const response = await received.json() as Responses.Category;
 
     const errors = validateCategoryResponse(response, document, ...ancestorDocuments).validate();
 
@@ -170,8 +173,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match category document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingCategoryDocument(received: APIResponse, document: Category.Document, ...ancestorDocuments: Category.Document[]) {
-    const response = await received.json() as Category.Response[];
+  async toContainMatchingCategoryDocument(received: APIResponse, document: Documents.Category, ...ancestorDocuments: Documents.Category[]) {
+    const response = await received.json() as Responses.Category[];
 
     const matchingResponse = response.find(r => r.categoryId === getCategoryId(document));
 
@@ -189,7 +192,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match category document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  toHaveItsParentReassigned(originalDocument: Category.Document, currentDocument: Category.Document, parentCategoryDocument?: Category.Document) {
+  toHaveItsParentReassigned(originalDocument: Documents.Category, currentDocument: Documents.Category, parentCategoryDocument?: Documents.Category) {
 
     const expectedAncestors = parentCategoryDocument ? [
       ...parentCategoryDocument.ancestors,

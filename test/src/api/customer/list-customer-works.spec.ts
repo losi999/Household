@@ -1,5 +1,4 @@
-import { default as schema } from '@household/test/schemas/calendar-entry-response-base-list';
-import { Calendar, Customer } from '@household/shared/types/types';
+import { responseLeanList as schema } from '@household/shared/schemas/calendar-entry';
 import { entries, getCustomerId } from '@household/shared/common/utils';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/utils';
@@ -10,6 +9,7 @@ import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { Documents } from '@household/shared/types/documents';
 
 const expect = mergeExpects(customerApiExpect, calendarApiExpect, apiExpect);
 
@@ -18,8 +18,8 @@ const permissionMap = allowUsers('hairdresser');
 const test = mergeTests(customerApiTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('GET /customer/v1/customers/{customerId}/works', () => {
-  let customerDocument: Customer.Document;
-  let workEntryDocument: Calendar.Entry.Document;
+  let customerDocument: Documents.Customer;
+  let workEntryDocument: Documents.CalendarEntry;
 
   test.beforeEach(async () => {
     customerDocument = customerDataFactory.document();

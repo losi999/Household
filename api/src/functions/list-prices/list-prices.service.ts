@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 import { IPriceService } from '@household/shared/services/price-service';
-import { Price } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListPricesService {
-  (): Promise<Price.Response[]>;
+  (): Promise<Responses.Price[]>;
 }
 
 export const listPricesServiceFactory = (

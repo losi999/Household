@@ -1,22 +1,22 @@
-import { default as schema } from '@household/shared/schemas/report-request';
-import { Report } from '@household/shared/types/types';
-import { createReportAccountFilter, createReportCategoryFilter, createReportIssuedAtFilter, createReportProductFilter, createReportProjectFilter, createReportRecipientFilter } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { request as schema } from '@household/shared/schemas/report';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Report request schema', () => {
-  const tester = jsonSchemaTesterFactory<Report.Request>(schema);
+  const tester = schemaTesterFactory<Requests.Report>(schema);
 
   tester.validateSuccess([
-    createReportAccountFilter(),
-    createReportProductFilter(),
-    createReportCategoryFilter(),
-    createReportProjectFilter(),
-    createReportRecipientFilter(),
-    createReportIssuedAtFilter(),
-    createReportIssuedAtFilter({
+    testDataFactory.report.filter.account(),
+    testDataFactory.report.filter.product(),
+    testDataFactory.report.filter.category(),
+    testDataFactory.report.filter.project(),
+    testDataFactory.report.filter.recipient(),
+    testDataFactory.report.filter.issuedAt(),
+    testDataFactory.report.filter.issuedAt({
       from: undefined,
     }),
-    createReportIssuedAtFilter({
+    testDataFactory.report.filter.issuedAt({
       to: undefined,
     }),
   ]);
@@ -32,14 +32,14 @@ describe('Report request schema', () => {
       describe('if data[0]', () => {
         tester.additionalProperties([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             extra: 1,
           } as any,
         ], 'data/0');
 
         tester.required([
           {
-            ...createReportIssuedAtFilter(),
+            ...testDataFactory.report.filter.issuedAt(),
             from: undefined,
             to: undefined,
           },
@@ -47,7 +47,7 @@ describe('Report request schema', () => {
 
         tester.required([
           {
-            ...createReportIssuedAtFilter(),
+            ...testDataFactory.report.filter.issuedAt(),
             from: undefined,
             to: undefined,
           },
@@ -57,14 +57,14 @@ describe('Report request schema', () => {
       describe('if data[0].include', () => {
         tester.required([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             include: undefined,
           } as any,
         ], 'include');
 
         tester.type([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             include: 1 as any,
           } as any,
         ], 'include', 'boolean');
@@ -73,21 +73,21 @@ describe('Report request schema', () => {
       describe('if data[0].filterType', () => {
         tester.required([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             filterType: undefined,
           },
         ], 'filterType');
 
         tester.type([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             filterType: 1 as any,
           },
         ], 'filterType', 'string');
 
         tester.enum([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             filterType: 'not enum' as any,
           },
         ], 'filterType');
@@ -96,21 +96,21 @@ describe('Report request schema', () => {
       describe('if data[0].items', () => {
         tester.required([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             items: undefined,
           },
         ], 'items');
 
         tester.type([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             items: 1 as any,
           },
         ], 'items', 'array');
 
         tester.minItems([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             items: [],
           },
         ], 'items', 1);
@@ -119,14 +119,14 @@ describe('Report request schema', () => {
       describe('if data[0].items[0]', () => {
         tester.type([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             items: [1 as any],
           },
         ], 'items/0', 'string');
 
         tester.pattern([
           {
-            ...createReportAccountFilter(),
+            ...testDataFactory.report.filter.account(),
             items: ['not mongo id' as any],
           },
         ], 'items/0');
@@ -135,14 +135,14 @@ describe('Report request schema', () => {
       describe('if data[0].from', () => {
         tester.type([
           {
-            ...createReportIssuedAtFilter(),
+            ...testDataFactory.report.filter.issuedAt(),
             from: 1 as any,
           },
         ], 'from', 'string');
 
         tester.format([
           {
-            ...createReportIssuedAtFilter(),
+            ...testDataFactory.report.filter.issuedAt(),
             from: 'not-date',
           },
         ], 'from', 'date-time');
@@ -151,21 +151,21 @@ describe('Report request schema', () => {
       describe('if data[0].to', () => {
         tester.type([
           {
-            ...createReportIssuedAtFilter(),
+            ...testDataFactory.report.filter.issuedAt(),
             to: 1 as any,
           },
         ], 'to', 'string');
 
         tester.format([
           {
-            ...createReportIssuedAtFilter(),
+            ...testDataFactory.report.filter.issuedAt(),
             to: 'not-date',
           },
         ], 'to', 'date-time');
 
         tester.formatExclusiveMinimum([
           {
-            ...createReportIssuedAtFilter(),
+            ...testDataFactory.report.filter.issuedAt(),
             to: new Date(2022, 10, 1).toISOString(),
             from: new Date(2023, 10, 1).toISOString(),
           },

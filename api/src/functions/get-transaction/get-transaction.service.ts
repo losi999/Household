@@ -1,14 +1,14 @@
 import { httpErrors } from '@household/api/common/error-handlers';
-import { getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api'; 
+import { Responses } from '@household/shared/types/responses';
 
 export interface IGetTransactionService {
   (ctx: {
-    transactionId: Transaction.Id;
-    accountId: Account.Id;
-  }): Promise<Transaction.Response>;
+    transactionId: Api.Transaction.Id;
+    accountId: Api.Account.Id;
+  }): Promise<Responses.Transaction>;
 }
 
 export const getTransactionServiceFactory = (
@@ -28,22 +28,6 @@ export const getTransactionServiceFactory = (
       transaction,
       accountId,
     });
-
-    if (transaction.transactionType === 'transfer' && transaction.payments?.length > 0) { // TODO
-      const deferredTransactionIds = transaction.payments.map(p => getTransactionId(p.transaction));
-
-      const deferredTransactions = await transactionService.listDeferredTransactions({
-        deferredTransactionIds,
-      }).catch(httpErrors.common.getRelatedData({
-        deferredTransactionIds,
-      }));
-
-      const deferredMap = toDictionary(deferredTransactions, '_id');
-
-      transaction.payments.forEach(p => {
-        p.transaction = deferredMap[getTransactionId(p.transaction)];
-      });
-    }
 
     return transactionDocumentConverter.toResponse(transaction, accountId);
   };

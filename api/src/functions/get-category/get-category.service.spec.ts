@@ -1,5 +1,5 @@
 import { IGetCategoryService, getCategoryServiceFactory } from '@household/api/functions/get-category/get-category.service';
-import { createCategoryDocument, createCategoryResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -16,9 +16,9 @@ describe('Get category service', () => {
     service = getCategoryServiceFactory(mockCategoryService.service, mockCategoryDocumentConverter.service);
   });
 
-  const queriedDocument = createCategoryDocument();
+  const queriedDocument = testDataFactory.category.document();
   const categoryId = getCategoryId(queriedDocument);
-  const convertedResponse = createCategoryResponse();
+  const convertedResponse = testDataFactory.category.response();
 
   it('should return category', async () => {
     mockCategoryService.functions.getCategoryById.mockResolvedValue(queriedDocument);

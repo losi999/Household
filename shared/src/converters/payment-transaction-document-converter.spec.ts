@@ -1,12 +1,11 @@
-import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createPaymentTransactionDocument, createPaymentTransactionRequest, createPaymentTransactionResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createProductDocument, createProductResponse, testDataFactory } from '@household/shared/common/test-data-factory';
-import { addSeconds, getTransactionId, getProductId } from '@household/shared/common/utils';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { addSeconds, getTransactionId, createDate } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
-import { Transaction } from '@household/shared/types/types';
 import { IPaymentTransactionDocumentConverter, paymentTransactionDocumentConverterFactory } from '@household/shared/converters/payment-transaction-document-converter';
 import { CategoryType } from '@household/shared/enums';
 
@@ -17,7 +16,6 @@ describe('Payment transaction document converter', () => {
   let mockRecipientDocumentConverter: MockService<IRecipientDocumentConverter>;
   let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
   let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
-  const now = new Date();
 
   beforeEach(() => {
     mockAccountDocumentConverter = createMockService('toResponse');
@@ -26,7 +24,7 @@ describe('Payment transaction document converter', () => {
     mockCategoryDocumentConverter = createMockService('toResponse');
     mockProductDocumentConverter = createMockService('toResponse');
 
-    vi.useFakeTimers().setSystemTime(now);
+    vi.useFakeTimers().setSystemTime(new Date());
     converter = paymentTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service);
   });
 
@@ -34,62 +32,34 @@ describe('Payment transaction document converter', () => {
     vi.useRealTimers();
   });
 
-  const amount = 12000;
-  const description = 'bevásárlás';
-  const expiresIn = 3600;
-  const quantity = 100;
-  const invoiceNumber = '2022asdf';
-  const billingStartDate = '2022-03-01';
-  const billingEndDate = '2022-03-10';
+  const accountResponse = testDataFactory.account.response();
+  const categoryResponse = testDataFactory.category.response();
+  const projectResponse = testDataFactory.project.response();
+  const recipientResponse = testDataFactory.recipient.response();
+  const productResponse = testDataFactory.product.response();
 
-  const account = createAccountDocument();
-  const project = createProjectDocument();
-  const recipient = createRecipientDocument();
-  const regularCategory = createCategoryDocument();
-  const invoiceCategory = createCategoryDocument({
+  const account = testDataFactory.account.document();
+  const project = testDataFactory.project.document();
+  const recipient = testDataFactory.recipient.document();
+  const regularCategory = testDataFactory.category.document({
+    categoryType: CategoryType.Regular,
+  });
+  const invoiceCategory = testDataFactory.category.document({
     categoryType: CategoryType.Invoice,
   });
-  const inventoryCategory = createCategoryDocument({
+  const inventoryCategory = testDataFactory.category.document({
     categoryType: CategoryType.Inventory,
   });
-  const product = createProductDocument();
-  const productId = getProductId(product);
-
-  const accountResponse = createAccountResponse();
-  const categoryResponse = createCategoryResponse();
-  const projectResponse = createProjectResponse();
-  const recipientResponse = createRecipientResponse();
-  const productResponse = createProductResponse();
-
-  let body: Transaction.PaymentRequest;
-
-  beforeEach(() => {
-    body = createPaymentTransactionRequest({
-      amount,
-      description,
-      issuedAt: now.toISOString(),
-    });
-  });
-
-  const queriedDocument = createPaymentTransactionDocument({
-    account,
-    project,
-    category: regularCategory,
-    recipient,
-    amount,
-    description,
-    product,
-    quantity,
-    invoiceNumber,
-    billingEndDate: new Date(billingEndDate),
-    billingStartDate: new Date(billingStartDate),
-    issuedAt: now,
-    createdAt: now,
-    updatedAt: now,
-  });
+  const product = testDataFactory.product.document();
 
   describe('create', () => {
+    const expiresIn = 3600;
+
     it('should return document', () => {
+      const body = testDataFactory.transaction.request.payment();
+
+      const { amount, description, issuedAt } = body;
+
       const result = converter.create({
         body,
         account,
@@ -98,25 +68,30 @@ describe('Payment transaction document converter', () => {
         recipient,
         product,
       }, undefined);
-      expect(result).toEqual(createPaymentTransactionDocument({
+
+      expect(result).toEqual(testDataFactory.transaction.document.payment({
         account,
         category: regularCategory,
         project,
         recipient,
         amount,
         description,
-        issuedAt: now,
-        quantity: undefined,
-        product: undefined,
-        invoiceNumber: undefined,
         billingEndDate: undefined,
         billingStartDate: undefined,
+        invoiceNumber: undefined,
+        issuedAt: createDate(issuedAt),
+        quantity: undefined,
+        product: undefined,
         expiresAt: undefined,
         _id: undefined,
       }));
     });
 
     it('should return expiring document', () => {
+      const body = testDataFactory.transaction.request.payment();
+
+      const { amount, description, issuedAt } = body;
+
       const result = converter.create({
         body,
         account,
@@ -125,27 +100,29 @@ describe('Payment transaction document converter', () => {
         recipient,
         product,
       }, expiresIn);
-      expect(result).toEqual(createPaymentTransactionDocument({
+
+      expect(result).toEqual(testDataFactory.transaction.document.payment({
         account,
         category: regularCategory,
         project,
         recipient,
         amount,
+        issuedAt: createDate(issuedAt),
         description,
-        issuedAt: now,
-        quantity: undefined,
-        product: undefined,
-        invoiceNumber: undefined,
         billingEndDate: undefined,
         billingStartDate: undefined,
-        expiresAt: addSeconds(expiresIn, now),
+        invoiceNumber: undefined,
+        quantity: undefined,
+        product: undefined,
+        expiresAt: addSeconds(expiresIn),
         _id: undefined,
       }));
     });
 
     it('should return document with inventory properties', () => {
-      body.quantity = quantity;
-      body.productId = productId;
+      const body = testDataFactory.transaction.request.payment();
+
+      const { amount, description, issuedAt, quantity } = body;
 
       const result = converter.create({
         body,
@@ -155,27 +132,27 @@ describe('Payment transaction document converter', () => {
         recipient,
         product,
       }, undefined);
-      expect(result).toEqual(createPaymentTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.payment({
         account,
         category: inventoryCategory,
         project,
         recipient,
         amount,
+        issuedAt: createDate(issuedAt),
         description,
         invoiceNumber: undefined,
         billingEndDate: undefined,
         billingStartDate: undefined,
         quantity,
         product,
-        issuedAt: now,
         expiresAt: undefined,
         _id: undefined,
       }));
     });
     it('should return document with invoice properties', () => {
-      body.invoiceNumber = invoiceNumber;
-      body.billingStartDate = billingStartDate;
-      body.billingEndDate = billingEndDate;
+      const body = testDataFactory.transaction.request.payment();
+
+      const { amount, description, issuedAt, invoiceNumber, billingEndDate, billingStartDate } = body;
 
       const result = converter.create({
         body,
@@ -185,19 +162,19 @@ describe('Payment transaction document converter', () => {
         recipient,
         product,
       }, undefined);
-      expect(result).toEqual(createPaymentTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.payment({
         account,
         category: invoiceCategory,
         project,
         recipient,
         amount,
+        issuedAt: createDate(issuedAt),
         description,
         invoiceNumber,
-        billingEndDate: new Date(billingEndDate),
-        billingStartDate: new Date(billingStartDate),
+        billingEndDate: createDate(billingEndDate),
+        billingStartDate: createDate(billingStartDate),
         quantity: undefined,
         product: undefined,
-        issuedAt: now,
         expiresAt: undefined,
         _id: undefined,
       }));
@@ -217,7 +194,7 @@ describe('Payment transaction document converter', () => {
         category: regularCategory,
         amount,
       }, undefined);
-      expect(result).toEqual(createPaymentTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.payment({
         account,
         category: regularCategory,
         project: undefined,
@@ -244,12 +221,22 @@ describe('Payment transaction document converter', () => {
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
       mockProductDocumentConverter.functions.toResponse.mockReturnValue(productResponse);
 
-      const result = converter.toResponse(queriedDocument);
-      expect(result).toEqual(createPaymentTransactionResponse({
-        transactionId: getTransactionId(queriedDocument),
+      const doc = testDataFactory.transaction.document.payment({
+        account,
+        project,
+        category: regularCategory,
+        recipient,
+        product,
+      });
+
+      const { amount, description, issuedAt, billingEndDate, billingStartDate, quantity, invoiceNumber } = doc;
+
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(testDataFactory.transaction.response.payment({
+        transactionId: getTransactionId(doc),
         description,
         amount,
-        issuedAt: now.toISOString(),
+        issuedAt: issuedAt.toISOString(),
         account: accountResponse,
         project: projectResponse,
         recipient: recipientResponse,
@@ -257,9 +244,9 @@ describe('Payment transaction document converter', () => {
         product: productResponse,
         quantity,
         invoiceNumber,
-        billingEndDate: new Date(billingEndDate).toISOString()
+        billingEndDate: billingEndDate.toISOString()
           .split('T')[0],
-        billingStartDate: new Date(billingStartDate).toISOString()
+        billingStartDate: billingStartDate.toISOString()
           .split('T')[0],
       }));
       validateFunctionCall(mockAccountDocumentConverter.functions.toResponse, account);
@@ -278,13 +265,23 @@ describe('Payment transaction document converter', () => {
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
       mockProductDocumentConverter.functions.toResponse.mockReturnValue(productResponse);
 
-      const result = converter.toResponseList([queriedDocument]);
+      const doc = testDataFactory.transaction.document.payment({
+        account,
+        project,
+        category: regularCategory,
+        recipient,
+        product,
+      });
+
+      const { amount, description, issuedAt, billingEndDate, billingStartDate, quantity, invoiceNumber } = doc;
+
+      const result = converter.toResponseList([doc]);
       expect(result).toEqual([
-        createPaymentTransactionResponse({
-          transactionId: getTransactionId(queriedDocument),
+        testDataFactory.transaction.response.payment({
+          transactionId: getTransactionId(doc),
           description,
           amount,
-          issuedAt: now.toISOString(),
+          issuedAt: issuedAt.toISOString(),
           account: accountResponse,
           project: projectResponse,
           recipient: recipientResponse,
@@ -292,9 +289,9 @@ describe('Payment transaction document converter', () => {
           product: productResponse,
           quantity,
           invoiceNumber,
-          billingEndDate: new Date(billingEndDate).toISOString()
+          billingEndDate: billingEndDate.toISOString()
             .split('T')[0],
-          billingStartDate: new Date(billingStartDate).toISOString()
+          billingStartDate: billingStartDate.toISOString()
             .split('T')[0],
         }),
       ]);

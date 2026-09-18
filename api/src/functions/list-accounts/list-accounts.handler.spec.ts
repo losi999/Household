@@ -1,7 +1,7 @@
 import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-accounts/list-accounts.handler';
 import { IListAccountsService } from '@household/api/functions/list-accounts/list-accounts.service';
-import { createAccountResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('List accounts handler', () => {
   let mockListAccountsService: MockBusinessService<IListAccountsService>;
@@ -12,7 +12,7 @@ describe('List accounts handler', () => {
     handlerFunction = handler(mockListAccountsService);
   });
 
-  const accounts = [createAccountResponse()];
+  const accounts = [testDataFactory.account.response()];
   const handlerEvent = {} as AWSLambda.APIGatewayProxyEvent;
 
   it('should handle business service error', async () => {

@@ -1,6 +1,6 @@
 import { default as handler } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.handler';
 import { IBulkTransactionImporterService } from '@household/api/functions/bulk-transaction-importer/bulk-transaction-importer.service';
-import { createFileId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { MockBusinessService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 
 describe('Bulk transaction importer handler', () => {
@@ -8,7 +8,7 @@ describe('Bulk transaction importer handler', () => {
   let mockBulkTransactionImporterService: MockBusinessService<IBulkTransactionImporterService>;
 
   const bucketName = 'bucket-name';
-  const fileId = createFileId();
+  const fileId = testDataFactory.file.id();
 
   const handlerEvent = {
     Records: [

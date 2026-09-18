@@ -1,13 +1,12 @@
-import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getPriceId } from '@household/shared/common/utils';
 import { priceDocumentConverterFactory, IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 
 describe('Price document converter', () => {
   let converter: IPriceDocumentConverter;
-  const now = new Date();
 
   beforeEach(() => {
-    vi.useFakeTimers().setSystemTime(now);
+    vi.useFakeTimers().setSystemTime(new Date());
     converter = priceDocumentConverterFactory();
   });
 
@@ -35,7 +34,7 @@ describe('Price document converter', () => {
       expect(result).toEqual(testDataFactory.price.document({
         ...body,
         _id: undefined,
-        expiresAt: addSeconds(expiresIn, now),
+        expiresAt: addSeconds(expiresIn),
       }));
     });
 
@@ -47,11 +46,11 @@ describe('Price document converter', () => {
 
       const result = converter.update(body, expiresIn);
       expect(result).toEqual(
-        createDocumentUpdate({
+        testDataFactory.documentUpdate({
           update: {
             $set: {
               ...body,
-              expiresAt: addSeconds(expiresIn, now),
+              expiresAt: addSeconds(expiresIn),
             },
 
           },

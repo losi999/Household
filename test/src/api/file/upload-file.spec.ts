@@ -1,6 +1,7 @@
-import { File } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Api } from '@household/shared/types/api';
 import { fileDataFactory } from '@household/test/api/file/data-factory';
-import { default as schema } from '@household/test/schemas/file-url-response';
+import { uploadUrl as schema } from '@household/shared/schemas/file';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
@@ -17,7 +18,7 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(fileApiTest, fileDbTest, storageTest);
 
 test.describe('POST /file/v1/files', () => {
-  let request: File.Request;
+  let request: Requests.File;
 
   test.beforeEach(async () => {
     request = fileDataFactory.request();
@@ -50,7 +51,7 @@ test.describe('POST /file/v1/files', () => {
             expect(urlRes).toBeOkResponse();
             expect(urlRes).toMatchSchema(schema);
 
-            const { fileId, url } = (await urlRes.json()) as File.FileId & File.Url;
+            const { fileId, url } = (await urlRes.json()) as Api.File.FileId & Api.File.Url;
             expect(request).toHaveBeenSavedAsFileDocument(await findFileById(fileId));
             
             await requestUploadFile(url);

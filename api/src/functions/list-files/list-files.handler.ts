@@ -1,11 +1,11 @@
 
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IListFilesService } from '@household/api/functions/list-files/list-files.service';
-import { File } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (listFiles: IListFilesService): AWSLambda.APIGatewayProxyHandler => {
   return async () => {
-    let files: File.Response[];
+    let files: Responses.File[];
     try {
       files = await listFiles();
     } catch (error) {

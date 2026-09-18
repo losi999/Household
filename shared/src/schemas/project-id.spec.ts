@@ -1,19 +1,19 @@
-import { default as schema } from '@household/shared/schemas/project-id';
-import { Project } from '@household/shared/types/types';
-import { createProjectId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { projectId as schema } from '@household/shared/schemas/project';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Api } from '@household/shared/types/api';
 
 describe('Project id schema', () => {
-  const tester = jsonSchemaTesterFactory<Project.ProjectId>(schema);
+  const tester = schemaTesterFactory<Api.Project.ProjectId>(schema);
 
   tester.validateSuccess({
-    projectId: createProjectId(),
+    projectId: testDataFactory.project.id(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        projectId: createProjectId(),
+        projectId: testDataFactory.project.id(),
         extra: 1,
       } as any, 'data');
     });
@@ -28,7 +28,7 @@ describe('Project id schema', () => {
       }, 'projectId', 'string');
 
       tester.pattern({
-        projectId: createProjectId('not-valid'),
+        projectId: testDataFactory.project.id('not-valid'),
       }, 'projectId');
     });
   });

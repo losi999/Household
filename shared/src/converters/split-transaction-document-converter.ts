@@ -8,28 +8,30 @@ import { IProjectDocumentConverter } from '@household/shared/converters/project-
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { Dictionary, DocumentUpdate, Unset } from '@household/shared/types/common';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { Types, UpdateQuery } from 'mongoose';
 
 export interface ISplitTransactionDocumentConverter {
   create(data: {
-    body: Transaction.SplitRequest;
-    accounts: Dictionary<Account.Document>;
-    categories: Dictionary<Category.Document>;
-    recipient: Recipient.Document;
-    projects: Dictionary<Project.Document>;
-    products: Dictionary<Product.Document>;
-  }, expiresIn: number, generateId?: boolean): Transaction.SplitDocument;
+    body: Requests.SplitTransaction;
+    accounts: Dictionary<Documents.Account>;
+    categories: Dictionary<Documents.Category>;
+    recipient: Documents.Recipient;
+    projects: Dictionary<Documents.Project>;
+    products: Dictionary<Documents.Product>;
+  }, expiresIn: number, generateId?: boolean): Documents.SplitTransaction;
   update(data: {
-    body: Transaction.SplitRequest;
-    accounts: Dictionary<Account.Document>;
-    categories: Dictionary<Category.Document>;
-    recipient: Recipient.Document;
-    projects: Dictionary<Project.Document>;
-    products: Dictionary<Product.Document>;
-  }, expiresIn: number): DocumentUpdate<Transaction.Document>;
-  toResponse(document: Transaction.SplitDocument): Transaction.SplitResponse;
-  toResponseList(documents: Transaction.SplitDocument[]): Transaction.SplitResponse[];
+    body: Requests.SplitTransaction;
+    accounts: Dictionary<Documents.Account>;
+    categories: Dictionary<Documents.Category>;
+    recipient: Documents.Recipient;
+    projects: Dictionary<Documents.Project>;
+    products: Dictionary<Documents.Product>;
+  }, expiresIn: number): DocumentUpdate<Documents.Transaction>;
+  toResponse(document: Documents.SplitTransaction): Responses.SplitTransaction;
+  toResponseList(documents: Documents.SplitTransaction[]): Responses.SplitTransaction[];
 }
 
 export const splitTransactionDocumentConverterFactory = (
@@ -41,16 +43,13 @@ export const splitTransactionDocumentConverterFactory = (
   deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
 ): ISplitTransactionDocumentConverter => {
   const transactionType = TransactionType.Split;
-  const defaultUnset: Unset<Transaction.Document, Transaction.SplitDocument> = {
+  const defaultUnset: Unset<Documents.Transaction, Documents.SplitTransaction> = {
     transferAccount: true,
     transferAmount: true,
     file: true,
     potentialDuplicates: true,
-    isSettled: true,
     ownerAccount: true,
     payingAccount: true,
-    payments: true,
-    remainingAmount: true,
     billingEndDate: true,
     billingStartDate: true,
     category: true,
@@ -60,7 +59,7 @@ export const splitTransactionDocumentConverterFactory = (
     quantity: true,
   };
 
-  const createSplitDocumentItem = (s: Transaction.SplitRequestItem, category: Category.Document, project: Project.Document, product: Product.Document): Transaction.SplitDocumentItem => {
+  const createSplitDocumentItem = (s: Requests.SplitItem, category: Documents.Category, project: Documents.Project, product: Documents.Product): Documents.SplitItem => {
     return {
       amount: s.amount,
       description: s.description,
@@ -76,8 +75,15 @@ export const splitTransactionDocumentConverterFactory = (
 
   const instance: ISplitTransactionDocumentConverter = {
     create: ({ body, accounts, projects, categories, recipient, products }, expiresIn, generateId) => {
+      const amount = [
+        ...(body.splits ?? []),
+        ...(body.loans ?? []),
+      ].reduce((accumulator, currentValue) => {
+        return accumulator + currentValue.amount;
+      }, 0);
+
       return {
-        amount: body.amount,
+        amount,
         description: body.description,
         account: accounts[body.accountId],
         recipient: recipient ?? undefined,
@@ -108,11 +114,18 @@ export const splitTransactionDocumentConverterFactory = (
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ body: { accountId, amount, description, issuedAt, loans, splits }, accounts, projects, categories, recipient, products }, expiresIn) => {
-      const optionalSet: UpdateQuery<Transaction.Document>['$set'] = {
+    update: ({ body: { accountId, description, issuedAt, loans, splits }, accounts, projects, categories, recipient, products }, expiresIn) => {
+      const optionalSet: UpdateQuery<Documents.Transaction>['$set'] = {
         recipient,
         description,
       };
+
+      const amount = [
+        ...(splits ?? []),
+        ...(loans ?? []),
+      ].reduce((accumulator, currentValue) => {
+        return accumulator + currentValue.amount;
+      }, 0);
 
       return {
         update: {

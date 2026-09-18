@@ -1,18 +1,19 @@
 import { getCustomerId } from '@household/shared/common/utils';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
+import { Api } from '@household/shared/types/api';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar, Customer, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { PopulateOptions } from 'mongoose';
 
 export interface ICalendarEntryService {
-  saveCalendarEntry(doc: Calendar.Entry.Document): Promise<Calendar.Entry.Document>;
-  findCalendarEntryById(calendarEntryId: Calendar.Entry.Id): Promise<Calendar.Entry.Document>;
-  getCalendarEntryById(calendarEntryId: Calendar.Entry.Id): Promise<Calendar.Entry.Document>;
-  deleteCalendarEntry(calendarEntryId: Calendar.Entry.Id): Promise<unknown>;
-  updateCalendarEntry(calendarEntryId: Calendar.Entry.Id, updateQuery: DocumentUpdate<Calendar.Entry.Document>): Promise<unknown>;
-  updateCalendarEntryWithPayment(calendarEntryId: Calendar.Entry.Id, updateQuery: DocumentUpdate<Calendar.Entry.Document>): Promise<Transaction.Document>;
-  listCalendarEntries(data: Calendar.DateRange): Promise<Calendar.Entry.Document[]>;
-  listCalendarWorkEntriesByCustomerId(customerId: Customer.Id): Promise<Calendar.Entry.Document[]>;
+  saveCalendarEntry(doc: Documents.CalendarEntry): Promise<Documents.CalendarEntry>;
+  findCalendarEntryById(calendarEntryId: Api.Calendar.Entry.Id): Promise<Documents.CalendarEntry>;
+  getCalendarEntryById(calendarEntryId: Api.Calendar.Entry.Id): Promise<Documents.CalendarEntry>;
+  deleteCalendarEntry(calendarEntryId: Api.Calendar.Entry.Id): Promise<unknown>;
+  updateCalendarEntry(calendarEntryId: Api.Calendar.Entry.Id, updateQuery: DocumentUpdate<Documents.CalendarEntry>): Promise<unknown>;
+  updateCalendarEntryWithPayment(calendarEntryId: Api.Calendar.Entry.Id, updateQuery: DocumentUpdate<Documents.CalendarEntry>): Promise<Documents.Transaction>;
+  listCalendarEntries(data: Api.Calendar.DateRange): Promise<Documents.CalendarEntry[]>;
+  listCalendarWorkEntriesByCustomerId(customerId: Api.Customer.Id): Promise<Documents.CalendarEntry[]>;
 }
 
 export const calendarEntryServiceFactory = (mongodbService: IMongodbService): ICalendarEntryService => {

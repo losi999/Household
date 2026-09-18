@@ -1,11 +1,13 @@
 import { addSeconds } from '@household/shared/common/utils';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Setting } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 export interface ISettingDocumentConverter {
-  update(req: Setting.Request, expiresIn: number): DocumentUpdate<Setting.Document>;
-  toResponse(document: Setting.Document): Setting.Response;
-  toResponseList(documents: Setting.Document[]): Setting.Response[]
+  update(req: Requests.Setting, expiresIn: number): DocumentUpdate<Documents.Setting>;
+  toResponse(document: Documents.Setting): Responses.Setting;
+  toResponseList(documents: Documents.Setting[]): Responses.Setting[]
 }
 
 export const settingDocumentConverterFactory = (): ISettingDocumentConverter => {

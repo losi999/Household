@@ -1,9 +1,9 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
-import { Calendar } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeleteCalendarDayService {
-  (ctx: Calendar.DayProp): Promise<unknown>;
+  (ctx: Api.Calendar.Day): Promise<unknown>;
 }
 
 export const deleteCalendarDayServiceFactory = (

@@ -1,4 +1,5 @@
-import { Auth, User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 import { userDataFactory } from '@household/test/api/user/data-factory';
 import { UserType } from '@household/shared/enums';
 
@@ -11,8 +12,8 @@ const expect = mergeExpects(userApiExpect, apiExpect);
 const test = mergeTests(identityTest, userApiTest);
 
 test.describe('POST user/v1/users/{email}/confirm', () => {
-  let pendingUser: User.Request & Auth.TemporaryPassword;
-  let request: Auth.ConfirmUser.Request;
+  let pendingUser: Requests.User & Api.Auth.TemporaryPassword;
+  let request: Requests.ConfirmUser;
 
   test.beforeEach(async () => {
     pendingUser = userDataFactory.pendingUser();

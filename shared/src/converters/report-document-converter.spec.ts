@@ -1,4 +1,4 @@
-import { createAccountId, createCategoryId, createProjectId, createRecipientId, createProductId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { reportDocumentConverterFactory, IReportDocumentConverter } from '@household/shared/converters/report-document-converter';
 import { Types } from 'mongoose';
 
@@ -11,16 +11,16 @@ describe('Report document converter', () => {
 
   describe('createFilterQuery', () => {
     it('should create full objects', () => {
-      const includedAccount = createAccountId();
-      const excludedAccount = createAccountId();
-      const includedCategory = createCategoryId();
-      const excludedCategory = createCategoryId();
-      const includedProduct = createProductId();
-      const excludedProduct = createProductId();
-      const includedProject = createProjectId();
-      const excludedProject = createProjectId();
-      const includedRecipient = createRecipientId();
-      const excludedRecipient = createRecipientId();
+      const includedAccount = testDataFactory.account.id();
+      const excludedAccount = testDataFactory.account.id();
+      const includedCategory = testDataFactory.category.id();
+      const excludedCategory = testDataFactory.category.id();
+      const includedProduct = testDataFactory.product.id();
+      const excludedProduct = testDataFactory.product.id();
+      const includedProject = testDataFactory.project.id();
+      const excludedProject = testDataFactory.project.id();
+      const includedRecipient = testDataFactory.recipient.id();
+      const excludedRecipient = testDataFactory.recipient.id();
       const date1 = new Date(2024, 1, 1, 1, 0, 0).toISOString();
       const date2 = new Date(2024, 1, 1, 2, 0, 0).toISOString();
       const date3 = new Date(2024, 1, 1, 3, 0, 0).toISOString();

@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { IRecipientService } from '@household/shared/services/recipient-service';
-import { Recipient } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListRecipientsService {
-  (): Promise<Recipient.Response[]>;
+  (): Promise<Responses.Recipient[]>;
 }
 
 export const listRecipientsServiceFactory = (

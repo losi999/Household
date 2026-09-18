@@ -3,6 +3,7 @@
   "include": [
     "api/src",
     "shared/src",
+    "specs",
     "./*.ts"
   ]
 }

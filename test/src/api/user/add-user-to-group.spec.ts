@@ -1,4 +1,5 @@
-import { User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 import { userDataFactory } from '@household/test/api/user/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
@@ -14,7 +15,7 @@ const test = mergeTests(identityTest, userApiTest);
 const permissionMap = allowUsers('editor') ;
 
 test.describe('POST /user/v1/users/{email}/groups/{group}', () => {
-  let viewerUser: User.Request & User.Group;
+  let viewerUser: Requests.User & Api.User.Group;
 
   test.beforeEach(async () => {
     viewerUser = userDataFactory.confirmedUser();

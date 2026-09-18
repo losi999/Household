@@ -1,13 +1,13 @@
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IGetCategoryService } from '@household/api/functions/get-category/get-category.service';
 import { castPathParameters } from '@household/shared/common/aws-utils';
-import { Category } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (getCategory: IGetCategoryService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const { categoryId } = castPathParameters(event);
 
-    let category: Category.Response;
+    let category: Responses.Category;
     try {
       category = await getCategory({
         categoryId,

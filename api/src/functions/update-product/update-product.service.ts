@@ -1,12 +1,13 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { IProductService } from '@household/shared/services/product-service';
-import { Product } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateProductService {
   (ctx: {
-    body: Product.Request;
-    productId: Product.Id;
+    body: Requests.Product;
+    productId: Api.Product.Id;
     expiresIn: number;
   }): Promise<unknown>;
 }

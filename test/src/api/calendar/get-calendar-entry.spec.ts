@@ -1,10 +1,9 @@
 import { entries, getCalendarEntryId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
-import { default as schema } from '@household/test/schemas/calendar-entry-response';
+import { response as schema } from '@household/shared/schemas/calendar-entry';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
 import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
@@ -13,6 +12,7 @@ import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { Documents } from '@household/shared/types/documents';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect);
 
@@ -21,12 +21,12 @@ const permissionMap = allowUsers('hairdresser');
 const test = mergeTests(calendarApiTest, priceDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
-  let calendarPersonalEntryDocument: Calendar.Entry.Document;
-  let calendarWorkEntryDocument: Calendar.Entry.Document;
-  let calendarIssueEntryDocument: Calendar.Entry.Document;
-  let customerDocument: Customer.Document;
-  let blacklistedCustomerDocument: Customer.Document;
-  let priceDocument: Price.Document;
+  let calendarPersonalEntryDocument: Documents.CalendarEntry;
+  let calendarWorkEntryDocument: Documents.CalendarEntry;
+  let calendarIssueEntryDocument: Documents.CalendarEntry;
+  let customerDocument: Documents.Customer;
+  let blacklistedCustomerDocument: Documents.Customer;
+  let priceDocument: Documents.Price;
 
   test.beforeEach(async () => {
     priceDocument = priceDataFactory.document();

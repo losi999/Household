@@ -8,34 +8,37 @@ import { IProjectDocumentConverter } from '@household/shared/converters/project-
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { DocumentUpdate, Unset } from '@household/shared/types/common';
-import { Account, Calendar, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
 import { default as moment } from 'moment-timezone';
+import { Requests } from '@household/shared/types/requests';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IPaymentTransactionDocumentConverter {
   create(data: {
-    body: Transaction.PaymentRequest;
-    account: Account.Document;
-    category: Category.Document;
-    recipient: Recipient.Document;
-    project: Project.Document;
-    product: Product.Document;
-  }, expiresIn: number, generateId?: boolean): Transaction.PaymentDocument;
+    body: Requests.PaymentTransaction;
+    account: Documents.Account;
+    category: Documents.Category;
+    recipient: Documents.Recipient;
+    project: Documents.Project;
+    product: Documents.Product;
+  }, expiresIn: number, generateId?: boolean): Documents.PaymentTransaction;
   createFromEntry(data: {
-    account: Account.Document;
-    category: Category.Document;
-    calendarEntry: Calendar.Entry.Document;
-  } & Transaction.Amount, expiresIn: number): Transaction.PaymentDocument;
+    account: Documents.Account;
+    category: Documents.Category;
+    calendarEntry: Documents.CalendarEntry;
+  } & Api.Transaction.Amount, expiresIn: number): Documents.PaymentTransaction;
   update(data: {
-    body: Transaction.PaymentRequest;
-    account: Account.Document;
-    category: Category.Document;
-    recipient: Recipient.Document;
-    project: Project.Document;
-    product: Product.Document;
-  }, expiresIn: number): DocumentUpdate<Transaction.Document>;
-  toResponse(document: Transaction.PaymentDocument): Transaction.PaymentResponse;
-  toResponseList(documents: Transaction.PaymentDocument[]): Transaction.PaymentResponse[];
+    body: Requests.PaymentTransaction;
+    account: Documents.Account;
+    category: Documents.Category;
+    recipient: Documents.Recipient;
+    project: Documents.Project;
+    product: Documents.Product;
+  }, expiresIn: number): DocumentUpdate<Documents.Transaction>;
+  toResponse(document: Documents.PaymentTransaction): Responses.PaymentTransaction;
+  toResponseList(documents: Documents.PaymentTransaction[]): Responses.PaymentTransaction[];
 }
 
 export const paymentTransactionDocumentConverterFactory = (
@@ -46,16 +49,13 @@ export const paymentTransactionDocumentConverterFactory = (
   productDocumentConverter: IProductDocumentConverter,
 ): IPaymentTransactionDocumentConverter => {
   const transactionType = TransactionType.Payment;
-  const defaultUnset: Unset<Transaction.Document, Transaction.PaymentDocument> = {
+  const defaultUnset: Unset<Documents.Transaction, Documents.PaymentTransaction> = {
     transferAccount: true,
     transferAmount: true,
     file: true,
     potentialDuplicates: true,
-    isSettled: true,
     ownerAccount: true,
     payingAccount: true,
-    payments: true,
-    remainingAmount: true,
     deferredSplits: true,
     splits: true,
   };
@@ -101,7 +101,6 @@ export const paymentTransactionDocumentConverterFactory = (
           recipientId: undefined,
           loanAccountId: undefined,
           quantity: undefined,
-          isSettled: undefined,
           billingEndDate: undefined,
           billingStartDate: undefined,
           invoiceNumber: undefined,
@@ -113,7 +112,7 @@ export const paymentTransactionDocumentConverterFactory = (
       }, expiresIn, true);
     },
     update: ({ body: { issuedAt, quantity, invoiceNumber, billingEndDate, billingStartDate, amount, description }, account, project, category, recipient, product }, expiresIn) => {
-      const optionalSet: UpdateQuery<Transaction.Document>['$set'] = {
+      const optionalSet: UpdateQuery<Documents.Transaction>['$set'] = {
         recipient,
         category,
         project,

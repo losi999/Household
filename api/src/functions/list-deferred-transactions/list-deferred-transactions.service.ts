@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Transaction } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListDeferredTransactionsService {
-  (): Promise<Transaction.DeferredResponse[]>;
+  (): Promise<Responses.DeferredTransaction[]>;
 }
 
 export const listDeferredTransactionsServiceFactory = (

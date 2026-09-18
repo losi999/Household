@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-split-transaction/create-split-transaction.handler';
 import { ICreateSplitTransactionService } from '@household/api/functions/create-split-transaction/create-split-transaction.service';
-import { createSplitTransactionRequest, createTransactionId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create split transaction handler', () => {
@@ -12,7 +12,7 @@ describe('Create split transaction handler', () => {
     mockCreateSplitTransactionService = vi.fn();
     handlerFunction = handler(mockCreateSplitTransactionService);
   });
-  const body = createSplitTransactionRequest();
+  const body = testDataFactory.transaction.request.split();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),
@@ -41,7 +41,7 @@ describe('Create split transaction handler', () => {
   });
 
   it('should respond with success', async () => {
-    const transactionId = createTransactionId();
+    const transactionId = testDataFactory.transaction.id();
 
     mockCreateSplitTransactionService.mockResolvedValue(transactionId);
 

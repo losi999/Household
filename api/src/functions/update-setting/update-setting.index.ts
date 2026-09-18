@@ -2,8 +2,7 @@ import { default as handler } from '@household/api/functions/update-setting/upda
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { updateSettingServiceFactory } from '@household/api/functions/update-setting/update-setting.service';
 import { settingDocumentConverter } from '@household/shared/dependencies/converters/setting-document-converter';
-import { default as pathParameters } from '@household/shared/schemas/setting-key';
-import { default as body } from '@household/shared/schemas/setting-request';
+import { settingKey as pathParameters, request as body } from '@household/shared/schemas/setting';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
 import { settingService } from '@household/shared/dependencies/services/setting-service';
 import { default as index } from '@household/api/handlers/index.handler';

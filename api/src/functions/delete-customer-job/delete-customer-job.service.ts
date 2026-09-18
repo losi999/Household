@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeleteCustomerJobService {
-  (ctx: Customer.CustomerId & Customer.Job.Name): Promise<void>;
+  (ctx: Api.Customer.CustomerId & Api.Customer.Job.Name): Promise<void>;
 }
 
 export const deleteCustomerJobServiceFactory = (

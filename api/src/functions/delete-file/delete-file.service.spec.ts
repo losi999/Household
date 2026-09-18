@@ -1,5 +1,5 @@
 import { IDeleteFileService, deleteFileServiceFactory } from '@household/api/functions/delete-file/delete-file.service';
-import { createFileId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
@@ -16,7 +16,7 @@ describe('Delete file service', () => {
     service = deleteFileServiceFactory(mockFileService.service, mockStorageService.service);
   });
 
-  const fileId = createFileId();
+  const fileId = testDataFactory.file.id();
 
   it('should return if document is deleted', async () => {
     mockFileService.functions.deleteFile.mockResolvedValue(undefined);

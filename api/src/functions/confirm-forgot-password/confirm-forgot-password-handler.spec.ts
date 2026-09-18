@@ -1,6 +1,6 @@
 import { default as handler } from '@household/api/functions/confirm-forgot-password/confirm-forgot-password-handler';
 import { IConfirmForgotPasswordService } from '@household/api/functions/confirm-forgot-password/confirm-forgot-password-service';
-import { createConfirmForgotPasswordRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 
 describe('Confirm forgot password handler', () => {
@@ -14,7 +14,7 @@ describe('Confirm forgot password handler', () => {
   });
 
   const email = 'email@email.com';
-  const body = createConfirmForgotPasswordRequest();
+  const body = testDataFactory.auth.request.confirmForgotPassword();
   const handlerEvent = {
     pathParameters: {
       email,

@@ -1,5 +1,5 @@
 import { IMergeProjectsService, mergeProjectsServiceFactory } from '@household/api/functions/merge-projects/merge-projects.service';
-import { createProjectDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProjectId } from '@household/shared/common/utils';
 import { IProjectService } from '@household/shared/services/project-service';
@@ -14,8 +14,8 @@ describe('Merge project service', () => {
     service = mergeProjectsServiceFactory(mockProjectService.service);
   });
 
-  const targetProjectDocument = createProjectDocument();
-  const sourceProjectDocument = createProjectDocument();
+  const targetProjectDocument = testDataFactory.project.document();
+  const sourceProjectDocument = testDataFactory.project.document();
   const sourceProjectId = getProjectId(sourceProjectDocument);
   const projectId = getProjectId(targetProjectDocument);
   const body = [sourceProjectId];

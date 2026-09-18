@@ -1,11 +1,11 @@
 
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IListCategoriesService } from '@household/api/functions/list-categories/list-categories.service';
-import { Category } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (listCategories: IListCategoriesService): AWSLambda.APIGatewayProxyHandler => {
   return async () => {
-    let categories: Category.Response[];
+    let categories: Responses.Category[];
 
     try {
       categories = await listCategories();
