@@ -24,7 +24,7 @@ describe('Update category service', () => {
   const updateQuery = testDataFactory.documentUpdate();
 
   describe('should return', () => {
-    it.only('if parent is given', async () => {
+    it('if parent is given', async () => {
       const { parentCategoryId, ...cleanedBody } = body;
 
       mockCategoryService.functions.findCategoryById.mockResolvedValueOnce(queriedDocument);
@@ -121,7 +121,7 @@ describe('Update category service', () => {
       expect.assertions(6);
     });
 
-    it.only('no parent category found', async () => {
+    it('no parent category found', async () => {
       mockCategoryService.functions.findCategoryById.mockResolvedValueOnce(queriedDocument);
       mockCategoryService.functions.findCategoryById.mockResolvedValueOnce(undefined);
 
