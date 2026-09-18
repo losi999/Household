@@ -1,5 +1,5 @@
 import { IListDeferredTransactionsService, listDeferredTransactionsServiceFactory } from '@household/api/functions/list-deferred-transactions/list-deferred-transactions.service';
-import { createDeferredTransactionDocument, createDeferredTransactionResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -16,10 +16,10 @@ describe('List deferred transactions service', () => {
     service = listDeferredTransactionsServiceFactory(mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const settledDocument = createDeferredTransactionDocument();
-  const explicitDocument = createDeferredTransactionDocument();
-  const notSettledocument = createDeferredTransactionDocument();
-  const convertedResponse = createDeferredTransactionResponse();
+  const settledDocument = testDataFactory.transaction.document.deferred();
+  const explicitDocument = testDataFactory.transaction.document.deferred();
+  const notSettledocument = testDataFactory.transaction.document.deferred();
+  const convertedResponse = testDataFactory.transaction.response.deferred();
 
   describe('should return documents', () => {
     it('without filtering', async () => {

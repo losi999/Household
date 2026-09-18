@@ -1,6 +1,5 @@
 import { getTransactionId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { Common, File, Report, Transaction } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
 import { expect as deferredTransactionApiExpect } from '@household/test/fixtures/deferred-transaction-api.fixture';
@@ -10,25 +9,27 @@ import { expect as splitTransactionApiExpect } from '@household/test/fixtures/sp
 import { expect as transferTransactionApiExpect } from '@household/test/fixtures/transfer-transaction-api.fixture';
 import { expect as draftTransactionApiExpect } from '@household/test/fixtures/draft-transaction-api.fixture';
 import { APIResponse, mergeExpects } from '@playwright/test';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 type TransactionApiFixture = {
-  requestCreatePaymentTransaction(transaction: Transaction.PaymentRequest): Promise<APIResponse>;
-  requestUpdateToPaymentTransaction(transactionId: Transaction.Id, transaction: Transaction.PaymentRequest): Promise<APIResponse>;
-  requestCreateSplitTransaction(transaction: Transaction.SplitRequest): Promise<APIResponse>;
-  requestUpdateToSplitTransaction(transactionId: Transaction.Id, transaction: Transaction.SplitRequest): Promise<APIResponse>;
-  requestCreateTransferTransaction(transaction: Transaction.TransferRequest): Promise<APIResponse>;
-  requestUpdateToTransferTransaction(transactionId: Transaction.Id, transaction: Transaction.TransferRequest): Promise<APIResponse>;
-  requestDeleteTransaction(transactionId: Transaction.Id): Promise<APIResponse>;
-  requestGetTransaction(accountId: Api.Account.Id, transactionId: Transaction.Id): Promise<APIResponse>;
-  requestGetTransactionListByAccount(accountId: Api.Account.Id, querystring?: Partial<Common.Pagination<number>>): Promise<APIResponse>;
-  requestGetTransactionReports(report: Report.Request): Promise<APIResponse>;
+  requestCreatePaymentTransaction(transaction: Requests.PaymentTransaction): Promise<APIResponse>;
+  requestUpdateToPaymentTransaction(transactionId: Api.Transaction.Id, transaction: Requests.PaymentTransaction): Promise<APIResponse>;
+  requestCreateSplitTransaction(transaction: Requests.SplitTransaction): Promise<APIResponse>;
+  requestUpdateToSplitTransaction(transactionId: Api.Transaction.Id, transaction: Requests.SplitTransaction): Promise<APIResponse>;
+  requestCreateTransferTransaction(transaction: Requests.TransferTransaction): Promise<APIResponse>;
+  requestUpdateToTransferTransaction(transactionId: Api.Transaction.Id, transaction: Requests.TransferTransaction): Promise<APIResponse>;
+  requestDeleteTransaction(transactionId: Api.Transaction.Id): Promise<APIResponse>;
+  requestGetTransaction(accountId: Api.Account.Id, transactionId: Api.Transaction.Id): Promise<APIResponse>;
+  requestGetTransactionListByAccount(accountId: Api.Account.Id, querystring?: Partial<Api.Pagination<number>>): Promise<APIResponse>;
+  requestGetTransactionReports(report: Requests.Report): Promise<APIResponse>;
   requestGetTransactionListByFile(fileId: Api.File.Id): Promise<APIResponse>;
 };
 
 export const test = baseTest.extend<TransactionApiFixture>({
   requestCreatePaymentTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (transaction: Transaction.PaymentRequest) => {
+    const fn = async (transaction: Requests.PaymentTransaction) => {
       return loggedRequest.post(`${process.env.BASE_URL}/transaction/v1/transactions/payment`, {
         headers: {
           Authorization: authToken,
@@ -41,7 +42,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestUpdateToPaymentTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (transactionId: Transaction.Id, transaction: Transaction.PaymentRequest) => {
+    const fn = async (transactionId: Api.Transaction.Id, transaction: Requests.PaymentTransaction) => {
       return loggedRequest.put(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}/payment`, {
         headers: {
           Authorization: authToken,
@@ -54,7 +55,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestCreateSplitTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (transaction: Transaction.SplitRequest) => {
+    const fn = async (transaction: Requests.SplitTransaction) => {
       return loggedRequest.post(`${process.env.BASE_URL}/transaction/v1/transactions/split`, {
         headers: {
           Authorization: authToken,
@@ -67,7 +68,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestUpdateToSplitTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (transactionId: Transaction.Id, transaction: Transaction.SplitRequest) => {
+    const fn = async (transactionId: Api.Transaction.Id, transaction: Requests.SplitTransaction) => {
       return loggedRequest.put(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}/split`, {
         headers: {
           Authorization: authToken,
@@ -80,7 +81,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestCreateTransferTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (transaction: Transaction.TransferRequest) => {
+    const fn = async (transaction: Requests.TransferTransaction) => {
       return loggedRequest.post(`${process.env.BASE_URL}/transaction/v1/transactions/transfer`, {
         headers: {
           Authorization: authToken,
@@ -93,7 +94,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestUpdateToTransferTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (transactionId: Transaction.Id, transaction: Transaction.TransferRequest) => {
+    const fn = async (transactionId: Api.Transaction.Id, transaction: Requests.TransferTransaction) => {
       return loggedRequest.put(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}/transfer`, {
         headers: {
           Authorization: authToken,
@@ -106,7 +107,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestDeleteTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (transactionId: Transaction.Id) => {
+    const fn = async (transactionId: Api.Transaction.Id) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/transaction/v1/transactions/${transactionId}`, {
         headers: {
           Authorization: authToken, 
@@ -117,7 +118,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestGetTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (accountId: Api.Account.Id, transactionId: Transaction.Id) => {
+    const fn = async (accountId: Api.Account.Id, transactionId: Api.Transaction.Id) => {
       return loggedRequest.get(`${process.env.BASE_URL}/transaction/v1/accounts/${accountId}/transactions/${transactionId}`, {
         headers: {
           Authorization: authToken, 
@@ -128,7 +129,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestGetTransactionListByAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (accountId: Api.Account.Id, querystring?: Partial<Common.Pagination<number>>) => {
+    const fn = async (accountId: Api.Account.Id, querystring?: Partial<Api.Pagination<number>>) => {
       return loggedRequest.get(`${process.env.BASE_URL}/transaction/v1/accounts/${accountId}/transactions`, {
         headers: {
           Authorization: authToken, 
@@ -140,7 +141,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
   requestGetTransactionReports: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
-    const fn = async (report: Report.Request) => {
+    const fn = async (report: Requests.Report) => {
       return loggedRequest.post(`${process.env.BASE_URL}/transaction/v1/transactionReports`, {
         headers: {
           Authorization: authToken, 
@@ -164,7 +165,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
 });
 
 const transactionApiExpect = baseExpect.extend({
-  toHaveBeenDeletedFromDatabase(document: Transaction.Document) {
+  toHaveBeenDeletedFromDatabase(document: Documents.Transaction) {
     return {
       pass: !document,
       message: () => `expected transaction to be deleted from database, but it was found with id ${getTransactionId(document)}`,

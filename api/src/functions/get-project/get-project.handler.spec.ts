@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/get-project/get-project.handler';
 import { IGetProjectService } from '@household/api/functions/get-project/get-project.service';
-import { createProjectId, createProjectResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Get project handler', () => {
   let mockGetProjectService: MockBusinessService<IGetProjectService>;
@@ -12,8 +12,8 @@ describe('Get project handler', () => {
     handlerFunction = handler(mockGetProjectService);
   });
 
-  const projectId = createProjectId();
-  const project = createProjectResponse();
+  const projectId = testDataFactory.project.id();
+  const project = testDataFactory.project.response();
   const handlerEvent = {
     pathParameters: {
       projectId,

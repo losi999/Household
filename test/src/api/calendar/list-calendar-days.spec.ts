@@ -1,10 +1,9 @@
 import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { calendarDayDataFactory, calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
-import { default as schema } from '@household/test/schemas/calendar-day-response-list';
+import { responseList as schema } from '@household/shared/schemas/calendar-day';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
 import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
@@ -14,6 +13,8 @@ import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect);
 
@@ -22,14 +23,14 @@ const permissionMap = allowUsers('hairdresser');
 const test = mergeTests(calendarApiTest, priceDbTest, calendarDayDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('GET /calendar/v1/days', () => {
-  let customerDocument: Customer.Document;
-  let blacklistedCustomerDocument: Customer.Document;
-  let priceDocument: Price.Document;
+  let customerDocument: Documents.Customer;
+  let blacklistedCustomerDocument: Documents.Customer;
+  let priceDocument: Documents.Price;
   let day: string;
-  let calendarPersonalEntryDocument: Calendar.Entry.Document;
-  let calendarIssueEntryDocument: Calendar.Entry.Document;
-  let calendarWorkEntryDocument: Calendar.Entry.Document;
-  let calendarDayDocument: Calendar.Day.Document;
+  let calendarPersonalEntryDocument: Documents.CalendarEntry;
+  let calendarIssueEntryDocument: Documents.CalendarEntry;
+  let calendarWorkEntryDocument: Documents.CalendarEntry;
+  let calendarDayDocument: Documents.CalendarDay;
 
   const createEntries = () => {
     calendarPersonalEntryDocument = calendarEntryDataFactory.document.personal({
@@ -423,7 +424,7 @@ test.describe('GET /calendar/v1/days', () => {
             test('is missing', async ({ requestListCalendarDays }) => {
               const res = await requestListCalendarDays({
                 dateTo: calendarDayDataFactory.futureDay(), 
-              } as Calendar.DateRange);
+              } as Api.Calendar.DateRange);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('queryStringParameters', 'dateFrom');
             });
@@ -442,7 +443,7 @@ test.describe('GET /calendar/v1/days', () => {
             test('is missing', async ({ requestListCalendarDays }) => {
               const res = await requestListCalendarDays({
                 dateFrom: calendarDayDataFactory.pastDay(), 
-              } as Calendar.DateRange);
+              } as Api.Calendar.DateRange);
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('queryStringParameters', 'dateTo');
             });

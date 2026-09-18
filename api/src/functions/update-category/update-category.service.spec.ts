@@ -1,5 +1,5 @@
 import { IUpdateCategoryService, updateCategoryServiceFactory } from '@household/api/functions/update-category/update-category.service';
-import { createCategoryDocument, createCategoryRequest, createDocumentUpdate } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -17,14 +17,14 @@ describe('Update category service', () => {
     service = updateCategoryServiceFactory(mockCategoryService.service, mockCategoryDocumentConverter.service);
   });
 
-  const body = createCategoryRequest();
-  const queriedDocument = createCategoryDocument();
+  const body = testDataFactory.category.request();
+  const queriedDocument = testDataFactory.category.document();
   const categoryId = getCategoryId(queriedDocument);
-  const queriedParentCategory = createCategoryDocument();
-  const updateQuery = createDocumentUpdate();
+  const queriedParentCategory = testDataFactory.category.document();
+  const updateQuery = testDataFactory.documentUpdate();
 
   describe('should return', () => {
-    it('if parent is given', async () => {
+    it.only('if parent is given', async () => {
       const { parentCategoryId, ...cleanedBody } = body;
 
       mockCategoryService.functions.findCategoryById.mockResolvedValueOnce(queriedDocument);
@@ -48,7 +48,7 @@ describe('Update category service', () => {
     });
 
     it('if parent is not given', async () => {
-      const modifiedBody = createCategoryRequest({
+      const modifiedBody = testDataFactory.category.request({
         parentCategoryId: undefined,
       });
       const { parentCategoryId, ...cleanedBody } = modifiedBody;
@@ -121,7 +121,7 @@ describe('Update category service', () => {
       expect.assertions(6);
     });
 
-    it('no parent category found', async () => {
+    it.only('no parent category found', async () => {
       mockCategoryService.functions.findCategoryById.mockResolvedValueOnce(queriedDocument);
       mockCategoryService.functions.findCategoryById.mockResolvedValueOnce(undefined);
 

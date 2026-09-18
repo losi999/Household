@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/merge-projects/merge-projects.handler';
 import { IMergeProjectsService } from '@household/api/functions/merge-projects/merge-projects.service';
-import { createProjectId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Merge projects handler', () => {
   let mockMergeProjectsService: MockBusinessService<IMergeProjectsService>;
@@ -12,8 +12,8 @@ describe('Merge projects handler', () => {
     handlerFunction = handler(mockMergeProjectsService);
   });
 
-  const projectId = createProjectId();
-  const body = [createProjectId()];
+  const projectId = testDataFactory.project.id();
+  const body = [testDataFactory.project.id()];
   const handlerEvent = {
     body: JSON.stringify(body),
     pathParameters: {

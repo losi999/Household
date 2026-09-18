@@ -1,12 +1,13 @@
-import { Calendar, Customer, Price, Transaction } from '@household/shared/types/types';
 import { CalendarDayType, CalendarEntryResolutionStatus } from '@household/shared/enums';
 import { addSeconds, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { calendarEntryDocumentConverter } from '@household/shared/dependencies/converters/calendar-entry-document-converter';
-import { createId } from '@household/test/utils';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 export const calendarDayDataFactory = (() => {
-  const createCalendarWorkdayDocument = (ctx?: Partial<Calendar.DayProp> & Partial<Calendar.Day.WorkdayRequest>): Calendar.Day.Document => {
+  const createCalendarWorkdayDocument = (ctx?: Partial<Api.Calendar.Day> & Partial<Requests.CalendarDayWorkday>): Documents.CalendarDay => {
     const { day, ...body } = ctx ?? {};
     const expiresAt = addSeconds(Number(process.env.EXPIRES_IN));
     return {
@@ -16,7 +17,7 @@ export const calendarDayDataFactory = (() => {
     };
   };
 
-  const createCalendarVacationdayDocument = (ctx?: Partial<Calendar.DayProp>): Calendar.Day.Document => {
+  const createCalendarVacationdayDocument = (ctx?: Partial<Api.Calendar.Day>): Documents.CalendarDay => {
     const expiresAt = addSeconds(Number(process.env.EXPIRES_IN));
     return {
       day: testDataFactory.calendar.day.futureDay(),
@@ -28,7 +29,7 @@ export const calendarDayDataFactory = (() => {
     };
   };
 
-  const createCalendarHolidayDocument = (ctx?: Partial<Calendar.DayProp>): Calendar.Day.Document => {
+  const createCalendarHolidayDocument = (ctx?: Partial<Api.Calendar.Day>): Documents.CalendarDay => {
     const expiresAt = addSeconds(Number(process.env.EXPIRES_IN));
     return {
       day: testDataFactory.calendar.day.futureDay(),
@@ -56,14 +57,14 @@ export const calendarDayDataFactory = (() => {
 
 export const calendarEntryDataFactory = (() => {
   const createCalendarWorkEntryDocument = (ctx?: {
-    body?: Omit<Partial<Calendar.Entry.WorkEntryRequest>, 'entryType'>;
-    customer: Customer.Document;
-    prices?: (Partial<Customer.Job.Quantity> & {price: Price.Document})[];
+    body?: Omit<Partial<Requests.CalendarEntryWork>, 'entryType'>;
+    customer: Documents.Customer;
+    prices?: (Partial<Api.Customer.Job.Quantity> & {price: Documents.Price})[];
     resolution?: {
-      transaction?: Transaction.PaymentDocument;
-    } & Partial<Calendar.Entry.Delay>
-    & Partial<Calendar.Entry.Status<CalendarEntryResolutionStatus>>
-  }): Calendar.Entry.Document => {
+      transaction?: Documents.PaymentTransaction;
+    } & Partial<Api.Calendar.Entry.Delay>
+    & Partial<Api.Calendar.Entry.Status<CalendarEntryResolutionStatus>>
+  }): Documents.CalendarEntry => {
 
     return {
       ...calendarEntryDocumentConverter.create({
@@ -90,13 +91,13 @@ export const calendarEntryDataFactory = (() => {
     };
   };
 
-  const createCalendarPersonalEntryDocument = (ctx?: Omit<Partial<Calendar.Entry.PersonalEntryRequest>, 'entryType'>): Calendar.Entry.Document => {
+  const createCalendarPersonalEntryDocument = (ctx?: Omit<Partial<Requests.CalendarEntryPersonal>, 'entryType'>): Documents.CalendarEntry => {
     return calendarEntryDocumentConverter.create({
       body: testDataFactory.calendar.entry.request.personal(ctx),
     }, Number(process.env.EXPIRES_IN), true);
   };
 
-  const createCalendarIssueEntryDocument = (ctx?: Omit<Partial<Calendar.Entry.IssueEntryRequest>, 'entryType'>): Calendar.Entry.Document => {
+  const createCalendarIssueEntryDocument = (ctx?: Omit<Partial<Requests.CalendarEntryIssue>, 'entryType'>): Documents.CalendarEntry => {
     return calendarEntryDocumentConverter.create({
       body: testDataFactory.calendar.entry.request.issue(ctx),
     }, Number(process.env.EXPIRES_IN), true);
@@ -110,6 +111,6 @@ export const calendarEntryDataFactory = (() => {
       work: createCalendarWorkEntryDocument,
     },
     resolutionRequest: testDataFactory.calendar.entry.resolution.request,
-    id: (createId<Calendar.Entry.Id>),
+    id: testDataFactory.calendar.entry.id,
   };
 })();

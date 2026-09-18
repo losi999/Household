@@ -1,29 +1,16 @@
 import { accountDocumentConverter } from '@household/shared/dependencies/converters/account-document-converter';
 import { DataFactoryFunction } from '@household/shared/types/common';
-import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
-import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/utils';
-import { AccountType } from '@household/shared/enums';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 export const accountDataFactory = (() => {
-  const createAccountRequest: DataFactoryFunction<Requests.Account> = (req) => {
-    return {
-      accountType: faker.helpers.arrayElement(Object.values(AccountType).filter(a => a !== AccountType.Loan)),
-      name: `${faker.finance.accountName()} ${faker.finance.accountNumber()}`,
-      currency: faker.finance.currencySymbol(),
-      owner: faker.person.firstName(),
-      ...req,
-    };
-  };
-
   const createAccountDocument: DataFactoryFunction<Requests.Account, Documents.Account> = (req) => {
-    return accountDocumentConverter.create(createAccountRequest(req), Number(process.env.EXPIRES_IN), true);
+    return accountDocumentConverter.create(testDataFactory.account.request(req), Number(process.env.EXPIRES_IN), true);
   };
   return {
-    id: (createId<Api.Account.Id>),
-    request: createAccountRequest,
+    id: testDataFactory.account.id,
+    request: testDataFactory.account.request,
     document: createAccountDocument,
   };
 })();

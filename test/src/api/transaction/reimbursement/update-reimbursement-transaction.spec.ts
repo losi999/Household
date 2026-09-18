@@ -1,6 +1,5 @@
 import { entries, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
-import { Account, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -20,6 +19,8 @@ import { test as categoryDbTest } from '@household/test/fixtures/category-db.fix
 import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
 import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
@@ -28,8 +29,8 @@ const permissionMap = forbidUsers('viewer') ;
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
 test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimbursement)', () => {
-  let request: Transaction.PaymentRequest;
-  let originalDocument: Transaction.TransferDocument;
+  let request: Requests.PaymentTransaction;
+  let originalDocument: Documents.TransferTransaction;
 
   let projectDocument: Documents.Project;
   let recipientDocument: Documents.Recipient;
@@ -39,7 +40,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
   let invoiceCategoryDocument: Documents.Category;
   let inventoryCategoryDocument: Documents.Category;
   let productDocument: Documents.Product;
-  let relatedDocumentIds: Pick<Transaction.PaymentRequest, 'accountId' | 'productId' | 'categoryId' | 'projectId' | 'recipientId' | 'loanAccountId'> ;
+  let relatedDocumentIds: Pick<Requests.PaymentTransaction, 'accountId' | 'productId' | 'categoryId' | 'projectId' | 'recipientId' | 'loanAccountId'> ;
 
   test.beforeEach(async () => {
     projectDocument = projectDataFactory.document();
@@ -118,7 +119,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -135,7 +136,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
             test('using inventory category', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
@@ -152,7 +153,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveProduct(productDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
           });
@@ -170,7 +171,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
             test(CategoryType.Inventory, async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
@@ -188,7 +189,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -208,7 +209,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -226,7 +227,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -242,7 +243,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -258,7 +259,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveProject(projectDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -274,13 +275,13 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
           });
 
           test.describe('with unsetting', () => {
-            let reimbursementDocument: Transaction.ReimbursementDocument;
+            let reimbursementDocument: Documents.ReimbursementTransaction;
 
             test.beforeEach(async () => {
               reimbursementDocument = reimbursementTransactionDataFactory.document({
@@ -311,7 +312,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -331,7 +332,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -352,7 +353,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -382,7 +383,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -399,7 +400,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -416,7 +417,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveProject(projectDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -433,7 +434,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
           });

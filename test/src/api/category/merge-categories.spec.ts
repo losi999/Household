@@ -7,7 +7,6 @@ import { expect as productApiExpect } from '@household/test/fixtures/product-api
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { Product } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { mergeExpects, mergeTests } from '@playwright/test';

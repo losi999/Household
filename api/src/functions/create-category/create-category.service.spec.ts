@@ -1,5 +1,5 @@
 import { ICreateCategoryService, createCategoryServiceFactory } from '@household/api/functions/create-category/create-category.service';
-import { createCategoryRequest, createCategoryDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -17,9 +17,9 @@ describe('Create category service', () => {
     service = createCategoryServiceFactory(mockCategoryService.service, mockCategoryDocumentConverter.service);
   });
 
-  const body = createCategoryRequest();
-  const parentCategory = createCategoryDocument();
-  const convertedCategoryDocument = createCategoryDocument();
+  const body = testDataFactory.category.request();
+  const parentCategory = testDataFactory.category.document();
+  const convertedCategoryDocument = testDataFactory.category.document();
   const categoryId = getCategoryId(convertedCategoryDocument);
 
   describe('should return new id', () => {
@@ -43,7 +43,7 @@ describe('Create category service', () => {
     });
 
     it('if parent category is NOT given', async () => {
-      const parentlessBody = createCategoryRequest({
+      const parentlessBody = testDataFactory.category.request({
         parentCategoryId: undefined,
       });
       mockCategoryService.functions.findCategoryById.mockResolvedValue(undefined);

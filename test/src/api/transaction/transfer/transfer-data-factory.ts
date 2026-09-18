@@ -1,66 +1,29 @@
-import { getAccountId, getTransactionId, toDictionary } from '@household/shared/common/utils';
-import { DataFactoryFunction } from '@household/shared/types/common';
-import { Transaction } from '@household/shared/types/types';
+import { getAccountId } from '@household/shared/common/utils';
 import { Documents } from '@household/shared/types/documents';
-import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/utils';
 import { transferTransactionDocumentConverter } from '@household/shared/dependencies/converters/transfer-transaction-document-converter';
+import { Requests } from '@household/shared/types/requests';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 export const transferTransactionDataFactory = (() => {
-  const createTransferTransactionRequest: DataFactoryFunction<Transaction.TransferRequest> = (req) => {
-    const amount = req?.amount ?? faker.number.float({
-      min: -10000,
-      max: 0,
-    });
-
-    return {
-      amount,
-      transferAmount: faker.number.float({
-        max: 10000,
-        min: 0,
-      }),
-      description: faker.word.words({
-        count: {
-          min: 1,
-          max: 5,
-        },
-      }),
-      issuedAt: faker.date.recent().toISOString(),
-      accountId: undefined,
-      transferAccountId: undefined,
-      payments: undefined,
-      ...req,
-    };
-  };
-
   const createTransferTransactionDocument = (ctx: {
-    body?: Partial<Transaction.TransferRequest>;
+    body?: Partial<Requests.TransferTransaction>;
     account: Documents.Account;
     transferAccount: Documents.Account;
-    transactions?: Transaction.DeferredDocument[];
-  }): Transaction.TransferDocument => {
+  }): Documents.TransferTransaction => {
     return transferTransactionDocumentConverter.create({
-      body: createTransferTransactionRequest({
+      body: testDataFactory.transaction.request.transfer({
         ...ctx.body,
         accountId: getAccountId(ctx.account),
         transferAccountId: getAccountId(ctx.transferAccount),
-        payments: ctx.transactions ? ctx.transactions.map(t => ({
-          transactionId: getTransactionId(t),
-          amount: faker.number.float({
-            min: 1,
-            max: 500,
-          }),
-        })) : undefined,
       }),
       account: ctx.account,
       transferAccount: ctx.transferAccount,
-      transactions: ctx.transactions ? toDictionary(ctx.transactions, '_id') : undefined,
     }, Number(process.env.EXPIRES_IN), true);
   };
 
   return {
-    request: createTransferTransactionRequest,
+    request: testDataFactory.transaction.request.transfer,
     document: createTransferTransactionDocument,
-    id: (createId<Transaction.Id>),
+    id: testDataFactory.transaction.id,
   };
 })();

@@ -1,5 +1,5 @@
 import { ICreatePaymentTransactionService, createPaymentTransactionServiceFactory } from '@household/api/functions/create-payment-transaction/create-payment-transaction.service';
-import { createAccountDocument, createCategoryDocument, createDeferredTransactionDocument, createPaymentTransactionDocument, createPaymentTransactionRequest, createProductDocument, createProductId, createProjectDocument, createRecipientDocument, createReimbursementTransactionDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
@@ -48,25 +48,25 @@ describe('Create payment transaction service', () => {
   let queriedProject: Documents.Project;
   let queriedRecipient: Documents.Recipient;
   let queriedProduct: Documents.Product;
-  const createdPaymentDocument = createPaymentTransactionDocument();
-  const createdDeferredDocument = createDeferredTransactionDocument();
-  const createdReimbursementDocument = createReimbursementTransactionDocument();
+  const createdPaymentDocument = testDataFactory.transaction.document.payment();
+  const createdDeferredDocument = testDataFactory.transaction.document.deferred();
+  const createdReimbursementDocument = testDataFactory.transaction.document.reimbursement();
 
   beforeEach(() => {
-    queriedAccount = createAccountDocument();
-    queriedLoanAccount = createAccountDocument({
+    queriedAccount = testDataFactory.account.document();
+    queriedLoanAccount = testDataFactory.account.document({
       accountType: AccountType.Loan,
     });
-    queriedCategory = createCategoryDocument({
+    queriedCategory = testDataFactory.category.document({
       categoryType: CategoryType.Inventory,
     });
-    queriedProduct = createProductDocument({
+    queriedProduct = testDataFactory.product.document({
       category: queriedCategory,
     });
-    queriedProject = createProjectDocument();
-    queriedRecipient = createRecipientDocument();
+    queriedProject = testDataFactory.project.document();
+    queriedRecipient = testDataFactory.recipient.document();
 
-    body = createPaymentTransactionRequest({
+    body = testDataFactory.transaction.request.payment({
       categoryId: getCategoryId(queriedCategory),
       projectId: getProjectId(queriedProject),
       recipientId: getRecipientId(queriedRecipient),
@@ -113,7 +113,7 @@ describe('Create payment transaction service', () => {
     });
 
     it('of created deferred document', async () => {
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         amount: -1023,
         loanAccountId: getAccountId(queriedLoanAccount),
@@ -158,7 +158,7 @@ describe('Create payment transaction service', () => {
     });
 
     it('of created reimbursement document', async () => {
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         amount: -1023,
         accountId: getAccountId(queriedLoanAccount),
@@ -206,7 +206,7 @@ describe('Create payment transaction service', () => {
 
   describe('should throw error', () => {
     it('if account and loanAccount would be the same', async () => {
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         loanAccountId: body.accountId,
       });
@@ -252,7 +252,7 @@ describe('Create payment transaction service', () => {
     });
 
     it('if no loan account found', async () => {
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         loanAccountId: getAccountId(queriedLoanAccount),
       });
@@ -386,13 +386,13 @@ describe('Create payment transaction service', () => {
     });
 
     it('if product belongs to different category', async () => {
-      body.productId = createProductId();
+      body.productId = testDataFactory.product.id();
 
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.findCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.findProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.findProductById.mockResolvedValue(createProductDocument());
+      mockProductService.functions.findProductById.mockResolvedValue(testDataFactory.product.document());
 
       await service({
         body,
@@ -544,7 +544,7 @@ describe('Create payment transaction service', () => {
     });
 
     it('if account is loan type for payment transaction', async () => {
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         accountId: getAccountId(queriedLoanAccount),
       });
@@ -574,10 +574,10 @@ describe('Create payment transaction service', () => {
     });
 
     it('if loanAccount is loan type for reimbursement transaction', async () => {
-      const queriedSecondLoanAccount = createAccountDocument({
+      const queriedSecondLoanAccount = testDataFactory.account.document({
         accountType: AccountType.Loan,
       });
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         loanAccountId: getAccountId(queriedSecondLoanAccount),
         accountId: getAccountId(queriedLoanAccount),

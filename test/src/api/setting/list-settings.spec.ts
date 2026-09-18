@@ -1,4 +1,4 @@
-import { default as schema } from '@household/test/schemas/setting-response-list';
+import { responseList as schema } from '@household/shared/schemas/setting';
 import { Requests } from '@household/shared/types/requests';
 import { settingDataFactory } from '@household/test/api/setting/data-factory';
 import { forbidUsers } from '@household/test/utils';

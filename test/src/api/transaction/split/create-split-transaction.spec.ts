@@ -1,6 +1,5 @@
 import { entries, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { CategoryType, AccountType } from '@household/shared/enums';
-import { Account, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -20,6 +19,8 @@ import { test as categoryDbTest } from '@household/test/fixtures/category-db.fix
 import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
 import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
@@ -28,7 +29,7 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
 test.describe('POST transaction/v1/transactions/split (split)', () => {
-  let request: Transaction.SplitRequest;
+  let request: Requests.SplitTransaction;
   let projectDocument: Documents.Project;
   let recipientDocument: Documents.Recipient;
   let accountDocument: Documents.Account;
@@ -37,8 +38,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
   let invoiceCategoryDocument: Documents.Category;
   let inventoryCategoryDocument: Documents.Category;
   let productDocument: Documents.Product;
-  let relatedDocumentIds: Pick<Transaction.SplitRequest, 'accountId' | 'recipientId'>;
-  let relatedDocumentItemIds: Pick<Transaction.SplitRequestItem, 'categoryId' | 'productId' | 'projectId'>;
+  let relatedDocumentIds: Pick<Requests.SplitTransaction, 'accountId' | 'recipientId'>;
+  let relatedDocumentItemIds: Pick<Requests.SplitItem, 'categoryId' | 'productId' | 'projectId'>;
 
   test.beforeEach(async () => {
     projectDocument = projectDataFactory.document();
@@ -79,38 +80,40 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
       productId: getProductId(productDocument),
     };
 
-    request = splitTransactionDataFactory.request(relatedDocumentIds, [
-      {
-        ...relatedDocumentItemIds,
-        categoryId: getCategoryId(regularCategoryDocument),
-      },
-      {
-        ...relatedDocumentItemIds,
-        categoryId: getCategoryId(inventoryCategoryDocument),
-      },
-      {
-        ...relatedDocumentItemIds,
-        categoryId: getCategoryId(invoiceCategoryDocument),
-      },
-    ], [
-      {
-        ...relatedDocumentItemIds,
-        categoryId: getCategoryId(regularCategoryDocument),
-        loanAccountId: getAccountId(secondaryAccountDocument),
-      },
-      {
-        ...relatedDocumentItemIds,
-        categoryId: getCategoryId(inventoryCategoryDocument),
-        loanAccountId: getAccountId(secondaryAccountDocument),
-      },
-      {
-        ...relatedDocumentItemIds,
-        categoryId: getCategoryId(invoiceCategoryDocument),
-        loanAccountId: getAccountId(secondaryAccountDocument),
-      },
-    ]
-      ,
-    );
+    request = splitTransactionDataFactory.request({
+      ...relatedDocumentIds,
+      splits: [
+        {
+          ...relatedDocumentItemIds,
+          categoryId: getCategoryId(regularCategoryDocument),
+        },
+        {
+          ...relatedDocumentItemIds,
+          categoryId: getCategoryId(inventoryCategoryDocument),
+        },
+        {
+          ...relatedDocumentItemIds,
+          categoryId: getCategoryId(invoiceCategoryDocument),
+        },
+      ],
+      loans: [
+        {
+          ...relatedDocumentItemIds,
+          categoryId: getCategoryId(regularCategoryDocument),
+          loanAccountId: getAccountId(secondaryAccountDocument),
+        },
+        {
+          ...relatedDocumentItemIds,
+          categoryId: getCategoryId(inventoryCategoryDocument),
+          loanAccountId: getAccountId(secondaryAccountDocument),
+        },
+        {
+          ...relatedDocumentItemIds,
+          categoryId: getCategoryId(invoiceCategoryDocument),
+          loanAccountId: getAccountId(secondaryAccountDocument),
+        },
+      ],
+    });
   });
 
   test.describe('called as anonymous', () => {
@@ -143,15 +146,15 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
             await saveProduct(productDocument);
             const res = await requestCreateSplitTransaction(request);
             expect(res).toBeCreatedResponse();
-            const { transactionId } = await res.json() as Transaction.TransactionId;
+            const { transactionId } = await res.json() as Api.Transaction.TransactionId;
             expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
           });
           test.describe('without optional properties', () => {
             test('description', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
               request = splitTransactionDataFactory.request({
-                ...relatedDocumentIds,
+                ...request,
                 description: undefined,
-              }, request.splits, request.loans);
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -159,27 +162,30 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('recipientId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveProduct }) => {
               request = splitTransactionDataFactory.request({
-                ...relatedDocumentIds,
+                ...request,
                 recipientId: undefined,
-              }, request.splits, request.loans);
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, [], request.loans);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                splits: undefined,
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -187,12 +193,15 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans', async ({ requestCreateSplitTransaction, saveAccount, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, []);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                loans: undefined,
+              });
               await saveAccount(accountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -200,17 +209,20 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.description', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  ...relatedDocumentItemIds,
-                  description: undefined,
-                },
-              ], request.loans);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                splits: [
+                  {
+                    ...relatedDocumentItemIds,
+                    description: undefined,
+                  },
+                ],
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -218,19 +230,22 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.inventory', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  ...relatedDocumentItemIds,
-                  categoryId: getCategoryId(inventoryCategoryDocument),
-                  productId: undefined,
-                  quantity: undefined,
-                },
-              ], request.loans);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                splits: [
+                  {
+                    ...relatedDocumentItemIds,
+                    categoryId: getCategoryId(inventoryCategoryDocument),
+                    productId: undefined,
+                    quantity: undefined,
+                  },
+                ],
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -238,20 +253,23 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.invoice', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  ...relatedDocumentItemIds,
-                  categoryId: getCategoryId(invoiceCategoryDocument),
-                  invoiceNumber: undefined,
-                  billingEndDate: undefined,
-                  billingStartDate: undefined,
-                },
-              ], request.loans);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                splits: [
+                  {
+                    ...relatedDocumentItemIds,
+                    categoryId: getCategoryId(invoiceCategoryDocument),
+                    invoiceNumber: undefined,
+                    billingEndDate: undefined,
+                    billingStartDate: undefined,
+                  },
+                ],
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -259,18 +277,21 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.invoice.invoiceNumber', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  ...relatedDocumentItemIds,
-                  categoryId: getCategoryId(invoiceCategoryDocument),
-                  invoiceNumber: undefined,
-                },
-              ], request.loans);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                splits: [
+                  {
+                    ...relatedDocumentItemIds,
+                    categoryId: getCategoryId(invoiceCategoryDocument),
+                    invoiceNumber: undefined,
+                  },
+                ],
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -278,17 +299,20 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.categoryId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  ...relatedDocumentItemIds,
-                  categoryId: undefined,
-                },
-              ], request.loans);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                splits: [
+                  {
+                    ...relatedDocumentItemIds,
+                    categoryId: undefined,
+                  },
+                ],
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -296,17 +320,20 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.projectId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  ...relatedDocumentItemIds,
-                  projectId: undefined,
-                },
-              ], request.loans);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                splits: [
+                  {
+                    ...relatedDocumentItemIds,
+                    projectId: undefined,
+                  },
+                ],
+              });
 
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -315,18 +342,21 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.description', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
-                {
-                  ...relatedDocumentItemIds,
-                  loanAccountId: getAccountId(secondaryAccountDocument),
-                  description: undefined,
-                },
-              ]);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                loans: [
+                  {
+                    ...relatedDocumentItemIds,
+                    loanAccountId: getAccountId(secondaryAccountDocument),
+                    description: undefined,
+                  },
+                ],
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -334,20 +364,23 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.inventory', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
-                {
-                  ...relatedDocumentItemIds,
-                  loanAccountId: getAccountId(secondaryAccountDocument),
-                  categoryId: getCategoryId(inventoryCategoryDocument),
-                  productId: undefined,
-                  quantity: undefined,
-                },
-              ]);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                loans: [
+                  {
+                    ...relatedDocumentItemIds,
+                    loanAccountId: getAccountId(secondaryAccountDocument),
+                    categoryId: getCategoryId(inventoryCategoryDocument),
+                    productId: undefined,
+                    quantity: undefined,
+                  },
+                ],
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -355,21 +388,24 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.invoice', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
-                {
-                  ...relatedDocumentItemIds,
-                  loanAccountId: getAccountId(secondaryAccountDocument),
-                  categoryId: getCategoryId(invoiceCategoryDocument),
-                  invoiceNumber: undefined,
-                  billingEndDate: undefined,
-                  billingStartDate: undefined,
-                },
-              ]);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                loans: [
+                  {
+                    ...relatedDocumentItemIds,
+                    loanAccountId: getAccountId(secondaryAccountDocument),
+                    categoryId: getCategoryId(invoiceCategoryDocument),
+                    invoiceNumber: undefined,
+                    billingEndDate: undefined,
+                    billingStartDate: undefined,
+                  },
+                ],
+              });
 
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -378,19 +414,22 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.invoice.invoiceNumber', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
-                {
-                  ...relatedDocumentItemIds,
-                  loanAccountId: getAccountId(secondaryAccountDocument),
-                  categoryId: getCategoryId(invoiceCategoryDocument),
-                  invoiceNumber: undefined,
-                },
-              ]);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                loans: [
+                  {
+                    ...relatedDocumentItemIds,
+                    loanAccountId: getAccountId(secondaryAccountDocument),
+                    categoryId: getCategoryId(invoiceCategoryDocument),
+                    invoiceNumber: undefined,
+                  },
+                ],
+              });
 
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -399,18 +438,21 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.categoryId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
-                {
-                  ...relatedDocumentItemIds,
-                  loanAccountId: getAccountId(secondaryAccountDocument),
-                  categoryId: undefined,
-                },
-              ]);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                loans: [
+                  {
+                    ...relatedDocumentItemIds,
+                    loanAccountId: getAccountId(secondaryAccountDocument),
+                    categoryId: undefined,
+                  },
+                ],
+              });
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
@@ -418,18 +460,21 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.projectId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
-              request = splitTransactionDataFactory.request(relatedDocumentIds, request.splits, [
-                {
-                  ...relatedDocumentItemIds,
-                  loanAccountId: getAccountId(secondaryAccountDocument),
-                  projectId: undefined,
-                },
-              ]);
+              request = splitTransactionDataFactory.request({
+                ...request,
+                loans: [
+                  {
+                    ...relatedDocumentItemIds,
+                    loanAccountId: getAccountId(secondaryAccountDocument),
+                    projectId: undefined,
+                  },
+                ],
+              });
 
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
@@ -438,7 +483,7 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
               expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Transaction.TransactionId;
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
           });
@@ -455,36 +500,14 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
             });
 
             test('misses both splits and loans', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], []));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: undefined,
+                loans: undefined,
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('body', 'splits');
               expect(res).toHaveRequiredPropertyValidationError('body', 'loans');
-            });
-          });
-
-          test.describe('if amount', () => {
-            test('is not the same as sum of splits', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
-                amount: -1, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Sum of splits must equal to total amount');
-            });
-
-            test('is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
-                amount: undefined, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
-            });
-
-            test('is not number', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
-                amount: <any>'1', 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
             });
           });
 
@@ -543,8 +566,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
-                accountId: getAccountId(loanAccountDocument), 
-              }, undefined, []));
+                accountId: getAccountId(loanAccountDocument),  
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Account type cannot be loan');
             });
@@ -594,7 +617,7 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: recipientDataFactory.id(), 
-              }, undefined, []));
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('No recipient found');
             });
@@ -654,42 +677,54 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if splits.amount', () => {
             test('is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  amount: undefined, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    amount: undefined, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
             test('is not number', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  amount: <any>'1', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    amount: <any>'1', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
             });
           });
 
           test.describe('if splits.description', () => {
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  description: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    description: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
             test('is too short', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  description: '', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    description: '', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
@@ -697,31 +732,40 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if splits.quantity', () => {
             test('is present and productId is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  quantity: 1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    quantity: 1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
             });
 
             test('is not number', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  quantity: <any>'1', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    quantity: <any>'1', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
             test('is too small', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  quantity: 0, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    quantity: 0, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
             });
@@ -729,32 +773,41 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if splits.productId', () => {
             test('is present and quantity is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  productId: productDataFactory.id(),
-                  quantity: undefined, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    productId: productDataFactory.id(),
+                    quantity: undefined, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  productId: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    productId: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  productId: productDataFactory.id('not-mongo-id'), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    productId: productDataFactory.id('not-mongo-id'), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'productId');
             });
@@ -764,13 +817,16 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveCategory(inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  ...relatedDocumentItemIds,
-                  categoryId: getCategoryId(inventoryCategoryDocument),
-                  productId: productDataFactory.id(), 
-                }, 
-              ], []));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    ...relatedDocumentItemIds,
+                    categoryId: getCategoryId(inventoryCategoryDocument),
+                    productId: productDataFactory.id(), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('No product found');
             });
@@ -778,32 +834,41 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if splits.invoiceNumber', () => {
             test('is present and billingEndDate, billingStartDate are missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  billingEndDate: undefined,
-                  billingStartDate: undefined, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    billingEndDate: undefined,
+                    billingStartDate: undefined, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  invoiceNumber: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    invoiceNumber: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
             });
 
             test('is too short', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  invoiceNumber: '', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    invoiceNumber: '', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
             });
@@ -811,42 +876,54 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if splits.billingEndDate', () => {
             test('is present and billingStartDate is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  billingStartDate: undefined, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    billingStartDate: undefined, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  billingEndDate: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    billingEndDate: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
             });
 
             test('is not date format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  billingEndDate: 'not-date', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    billingEndDate: 'not-date', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
             });
 
             test('is later than billingStartDate', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  billingEndDate: '2022-06-01',
-                  billingStartDate: '2022-06-03', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    billingEndDate: '2022-06-01',
+                    billingStartDate: '2022-06-03', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
             });
@@ -854,31 +931,40 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if splits.billingStartDate', () => {
             test('is present and billingEndDate is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  billingEndDate: undefined, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    billingEndDate: undefined, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  billingStartDate: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    billingStartDate: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
             });
 
             test('is not date format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  billingStartDate: 'not-date', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    billingStartDate: 'not-date', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
             });
@@ -889,32 +975,41 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveAccount(accountDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  ...relatedDocumentItemIds,
-                  categoryId: categoryDataFactory.id(), 
-                }, 
-              ], []));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    ...relatedDocumentItemIds,
+                    categoryId: categoryDataFactory.id(), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Some of the categories are not found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  categoryId: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    categoryId: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  categoryId: categoryDataFactory.id('not-mongo-id'), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    categoryId: categoryDataFactory.id('not-mongo-id'), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'categoryId');
             });
@@ -925,32 +1020,41 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveAccount(accountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  ...relatedDocumentItemIds,
-                  projectId: projectDataFactory.id(), 
-                }, 
-              ], []));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    ...relatedDocumentItemIds,
+                    projectId: projectDataFactory.id(), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Some of the projects are not found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  projectId: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    projectId: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [
-                {
-                  projectId: projectDataFactory.id('not-mongo-id'), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                splits: [
+                  {
+                    projectId: projectDataFactory.id('not-mongo-id'), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'projectId');
             });
@@ -994,42 +1098,54 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if loans.amount', () => {
             test('is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  amount: undefined, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    amount: undefined,
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
             test('is not number', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  amount: <any>'1', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    amount: <any>'1', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
             });
           });
 
           test.describe('if loans.description', () => {
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  description: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    description: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
             test('is too short', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  description: '', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    description: '', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
@@ -1037,31 +1153,40 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if loans.quantity', () => {
             test('is present and productId is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  quantity: 1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    quantity: 1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
             });
 
             test('is not number', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  quantity: <any>'1', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    quantity: <any>'1', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
             test('is too small', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  quantity: 0, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    quantity: 0, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
             });
@@ -1069,32 +1194,41 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if loans.productId', () => {
             test('is present and quantity is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  productId: productDataFactory.id(),
-                  quantity: undefined, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    productId: productDataFactory.id(),
+                    quantity: undefined, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  productId: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    productId: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  productId: productDataFactory.id('not-mongo-id'), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    productId: productDataFactory.id('not-mongo-id'), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'productId');
             });
@@ -1104,14 +1238,17 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveCategory(inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  ...relatedDocumentItemIds,
-                  loanAccountId: getAccountId(secondaryAccountDocument),
-                  categoryId: getCategoryId(inventoryCategoryDocument),
-                  productId: productDataFactory.id(), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    ...relatedDocumentItemIds,
+                    loanAccountId: getAccountId(secondaryAccountDocument),
+                    categoryId: getCategoryId(inventoryCategoryDocument),
+                    productId: productDataFactory.id(), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('No product found');
             });
@@ -1119,32 +1256,41 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if loans.invoiceNumber', () => {
             test('is present and billingEndDate, billingStartDate are missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  billingEndDate: undefined,
-                  billingStartDate: undefined, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    billingEndDate: undefined,
+                    billingStartDate: undefined, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  invoiceNumber: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    invoiceNumber: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
             });
 
             test('is too short', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  invoiceNumber: '', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    invoiceNumber: '', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
             });
@@ -1152,42 +1298,54 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if loans.billingEndDate', () => {
             test('is present and billingStartDate is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  billingStartDate: undefined, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    billingStartDate: undefined, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  billingEndDate: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    billingEndDate: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
             });
 
             test('is not date format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  billingEndDate: 'not-date', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    billingEndDate: 'not-date', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
             });
 
             test('is later than billingStartDate', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  billingEndDate: '2022-06-01',
-                  billingStartDate: '2022-06-03', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    billingEndDate: '2022-06-01',
+                    billingStartDate: '2022-06-03', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
             });
@@ -1195,31 +1353,40 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
 
           test.describe('if loans.billingStartDate', () => {
             test('is present and billingEndDate is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  billingEndDate: undefined, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    billingEndDate: undefined, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  billingStartDate: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    billingStartDate: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
             });
 
             test('is not date format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  billingStartDate: 'not-date', 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    billingStartDate: 'not-date', 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
             });
@@ -1230,33 +1397,42 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  ...relatedDocumentItemIds,
-                  categoryId: categoryDataFactory.id(),
-                  loanAccountId: getAccountId(secondaryAccountDocument), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    ...relatedDocumentItemIds,
+                    categoryId: categoryDataFactory.id(),
+                    loanAccountId: getAccountId(secondaryAccountDocument), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Some of the categories are not found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  categoryId: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    categoryId: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  categoryId: categoryDataFactory.id('not-mongo-id'), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    categoryId: categoryDataFactory.id('not-mongo-id'), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'categoryId');
             });
@@ -1267,33 +1443,42 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  ...relatedDocumentItemIds,
-                  loanAccountId: getAccountId(secondaryAccountDocument),
-                  projectId: projectDataFactory.id(), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    ...relatedDocumentItemIds,
+                    loanAccountId: getAccountId(secondaryAccountDocument),
+                    projectId: projectDataFactory.id(), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Some of the projects are not found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  projectId: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    projectId: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  projectId: projectDataFactory.id('not-mongo-id'), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    projectId: projectDataFactory.id('not-mongo-id'), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'projectId');
             });
@@ -1304,61 +1489,68 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveAccounts(accountDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, []));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    loanAccountId: accountDataFactory.id(),
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveMessage('Some of the accounts are not found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  loanAccountId: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    loanAccountId: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'loanAccountId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  loanAccountId: accountDataFactory.id('not-mongo-id'), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    loanAccountId: accountDataFactory.id('not-mongo-id'), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'loanAccountId');
             });
           });
 
-          test.describe('if loans.isSettled', () => {
-            test('is not boolean', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  isSettled: <any>1, 
-                }, 
-              ]));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'isSettled', 'boolean');
-            });
-          });
-
           test.describe('if loans.transactionId', () => {
             test('is not string', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  transactionId: <any>1, 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    transactionId: <any>1, 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveWrongTypeValidationError('body', 'transactionId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request(relatedDocumentIds, [], [
-                {
-                  transactionId: deferredTransactionDataFactory.id('not-mongo-id'), 
-                }, 
-              ]));
+              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loans: [
+                  {
+                    transactionId: deferredTransactionDataFactory.id('not-mongo-id'), 
+                  },
+                ],
+              }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('body', 'transactionId');
             });

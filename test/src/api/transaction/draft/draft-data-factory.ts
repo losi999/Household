@@ -1,14 +1,13 @@
 import { draftTransactionDocumentConverter } from '@household/shared/dependencies/converters/draft-transaction-document-converter';
-import { Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/utils';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 export const draftTransactionDataFactory = (() => {
   const createDraftTransactionDocument = (ctx: {
-    body?: Pick<Transaction.DraftDocument, 'amount' | 'description' | 'issuedAt'>;
+    body?: Pick<Documents.DraftTransaction, 'amount' | 'description' | 'issuedAt'>;
     file: Documents.File;
-  }): Transaction.DraftDocument => {
+  }): Documents.DraftTransaction => {
     return draftTransactionDocumentConverter.create({
       body: {
         amount: faker.number.float(),
@@ -27,6 +26,6 @@ export const draftTransactionDataFactory = (() => {
 
   return {
     document: createDraftTransactionDocument,
-    id: (createId<Transaction.Id>),
+    id: testDataFactory.transaction.id,
   };
 })();

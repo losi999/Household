@@ -50,7 +50,6 @@ export namespace Requests {
   export type SplitTransaction = Api.Account.AccountId
     & Api.Recipient.RecipientId
     & Api.Transaction.IssuedAt<string>
-    & Api.Transaction.Amount
     & Api.Transaction.Description
     & {
       splits: SplitItem[];

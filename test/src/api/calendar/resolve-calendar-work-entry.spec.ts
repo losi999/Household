@@ -1,6 +1,5 @@
 import { entries, getCalendarEntryId, getTransactionId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { Api } from '@household/shared/types/api';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
@@ -18,6 +17,8 @@ import { test as settingDbTest } from '@household/test/fixtures/setting-db.fixtu
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect, paymentTransactionApiExpect);
 
@@ -26,12 +27,12 @@ const permissionMap = allowUsers('hairdresser');
 const test = mergeTests(calendarApiTest, transactionDbTest, settingDbTest, priceDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
-  let request: Calendar.Entry.ResolutionRequest;
-  let calendarPersonalEntryDocument: Calendar.Entry.Document;
-  let calendarWorkEntryDocument: Calendar.Entry.Document;
-  let calendarIssueEntryDocument: Calendar.Entry.Document;
-  let customerDocument: Customer.Document;
-  let priceDocument: Price.Document;
+  let request: Requests.CalendarEntryResolution;
+  let calendarPersonalEntryDocument: Documents.CalendarEntry;
+  let calendarWorkEntryDocument: Documents.CalendarEntry;
+  let calendarIssueEntryDocument: Documents.CalendarEntry;
+  let customerDocument: Documents.Customer;
+  let priceDocument: Documents.Price;
 
   test.beforeEach(async () => {
     customerDocument = customerDataFactory.document();
@@ -113,7 +114,7 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
             });
 
             const paymentRequest = paymentTransactionDataFactory.request({
-              amount: (request as Calendar.Entry.PaidResolutionRequest).amount,
+              amount: (request as Requests.CalendarEntryResolutionPaid).amount,
               issuedAt: expectedIssuedAt.toISOString(),
               description: calendarWorkEntryDocument.title,
               accountId: (await getSettingByKey<Api.Account.Id>(SettingKey.HairdressingIncomeAccount)).value,

@@ -2,7 +2,7 @@ import { entries } from '@household/shared/common/utils';
 import { forbidUsers } from '@household/test/utils';
 import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { default as schema } from '@household/test/schemas/recipient-response-list';
+import { responseList as schema } from '@household/shared/schemas/recipient';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 import { mergeTests } from '@playwright/test';

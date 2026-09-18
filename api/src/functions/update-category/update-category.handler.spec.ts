@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/update-category/update-category.handler';
 import { IUpdateCategoryService } from '@household/api/functions/update-category/update-category.service';
-import { createCategoryId, createCategoryRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Update category handler', () => {
@@ -13,8 +13,8 @@ describe('Update category handler', () => {
     handlerFunction = handler(mockUpdateCategoryService);
   });
 
-  const categoryId = createCategoryId();
-  const body = createCategoryRequest();
+  const categoryId = testDataFactory.category.id();
+  const body = testDataFactory.category.request();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),

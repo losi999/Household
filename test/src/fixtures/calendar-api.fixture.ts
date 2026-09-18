@@ -1,28 +1,31 @@
 import { getCalendarEntryId, getCustomerId, getPriceId, getTransactionId } from '@household/shared/common/utils';
 import { headerExpiresIn, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
-import { Calendar, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
 import { validateCustomerJobPriceResponse, validateCustomerResponse } from '@household/test/fixtures/customer-api.fixture';
 import { APIResponse } from '@playwright/test';
 
 type CalendarApiFixture = {
-  requestCreateCalendarEntry(calendarEntry: Calendar.Entry.Request): Promise<APIResponse>;
-  requestGetCalendarEntry(calendarEntryId: Calendar.Entry.Id): Promise<APIResponse>;
-  requestUpdateCalendarEntry(calendarEntryId: Calendar.Entry.Id, requestBody: Calendar.Entry.Request): Promise<APIResponse>;
-  requestDeleteCalendarEntry(calendarEntryId: Calendar.Entry.Id): Promise<APIResponse>;
-  requestUpdateCalendarDay(day: Calendar.DayProp['day'], dayRequest: Calendar.Day.Request): Promise<APIResponse>;
-  requestDeleteCalendarDay(day: Calendar.DayProp['day']): Promise<APIResponse>;
-  requestListCalendarDays(dateRange: Calendar.DateRange): Promise<APIResponse>;
-  requestResolveCalendarWorkEntry(calendarEntryId: Calendar.Entry.Id, body: Calendar.Entry.ResolutionRequest): Promise<APIResponse>;
+  requestCreateCalendarEntry(calendarEntry: Requests.CalendarEntry): Promise<APIResponse>;
+  requestGetCalendarEntry(calendarEntryId: Api.Calendar.Entry.Id): Promise<APIResponse>;
+  requestUpdateCalendarEntry(calendarEntryId: Api.Calendar.Entry.Id, requestBody: Requests.CalendarEntry): Promise<APIResponse>;
+  requestDeleteCalendarEntry(calendarEntryId: Api.Calendar.Entry.Id): Promise<APIResponse>;
+  requestUpdateCalendarDay(day: Api.Calendar.Day['day'], dayRequest: Requests.CalendarDay): Promise<APIResponse>;
+  requestDeleteCalendarDay(day: Api.Calendar.Day['day']): Promise<APIResponse>;
+  requestListCalendarDays(dateRange: Api.Calendar.DateRange): Promise<APIResponse>;
+  requestResolveCalendarWorkEntry(calendarEntryId: Api.Calendar.Entry.Id, body: Requests.CalendarEntryResolution): Promise<APIResponse>;
 };
 
 export const test = baseTest.extend<CalendarApiFixture>({
   requestCreateCalendarEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestCreateCalendarEntry = async (calendarEntry: Calendar.Entry.Request) => {
+    const requestCreateCalendarEntry = async (calendarEntry: Requests.CalendarEntry) => {
       return loggedRequest.post(`${process.env.BASE_URL}/calendar/v1/entries`, {
         headers: {
           Authorization: authToken,
@@ -37,7 +40,7 @@ export const test = baseTest.extend<CalendarApiFixture>({
   requestGetCalendarEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestGetCalendarEntry = async (calendarEntryId: Calendar.Entry.Id) => {
+    const requestGetCalendarEntry = async (calendarEntryId: Api.Calendar.Entry.Id) => {
       return loggedRequest.get(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}`, {
         headers: {
           Authorization: authToken,
@@ -51,7 +54,7 @@ export const test = baseTest.extend<CalendarApiFixture>({
   requestUpdateCalendarEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestUpdateCalendarEntry = async (calendarEntryId: Calendar.Entry.Id, requestBody: Calendar.Entry.Request) => {
+    const requestUpdateCalendarEntry = async (calendarEntryId: Api.Calendar.Entry.Id, requestBody: Requests.CalendarEntry) => {
       return loggedRequest.put(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}`, {
         headers: {
           Authorization: authToken,
@@ -65,7 +68,7 @@ export const test = baseTest.extend<CalendarApiFixture>({
   requestDeleteCalendarEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeleteCalendarEntry = async (calendarEntryId: Calendar.Entry.Id) => {
+    const requestDeleteCalendarEntry = async (calendarEntryId: Api.Calendar.Entry.Id) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}`, {
         headers: {
           Authorization: authToken,
@@ -78,7 +81,7 @@ export const test = baseTest.extend<CalendarApiFixture>({
   requestUpdateCalendarDay: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestUpdateCalendarDay = async (day: Calendar.DayProp['day'], dayRequest: Calendar.Day.Request) => {
+    const requestUpdateCalendarDay = async (day: Api.Calendar.Day['day'], dayRequest: Requests.CalendarDay) => {
       return loggedRequest.put(`${process.env.BASE_URL}/calendar/v1/days/${day}`, {
         headers: {
           Authorization: authToken,
@@ -93,7 +96,7 @@ export const test = baseTest.extend<CalendarApiFixture>({
   requestDeleteCalendarDay: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeleteCalendarDay = async (day: Calendar.DayProp['day']) => {
+    const requestDeleteCalendarDay = async (day: Api.Calendar.Day['day']) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/calendar/v1/days/${day}`, {
         headers: {
           Authorization: authToken,
@@ -107,7 +110,7 @@ export const test = baseTest.extend<CalendarApiFixture>({
   requestListCalendarDays: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestListCalendarDays = async (dateRange: Calendar.DateRange) => {
+    const requestListCalendarDays = async (dateRange: Api.Calendar.DateRange) => {
       return loggedRequest.get(`${process.env.BASE_URL}/calendar/v1/days`, {
         headers: {
           Authorization: authToken,
@@ -122,7 +125,7 @@ export const test = baseTest.extend<CalendarApiFixture>({
   requestResolveCalendarWorkEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestResolveCalendarWorkEntry = async (calendarEntryId: Calendar.Entry.Id, body: Calendar.Entry.ResolutionRequest) => {
+    const requestResolveCalendarWorkEntry = async (calendarEntryId: Api.Calendar.Entry.Id, body: Requests.CalendarEntryResolution) => {
       return loggedRequest.post(`${process.env.BASE_URL}/calendar/v1/entries/${calendarEntryId}/resolution`, {
         headers: {
           Authorization: authToken,
@@ -136,7 +139,7 @@ export const test = baseTest.extend<CalendarApiFixture>({
   },
 });
 
-const validateCalendarEntryResponseBase = (response: Calendar.Entry.ResponseBase, document: Calendar.Entry.Document) => {
+const validateCalendarEntryResponseBase = (response: Responses.CalendarEntryLean, document: Documents.CalendarEntry) => {
   return new Comparer(response, {
     calendarEntryId: getCalendarEntryId(document),
     title: document.title,
@@ -147,7 +150,7 @@ const validateCalendarEntryResponseBase = (response: Calendar.Entry.ResponseBase
   });
 };
 
-const validateCalendarEntryResponse = (response: Calendar.Entry.Response, document: Calendar.Entry.Document) => {
+const validateCalendarEntryResponse = (response: Responses.CalendarEntry, document: Documents.CalendarEntry) => {
   const comparer = new Comparer(response, [
     validateCalendarEntryResponseBase(response, document),
     {
@@ -173,7 +176,7 @@ const validateCalendarEntryResponse = (response: Calendar.Entry.Response, docume
   return comparer;
 };
 
-const validateCalendarEntryDocuments = (originalDocument: Calendar.Entry.Document, currentDocument: Calendar.Entry.Document) => {
+const validateCalendarEntryDocuments = (originalDocument: Documents.CalendarEntry, currentDocument: Documents.CalendarEntry) => {
   return new Comparer(currentDocument, {
     description: originalDocument.description,
     start: originalDocument.start,
@@ -200,7 +203,7 @@ const validateCalendarEntryDocuments = (originalDocument: Calendar.Entry.Documen
 };
 
 export const expect = baseExpect.extend({
-  toHaveBeenSavedAsCalendarDayDocument(req: Calendar.Day.Request, document: Calendar.Day.Document) {
+  toHaveBeenSavedAsCalendarDayDocument(req: Requests.CalendarDay, document: Documents.CalendarDay) {
     const comparer = new Comparer(document, {
       dayType: req.dayType,
       start: req.dayType === CalendarDayType.Workday ? req.start : undefined,
@@ -214,7 +217,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to be saved as calendar day document, but it was not: ${errors.join(', ')}`,
     };
   },
-  toHaveBeenSavedAsCalendarEntryDocument(req: Calendar.Entry.Request, document: Calendar.Entry.Document) {
+  toHaveBeenSavedAsCalendarEntryDocument(req: Requests.CalendarEntry, document: Documents.CalendarEntry) {
     const comparer = new Comparer(document, {
       title: req.title,
       entryType: req.entryType,
@@ -243,14 +246,14 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to be saved as calendar entry document, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenDeletedFromDatabase(document: Calendar.Day.Document | Calendar.Entry.Document) {
+  toHaveBeenDeletedFromDatabase(document: Documents.CalendarDay | Documents.CalendarEntry) {
     return {
       pass: !document,
       message: () => `expected document to be deleted from database, but it was found with id ${document._id}`,
     };
   },
-  async toContainMatchingCalendarEntryBaseDocument(received: APIResponse, document: Calendar.Entry.Document) {
-    const response = await received.json() as Calendar.Entry.ResponseBase[];
+  async toContainMatchingCalendarEntryBaseDocument(received: APIResponse, document: Documents.CalendarEntry) {
+    const response = await received.json() as Responses.CalendarEntryLean[];
     
     const matchingResponse = response.find(r => r.calendarEntryId === getCalendarEntryId(document));
 
@@ -270,8 +273,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match calendar entry document, but it did not: ${errors.join('\n')}`,
     };
   },
-  async toMatchCalendarEntryDocument(received: APIResponse, document: Calendar.Entry.Document) {
-    const response = await received.json() as Calendar.Entry.Response;
+  async toMatchCalendarEntryDocument(received: APIResponse, document: Documents.CalendarEntry) {
+    const response = await received.json() as Responses.CalendarEntry;
 
     const errors = validateCalendarEntryResponse(response, document).validate();
     
@@ -280,7 +283,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match calendar entry document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenResolved(originalDocument: Calendar.Entry.Document, currentDocument: Calendar.Entry.Document, request: Calendar.Entry.ResolutionRequest, transactionId?: Transaction.Id) {
+  toHaveBeenResolved(originalDocument: Documents.CalendarEntry, currentDocument: Documents.CalendarEntry, request: Requests.CalendarEntryResolution, transactionId?: Api.Transaction.Id) {
     const comparer = new Comparer(currentDocument, [
       validateCalendarEntryDocuments(originalDocument, currentDocument),
       {
@@ -299,7 +302,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to be resolved correctly, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenUnresolved(originalDocument: Calendar.Entry.Document, currentDocument: Calendar.Entry.Document) {
+  toHaveBeenUnresolved(originalDocument: Documents.CalendarEntry, currentDocument: Documents.CalendarEntry) {
     const comparer = new Comparer(currentDocument, [
       validateCalendarEntryDocuments(originalDocument, currentDocument),
       {
@@ -315,8 +318,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to be unresolved correctly, but it was not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingCalendarDayDocument(received: APIResponse, dayInput: Calendar.DayProp['day'], calendarEntryDocument: Calendar.Entry.Document, calendarDayDocument?: Calendar.Day.Document) {
-    const response = await received.json() as Calendar.Day.Response[];
+  async toContainMatchingCalendarDayDocument(received: APIResponse, dayInput: Api.Calendar.Day['day'], calendarEntryDocument: Documents.CalendarEntry, calendarDayDocument?: Documents.CalendarDay) {
+    const response = await received.json() as Responses.CalendarDay[];
     const matchingResponse = response.find(r => r.day === dayInput);
 
     if (!matchingResponse) {

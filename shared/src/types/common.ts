@@ -5,12 +5,15 @@ export type DataFactoryFunction<I, O = I> = (input?: Partial<I>) => O;
 
 export type Remove<T> = Record<keyof T, undefined>;
 export type Restrict<T, K extends keyof T> = Omit<T, K> & Partial<Record<K, never>>;
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type Mandatory<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pick<T, K>>;
 export type Branding<K, T> = K & { __brand: T };
 export type RecursivePartial<T> = {
   [P in keyof T]?:
   T[P] extends (infer U)[] ? RecursivePartial<U>[] :
-    T[P] extends object ? RecursivePartial<T[P]> :
-      T[P];
+    T[P] extends Branding<any, any> ? T[P] :
+      T[P] extends object ? RecursivePartial<T[P]> :
+        T[P];
 };
 
 type UnionKeys<T> = T extends any ? keyof T : never;

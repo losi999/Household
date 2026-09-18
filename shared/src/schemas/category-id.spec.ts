@@ -1,5 +1,5 @@
 import { categoryId as schema } from '@household/shared/schemas/category';
-import { createCategoryId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 import { Api } from '@household/shared/types/api';
 
@@ -7,13 +7,13 @@ describe('Category id schema', () => {
   const tester = schemaTesterFactory<Api.Category.CategoryId>(schema);
 
   tester.validateSuccess({
-    categoryId: createCategoryId(),
+    categoryId: testDataFactory.category.id(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        categoryId: createCategoryId(),
+        categoryId: testDataFactory.category.id(),
         extra: 1,
       } as any, 'data');
     });
@@ -28,7 +28,7 @@ describe('Category id schema', () => {
       }, 'categoryId', 'string');
 
       tester.pattern({
-        categoryId: createCategoryId('not-valid'),
+        categoryId: testDataFactory.category.id('not-valid'),
       }, 'categoryId');
     });
   });

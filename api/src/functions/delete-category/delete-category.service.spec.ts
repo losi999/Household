@@ -1,5 +1,5 @@
 import { IDeleteCategoryService, deleteCategoryServiceFactory } from '@household/api/functions/delete-category/delete-category.service';
-import { createCategoryId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ICategoryService } from '@household/shared/services/category-service';
 
@@ -12,7 +12,7 @@ describe('Delete category service', () => {
     service = deleteCategoryServiceFactory(mockCategoryService.service);
   });
 
-  const categoryId = createCategoryId();
+  const categoryId = testDataFactory.category.id();
 
   it('should return if document is deleted', async () => {
     mockCategoryService.functions.deleteCategory.mockResolvedValue(undefined);

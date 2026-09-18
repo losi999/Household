@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "samconfig": "cp samconfig.${ENV}.toml samconfig.toml",
     "lint": "eslint api shared web test specs --ext .ts,.html",
     "generate:specs": "tsx specs/index.ts",

@@ -1,5 +1,5 @@
 import { IDeleteProjectService, deleteProjectServiceFactory } from '@household/api/functions/delete-project/delete-project.service';
-import { createProjectId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IProjectService } from '@household/shared/services/project-service';
 
@@ -13,7 +13,7 @@ describe('Delete project service', () => {
     service = deleteProjectServiceFactory(mockProjectService.service);
   });
 
-  const projectId = createProjectId();
+  const projectId = testDataFactory.project.id();
 
   it('should return if document is deleted', async () => {
     mockProjectService.functions.deleteProject.mockResolvedValue(undefined);

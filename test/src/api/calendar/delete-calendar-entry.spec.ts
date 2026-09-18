@@ -1,6 +1,5 @@
 import { entries, getCalendarEntryId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Calendar, Customer } from '@household/shared/types/types';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
@@ -10,6 +9,7 @@ import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { Documents } from '@household/shared/types/documents';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect);
 
@@ -18,10 +18,10 @@ const permissionMap = allowUsers('hairdresser');
 const test = mergeTests(calendarApiTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('DELETE /calendar/v1/entries/{calendarEntryId}', () => {
-  let calendarPersonalEntryDocument: Calendar.Entry.Document;
-  let calendarWorkEntryDocument: Calendar.Entry.Document;
-  let calendarIssueEntryDocument: Calendar.Entry.Document;
-  let customerDocument: Customer.Document;
+  let calendarPersonalEntryDocument: Documents.CalendarEntry;
+  let calendarWorkEntryDocument: Documents.CalendarEntry;
+  let calendarIssueEntryDocument: Documents.CalendarEntry;
+  let customerDocument: Documents.Customer;
 
   test.beforeEach(async () => {
     customerDocument = customerDataFactory.document();

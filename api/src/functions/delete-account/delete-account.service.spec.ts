@@ -1,5 +1,5 @@
 import { IDeleteAccountService, deleteAccountServiceFactory } from '@household/api/functions/delete-account/delete-account.service';
-import { createAccountId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IAccountService } from '@household/shared/services/account-service';
 
@@ -13,7 +13,7 @@ describe('Delete account service', () => {
     service = deleteAccountServiceFactory(mockAccountService.service);
   });
 
-  const accountId = createAccountId();
+  const accountId = testDataFactory.account.id();
 
   it('should return if document is deleted', async () => {
     mockAccountService.functions.deleteAccount.mockResolvedValue(undefined);

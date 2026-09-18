@@ -1,5 +1,5 @@
-import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createReimbursementTransactionDocument, createReimbursementTransactionResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createProductDocument, createProductResponse, createPaymentTransactionRequest } from '@household/shared/common/test-data-factory';
-import { addSeconds, getTransactionId, getProductId } from '@household/shared/common/utils';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { addSeconds, getTransactionId, createDate } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { createMockService, MockService, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
@@ -8,7 +8,6 @@ import { ICategoryDocumentConverter } from '@household/shared/converters/categor
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { IReimbursementTransactionDocumentConverter, reimbursementTransactionDocumentConverterFactory } from '@household/shared/converters/reimbursement-transaction-document-converter';
 import { CategoryType } from '@household/shared/enums';
-import { Requests } from '@household/shared/types/requests';
 
 describe('Reimbursement transaction document converter', () => {
   let converter: IReimbursementTransactionDocumentConverter;
@@ -17,7 +16,6 @@ describe('Reimbursement transaction document converter', () => {
   let mockRecipientDocumentConverter: MockService<IRecipientDocumentConverter>;
   let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
   let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
-  const now = new Date();
 
   beforeEach(() => {
     mockAccountDocumentConverter = createMockService('toResponse');
@@ -26,7 +24,7 @@ describe('Reimbursement transaction document converter', () => {
     mockCategoryDocumentConverter = createMockService('toResponse');
     mockProductDocumentConverter = createMockService('toResponse');
 
-    vi.useFakeTimers().setSystemTime(now);
+    vi.useFakeTimers().setSystemTime(new Date());
     converter = reimbursementTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service);
   });
 
@@ -34,65 +32,36 @@ describe('Reimbursement transaction document converter', () => {
     vi.useRealTimers();
   });
 
-  const amount = 12000;
-  const description = 'bevásárlás';
-  const expiresIn = 3600;
-  const quantity = 100;
-  const invoiceNumber = '2022asdf';
-  const billingStartDate = '2022-03-01';
-  const billingEndDate = '2022-03-10';
+  const payingAccountResponse = testDataFactory.account.response();
+  const ownerAccountResponse = testDataFactory.account.response();
+  const categoryResponse = testDataFactory.category.response();
+  const projectResponse = testDataFactory.project.response();
+  const recipientResponse = testDataFactory.recipient.response();
+  const productResponse = testDataFactory.product.response();
 
-  const payingAccount = createAccountDocument();
-  const ownerAccount = createAccountDocument();
-  const project = createProjectDocument();
-  const recipient = createRecipientDocument();
-  const regularCategory = createCategoryDocument();
-  const invoiceCategory = createCategoryDocument({
+  const payingAccount = testDataFactory.account.document();
+  const ownerAccount = testDataFactory.account.document();
+  const project = testDataFactory.project.document();
+  const recipient = testDataFactory.recipient.document();
+  const regularCategory = testDataFactory.category.document({
+    categoryType: CategoryType.Regular,
+  });
+  const invoiceCategory = testDataFactory.category.document({
     categoryType: CategoryType.Invoice,
   });
-  const inventoryCategory = createCategoryDocument({
+  const inventoryCategory = testDataFactory.category.document({
     categoryType: CategoryType.Inventory,
   });
-  const product = createProductDocument();
-  const productId = getProductId(product);
-
-  const payingAccountResponse = createAccountResponse();
-  const ownerAccountResponse = createAccountResponse();
-  const categoryResponse = createCategoryResponse();
-  const projectResponse = createProjectResponse();
-  const recipientResponse = createRecipientResponse();
-  const productResponse = createProductResponse();
-
-  let body: Requests.PaymentTransaction;
-
-  beforeEach(() => {
-    body = createPaymentTransactionRequest({
-      amount,
-      description,
-      issuedAt: now.toISOString(),
-    });
-  });
-
-  const queriedDocument = createReimbursementTransactionDocument({
-    payingAccount,
-    ownerAccount,
-    project,
-    category: regularCategory,
-    recipient,
-    amount,
-    description,
-    product,
-    quantity,
-    invoiceNumber,
-    billingEndDate: new Date(billingEndDate),
-    billingStartDate: new Date(billingStartDate),
-    issuedAt: now,
-    createdAt: now,
-    updatedAt: now,
-  });
+  const product = testDataFactory.product.document();
 
   describe('create', () => {
+    const expiresIn = 3600;
+
     it('should return document', () => {
+      const body = testDataFactory.transaction.request.payment();
+
+      const { amount, description, issuedAt } = body;
+
       const result = converter.create({
         body,
         payingAccount,
@@ -102,7 +71,7 @@ describe('Reimbursement transaction document converter', () => {
         recipient,
         product,
       }, undefined);
-      expect(result).toEqual(createReimbursementTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.reimbursement({
         payingAccount,
         ownerAccount,
         category: regularCategory,
@@ -110,7 +79,7 @@ describe('Reimbursement transaction document converter', () => {
         recipient,
         amount,
         description,
-        issuedAt: now,
+        issuedAt: createDate(issuedAt),
         quantity: undefined,
         product: undefined,
         invoiceNumber: undefined,
@@ -122,6 +91,10 @@ describe('Reimbursement transaction document converter', () => {
     });
 
     it('should return expiring document', () => {
+      const body = testDataFactory.transaction.request.payment();
+
+      const { amount, description, issuedAt } = body;
+      
       const result = converter.create({
         body,
         payingAccount,
@@ -131,7 +104,7 @@ describe('Reimbursement transaction document converter', () => {
         recipient,
         product,
       }, expiresIn);
-      expect(result).toEqual(createReimbursementTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.reimbursement({
         payingAccount,
         ownerAccount,
         category: regularCategory,
@@ -139,20 +112,21 @@ describe('Reimbursement transaction document converter', () => {
         recipient,
         amount,
         description,
-        issuedAt: now,
+        issuedAt: createDate(issuedAt),
         quantity: undefined,
         product: undefined,
         invoiceNumber: undefined,
         billingEndDate: undefined,
         billingStartDate: undefined,
-        expiresAt: addSeconds(expiresIn, now),
+        expiresAt: addSeconds(expiresIn),
         _id: undefined,
       }));
     });
 
     it('should return document with inventory properties', () => {
-      body.quantity = quantity;
-      body.productId = productId;
+      const body = testDataFactory.transaction.request.payment();
+
+      const { amount, description, issuedAt, quantity } = body;
 
       const result = converter.create({
         body,
@@ -163,7 +137,7 @@ describe('Reimbursement transaction document converter', () => {
         recipient,
         product,
       }, undefined);
-      expect(result).toEqual(createReimbursementTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.reimbursement({
         payingAccount,
         ownerAccount,
         category: inventoryCategory,
@@ -176,15 +150,15 @@ describe('Reimbursement transaction document converter', () => {
         billingStartDate: undefined,
         quantity,
         product,
-        issuedAt: now,
+        issuedAt: createDate(issuedAt),
         expiresAt: undefined,
         _id: undefined,
       }));
     });
     it('should return document with invoice properties', () => {
-      body.invoiceNumber = invoiceNumber;
-      body.billingStartDate = billingStartDate;
-      body.billingEndDate = billingEndDate;
+      const body = testDataFactory.transaction.request.payment();
+
+      const { amount, description, issuedAt, invoiceNumber, billingEndDate, billingStartDate } = body;
 
       const result = converter.create({
         body,
@@ -195,7 +169,7 @@ describe('Reimbursement transaction document converter', () => {
         recipient,
         product,
       }, undefined);
-      expect(result).toEqual(createReimbursementTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.reimbursement({
         payingAccount,
         ownerAccount,
         category: invoiceCategory,
@@ -208,7 +182,7 @@ describe('Reimbursement transaction document converter', () => {
         billingStartDate: new Date(billingStartDate),
         quantity: undefined,
         product: undefined,
-        issuedAt: now,
+        issuedAt: createDate(issuedAt),
         expiresAt: undefined,
         _id: undefined,
       }));
@@ -224,12 +198,23 @@ describe('Reimbursement transaction document converter', () => {
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
       mockProductDocumentConverter.functions.toResponse.mockReturnValue(productResponse);
 
-      const result = converter.toResponse(queriedDocument);
-      expect(result).toEqual(createReimbursementTransactionResponse({
-        transactionId: getTransactionId(queriedDocument),
+      const doc = testDataFactory.transaction.document.reimbursement({
+        payingAccount,
+        ownerAccount,
+        project,
+        category: regularCategory,
+        recipient,
+        product,
+      });
+
+      const { amount, description, issuedAt, billingEndDate, billingStartDate, quantity, invoiceNumber } = doc;
+
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(testDataFactory.transaction.response.reimbursement({
+        transactionId: getTransactionId(doc),
         description,
         amount,
-        issuedAt: now.toISOString(),
+        issuedAt: issuedAt.toISOString(),
         payingAccount: payingAccountResponse,
         ownerAccount: ownerAccountResponse,
         project: projectResponse,
@@ -238,9 +223,9 @@ describe('Reimbursement transaction document converter', () => {
         product: productResponse,
         quantity,
         invoiceNumber,
-        billingEndDate: new Date(billingEndDate).toISOString()
+        billingEndDate: billingEndDate.toISOString()
           .split('T')[0],
-        billingStartDate: new Date(billingStartDate).toISOString()
+        billingStartDate: billingStartDate.toISOString()
           .split('T')[0],
       }));
       validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 1, payingAccount);
@@ -261,13 +246,24 @@ describe('Reimbursement transaction document converter', () => {
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
       mockProductDocumentConverter.functions.toResponse.mockReturnValue(productResponse);
 
-      const result = converter.toResponseList([queriedDocument]);
+      const doc = testDataFactory.transaction.document.reimbursement({
+        payingAccount,
+        ownerAccount,
+        project,
+        category: regularCategory,
+        recipient,
+        product,
+      });
+
+      const { amount, description, issuedAt, billingEndDate, billingStartDate, quantity, invoiceNumber } = doc;
+
+      const result = converter.toResponseList([doc]);
       expect(result).toEqual([
-        createReimbursementTransactionResponse({
-          transactionId: getTransactionId(queriedDocument),
+        testDataFactory.transaction.response.reimbursement({
+          transactionId: getTransactionId(doc),
           description,
           amount,
-          issuedAt: now.toISOString(),
+          issuedAt: issuedAt.toISOString(),
           payingAccount: payingAccountResponse,
           ownerAccount: ownerAccountResponse,
           project: projectResponse,
@@ -276,9 +272,9 @@ describe('Reimbursement transaction document converter', () => {
           product: productResponse,
           quantity,
           invoiceNumber,
-          billingEndDate: new Date(billingEndDate).toISOString()
+          billingEndDate: billingEndDate.toISOString()
             .split('T')[0],
-          billingStartDate: new Date(billingStartDate).toISOString()
+          billingStartDate: billingStartDate.toISOString()
             .split('T')[0],
         }),
       ]);

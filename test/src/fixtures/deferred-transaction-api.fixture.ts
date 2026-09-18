@@ -1,5 +1,4 @@
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { Product, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
@@ -11,10 +10,10 @@ import { validateCategoryResponse } from '@household/test/fixtures/category-api.
 import { validateProductResponse } from '@household/test/fixtures/product-api.fixture';
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
 import { validateRecipientResponse } from '@household/test/fixtures/recipient-api.fixture';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
-export const validateDeferredTransactionResponse = (response: Transaction.DeferredResponse, document: Transaction.DeferredDocument, paymentAmount: number = 0) => {
-  const expectedRemainingAmount = Math.abs(document.amount) - (paymentAmount ?? 0);
-
+export const validateDeferredTransactionResponse = (response: Responses.DeferredTransaction, document: Documents.DeferredTransaction) => {
   return new Comparer(response, {
     transactionId: getTransactionId(document),
     amount: document.amount,
@@ -27,8 +26,6 @@ export const validateDeferredTransactionResponse = (response: Transaction.Deferr
     recipient: validateRecipientResponse(response.recipient, document.recipient),
     category: validateCategoryResponse(response.category, document.category),
     product: validateProductResponse(response.product, document.product),
-    remainingAmount: document.isSettled ? undefined : expectedRemainingAmount,
-    isSettled: document.isSettled,
     quantity: document.quantity,
     billingStartDate: document.billingStartDate?.toISOString().split('T')[0],
     billingEndDate: document.billingEndDate?.toISOString().split('T')[0],
@@ -37,7 +34,7 @@ export const validateDeferredTransactionResponse = (response: Transaction.Deferr
 };
 
 export const expect = baseExpect.extend({
-  toHaveBeenSavedAsDeferredTransactionDocument(req: Transaction.PaymentRequest, document: Transaction.DeferredDocument) {
+  toHaveBeenSavedAsDeferredTransactionDocument(req: Requests.PaymentTransaction, document: Documents.DeferredTransaction) {
     if (!document) {
       return {
         pass: false,
@@ -52,7 +49,6 @@ export const expect = baseExpect.extend({
       issuedAt: createDate(req.issuedAt).toISOString(),
       payingAccount: req.accountId,
       ownerAccount: req.loanAccountId,
-      isSettled: req.isSettled ?? false,
       category: req.categoryId,
       project: req.projectId,
       recipient: req.recipientId,
@@ -70,7 +66,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected deferred transaction to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveRelatedDocumentsChangedInDeferredTransaction(originalDocument: Transaction.DeferredDocument, currentDocument: Transaction.DeferredDocument, reassignments: {
+  toHaveRelatedDocumentsChangedInDeferredTransaction(originalDocument: Documents.DeferredTransaction, currentDocument: Documents.DeferredTransaction, reassignments: {
     recipient?: Reassignment<Api.Recipient.Id>;
     project?: Reassignment<Api.Project.Id>;
     product?: Reassignment<Api.Product.Id>;
@@ -102,7 +98,6 @@ export const expect = baseExpect.extend({
       description: originalDocument.description,
       payingAccount: getAccountId(originalDocument.payingAccount),
       ownerAccount: getAccountId(originalDocument.ownerAccount),
-      isSettled: originalDocument.isSettled,
       transactionType: originalDocument.transactionType,
       product: expectedProduct,
       project: reassignments.project?.from === getProjectId(originalDocument.project) ? reassignments.project?.to : getProjectId(originalDocument.project),
@@ -121,8 +116,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match deferred transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingDeferredTransactionDocument(received: APIResponse, document: Transaction.DeferredDocument, paymentAmount?: number) {
-    const response = await received.json() as Transaction.DeferredResponse[];
+  async toContainMatchingDeferredTransactionDocument(received: APIResponse, document: Documents.DeferredTransaction) {
+    const response = await received.json() as Responses.DeferredTransaction[];
 
     const matchingResponse = response.find(r => r.transactionId === getTransactionId(document));
 
@@ -133,7 +128,7 @@ export const expect = baseExpect.extend({
       };
     }
 
-    const comparer = validateDeferredTransactionResponse(matchingResponse, document, paymentAmount);
+    const comparer = validateDeferredTransactionResponse(matchingResponse, document);
     
     const errors = comparer.validate();
         
@@ -142,10 +137,10 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match deferred transaction document, but it did not:\n${errors.join('\n')}`,
     };  
   },
-  async toMatchDeferredTransactionDocument(res: APIResponse, document: Transaction.DeferredDocument, paymentAmount?: number) {
-    const response = await res.json() as Transaction.DeferredResponse;
+  async toMatchDeferredTransactionDocument(res: APIResponse, document: Documents.DeferredTransaction) {
+    const response = await res.json() as Responses.DeferredTransaction;
 
-    const comparer = validateDeferredTransactionResponse(response, document, paymentAmount);
+    const comparer = validateDeferredTransactionResponse(response, document);
     
     const errors = comparer.validate();
         

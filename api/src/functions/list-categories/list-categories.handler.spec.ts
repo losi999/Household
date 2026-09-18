@@ -1,7 +1,7 @@
 import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-categories/list-categories.handler';
 import { IListCategoriesService } from '@household/api/functions/list-categories/list-categories.service';
-import { createCategoryResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('List categories handler', () => {
   let mockListCategoriesService: MockBusinessService<IListCategoriesService>;
@@ -11,7 +11,7 @@ describe('List categories handler', () => {
     mockListCategoriesService = vi.fn();
     handlerFunction = handler(mockListCategoriesService);
   });
-  const categories = [createCategoryResponse()];
+  const categories = [testDataFactory.category.response()];
 
   it('should handle business service error', async () => {
     const statusCode = 418;

@@ -1,15 +1,15 @@
 import { request as schema } from '@household/shared/schemas/category';
 import { Requests } from '@household/shared/types/requests';
-import { createCategoryId, createCategoryRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Category request schema', () => {
   const tester = schemaTesterFactory<Requests.Category>(schema);
 
   describe('should accept', () => {
-    tester.validateSuccess(createCategoryRequest());
+    tester.validateSuccess(testDataFactory.category.request());
 
-    tester.validateSuccess(createCategoryRequest({
+    tester.validateSuccess(testDataFactory.category.request({
       parentCategoryId: undefined,
     }), 'without parentCategoryId');
   });
@@ -17,47 +17,47 @@ describe('Category request schema', () => {
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        ...createCategoryRequest(),
+        ...testDataFactory.category.request(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.name', () => {
-      tester.required(createCategoryRequest({
+      tester.required(testDataFactory.category.request({
         name: undefined,
       }), 'name');
 
-      tester.type(createCategoryRequest({
+      tester.type(testDataFactory.category.request({
         name: 1 as any,
       }), 'name', 'string');
 
-      tester.minLength(createCategoryRequest({
+      tester.minLength(testDataFactory.category.request({
         name: '',
       }), 'name', 1);
 
     });
 
     describe('if data.categoryType', () => {
-      tester.required(createCategoryRequest({
+      tester.required(testDataFactory.category.request({
         categoryType: undefined,
       }), 'categoryType');
 
-      tester.type(createCategoryRequest({
+      tester.type(testDataFactory.category.request({
         categoryType: 1 as any,
       }), 'categoryType', 'string');
 
-      tester.enum(createCategoryRequest({
+      tester.enum(testDataFactory.category.request({
         categoryType: 'not-valid' as any,
       }), 'categoryType');
     });
 
     describe('if data.parentCategoryId', () => {
-      tester.type(createCategoryRequest({
+      tester.type(testDataFactory.category.request({
         parentCategoryId: 1 as any,
       }), 'parentCategoryId', 'string');
 
-      tester.pattern(createCategoryRequest({
-        parentCategoryId: createCategoryId('not-valid'),
+      tester.pattern(testDataFactory.category.request({
+        parentCategoryId: testDataFactory.category.id('not-valid'),
       }), 'parentCategoryId');
 
     });

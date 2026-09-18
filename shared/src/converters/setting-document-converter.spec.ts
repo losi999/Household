@@ -1,4 +1,4 @@
-import { createDocumentUpdate, createSettingDocument, createSettingKey, createSettingRequest, createSettingResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds } from '@household/shared/common/utils';
 import { settingDocumentConverterFactory, ISettingDocumentConverter } from '@household/shared/converters/setting-document-converter';
 
@@ -16,14 +16,14 @@ describe('Setting document converter', () => {
   });
 
   const expiresIn = 3600;
-  const settingKey = createSettingKey();
+  const settingKey = testDataFactory.setting.key();
   const value = 5;
 
-  const body = createSettingRequest({
+  const body = testDataFactory.setting.request({
     value,
   });
 
-  const queriedDocument = createSettingDocument({
+  const queriedDocument = testDataFactory.setting.document({
     settingKey,
     value,
     createdAt: now,
@@ -33,7 +33,7 @@ describe('Setting document converter', () => {
   describe('update', () => {
     it('should update document', () => {
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             value,
@@ -48,7 +48,7 @@ describe('Setting document converter', () => {
     it('should return response', () => {
 
       const result = converter.toResponse(queriedDocument);
-      expect(result).toEqual(createSettingResponse({
+      expect(result).toEqual(testDataFactory.setting.response({
         settingKey,
         value,
       }));
@@ -60,7 +60,7 @@ describe('Setting document converter', () => {
 
       const result = converter.toResponseList([queriedDocument]);
       expect(result).toEqual([
-        createSettingResponse({
+        testDataFactory.setting.response({
           settingKey,
           value,
         }),

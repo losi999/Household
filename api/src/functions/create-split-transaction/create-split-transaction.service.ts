@@ -31,34 +31,26 @@ export const createSplitTransactionServiceFactory = (
     const { accountId, recipientId } = body;
     const splits = body.splits ?? [];
     const loans = body.loans ?? [];
-    let total = 0;
     const categoryIds: Api.Category.Id[] = [];
     const projectIds: Api.Project.Id[] = [];
     const productIds: Api.Product.Id[] = [];
     const accountIds: Api.Account.Id[] = [accountId];
 
-    splits.forEach(({ amount, categoryId, productId, projectId }) => {
-      total += amount;
+    splits.forEach(({ categoryId, productId, projectId }) => {
       pushUnique(categoryIds, categoryId);
       pushUnique(projectIds, projectId);
       pushUnique(productIds, productId);
     });
 
-    loans.forEach(({ amount, categoryId, productId, projectId, loanAccountId }) => {
+    loans.forEach(({ categoryId, productId, projectId, loanAccountId }) => {
       httpErrors.transaction.sameAccountLoan({
         accountId,
         loanAccountId,
       });
-      total += amount;
       pushUnique(categoryIds, categoryId);
       pushUnique(projectIds, projectId);
       pushUnique(productIds, productId);
       pushUnique(accountIds, loanAccountId);
-    });
-
-    httpErrors.transaction.sumOfSplits({
-      body,
-      total,
     });
 
     const [

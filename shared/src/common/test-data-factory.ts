@@ -1,754 +1,77 @@
-import { addDays, dateToISODateString } from '@household/shared/common/utils';
+import { addDays, addSeconds, createDate, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
-import { DocumentUpdate } from '@household/shared/types/common';
+import { DocumentUpdate, RecursivePartial } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { Documents } from '@household/shared/types/documents';
 import { faker } from '@faker-js/faker';
-import { DAY_LENGTH, priceUnitsOfMeasurement, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
+import { DAY_LENGTH, priceUnitsOfMeasurement, unitsOfMeasurement, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 
 const createId = <I>(id?: string): I => (id ?? faker.database.mongodbObjectId()) as I;
 
-const amount = -100;
-
 type DataFactoryFunction<T> = (input?: Partial<T>) => T;
 
-export const createAccountId = (id?: string): Api.Account.Id => {
-  return createId(id);
-};
-
-export const createCategoryId = (id?: string): Api.Category.Id => {
-  return createId(id);
-};
-
-export const createProjectId = (id?: string): Api.Project.Id => {
-  return createId(id);
-};
-
-export const createRecipientId = (id?: string): Api.Recipient.Id => {
-  return createId(id);
-};
-
-export const createTransactionId = (id?: string): Api.Transaction.Id => {
-  return createId(id);
-};
-
-export const createProductId = (id?: string): Api.Product.Id => {
-  return createId(id);
-};
-
-export const createFileId = (id?: string): Api.File.Id => {
-  return createId(id);
-};
-
-export const createSettingKey = (key?: string): SettingKey => {
-  return (key ?? 'defaultKey') as SettingKey;
-};
-
-export const createAccountDocument: DataFactoryFunction<Documents.Account> = (doc) => {
-  return {
-    _id: createId(),
-    accountType: AccountType.BankAccount,
-    name: 'account name',
-    currency: 'Ft',
-    expiresAt: undefined,
-    isOpen: true,
-    owner: 'owner1',
-    ...doc,
-  };
-};
-export const createProjectDocument: DataFactoryFunction<Documents.Project> = (doc) => {
-  return {
-    _id: createId(),
-    name: 'project name',
-    description: 'project description',
-    expiresAt: undefined,
-    ...doc,
-  };
-};
-export const createCategoryDocument: DataFactoryFunction<Documents.Category> = (doc) => {
-  return {
-    _id: createId(),
-    name: 'category name',
-    expiresAt: undefined,
-    categoryType: CategoryType.Regular,
-    ancestors: [],
-    ...doc,
-  };
-};
-export const createRecipientDocument: DataFactoryFunction<Documents.Recipient> = (doc) => {
-  return {
-    _id: createId(),
-    name: 'recipient name',
-    expiresAt: undefined,
-    ...doc,
-  };
-};
-
-export const createProductDocument: DataFactoryFunction<Documents.Product> = (doc) => {
-  return {
-    _id: createId(),
-    brand: 'product brand',
-    measurement: 300,
-    unitOfMeasurement: 'g',
-    expiresAt: undefined,
-    fullName: doc ? `${doc.brand} ${doc.measurement} ${doc.unitOfMeasurement}` : 'product brand 300 g',
-    category: createCategoryDocument(),
-    ...doc,
-  };
-};
-
-export const createTransactionRawReport: DataFactoryFunction<Documents.RawTransaction> = (doc) => {
-  return {
-    _id: createId(),
-    amount,
-    description: 'transaction description',
-    product: createProductDocument(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: new Date(2022, 3, 10),
-    billingStartDate: new Date(2022, 3, 2),
-    issuedAt: new Date(),
-    account: createAccountDocument(),
-    category: createCategoryDocument(),
-    project: createProjectDocument(),
-    recipient: createRecipientDocument(),
-    ...doc,
-  };
-};
-
-export const createPaymentTransactionDocument: DataFactoryFunction<Documents.PaymentTransaction> = (doc) => {
-  return {
-    _id: createId(),
-    transactionType: TransactionType.Payment,
-    amount,
-    description: 'transaction description',
-    product: createProductDocument(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: new Date(2022, 3, 10),
-    billingStartDate: new Date(2022, 3, 2),
-    issuedAt: new Date(),
-    expiresAt: undefined,
-    account: createAccountDocument(),
-    category: createCategoryDocument(),
-    project: createProjectDocument(),
-    recipient: createRecipientDocument(),
-    ...doc,
-  };
-};
-
-export const createDeferredTransactionDocument: DataFactoryFunction<Documents.DeferredTransaction> = (doc) => {
-  return {
-    _id: createId(),
-    transactionType: TransactionType.Deferred,
-    amount,
-    description: 'transaction description',
-    product: createProductDocument(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: new Date(2022, 3, 10),
-    billingStartDate: new Date(2022, 3, 2),
-    issuedAt: new Date(),
-    expiresAt: undefined,
-    payingAccount: createAccountDocument(),
-    category: createCategoryDocument(),
-    project: createProjectDocument(),
-    recipient: createRecipientDocument(),
-    ownerAccount: createAccountDocument(),
-    ...doc,
-  };
-};
-
-export const createReimbursementTransactionDocument: DataFactoryFunction<Documents.ReimbursementTransaction> = (doc) => {
-  return {
-    _id: createId(),
-    transactionType: TransactionType.Reimbursement,
-    amount,
-    description: 'transaction description',
-    product: createProductDocument(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: new Date(2022, 3, 10),
-    billingStartDate: new Date(2022, 3, 2),
-    issuedAt: new Date(),
-    expiresAt: undefined,
-    payingAccount: createAccountDocument(),
-    category: createCategoryDocument(),
-    project: createProjectDocument(),
-    recipient: createRecipientDocument(),
-    ownerAccount: createAccountDocument(),
-    ...doc,
-  };
-};
-
-export const createSplitDocumentItem: DataFactoryFunction<Documents.SplitItem> = (doc) => {
-  return {
-    amount,
-    category: createCategoryDocument(),
-    project: createProjectDocument(),
-    description: 'split description',
-    product: createProductDocument(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: new Date(2022, 3, 10),
-    billingStartDate: new Date(2022, 3, 2),
-    ...doc,
-  };
-};
-
-export const createSplitTransactionDocument: DataFactoryFunction<Documents.SplitTransaction> = (doc) => {
-  return {
-    _id: createId(),
-    transactionType: TransactionType.Split,
-    amount: ((doc?.splits?.length ?? 0) + (doc?.deferredSplits?.length ?? 0)) * amount || amount,
-    description: 'transaction description',
-    issuedAt: new Date(),
-    expiresAt: undefined,
-    account: createAccountDocument(),
-    recipient: createRecipientDocument(),
-    splits: [createSplitDocumentItem()],
-    deferredSplits: undefined,
-    ...doc,
-  };
-};
-
-export const createTransferTransactionDocument: DataFactoryFunction<Documents.TransferTransaction> = (doc) => {
-  return {
-    _id: createId(),
-    transactionType: TransactionType.Transfer,
-    amount,
-    description: 'transaction description',
-    issuedAt: new Date(),
-    expiresAt: undefined,
-    account: createAccountDocument(),
-    transferAccount: createAccountDocument(),
-    transferAmount: 1200,
-    ...doc,
-  };
-};
-
-export const createDraftTransactionDocument: DataFactoryFunction<Documents.DraftTransaction> = (doc) => {
-  return {
-    _id: createId(),
-    transactionType: TransactionType.Draft,
-    amount,
-    description: 'transaction description',
-    issuedAt: new Date(),
-    expiresAt: undefined,
-    file: createFileDocument(),
-    ...doc,
-  };
-};
-
-export const createDraftTransactionResponse: DataFactoryFunction<Responses.DraftTransaction> = (doc) => {
-  return {
-    transactionId: createTransactionId(),
-    transactionType: TransactionType.Draft,
-    amount,
-    description: 'transaction description',
-    issuedAt: new Date().toISOString(),
-    potentialDuplicates: [],
-    ...doc,
-  };
-};
-
-export const createAccountRequest: DataFactoryFunction<Requests.Account> = (req) => {
-  return {
-    accountType: AccountType.BankAccount,
-    name: 'account name',
-    currency: 'Ft',
-    owner: 'owner1',
-    ...req,
-  };
-};
-
-export const createProjectRequest: DataFactoryFunction<Requests.Project> = (req) => {
-  return {
-    name: 'project name',
-    description: 'project description',
-    ...req,
-  };
-};
-export const createCategoryRequest: DataFactoryFunction<Requests.Category> = (req) => {
-  return {
-    name: 'category name',
-    parentCategoryId: createCategoryId(),
-    categoryType: CategoryType.Regular,
-    ...req,
-  };
-};
-export const createRecipientRequest: DataFactoryFunction<Requests.Recipient> = (req) => {
-  return {
-    name: 'recipient name',
-    ...req,
-  };
-};
-
-export const createProductRequest: DataFactoryFunction<Requests.Product> = (req) => {
-  return {
-    brand: 'product brand',
-    measurement: 300,
-    unitOfMeasurement: 'g',
-    ...req,
-  };
-};
-
-export const createPaymentTransactionRequest: DataFactoryFunction<Requests.PaymentTransaction> = (req) => {
-  return {
-    amount,
-    description: 'transaction description',
-    productId: createProductId(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: '2022-03-21',
-    billingStartDate: '2022-01-01',
-    issuedAt: new Date().toISOString(),
-    accountId: createAccountId(),
-    categoryId: createCategoryId(),
-    projectId: createProjectId(),
-    recipientId: createRecipientId(),
-    loanAccountId: undefined,
-    ...req,
-  };
-};
-
-export const createSplitRequestItem: DataFactoryFunction<Requests.SplitItem> = (req) => {
-  return {
-    amount,
-    categoryId: createCategoryId(),
-    projectId: createProjectId(),
-    description: 'split description',
-    productId: createProductId(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: '2022-03-21',
-    billingStartDate: '2022-01-01',
-    ...req,
-  };
-};
-
-export const createLoanRequestItem: DataFactoryFunction<Requests.LoanItem> = (req) => {
-  return {
-    amount,
-    categoryId: createCategoryId(),
-    projectId: createProjectId(),
-    description: 'split description',
-    productId: createProductId(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: '2022-03-21',
-    billingStartDate: '2022-01-01',
-    loanAccountId: createAccountId(),
-    transactionId: undefined,
-    ...req,
-  };
-};
-
-export const createSplitTransactionRequest: DataFactoryFunction<Requests.SplitTransaction> = (req) => {
-  return {
-    amount: ((req?.loans?.length ?? 0) + (req?.splits?.length ?? 0)) * amount || amount * 2,
-    description: 'transaction description',
-    issuedAt: new Date().toISOString(),
-    accountId: createAccountId(),
-    recipientId: createRecipientId(),
-    splits: [createSplitRequestItem()],
-    loans: [createLoanRequestItem()],
-    ...req,
-  };
-};
-
-export const createTransferTransactionRequest: DataFactoryFunction<Requests.TransferTransaction> = (req) => {
-  return {
-    amount,
-    transferAmount: 1200,
-    description: 'transaction description',
-    issuedAt: new Date().toISOString(),
-    accountId: createAccountId(),
-    transferAccountId: createAccountId(),
-    ...req,
-  };
-};
-
-/** @deprecated */
-export const createTransferPaymentItemRequest: DataFactoryFunction<Api.Transaction.TransactionId & Api.Transaction.Amount> = (req) => {
-  return {
-    amount: 10,
-    transactionId: createTransactionId(),
-    ...req,
-  };
-};
-
-export const createLoginRequest: DataFactoryFunction<Requests.Login> = (req) => {
-  return {
-    email: 'aaa@email.com',
-    password: 'password123',
-    ...req,
-  };
-};
-
-export const createConfirmUserRequest: DataFactoryFunction<Requests.ConfirmUser> = (req) => {
-  return {
-    temporaryPassword: 'temp123',
-    password: 'password123',
-    ...req,
-  };
-};
-
-export const createConfirmForgotPasswordRequest: DataFactoryFunction<Requests.ConfirmForgotPassword> = (req) => {
-  return {
-    confirmationCode: '123456',
-    password: 'password123',
-    ...req,
-  };
-};
-
-export const createReportAccountFilter: DataFactoryFunction<Api.Report.AccountFilter> = (req) => {
+const createReportAccountFilter: DataFactoryFunction<Api.Report.AccountFilter> = (req) => {
   return {
     filterType: 'account',
-    include: true,
+    include: faker.datatype.boolean(),
     items: [createAccountId()],
     ...req,
   };
 };
 
-export const createReportCategoryFilter: DataFactoryFunction<Api.Report.CategoryFilter> = (req) => {
+const createReportCategoryFilter: DataFactoryFunction<Api.Report.CategoryFilter> = (req) => {
   return {
     filterType: 'category',
-    include: true,
+    include: faker.datatype.boolean(),
     items: [createCategoryId()],
     ...req,
   };
 };
 
-export const createReportProjectFilter: DataFactoryFunction<Api.Report.ProjectFilter> = (req) => {
+const createReportProjectFilter: DataFactoryFunction<Api.Report.ProjectFilter> = (req) => {
   return {
     filterType: 'project',
-    include: true,
+    include: faker.datatype.boolean(),
     items: [createProjectId()],
     ...req,
   };
 };
 
-export const createReportProductFilter: DataFactoryFunction<Api.Report.ProductFilter> = (req) => {
+const createReportProductFilter: DataFactoryFunction<Api.Report.ProductFilter> = (req) => {
   return {
     filterType: 'product',
-    include: true,
+    include: faker.datatype.boolean(),
     items: [createProductId()],
     ...req,
   };
 };
 
-export const createReportRecipientFilter: DataFactoryFunction<Api.Report.RecipientFilter> = (req) => {
+const createReportRecipientFilter: DataFactoryFunction<Api.Report.RecipientFilter> = (req) => {
   return {
     filterType: 'recipient',
-    include: true,
+    include: faker.datatype.boolean(),
     items: [createRecipientId()],
     ...req,
   };
 };
 
-export const createReportIssuedAtFilter: DataFactoryFunction<Api.Report.IssuedAtFilter> = (req) => {
+const createReportIssuedAtFilter: DataFactoryFunction<Api.Report.IssuedAtFilter> = (req) => {
+  const to = faker.date.recent();
   return {
     filterType: 'issuedAt',
     include: true,
-    from: new Date(2023, 1, 1, 0, 0, 0).toISOString(),
-    to: new Date(2024, 1, 1, 0, 0, 0).toISOString(),
+    from: faker.date.recent({
+      refDate: addSeconds(-60 * 60 * 24, to),
+      days: 90,
+    }).toISOString(),
+    to: to.toISOString(),
     ...req,
   };
 };
 
-export const createAccountResponse: DataFactoryFunction<Responses.Account> = (resp) => {
-  return {
-    accountType: AccountType.BankAccount,
-    name: 'account name',
-    currency: 'Ft',
-    balance: 123,
-    owner: 'owner1',
-    fullName: resp ? `${resp.name} (${resp.owner})` : 'account name (owner1)',
-    accountId: createAccountId(),
-    isOpen: true,
-    ...resp,
-  };
-};
-
-export const createProjectResponse: DataFactoryFunction<Responses.Project> = (resp) => {
-  return {
-    projectId: createProjectId(),
-    name: 'project name',
-    description: 'project description',
-    ...resp,
-  };
-};
-
-export const createSettingRequest: DataFactoryFunction<Requests.Setting> = (doc) => {
-  return {
-    value: 123,
-    ...doc,
-  };
-};
-
-export const createSettingDocument: DataFactoryFunction<Documents.Setting> = (doc) => {
-  return {
-    settingKey: createSettingKey(),
-    value: 123,
-    expiresAt: undefined,
-    ...doc,
-  };
-};
-
-export const createSettingResponse: DataFactoryFunction<Responses.Setting> = (resp) => {
-  return {
-    settingKey: createSettingKey(),
-    value: 123,
-    ...resp,
-  };
-};
-
-export const createCategoryResponseBase: DataFactoryFunction<Responses.CategoryAncestor> = (resp) => {
-  return {
-    categoryId: createCategoryId(),
-    name: 'category name',
-    categoryType: CategoryType.Regular,
-    ...resp,
-  };
-};
-
-export const createCategoryResponse: DataFactoryFunction<Responses.Category> = (resp) => {
-  return {
-    categoryId: createCategoryId(),
-    name: 'category name',
-    parentCategory: undefined,
-    fullName: 'category name',
-    categoryType: CategoryType.Regular,
-    ancestors: [],
-    ...resp,
-  };
-};
-export const createRecipientResponse: DataFactoryFunction<Responses.Recipient> = (resp) => {
-  return {
-    recipientId: createRecipientId(),
-    name: 'recipient name',
-    ...resp,
-  };
-};
-
-export const createProductResponse: DataFactoryFunction<Responses.Product> = (resp) => {
-  return {
-    productId: createProductId(),
-    brand: 'product brand',
-    measurement: 300,
-    unitOfMeasurement: 'g',
-    fullName: resp ? `${resp.brand} ${resp.measurement} ${resp.unitOfMeasurement}` : 'product brand 300 g',
-    ...resp,
-  };
-};
-
-export const createProductGroupedResponse: DataFactoryFunction<Responses.ProductGroupedResponse> = (resp) => {
-  return {
-    fullName: 'category:name',
-    categoryId: createCategoryId(),
-    products: [createProductResponse()],
-    ...resp,
-  };
-};
-
-export const createPaymentTransactionResponse: DataFactoryFunction<Responses.PaymentTransaction> = (resp) => {
-  return {
-    transactionId: createTransactionId(),
-    transactionType: TransactionType.Payment,
-    amount,
-    description: 'transaction description',
-    product: createProductResponse(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: '2022-03-10',
-    billingStartDate: '2022-03-01',
-    issuedAt: new Date().toISOString(),
-    account: createAccountResponse(),
-    category: createCategoryResponse(),
-    project: createProjectResponse(),
-    recipient: createRecipientResponse(),
-    ...resp,
-  };
-};
-
-export const createDeferredTransactionResponse: DataFactoryFunction<Responses.DeferredTransaction> = (resp) => {
-  return {
-    transactionId: createTransactionId(),
-    transactionType: TransactionType.Deferred,
-    amount,
-    description: 'transaction description',
-    product: createProductResponse(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: '2022-03-10',
-    billingStartDate: '2022-03-01',
-    issuedAt: new Date().toISOString(),
-    ownerAccount: createAccountResponse(),
-    payingAccount: createAccountResponse(),
-    category: createCategoryResponse(),
-    project: createProjectResponse(),
-    recipient: createRecipientResponse(),
-    ...resp,
-  };
-};
-
-export const createReimbursementTransactionResponse: DataFactoryFunction<Responses.ReimbursementTransaction> = (resp) => {
-  return {
-    transactionId: createTransactionId(),
-    transactionType: TransactionType.Reimbursement,
-    amount,
-    description: 'transaction description',
-    product: createProductResponse(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: '2022-03-10',
-    billingStartDate: '2022-03-01',
-    issuedAt: new Date().toISOString(),
-    ownerAccount: createAccountResponse(),
-    payingAccount: createAccountResponse(),
-    category: createCategoryResponse(),
-    project: createProjectResponse(),
-    recipient: createRecipientResponse(),
-    ...resp,
-  };
-};
-
-export const createSplitResponseItem: DataFactoryFunction<Responses.SplitItem> = (resp) => {
-  return {
-    amount,
-    category: createCategoryResponse(),
-    project: createProjectResponse(),
-    description: 'split description',
-    product: createProductResponse(),
-    quantity: 100,
-    invoiceNumber: 'inv123',
-    billingEndDate: '2022-03-10',
-    billingStartDate: '2022-03-01',
-    ...resp,
-  };
-};
-
-export const createSplitTransactionResponse: DataFactoryFunction<Responses.SplitTransaction> = (resp) => {
-  return {
-    transactionId: createTransactionId(),
-    transactionType: TransactionType.Split,
-    amount: ((resp?.splits?.length ?? 0) + (resp?.deferredSplits?.length ?? 0)) * amount || amount,
-    description: 'transaction description',
-    issuedAt: new Date().toISOString(),
-    account: createAccountResponse(),
-    recipient: createRecipientResponse(),
-    splits: [createSplitResponseItem()],
-    deferredSplits: undefined,
-    ...resp,
-  };
-};
-
-export const createTransferTransactionResponse: DataFactoryFunction<Responses.TransferTransaction> = (resp) => {
-  return {
-    transactionId: createTransactionId(),
-    transactionType: TransactionType.Transfer,
-    amount,
-    transferAmount: 1200,
-    description: 'transaction description',
-    issuedAt: new Date().toISOString(),
-    account: createAccountResponse(),
-    transferAccount: createAccountResponse(),
-    ...resp,
-  };
-};
-
-export const createAccountReport: DataFactoryFunction<Responses.AccountReport> = (rep) => {
-  return {
-    accountId: createAccountId(),
-    currency: 'Ft',
-    fullName: 'acc name',
-    ...rep,
-  };
-};
-
-export const createCategoryReport: DataFactoryFunction<Responses.CategoryReport> = (rep) => {
-  return {
-    categoryId: createCategoryId(),
-    fullName: 'category:name',
-    ...rep,
-  };
-};
-
-export const createProjectReport: DataFactoryFunction<Responses.ProjectReport> = (rep) => {
-  return {
-    projectId: createProjectId(),
-    name: 'project name',
-    ...rep,
-  };
-};
-
-export const createProductReport: DataFactoryFunction<Responses.ProductReport> = (rep) => {
-  return {
-    productId: createProductId(),
-    fullName: 'product name 100 g',
-    ...rep,
-  };
-};
-
-export const createRecipientReport: DataFactoryFunction<Responses.RecipientReport> = (rep) => {
-  return {
-    recipientId: createRecipientId(),
-    name: 'recipient name',
-    ...rep,
-  };
-};
-
-export const createTransactionReport: DataFactoryFunction<Responses.TransactionReport> = (rep) => {
-  return {
-    transactionId: createTransactionId(),
-    amount,
-    description: 'description',
-    issuedAt: new Date().toISOString(),
-    account: createAccountReport(),
-    category: createCategoryReport(),
-    product: createProductReport(),
-    quantity: 100,
-    project: createProjectReport(),
-    recipient: createRecipientReport(),
-    invoiceNumber: 'inv123',
-    billingEndDate: '2022-03-10',
-    billingStartDate: '2022-03-01',
-    ...rep,
-  };
-};
-
-export const createFileRequest: DataFactoryFunction<Requests.File> = (req) => {
-  return {
-    timezone: 'Europe/Budapest',
-    fileType: FileType.Otp,
-    ...req,
-  };
-};
-
-export const createFileDocument: DataFactoryFunction<Documents.File> = (doc) => {
-  return {
-    _id: createId(),
-    expiresAt: undefined,
-    timezone: 'Europe/Budapest',
-    fileType: FileType.Otp,
-    ...doc,
-  };
-};
-
-export const createFileResponse: DataFactoryFunction<Responses.File> = (doc) => {
-  return {
-    fileId: createFileId(),
-    draftCount: 0,
-    fileType: FileType.Otp,
-    uploadedAt: new Date().toISOString(),
-    ...doc,
-  };
-};
-
-export const createDocumentUpdate: DataFactoryFunction<DocumentUpdate<any>> = (update) => {
+const createDocumentUpdate: DataFactoryFunction<DocumentUpdate<any>> = (update) => {
   return {
     update: {
       $set: {
@@ -759,9 +82,43 @@ export const createDocumentUpdate: DataFactoryFunction<DocumentUpdate<any>> = (u
   };
 };
 
-export const createUserResponse: DataFactoryFunction<Responses.User> = (resp) => {
+const createLoginRequest: DataFactoryFunction<Requests.Login> = (req) => {
   return {
-    email: 'user@email.com',
+    email: faker.internet.email(),
+    password: faker.internet.password(),
+    ...req,
+  };
+};
+
+const createUserRequest: DataFactoryFunction<Requests.User> = (req) => {
+  return {
+    email: faker.internet.email(),
+    ...req,
+  };
+};
+
+const createConfirmUserRequest: DataFactoryFunction<Requests.ConfirmUser> = (req) => {
+  return {
+    temporaryPassword: faker.internet.password(),
+    password: faker.internet.password(),
+    ...req,
+  };
+};
+
+const createConfirmForgotPasswordRequest: DataFactoryFunction<Requests.ConfirmForgotPassword> = (req) => {
+  return {
+    confirmationCode: `${faker.number.int({
+      min: 100000,
+      max: 999999,
+    })}`,
+    password: faker.internet.password(),
+    ...req,
+  };
+};
+
+const createUserResponse: DataFactoryFunction<Responses.User> = (resp) => {
+  return {
+    email: faker.internet.email(),
     status: 'CONFIRMED',
     groups: [UserType.Editor],
     ...resp,
@@ -1239,7 +596,949 @@ const createCalendarHolidayResponse: DataFactoryFunction<Responses.CalendarDayHo
   };
 };
 
+const createAccountId = (id?: string): Api.Account.Id => {
+  return (id ?? createId().toString()) as Api.Account.Id;
+};
+
+const createAccountRequest: DataFactoryFunction<Requests.Account> = (req) => {
+  return {
+    accountType: faker.helpers.arrayElement(Object.values(AccountType).filter(a => a !== AccountType.Loan)),
+    name: `${faker.finance.accountName()} ${faker.finance.accountNumber()}`,
+    currency: faker.finance.currencySymbol(),
+    owner: faker.person.firstName(),
+    ...req,
+  };
+};
+
+const createAccountDocument: DataFactoryFunction<Documents.Account> = (doc) => {
+  return {
+    _id: createId(),
+    ...createAccountRequest(),
+    expiresAt: undefined,
+    isOpen: faker.datatype.boolean(),
+    ...doc,
+  };
+};
+
+const createAccountResponse: DataFactoryFunction<Responses.Account> = (resp) => {
+  const base = createAccountRequest();
+
+  return {
+    ...base,
+    balance: faker.number.int(),
+    fullName: `${resp?.name ?? base.name} (${resp?.owner ?? base.owner})`,
+    accountId: createAccountId(),
+    isOpen: faker.datatype.boolean(),
+    ...resp,
+  };
+};
+
+const createAccountReport: DataFactoryFunction<Responses.AccountReport> = (rep) => {
+  const base = createAccountRequest();
+
+  return {
+    accountId: createAccountId(),
+    currency: faker.finance.currencySymbol(),
+    fullName: `${base.name} (${base.owner})`,
+    ...rep,
+  };
+};
+
+const createRecipientId = (id?: string): Api.Recipient.Id => {
+  return (id ?? createId().toString()) as Api.Recipient.Id;
+};
+
+const createRecipientRequest: DataFactoryFunction<Requests.Recipient> = (req) => {
+  return {
+    name: `${faker.company.name()} ${faker.string.uuid()}`,
+    ...req,
+  };
+};
+
+const createRecipientDocument: DataFactoryFunction<Documents.Recipient> = (doc) => {
+  return {
+    _id: createId(),
+    ...createRecipientRequest(),
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+const createRecipientResponse: DataFactoryFunction<Responses.Recipient> = (resp) => {
+  return {
+    recipientId: createRecipientId(),
+    ...createRecipientRequest(),
+    ...resp,
+  };
+};
+
+const createRecipientReport: DataFactoryFunction<Responses.RecipientReport> = (rep) => {
+  return {
+    recipientId: createRecipientId(),
+    ...createRecipientRequest(),
+    ...rep,
+  };
+};
+
+const createCategoryId = (id?: string): Api.Category.Id => {
+  return (id ?? createId().toString()) as Api.Category.Id;
+};
+
+const createCategoryRequest: DataFactoryFunction<Requests.Category> = (req) => {
+  return {
+    name: `${faker.company.name()} ${faker.string.uuid()}`,
+    categoryType: faker.helpers.enumValue(CategoryType),
+    parentCategoryId: createCategoryId(),
+    ...req,
+  };
+};
+
+const createCategoryDocument: DataFactoryFunction<Documents.Category> = (doc) => {
+  const { name, categoryType } = createCategoryRequest();
+
+  return {
+    _id: createId(),
+    name,
+    categoryType,
+    expiresAt: undefined,
+    ancestors: [],
+    ...doc,
+  };
+};
+
+const createCategoryResponse: DataFactoryFunction<Responses.Category> = (resp) => {
+  const { name, categoryType } = createCategoryRequest();
+  
+  return {
+    categoryId: createCategoryId(),
+    name,
+    categoryType,
+    fullName: name,
+    parentCategory: undefined,
+    ancestors: [],
+    ...resp,
+  };
+};
+
+const createCategoryReport: DataFactoryFunction<Responses.CategoryReport> = (rep) => {
+  return {
+    categoryId: createCategoryId(),
+    fullName: `${faker.company.name()} ${faker.string.uuid()}`,
+    ...rep,
+  };
+};
+
+const createProductId = (id?: string): Api.Product.Id => {
+  return (id ?? createId().toString()) as Api.Product.Id;
+};
+
+const createProductRequest: DataFactoryFunction<Requests.Product> = (req) => {
+  return {
+    brand: faker.commerce.productName(),
+    measurement: faker.number.float({
+      min: 0,
+      max: 10000,
+    }),
+    unitOfMeasurement: faker.helpers.arrayElement(unitsOfMeasurement),
+    ...req,
+  };
+};
+
+const createProductDocument: DataFactoryFunction<Documents.Product> = (doc) => {
+  const base = createProductRequest();
+
+  return {
+    _id: createId(),
+    ...base,
+    expiresAt: undefined,
+    fullName: `${doc?.brand ?? base.brand} ${doc?.measurement ?? base.measurement} ${doc?.unitOfMeasurement ?? base.unitOfMeasurement}`,
+    category: createCategoryDocument(),
+    ...doc,
+  };
+};
+
+const createProductResponse: DataFactoryFunction<Responses.Product> = (resp) => {
+  const base = createProductRequest();
+  
+  return {
+    productId: createProductId(),
+    ...base,
+    fullName: `${resp?.brand ?? base.brand} ${resp?.measurement ?? base.measurement} ${resp?.unitOfMeasurement ?? base.unitOfMeasurement}`,
+    ...resp,
+  };
+};
+
+const createProductGroupedResponse: DataFactoryFunction<Responses.ProductGroupedResponse> = (resp) => {
+  const { name } = createCategoryRequest();
+
+  return {
+    fullName: name,
+    categoryId: createCategoryId(),
+    products: [createProductResponse()],
+    ...resp,
+  };
+};
+
+const createProductReport: DataFactoryFunction<Responses.ProductReport> = (rep) => {
+  const base = createProductRequest();
+
+  return {
+    productId: createProductId(),
+    fullName: `${base.brand} ${base.measurement} ${base.unitOfMeasurement}`,
+    ...rep,
+  };
+};
+
+const createProjectId = (id?: string): Api.Project.Id => {
+  return (id ?? createId().toString()) as Api.Project.Id;
+};
+
+const createProjectRequest: DataFactoryFunction<Requests.Project> = (req) => {
+  return {
+    name: `${faker.commerce.department()} ${faker.string.uuid()}`,
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    ...req,
+  };
+};
+
+const createProjectDocument: DataFactoryFunction<Documents.Project> = (doc) => {
+  return {
+    _id: createId(),
+    ...createProjectRequest(),
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+const createProjectResponse: DataFactoryFunction<Responses.Project> = (resp) => {
+  return {
+    projectId: createProjectId(),
+    ...createProjectRequest(),
+    ...resp,
+  };
+};
+
+const createProjectReport: DataFactoryFunction<Responses.ProjectReport> = (rep) => {
+  return {
+    projectId: createProjectId(),
+    name: `${faker.commerce.department()} ${faker.string.uuid()}`,
+    ...rep,
+  };
+};
+
+const createTransactionId = (id?: string): Api.Transaction.Id => {
+  return (id ?? createId().toString()) as Api.Transaction.Id;
+};
+
+const createPaymentTransactionRequest: DataFactoryFunction<Requests.PaymentTransaction> = (req) => {
+  const billingEndDate = faker.date.recent();
+
+  return {
+    amount: faker.number.float({
+      min: -10000,
+      max: req?.loanAccountId ? 0 : 10000,
+    }),
+    billingEndDate: billingEndDate.toISOString().split('T')[0],
+    billingStartDate: faker.date.recent({
+      refDate: addSeconds(-60 * 60 * 24, billingEndDate),
+      days: 90,
+    }).toISOString()
+      .split('T')[0],
+    invoiceNumber: faker.finance.accountNumber(),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    issuedAt: faker.date.recent().toISOString(),
+    quantity: faker.number.float({
+      max: 20,
+    }),
+    accountId: createAccountId(),
+    productId: createProductId(),
+    categoryId: createCategoryId(),
+    projectId: createProjectId(),
+    recipientId: createRecipientId(),
+    loanAccountId: undefined,
+    ...req,
+  };
+};
+
+const createPaymentTransactionDocument: DataFactoryFunction<Documents.PaymentTransaction> = (doc) => {
+  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
+
+  return {
+    _id: createId(),
+    transactionType: TransactionType.Payment,
+    amount,
+    description,
+    quantity,
+    invoiceNumber,
+    billingEndDate: createDate(billingEndDate),
+    billingStartDate: createDate(billingStartDate),
+    issuedAt: createDate(issuedAt),
+    product: createProductDocument(),
+    account: createAccountDocument(),
+    category: createCategoryDocument(),
+    project: createProjectDocument(),
+    recipient: createRecipientDocument(),
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+const createPaymentTransactionResponse: DataFactoryFunction<Responses.PaymentTransaction> = (resp) => {
+  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
+
+  return {
+    transactionId: createTransactionId(),
+    transactionType: TransactionType.Payment,
+    amount,
+    description,
+    quantity,
+    invoiceNumber,
+    billingEndDate,
+    billingStartDate,
+    issuedAt,
+    product: createProductResponse(),
+    account: createAccountResponse(),
+    category: createCategoryResponse(),
+    project: createProjectResponse(),
+    recipient: createRecipientResponse(),
+    ...resp,
+  };
+};
+
+const createDeferredTransactionDocument: DataFactoryFunction<Documents.DeferredTransaction> = (doc) => {
+  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
+
+  return {
+    _id: createId(),
+    transactionType: TransactionType.Deferred,
+    amount,
+    description,
+    quantity,
+    invoiceNumber,
+    billingEndDate: createDate(billingEndDate),
+    billingStartDate: createDate(billingStartDate),
+    issuedAt: createDate(issuedAt),
+    product: createProductDocument(),
+    payingAccount: createAccountDocument(),
+    category: createCategoryDocument(),
+    project: createProjectDocument(),
+    recipient: createRecipientDocument(),
+    ownerAccount: createAccountDocument(),
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+const createDeferredTransactionResponse: DataFactoryFunction<Responses.DeferredTransaction> = (resp) => {
+  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
+
+  return {
+    transactionId: createTransactionId(),
+    transactionType: TransactionType.Deferred,
+    amount,
+    description,
+    quantity,
+    invoiceNumber,
+    billingEndDate,
+    billingStartDate,
+    issuedAt,
+    product: createProductResponse(),
+    ownerAccount: createAccountResponse(),
+    payingAccount: createAccountResponse(),
+    category: createCategoryResponse(),
+    project: createProjectResponse(),
+    recipient: createRecipientResponse(),
+    ...resp,
+  };
+};
+
+const createReimbursementTransactionDocument: DataFactoryFunction<Documents.ReimbursementTransaction> = (doc) => {
+  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
+
+  return {
+    _id: createId(),
+    transactionType: TransactionType.Reimbursement,
+    amount,
+    description,
+    quantity,
+    invoiceNumber,
+    billingEndDate: createDate(billingEndDate),
+    billingStartDate: createDate(billingStartDate),
+    issuedAt: createDate(issuedAt),
+    product: createProductDocument(),
+    expiresAt: undefined,
+    payingAccount: createAccountDocument(),
+    category: createCategoryDocument(),
+    project: createProjectDocument(),
+    recipient: createRecipientDocument(),
+    ownerAccount: createAccountDocument(),
+    ...doc,
+  };
+};
+
+const createReimbursementTransactionResponse: DataFactoryFunction<Responses.ReimbursementTransaction> = (resp) => {
+  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
+
+  return {
+    transactionId: createTransactionId(),
+    transactionType: TransactionType.Reimbursement,
+    amount,
+    description,
+    quantity,
+    invoiceNumber,
+    billingEndDate,
+    billingStartDate,
+    issuedAt,
+    product: createProductResponse(),
+    ownerAccount: createAccountResponse(),
+    payingAccount: createAccountResponse(),
+    category: createCategoryResponse(),
+    project: createProjectResponse(),
+    recipient: createRecipientResponse(),
+    ...resp,
+  };
+};
+
+const createSplitRequestItem: DataFactoryFunction<Requests.SplitItem> = (req) => {
+  const billingEndDate = faker.date.recent();
+
+  return {
+    amount: faker.number.float({
+      min: -10000,
+      max: 0,
+    }),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    billingEndDate: billingEndDate.toISOString().split('T')[0],
+    billingStartDate: faker.date.recent({
+      refDate: addSeconds(-60 * 60 * 24, billingEndDate),
+      days: 90,
+    }).toISOString()
+      .split('T')[0],
+    invoiceNumber: faker.finance.accountNumber(),
+    quantity: faker.number.float({
+      max: 20,
+    }),
+    categoryId: createCategoryId(),
+    projectId: createProjectId(),
+    productId: createProductId(),
+    ...req,
+  };
+};
+
+const createLoanRequestItem: DataFactoryFunction<Requests.LoanItem> = (req) => {
+  const billingEndDate = faker.date.recent();
+
+  return {
+    amount: faker.number.float({
+      min: -10000,
+      max: 0,
+    }),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    billingEndDate: billingEndDate.toISOString().split('T')[0],
+    billingStartDate: faker.date.recent({
+      refDate: addSeconds(-60 * 60 * 24, billingEndDate),
+      days: 90,
+    }).toISOString()
+      .split('T')[0],
+    invoiceNumber: faker.finance.accountNumber(),
+    quantity: faker.number.float({
+      max: 20,
+    }),
+    categoryId: createCategoryId(),
+    projectId: createProjectId(),
+    productId: createProductId(),
+    loanAccountId: createAccountId(),
+    transactionId: undefined,
+    ...req,
+  };
+};
+
+const createSplitTransactionRequest = (req?: RecursivePartial<Requests.SplitTransaction>): Requests.SplitTransaction => {
+  const loanRequests = Object.hasOwn(req ?? {}, 'loans') ? req.loans?.map(l => createLoanRequestItem(l)) : [createLoanRequestItem()];
+
+  const splitRequests = Object.hasOwn(req ?? {}, 'splits') ? req.splits?.map(l => createSplitRequestItem(l)) : [createSplitRequestItem()];
+
+  return {
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    issuedAt: faker.date.recent().toISOString(),
+    accountId: createAccountId(),
+    recipientId: createRecipientId(),
+    ...req,
+    splits: splitRequests,
+    loans: loanRequests,
+  };
+};
+
+const createSplitDocumentItem: DataFactoryFunction<Documents.SplitItem> = (doc) => {
+  const billingEndDate = faker.date.recent();
+
+  return {
+    amount: faker.number.float({
+      min: -10000,
+      max: 10000,
+    }),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    billingEndDate: billingEndDate,
+    billingStartDate: faker.date.recent({
+      refDate: addSeconds(-60 * 60 * 24, billingEndDate),
+      days: 90,
+    }),
+    invoiceNumber: faker.finance.accountNumber(),
+    quantity: faker.number.float({
+      max: 20,
+    }),
+    category: createCategoryDocument(),
+    project: createProjectDocument(),
+    product: createProductDocument(),
+    ...doc,
+  };
+};
+
+const createSplitTransactionDocument = (doc?: RecursivePartial<Documents.SplitTransaction>): Documents.SplitTransaction => {
+  const { splits, deferredSplits, ...rest } = doc ?? {};
+
+  const deferredDocuments = deferredSplits ? deferredSplits.map(l => createDeferredTransactionDocument(l)) : [
+    createDeferredTransactionDocument({
+      amount: -100,
+    }),
+  ];
+  const splitDocuments = splits ? splits.map(s => createSplitDocumentItem(s)) : [
+    createSplitDocumentItem({
+      amount: -100,
+    }),
+  ];
+
+  const amount = [
+    ...deferredDocuments,
+    ...splitDocuments,
+  ].reduce((accumulator, currentValue) => {
+    return accumulator + currentValue.amount;
+  }, 0);
+
+  return {
+    _id: createId(),
+    transactionType: TransactionType.Split,
+    amount: amount !== 0 ? amount : -200,
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    issuedAt: faker.date.recent(),
+    expiresAt: undefined,
+    account: createAccountDocument(),
+    recipient: createRecipientDocument(),
+    splits: splitDocuments,
+    deferredSplits: deferredDocuments,
+    ...rest,
+  };
+};
+
+const createSplitResponseItem: DataFactoryFunction<Responses.SplitItem> = (resp) => {
+  const billingEndDate = faker.date.recent();
+
+  return {
+    amount: faker.number.float({
+      min: -10000,
+      max: 10000,
+    }),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    billingEndDate: billingEndDate.toISOString().split('T')[0],
+    billingStartDate: faker.date.recent({
+      refDate: addSeconds(-60 * 60 * 24, billingEndDate),
+      days: 90,
+    }).toISOString()
+      .split('T')[0],
+    invoiceNumber: faker.finance.accountNumber(),
+    quantity: faker.number.float({
+      max: 20,
+    }),
+    category: createCategoryResponse(),
+    project: createProjectResponse(),
+    product: createProductResponse(),
+    ...resp,
+  };
+};
+
+const createSplitTransactionResponse = (resp?: RecursivePartial<Responses.SplitTransaction>): Responses.SplitTransaction => {
+  const { splits, deferredSplits, ...rest } = resp ?? {};
+
+  const deferredResponses = deferredSplits ? deferredSplits.map(l => createDeferredTransactionResponse(l)) : [
+    createDeferredTransactionResponse({
+      amount: -100,
+    }),
+  ];
+  const splitResponses = splits ? splits.map(s => createSplitResponseItem(s)) : [
+    createSplitResponseItem({
+      amount: -100,
+    }),
+  ];
+
+  const amount = [
+    ...deferredResponses,
+    ...splitResponses,
+  ].reduce((accumulator, currentValue) => {
+    return accumulator + currentValue.amount;
+  }, 0);
+
+  return {
+    transactionId: createTransactionId(),
+    transactionType: TransactionType.Split,
+    amount: amount !== 0 ? amount : -200,
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    issuedAt: faker.date.recent().toISOString(),
+    account: createAccountResponse(),
+    recipient: createRecipientResponse(),
+    splits: splitResponses,
+    deferredSplits: deferredResponses,
+    ...rest,
+  };
+};
+
+const createTransferTransactionRequest: DataFactoryFunction<Requests.TransferTransaction> = (req) => {
+  const amount = req?.amount ?? faker.number.float({
+    min: -10000,
+    max: 0,
+  });
+  
+  return {
+    amount,
+    transferAmount: faker.number.float({
+      max: 10000,
+      min: 0,
+    }),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    issuedAt: faker.date.recent().toISOString(),
+    accountId: createAccountId(),
+    transferAccountId: createAccountId(),
+    ...req,
+  };
+};
+
+const createTransferTransactionDocument: DataFactoryFunction<Documents.TransferTransaction> = (doc) => {
+  const { amount, description, issuedAt, transferAmount } = createTransferTransactionRequest();
+
+  return {
+    _id: createId(),
+    transactionType: TransactionType.Transfer,
+    amount,
+    description,
+    issuedAt: createDate(issuedAt),
+    transferAmount, 
+    expiresAt: undefined,
+    account: createAccountDocument(),
+    transferAccount: createAccountDocument(),
+    ...doc,
+  };
+};
+
+const createTransferTransactionResponse: DataFactoryFunction<Responses.TransferTransaction> = (resp) => {
+  const { amount, description, issuedAt, transferAmount } = createTransferTransactionRequest();
+
+  return {
+    transactionId: createTransactionId(),
+    transactionType: TransactionType.Transfer,
+    amount,
+    description,
+    issuedAt,
+    transferAmount,
+    account: createAccountResponse(),
+    transferAccount: createAccountResponse(),
+    ...resp,
+  };
+};
+
+const createDraftTransactionDocument: DataFactoryFunction<Documents.DraftTransaction> = (doc) => {
+  return {
+    _id: createId(),
+    transactionType: TransactionType.Draft,
+    amount: faker.number.float({
+      min: -10000,
+      max: 10000,
+    }),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    issuedAt: faker.date.recent(),
+    expiresAt: undefined,
+    file: createFileDocument(),
+    ...doc,
+  };
+};
+
+const createDraftTransactionResponse: DataFactoryFunction<Responses.DraftTransaction> = (doc) => {
+  return {
+    transactionId: createTransactionId(),
+    transactionType: TransactionType.Draft,
+    amount: faker.number.float({
+      min: -10000,
+      max: 10000,
+    }),
+    description: faker.word.words({
+      count: {
+        min: 1,
+        max: 5,
+      },
+    }),
+    issuedAt: faker.date.recent().toISOString(),
+    potentialDuplicates: [],
+    ...doc,
+  };
+};
+
+const createTransactionRawReport: DataFactoryFunction<Documents.RawTransaction> = (doc) => {
+  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest(); 
+
+  return {
+    _id: createId(),
+    amount,
+    description,
+    quantity,
+    invoiceNumber,
+    billingEndDate: createDate(billingEndDate),
+    billingStartDate: createDate(billingStartDate),
+    issuedAt: createDate(issuedAt),
+    product: createProductDocument(),
+    account: createAccountDocument(),
+    category: createCategoryDocument(),
+    project: createProjectDocument(),
+    recipient: createRecipientDocument(),
+    ...doc,
+  };
+};
+
+const createTransactionReport: DataFactoryFunction<Responses.TransactionReport> = (rep) => {
+  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest(); 
+
+  return {
+    transactionId: createTransactionId(),
+    amount,
+    description,
+    quantity,
+    invoiceNumber,
+    billingEndDate,
+    billingStartDate,
+    issuedAt,
+    account: createAccountReport(),
+    category: createCategoryReport(),
+    product: createProductReport(),
+    project: createProjectReport(),
+    recipient: createRecipientReport(),
+    ...rep,
+  };
+};
+
+const createFileId = (id?: string): Api.File.Id => {
+  return (id ?? createId().toString()) as Api.File.Id;
+};
+
+const createFileRequest: DataFactoryFunction<Requests.File> = (req) => {
+  return {
+    timezone: 'Europe/Budapest',
+    fileType: faker.helpers.enumValue(FileType),
+    ...req,
+  };
+};
+
+const createFileDocument: DataFactoryFunction<Documents.File> = (doc) => {
+  return {
+    _id: createId(),
+    ...createFileRequest(),
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+const createFileResponse: DataFactoryFunction<Responses.File> = (doc) => {
+  const { fileType } = createFileRequest();
+
+  return {
+    fileId: createFileId(),
+    fileType,
+    draftCount: faker.number.int(),
+    uploadedAt: new Date().toISOString(),
+    ...doc,
+  };
+};
+
+const createSettingKey = (key?: string): SettingKey => {
+  return (key ?? faker.string.uuid()) as SettingKey;
+};
+
+const createSettingRequest: DataFactoryFunction<Requests.Setting> = (doc) => {
+  return {
+    value: faker.string.uuid(),
+    ...doc,
+  };
+};
+
+const createSettingDocument: DataFactoryFunction<Documents.Setting> = (doc) => {
+  return {
+    settingKey: createSettingKey(),
+    value: faker.string.uuid(),
+    expiresAt: undefined,
+    ...doc,
+  };
+};
+
+const createSettingResponse: DataFactoryFunction<Responses.Setting> = (resp) => {
+  return {
+    settingKey: createSettingKey(),
+    value: faker.string.uuid(),
+    ...resp,
+  };
+};
+
 export const testDataFactory = {
+  documentUpdate: createDocumentUpdate,
+  account: {
+    id: createAccountId,
+    request: createAccountRequest,
+    document: createAccountDocument,
+    response: createAccountResponse,
+    report: createAccountReport,
+  },
+  recipient: {
+    id: createRecipientId,
+    request: createRecipientRequest,
+    document: createRecipientDocument,
+    response: createRecipientResponse,
+    report: createRecipientReport,
+  },
+  project: {
+    id: createProjectId,
+    request: createProjectRequest,
+    document: createProjectDocument,
+    response: createProjectResponse,
+    report: createProjectReport,
+  },
+  category: {
+    id: createCategoryId,
+    request: createCategoryRequest,
+    document: createCategoryDocument,
+    response: createCategoryResponse,
+    report: createCategoryReport,
+  },
+  product: {
+    id: createProductId,
+    request: createProductRequest,
+    document: createProductDocument,
+    response: createProductResponse,
+    groupedResponse: createProductGroupedResponse,
+    report: createProductReport,
+  },
+  transaction: {
+    id: createTransactionId,
+    request: {
+      payment: createPaymentTransactionRequest,
+      transfer: createTransferTransactionRequest,
+      split: createSplitTransactionRequest,
+    },
+    document: {
+      payment: createPaymentTransactionDocument,
+      deferred: createDeferredTransactionDocument,
+      reimbursement: createReimbursementTransactionDocument,
+      transfer: createTransferTransactionDocument,
+      split: createSplitTransactionDocument,
+      draft: createDraftTransactionDocument,
+      report: createTransactionRawReport,
+    },
+    response: {
+      payment: createPaymentTransactionResponse,
+      deferred: createDeferredTransactionResponse,
+      reimbursement: createReimbursementTransactionResponse,
+      transfer: createTransferTransactionResponse,
+      split: createSplitTransactionResponse,
+      draft: createDraftTransactionResponse,
+    },
+    report: createTransactionReport,
+  },
+  file: {
+    id: createFileId,
+    request: createFileRequest,
+    document: createFileDocument,
+    response: createFileResponse,
+  },
+  setting: {
+    key: createSettingKey,
+    request: createSettingRequest,
+    document: createSettingDocument,
+    response: createSettingResponse,
+  },
+  user: {
+    request: {
+      user: createUserRequest,
+      confirmUser: createConfirmUserRequest,
+    },
+    response: {
+      user: createUserResponse,
+    },
+  },
+  auth: {
+    request: {
+      login: createLoginRequest,
+      confirmForgotPassword: createConfirmForgotPasswordRequest,
+    },
+  },
+  report: {
+    filter: {
+      account: createReportAccountFilter,
+      category: createReportCategoryFilter,
+      project: createReportProjectFilter,
+      product: createReportProductFilter,
+      recipient: createReportRecipientFilter,
+      issuedAt: createReportIssuedAtFilter,
+    },
+  },
   price: {
     id: createPriceId,
     request: createPriceRequest,

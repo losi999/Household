@@ -1,4 +1,4 @@
-import { default as schema } from '@household/test/schemas/user-response-list';
+import { responseList as schema } from '@household/shared/schemas/user';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { userDataFactory } from '@household/test/api/user/data-factory';

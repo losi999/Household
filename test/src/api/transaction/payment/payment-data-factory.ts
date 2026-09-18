@@ -1,63 +1,25 @@
-import { addSeconds, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
 import { paymentTransactionDocumentConverter } from '@household/shared/dependencies/converters/payment-transaction-document-converter';
-import { DataFactoryFunction } from '@household/shared/types/common';
-import { Account, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
-import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/utils';
-import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
+import { Requests } from '@household/shared/types/requests';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 export const paymentTransactionDataFactory = (() => {
-  const createPaymentTransactionRequest: DataFactoryFunction<Transaction.PaymentRequest> = (req) => {
-    const billingEndDate = faker.date.recent();
-    return {
-      isSettled: undefined,
-      amount: faker.number.float({
-        min: -10000,
-        max: req?.loanAccountId ? 0 : 10000,
-      }),
-      billingEndDate: billingEndDate.toISOString().split('T')[0],
-      billingStartDate: faker.date.recent({
-        refDate: addSeconds(-60 * 60 * 24, billingEndDate),
-        days: 90,
-      }).toISOString()
-        .split('T')[0],
-      invoiceNumber: faker.finance.accountNumber(),
-      description: faker.word.words({
-        count: {
-          min: 1,
-          max: 5,
-        },
-      }),
-      issuedAt: faker.date.recent().toISOString(),
-      quantity: req?.productId ? faker.number.float({
-        max: 20,
-      }) : undefined,
-      productId: undefined,
-      projectId: undefined,
-      accountId: accountDataFactory.id(),
-      categoryId: undefined,
-      loanAccountId: undefined,
-      recipientId: undefined,
-      ...req,
-    };
-  };
-
   const createPaymentTransactionDocument = (ctx: {
-    body?: Partial<Transaction.PaymentRequest>;
+    body?: Partial<Requests.PaymentTransaction>;
     account: Documents.Account;
     category?: Documents.Category;
     product?: Documents.Product;
     project?: Documents.Project;
     recipient?: Documents.Recipient;
-  }): Transaction.PaymentDocument => {
+  }): Documents.PaymentTransaction => {
     if (ctx.account.accountType === AccountType.Loan) {
       throw 'Account cannot be loan in payment transaction';
     }
 
     return paymentTransactionDocumentConverter.create({
-      body: createPaymentTransactionRequest({
+      body: testDataFactory.transaction.request.payment({
         ...ctx.body,
         accountId: getAccountId(ctx.account),
         categoryId: getCategoryId(ctx.category),
@@ -74,8 +36,8 @@ export const paymentTransactionDataFactory = (() => {
   };
 
   return {
-    request: createPaymentTransactionRequest,
+    request: testDataFactory.transaction.request.payment,
     document: createPaymentTransactionDocument,
-    id: (createId<Transaction.Id>),
+    id: testDataFactory.transaction.id,
   };
 })();

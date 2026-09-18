@@ -1,5 +1,5 @@
 import { ICreateSplitTransactionService, createSplitTransactionServiceFactory } from '@household/api/functions/create-split-transaction/create-split-transaction.service';
-import { createAccountDocument, createCategoryDocument, createLoanRequestItem, createProductDocument, createProjectDocument, createRecipientDocument, createSplitRequestItem, createSplitTransactionDocument, createSplitTransactionRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId, toDictionary } from '@household/shared/common/utils';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
@@ -34,14 +34,14 @@ describe('Create split transaction service', () => {
     service = createSplitTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockSplitTransactionDocumentConverter.service);
   });
 
-  const category = createCategoryDocument({
+  const category = testDataFactory.category.document({
     categoryType: CategoryType.Inventory,
   });
-  const product = createProductDocument({
+  const product = testDataFactory.product.document({
     category,
   });
-  const project = createProjectDocument();
-  const loanAccount = createAccountDocument({
+  const project = testDataFactory.project.document();
+  const loanAccount = testDataFactory.account.document({
     accountType: AccountType.Loan,
   });
 
@@ -49,31 +49,31 @@ describe('Create split transaction service', () => {
   const projectId = getProjectId(project);
   const productId = getProductId(product);
   const loanAccountId = getAccountId(loanAccount);
-  const queriedAccount = createAccountDocument();
-  const queriedRecipient = createRecipientDocument();
+  const queriedAccount = testDataFactory.account.document();
+  const queriedRecipient = testDataFactory.recipient.document();
 
   let body: Requests.SplitTransaction;
-  const createdDocument = createSplitTransactionDocument();
+  const createdDocument = testDataFactory.transaction.document.split();
   const transactionId = getTransactionId(createdDocument);
 
   beforeEach(() => {
-    body = createSplitTransactionRequest({
+    body = testDataFactory.transaction.request.split({
       accountId: getAccountId(queriedAccount),
       recipientId: getRecipientId(queriedRecipient),
       loans: [
-        createLoanRequestItem({
+        {
           categoryId,
           projectId,
           productId,
           loanAccountId,
-        }),
+        },
       ],
       splits: [
-        createSplitRequestItem({
+        {
           categoryId,
           projectId,
           productId,
-        }),
+        },
       ],
     });
   });
@@ -122,12 +122,12 @@ describe('Create split transaction service', () => {
 
   describe('should throw error', () => {
     it('if account and loan account are the same', async () => {
-      body = createSplitTransactionRequest({
+      body = testDataFactory.transaction.request.split({
         ...body,
         loans: [
-          createLoanRequestItem({
+          {
             loanAccountId: getAccountId(queriedAccount),
-          }),
+          },
         ],
       });
 
@@ -135,26 +135,6 @@ describe('Create split transaction service', () => {
         body,
         expiresIn: undefined,
       }).catch(validateError('Cannot loan to same account', 400));
-      validateFunctionCall(mockAccountService.functions.findAccountsByIds);
-      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
-      validateFunctionCall(mockProjectService.functions.findProjectsByIds);
-      validateFunctionCall(mockRecipientService.functions.findRecipientById);
-      validateFunctionCall(mockProductService.functions.listProductsByIds);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
-    });
-
-    it('if sum of splits is not equal to total amount', async () => {
-      body = createSplitTransactionRequest({
-        ...body,
-        amount: 100,
-      });
-
-      await service({
-        body,
-        expiresIn: undefined,
-      }).catch(validateError('Sum of splits must equal to total amount', 400));
       validateFunctionCall(mockAccountService.functions.findAccountsByIds);
       validateFunctionCall(mockCategoryService.functions.findCategoriesByIds);
       validateFunctionCall(mockProjectService.functions.findProjectsByIds);
@@ -430,20 +410,20 @@ describe('Create split transaction service', () => {
     });
 
     it('if product belongs to different category', async () => {
-      const otherProduct = createProductDocument();
+      const otherProduct = testDataFactory.product.document();
       const otherProductId = getProductId(otherProduct);
 
-      body = createSplitTransactionRequest({
+      body = testDataFactory.transaction.request.split({
         accountId: getAccountId(queriedAccount),
         recipientId: getRecipientId(queriedRecipient),
         splits: [],
         loans: [
-          createLoanRequestItem({
+          {
             categoryId,
             projectId,
             productId: otherProductId,
             loanAccountId,
-          }),
+          },
         ],
       });
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
@@ -473,49 +453,37 @@ describe('Create split transaction service', () => {
     });
 
     it('if account is of loan type', async () => {
-      body = createSplitTransactionRequest({
-        ...body,
+      body = testDataFactory.transaction.request.split({
         accountId: getAccountId(loanAccount),
-        loans: [
-          createLoanRequestItem({
-            categoryId,
-            projectId,
-            productId,
-            loanAccountId: getAccountId(queriedAccount),
-          }),
-        ],
+        recipientId: undefined,
+        loans: [],
         splits: [
-          createSplitRequestItem({
-            categoryId,
-            projectId,
-            productId,
-          }),
+          {
+            categoryId: undefined,
+            productId: undefined,
+            projectId: undefined,
+          },
         ],
       });
-      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
-        queriedAccount,
-        loanAccount,
-      ]);
-      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
-      mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
-      mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue([product]);
+
+      mockAccountService.functions.findAccountsByIds.mockResolvedValue([loanAccount]);
+      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([]);
+      mockProjectService.functions.findProjectsByIds.mockResolvedValue([]);
+      mockRecipientService.functions.findRecipientById.mockResolvedValue(undefined);
+      mockProductService.functions.listProductsByIds.mockResolvedValue([]);
 
       await service({
         body,
         expiresIn: undefined,
       }).catch(validateError('Account type cannot be loan', 400));
-      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
-        loanAccountId,
-        getAccountId(queriedAccount),
-      ]);
-      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
-      validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
-      validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
-      validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
+      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [loanAccountId]);
+      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, []);
+      validateFunctionCall(mockProjectService.functions.findProjectsByIds, []);
+      validateFunctionCall(mockRecipientService.functions.findRecipientById, undefined);
+      validateFunctionCall(mockProductService.functions.listProductsByIds, []);
       validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      // expect.assertions(9);
+      expect.assertions(9);
     });
 
     it('if unable to save transaction', async () => {

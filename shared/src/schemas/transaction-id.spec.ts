@@ -1,5 +1,5 @@
 import { transactionId as schema } from '@household/shared/schemas/transaction';
-import { createTransactionId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 import { Api } from '@household/shared/types/api';
 
@@ -7,13 +7,13 @@ describe('Transaction id schema', () => {
   const tester = schemaTesterFactory<Api.Transaction.TransactionId>(schema);
 
   tester.validateSuccess({
-    transactionId: createTransactionId(),
+    transactionId: testDataFactory.transaction.id(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        transactionId: createTransactionId(),
+        transactionId: testDataFactory.transaction.id(),
         extra: 1,
       } as any, 'data');
     });
@@ -28,7 +28,7 @@ describe('Transaction id schema', () => {
       }, 'transactionId', 'string');
 
       tester.pattern({
-        transactionId: createTransactionId('not-valid'),
+        transactionId: testDataFactory.transaction.id('not-valid'),
       }, 'transactionId');
     });
   });

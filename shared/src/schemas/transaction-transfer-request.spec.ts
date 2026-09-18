@@ -1,5 +1,5 @@
 import { transferRequest } from '@household/shared/schemas/transaction';
-import { createAccountId, createTransferTransactionRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 import { Requests } from '@household/shared/types/requests';
 
@@ -7,9 +7,9 @@ describe('Transfer transaction schema', () => {
   const tester = schemaTesterFactory<Requests.TransferTransaction>(transferRequest);
 
   describe('should accept', () => {
-    tester.validateSuccess(createTransferTransactionRequest(), 'without payments');
+    tester.validateSuccess(testDataFactory.transaction.request.transfer(), 'without payments');
 
-    tester.validateSuccess(createTransferTransactionRequest({
+    tester.validateSuccess(testDataFactory.transaction.request.transfer({
       description: undefined,
     }), 'without description');
   });
@@ -17,75 +17,75 @@ describe('Transfer transaction schema', () => {
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        ...createTransferTransactionRequest(),
+        ...testDataFactory.transaction.request.transfer(),
         extra: 1,
       } as any, 'data');
     });
 
     describe('if data.amount', () => {
-      tester.required(createTransferTransactionRequest({
+      tester.required(testDataFactory.transaction.request.transfer({
         amount: undefined,
       }), 'amount');
 
-      tester.type(createTransferTransactionRequest({
+      tester.type(testDataFactory.transaction.request.transfer({
         amount: '1' as any,
       }), 'amount', 'number');
     });
 
     describe('if data.description', () => {
-      tester.type(createTransferTransactionRequest({
+      tester.type(testDataFactory.transaction.request.transfer({
         description: 1 as any,
       }), 'description', 'string');
 
-      tester.minLength(createTransferTransactionRequest({
+      tester.minLength(testDataFactory.transaction.request.transfer({
         description: '',
       }), 'description', 1);
     });
 
     describe('if data.issuedAt', () => {
-      tester.required(createTransferTransactionRequest({
+      tester.required(testDataFactory.transaction.request.transfer({
         issuedAt: undefined,
       }), 'issuedAt');
 
-      tester.type(createTransferTransactionRequest({
+      tester.type(testDataFactory.transaction.request.transfer({
         issuedAt: 1 as any,
       }), 'issuedAt', 'string');
 
-      tester.format(createTransferTransactionRequest({
+      tester.format(testDataFactory.transaction.request.transfer({
         issuedAt: 'not-date-time',
       }), 'issuedAt', 'date-time');
     });
 
     describe('if data.accountId', () => {
-      tester.required(createTransferTransactionRequest({
+      tester.required(testDataFactory.transaction.request.transfer({
         accountId: undefined,
       }), 'accountId');
 
-      tester.type(createTransferTransactionRequest({
+      tester.type(testDataFactory.transaction.request.transfer({
         accountId: 1 as any,
       }), 'accountId', 'string');
 
-      tester.pattern(createTransferTransactionRequest({
-        accountId: createAccountId('not-valid'),
+      tester.pattern(testDataFactory.transaction.request.transfer({
+        accountId: testDataFactory.account.id('not-valid'),
       }), 'accountId');
     });
 
     describe('if data.transferAccountId', () => {
-      tester.required(createTransferTransactionRequest({
+      tester.required(testDataFactory.transaction.request.transfer({
         transferAccountId: undefined,
       }), 'transferAccountId');
 
-      tester.type(createTransferTransactionRequest({
+      tester.type(testDataFactory.transaction.request.transfer({
         transferAccountId: 1 as any,
       }), 'transferAccountId', 'string');
 
-      tester.pattern(createTransferTransactionRequest({
-        transferAccountId: createAccountId('not-valid'),
+      tester.pattern(testDataFactory.transaction.request.transfer({
+        transferAccountId: testDataFactory.account.id('not-valid'),
       }), 'transferAccountId');
     });
 
     describe('if data.transferAmount', () => {
-      tester.type(createTransferTransactionRequest({
+      tester.type(testDataFactory.transaction.request.transfer({
         transferAmount: '1' as any,
       }), 'transferAmount', 'number');
     });

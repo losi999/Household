@@ -1,6 +1,5 @@
 import { entries, getProductId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
-import { Product, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
@@ -32,13 +31,13 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
   let targetProductDocument: Documents.Product;
   let sourceProductDocument: Documents.Product;
   let unrelatedProductDocument: Documents.Product;
-  let paymentTransactionDocument: Transaction.PaymentDocument;
-  let deferredTransactionDocument: Transaction.DeferredDocument;
-  let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
-  let splitTransactionDocument: Transaction.SplitDocument;
-  let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
-  let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
-  let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+  let paymentTransactionDocument: Documents.PaymentTransaction;
+  let deferredTransactionDocument: Documents.DeferredTransaction;
+  let reimbursementTransactionDocument: Documents.ReimbursementTransaction;
+  let splitTransactionDocument: Documents.SplitTransaction;
+  let unrelatedPaymentTransactionDocument: Documents.PaymentTransaction;
+  let unrelatedDeferredTransactionDocument: Documents.DeferredTransaction;
+  let unrelatedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();

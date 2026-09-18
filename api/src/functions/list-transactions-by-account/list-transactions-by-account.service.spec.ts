@@ -1,5 +1,5 @@
 import { IListTransactionsByAccountService, listTransactionsByAccountServiceFactory } from '@household/api/functions/list-transactions-by-account/list-transactions-by-account.service';
-import { createAccountId, createPaymentTransactionDocument, createPaymentTransactionResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -16,11 +16,11 @@ describe('List transactions by account service', () => {
     service = listTransactionsByAccountServiceFactory(mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const accountId = createAccountId();
+  const accountId = testDataFactory.account.id();
   const pageSize = 25;
   const pageNumber = 1;
-  const queriedDocument = createPaymentTransactionDocument();
-  const convertedResponse = createPaymentTransactionResponse();
+  const queriedDocument = testDataFactory.transaction.document.payment();
+  const convertedResponse = testDataFactory.transaction.response.payment();
 
   it('should return documents', async () => {
     mockTransactionService.functions.listTransactionsByAccountId.mockResolvedValue([queriedDocument]);

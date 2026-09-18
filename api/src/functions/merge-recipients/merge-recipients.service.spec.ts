@@ -1,5 +1,5 @@
 import { IMergeRecipientsService, mergeRecipientsServiceFactory } from '@household/api/functions/merge-recipients/merge-recipients.service';
-import { createRecipientDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getRecipientId } from '@household/shared/common/utils';
 import { IRecipientService } from '@household/shared/services/recipient-service';
@@ -14,8 +14,8 @@ describe('Merge recipient service', () => {
     service = mergeRecipientsServiceFactory(mockRecipientService.service);
   });
 
-  const targetRecipientDocument = createRecipientDocument();
-  const sourceRecipientDocument = createRecipientDocument();
+  const targetRecipientDocument = testDataFactory.recipient.document();
+  const sourceRecipientDocument = testDataFactory.recipient.document();
   const sourceRecipientId = getRecipientId(sourceRecipientDocument);
   const recipientId = getRecipientId(targetRecipientDocument);
   const body = [sourceRecipientId];

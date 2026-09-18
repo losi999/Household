@@ -1,5 +1,4 @@
-import { default as schema } from '@household/test/schemas/account-response';
-import { Transaction } from '@household/shared/types/types';
+import { response as schema } from '@household/shared/schemas/account';
 import { Documents } from '@household/shared/types/documents';
 import { entries, getAccountId } from '@household/shared/common/utils';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -26,19 +25,19 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
   let accountDocument: Documents.Account;
   let loanAccountDocument: Documents.Account;
   let secondaryAccountDocument: Documents.Account;
-  let paymentTransactionDocument: Transaction.PaymentDocument;
-  let splitTransactionDocument: Transaction.SplitDocument;
-  let transferTransactionDocument: Transaction.TransferDocument;
-  let invertedTransferTransactionDocument: Transaction.TransferDocument;
-  let repayingTransferTransactionDocument: Transaction.TransferDocument;
-  let invertedRepayingTransferTransactionDocument: Transaction.TransferDocument;
-  let loanTransferTransactionDocument: Transaction.TransferDocument;
-  let invertedLoanTransferTransactionDocument: Transaction.TransferDocument;
-  let payingDeferredTransactionDocument: Transaction.DeferredDocument;
-  let owningDeferredTransactionDocument: Transaction.DeferredDocument;
-  let payingDeferredToLoanTransactionDocument: Transaction.DeferredDocument;
-  let owningReimbursementTransactionDocument: Transaction.ReimbursementDocument;
-  let deferredSplitTransactionDocument: Transaction.SplitDocument;
+  let paymentTransactionDocument: Documents.PaymentTransaction;
+  let splitTransactionDocument: Documents.SplitTransaction;
+  let transferTransactionDocument: Documents.TransferTransaction;
+  let invertedTransferTransactionDocument: Documents.TransferTransaction;
+  let repayingTransferTransactionDocument: Documents.TransferTransaction;
+  let invertedRepayingTransferTransactionDocument: Documents.TransferTransaction;
+  let loanTransferTransactionDocument: Documents.TransferTransaction;
+  let invertedLoanTransferTransactionDocument: Documents.TransferTransaction;
+  let payingDeferredTransactionDocument: Documents.DeferredTransaction;
+  let owningDeferredTransactionDocument: Documents.DeferredTransaction;
+  let payingDeferredToLoanTransactionDocument: Documents.DeferredTransaction;
+  let owningReimbursementTransactionDocument: Documents.ReimbursementTransaction;
+  let deferredSplitTransactionDocument: Documents.SplitTransaction;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
@@ -110,13 +109,11 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
     repayingTransferTransactionDocument = transferTransactionDataFactory.document({
       account: accountDocument,
       transferAccount: secondaryAccountDocument,
-      transactions: [owningDeferredTransactionDocument],
     });
 
     invertedRepayingTransferTransactionDocument = transferTransactionDataFactory.document({
       account: secondaryAccountDocument,
       transferAccount: accountDocument,
-      transactions: [payingDeferredTransactionDocument],
     });
   });
 

@@ -1,5 +1,5 @@
 import * as Account from '@household/shared/schemas/account';
-import { createAccountId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 import { Api } from '@household/shared/types/api';
 
@@ -7,13 +7,13 @@ describe('Account id schema', () => {
   const tester = schemaTesterFactory<Api.Account.AccountId>(Account.accountId);
 
   tester.validateSuccess({
-    accountId: createAccountId(),
+    accountId: testDataFactory.account.id(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        accountId: createAccountId(),
+        accountId: testDataFactory.account.id(),
         extra: 1,
       } as any, 'data');
     });
@@ -28,7 +28,7 @@ describe('Account id schema', () => {
       }, 'accountId', 'string');
 
       tester.pattern({
-        accountId: createAccountId('not-valid'),
+        accountId: testDataFactory.account.id('not-valid'),
       }, 'accountId');
     });
   });

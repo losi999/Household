@@ -1,5 +1,5 @@
 import { IUpdateToPaymentTransactionService, updateToPaymentTransactionServiceFactory } from '@household/api/functions/update-to-payment-transaction/update-to-payment-transaction.service';
-import { createAccountDocument, createCategoryDocument, createDocumentUpdate, createPaymentTransactionRequest, createProductDocument, createProductId, createProjectDocument, createRecipientDocument, createTransferTransactionDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId, getProjectId, getRecipientId, getAccountId, getProductId, getTransactionId } from '@household/shared/common/utils';
 import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
@@ -50,20 +50,20 @@ describe('Update to payment transaction service', () => {
   let queriedProduct: Documents.Product;
 
   beforeEach(() => {
-    queriedAccount = createAccountDocument();
-    queriedLoanAccount = createAccountDocument({
+    queriedAccount = testDataFactory.account.document();
+    queriedLoanAccount = testDataFactory.account.document({
       accountType: AccountType.Loan,
     });
-    queriedCategory = createCategoryDocument({
+    queriedCategory = testDataFactory.category.document({
       categoryType: CategoryType.Inventory,
     });
-    queriedProduct = createProductDocument({
+    queriedProduct = testDataFactory.product.document({
       category: queriedCategory,
     });
-    queriedProject = createProjectDocument();
-    queriedRecipient = createRecipientDocument();
+    queriedProject = testDataFactory.project.document();
+    queriedRecipient = testDataFactory.recipient.document();
 
-    body = createPaymentTransactionRequest({
+    body = testDataFactory.transaction.request.payment({
       categoryId: getCategoryId(queriedCategory),
       projectId: getProjectId(queriedProject),
       recipientId: getRecipientId(queriedRecipient),
@@ -72,9 +72,9 @@ describe('Update to payment transaction service', () => {
     });
   });
 
-  const queriedDocument = createTransferTransactionDocument();
+  const queriedDocument = testDataFactory.transaction.document.transfer();
   const transactionId = getTransactionId(queriedDocument);
-  const updateQuery = createDocumentUpdate();
+  const updateQuery = testDataFactory.documentUpdate();
 
   describe('should return', () => {
     it('if updated to payment transaction', async () => {
@@ -116,7 +116,7 @@ describe('Update to payment transaction service', () => {
     });
 
     it('if updated to deferred transaction', async () => {
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         loanAccountId: getAccountId(queriedLoanAccount),
       });
@@ -162,7 +162,7 @@ describe('Update to payment transaction service', () => {
     });
 
     it('if updated to reimbursement transaction', async () => {
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         accountId: getAccountId(queriedLoanAccount),
         loanAccountId: getAccountId(queriedAccount),
@@ -253,7 +253,7 @@ describe('Update to payment transaction service', () => {
     });
 
     it('if account and loanAccount would be the same', async () => {
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         loanAccountId: body.accountId,
       });
@@ -307,7 +307,7 @@ describe('Update to payment transaction service', () => {
     });
 
     it('if no loan account found', async () => {
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         loanAccountId: getAccountId(queriedLoanAccount),
       });
@@ -456,14 +456,14 @@ describe('Update to payment transaction service', () => {
     });
 
     it('if product belongs to different category', async () => {
-      body.productId = createProductId();
+      body.productId = testDataFactory.product.id();
 
       mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([queriedAccount]);
       mockCategoryService.functions.findCategoryById.mockResolvedValue(queriedCategory);
       mockProjectService.functions.findProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.findProductById.mockResolvedValue(createProductDocument());
+      mockProductService.functions.findProductById.mockResolvedValue(testDataFactory.product.document());
 
       await service({
         body,
@@ -632,7 +632,7 @@ describe('Update to payment transaction service', () => {
     });
 
     it('if account is loan type for payment transaction', async () => {
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         accountId: getAccountId(queriedLoanAccount),
       });
@@ -665,10 +665,10 @@ describe('Update to payment transaction service', () => {
     });
 
     it('if loanAccount is loan type for reimbursement transaction', async () => {
-      const queriedSecondLoanAccount = createAccountDocument({
+      const queriedSecondLoanAccount = testDataFactory.account.document({
         accountType: AccountType.Loan,
       });
-      body = createPaymentTransactionRequest({
+      body = testDataFactory.transaction.request.payment({
         ...body,
         loanAccountId: getAccountId(queriedSecondLoanAccount),
         accountId: getAccountId(queriedLoanAccount),

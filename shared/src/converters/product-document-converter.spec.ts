@@ -1,4 +1,4 @@
-import { createCategoryDocument, createCategoryResponse, createDocumentUpdate, createProductDocument, createProductGroupedResponse, createProductReport, createProductRequest, createProductResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
@@ -7,12 +7,11 @@ import { productDocumentConverterFactory, IProductDocumentConverter } from '@hou
 describe('Product document converter', () => {
   let converter: IProductDocumentConverter;
   let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
-  const now = new Date();
 
   beforeEach(() => {
     mockCategoryDocumentConverter = createMockService('toResponse');
 
-    vi.useFakeTimers().setSystemTime(now);
+    vi.useFakeTimers().setSystemTime(new Date());
     converter = productDocumentConverterFactory(mockCategoryDocumentConverter.service);
   });
 
@@ -20,32 +19,20 @@ describe('Product document converter', () => {
     vi.useRealTimers();
   });
 
-  const brand = 'tesco';
-  const unitOfMeasurement = 'kg';
-  const measurement = 200;
   const expiresIn = 3600;
-  const category = createCategoryDocument();
-  const body = createProductRequest({
-    unitOfMeasurement,
-    brand,
-    measurement,
-  });
-  const queriedDocument = createProductDocument({
-    brand,
-    unitOfMeasurement,
-    measurement,
-    category,
-    createdAt: now,
-    updatedAt: now,
-  });
+  const category = testDataFactory.category.document();
 
   describe('create', () => {
     it('should return document', () => {
+      const body = testDataFactory.product.request();
+
+      const { unitOfMeasurement, brand, measurement } = body;
+
       const result = converter.create({
         body,
         category,
       }, undefined);
-      expect(result).toEqual(createProductDocument({
+      expect(result).toEqual(testDataFactory.product.document({
         unitOfMeasurement,
         brand,
         measurement,
@@ -56,16 +43,20 @@ describe('Product document converter', () => {
     });
 
     it('should return expiring document', () => {
+      const body = testDataFactory.product.request();
+
+      const { unitOfMeasurement, brand, measurement } = body;
+
       const result = converter.create({
         body,
         category,
       }, expiresIn);
-      expect(result).toEqual(createProductDocument({
+      expect(result).toEqual(testDataFactory.product.document({
         unitOfMeasurement,
         brand,
         measurement,
         category,
-        expiresAt: addSeconds(expiresIn, now),
+        expiresAt: addSeconds(expiresIn),
         _id: undefined,
       }));
     });
@@ -74,13 +65,15 @@ describe('Product document converter', () => {
 
   describe('update', () => {
     it('should update document', () => {
+      const body = testDataFactory.product.request();
+      
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             ...body,
             fullName: `${body.brand} ${body.measurement} ${body.unitOfMeasurement}`,
-            expiresAt: addSeconds(expiresIn, now),
+            expiresAt: addSeconds(expiresIn),
           },
         },
       }));
@@ -89,11 +82,15 @@ describe('Product document converter', () => {
 
   describe('toGroupedResponse', () => {
     it('should return response', () => {
-      const categoryDocument = createCategoryDocument({
-        products: [queriedDocument],
+      const doc = testDataFactory.product.document();
+
+      const { unitOfMeasurement, brand, measurement } = doc;
+
+      const categoryDocument = testDataFactory.category.document({
+        products: [doc],
       });
 
-      const categoryResponse = createCategoryResponse({
+      const categoryResponse = testDataFactory.category.response({
         fullName: 'category:full:name',
       });
 
@@ -101,12 +98,12 @@ describe('Product document converter', () => {
 
       const result = converter.toGroupedResponse(categoryDocument);
       expect(result).toEqual(
-        createProductGroupedResponse({
+        testDataFactory.product.groupedResponse({
           fullName: categoryResponse.fullName,
           categoryId: categoryResponse.categoryId,
           products: [
-            createProductResponse({
-              productId: getProductId(queriedDocument),
+            testDataFactory.product.response({
+              productId: getProductId(doc),
               unitOfMeasurement,
               brand,
               measurement,
@@ -119,11 +116,15 @@ describe('Product document converter', () => {
 
   describe('toGroupedResponseList', () => {
     it('should return response', () => {
-      const categoryDocument = createCategoryDocument({
-        products: [queriedDocument],
+      const doc = testDataFactory.product.document();
+
+      const { unitOfMeasurement, brand, measurement } = doc;
+
+      const categoryDocument = testDataFactory.category.document({
+        products: [doc],
       });
 
-      const categoryResponse = createCategoryResponse({
+      const categoryResponse = testDataFactory.category.response({
         fullName: 'category:full:name',
       });
 
@@ -131,12 +132,12 @@ describe('Product document converter', () => {
 
       const result = converter.toGroupedResponseList([categoryDocument ]);
       expect(result).toEqual([
-        createProductGroupedResponse({
+        testDataFactory.product.groupedResponse({
           fullName: categoryResponse.fullName,
           categoryId: categoryResponse.categoryId,
           products: [
-            createProductResponse({
-              productId: getProductId(queriedDocument),
+            testDataFactory.product.response({
+              productId: getProductId(doc),
               unitOfMeasurement,
               brand,
               measurement,
@@ -149,9 +150,13 @@ describe('Product document converter', () => {
 
   describe('toResponse', () => {
     it('should return response', () => {
-      const result = converter.toResponse(queriedDocument);
-      expect(result).toEqual(createProductResponse({
-        productId: getProductId(queriedDocument),
+      const doc = testDataFactory.product.document();
+
+      const { unitOfMeasurement, brand, measurement } = doc;
+
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(testDataFactory.product.response({
+        productId: getProductId(doc),
         unitOfMeasurement,
         brand,
         measurement,
@@ -161,10 +166,14 @@ describe('Product document converter', () => {
 
   describe('toResponseList', () => {
     it('should return response list', () => {
-      const result = converter.toResponseList([queriedDocument]);
+      const doc = testDataFactory.product.document();
+
+      const { unitOfMeasurement, brand, measurement } = doc;
+
+      const result = converter.toResponseList([doc]);
       expect(result).toEqual([
-        createProductResponse({
-          productId: getProductId(queriedDocument),
+        testDataFactory.product.response({
+          productId: getProductId(doc),
           unitOfMeasurement,
           brand,
           measurement,
@@ -175,13 +184,13 @@ describe('Product document converter', () => {
 
   describe('toReport', () => {
     it('should return response', () => {
-      const fullName = 'full name of product 100 g';
-      const product = createProductDocument({
-        fullName,
-      });
-      const result = converter.toReport(product);
-      expect(result).toEqual(createProductReport({
-        productId: getProductId(product),
+      const doc = testDataFactory.product.document();
+
+      const { fullName } = doc;
+
+      const result = converter.toReport(doc);
+      expect(result).toEqual(testDataFactory.product.report({
+        productId: getProductId(doc),
         fullName,
       }));
     });

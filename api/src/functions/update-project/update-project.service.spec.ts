@@ -1,5 +1,5 @@
 import { IUpdateProjectService, updateProjectServiceFactory } from '@household/api/functions/update-project/update-project.service';
-import { createProjectRequest, createProjectDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProjectId } from '@household/shared/common/utils';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
@@ -17,10 +17,10 @@ describe('Update project service', () => {
     service = updateProjectServiceFactory(mockProjectService.service, mockProjectDocumentConverter.service);
   });
 
-  const body = createProjectRequest();
-  const queriedDocument = createProjectDocument();
+  const body = testDataFactory.project.request();
+  const queriedDocument = testDataFactory.project.document();
   const projectId = getProjectId(queriedDocument);
-  const updateQuery = createDocumentUpdate();
+  const updateQuery = testDataFactory.documentUpdate();
 
   it('should return if project is updated', async () => {
     mockProjectService.functions.findProjectById.mockResolvedValue(queriedDocument);

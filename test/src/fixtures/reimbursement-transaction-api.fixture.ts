@@ -1,5 +1,4 @@
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { Product, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
@@ -11,8 +10,10 @@ import { validateCategoryResponse } from '@household/test/fixtures/category-api.
 import { validateProductResponse } from '@household/test/fixtures/product-api.fixture';
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
 import { validateRecipientResponse } from '@household/test/fixtures/recipient-api.fixture';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
-export const validateReimbursementTransactionResponse = (response: Transaction.ReimbursementResponse, document: Transaction.ReimbursementDocument) => {
+export const validateReimbursementTransactionResponse = (response: Responses.ReimbursementTransaction, document: Documents.ReimbursementTransaction) => {
   return new Comparer(response, {
     transactionId: getTransactionId(document),
     amount: document.amount,
@@ -33,7 +34,7 @@ export const validateReimbursementTransactionResponse = (response: Transaction.R
 };
 
 export const expect = baseExpect.extend({
-  toHaveBeenSavedAsReimbursementTransactionDocument(req: Transaction.PaymentRequest, document: Transaction.ReimbursementDocument) {
+  toHaveBeenSavedAsReimbursementTransactionDocument(req: Requests.PaymentTransaction, document: Documents.ReimbursementTransaction) {
     if (!document) {
       return {
         pass: false,
@@ -65,7 +66,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected deferred transaction to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveRelatedDocumentsChangedInReimbursementTransaction(originalDocument: Transaction.ReimbursementDocument, currentDocument: Transaction.ReimbursementDocument, reassignments: {
+  toHaveRelatedDocumentsChangedInReimbursementTransaction(originalDocument: Documents.ReimbursementTransaction, currentDocument: Documents.ReimbursementTransaction, reassignments: {
     recipient?: Reassignment<Api.Recipient.Id>;
     project?: Reassignment<Api.Project.Id>;
     product?: Reassignment<Api.Product.Id>;
@@ -115,8 +116,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match deferred transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingReimbursementTransactionDocument(received: APIResponse, document: Transaction.ReimbursementDocument) {
-    const response = await received.json() as Transaction.ReimbursementResponse[];
+  async toContainMatchingReimbursementTransactionDocument(received: APIResponse, document: Documents.ReimbursementTransaction) {
+    const response = await received.json() as Responses.ReimbursementTransaction[];
 
     const matchingResponse = response.find(r => r.transactionId === getTransactionId(document));
 
@@ -136,8 +137,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match reimbursement transaction document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toMatchReimbursementTransactionDocument(res: APIResponse, document: Transaction.ReimbursementDocument) {
-    const response = await res.json() as Transaction.ReimbursementResponse;
+  async toMatchReimbursementTransactionDocument(res: APIResponse, document: Documents.ReimbursementTransaction) {
+    const response = await res.json() as Responses.ReimbursementTransaction;
     
     const comparer = validateReimbursementTransactionResponse(response, document);
     

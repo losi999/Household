@@ -1,5 +1,4 @@
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { Product, Recipient, Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
@@ -11,8 +10,10 @@ import { validateAccountResponse } from '@household/test/fixtures/account-api.fi
 import { validateRecipientResponse } from '@household/test/fixtures/recipient-api.fixture';
 import { validateCategoryResponse } from '@household/test/fixtures/category-api.fixture';
 import { validateProductResponse } from '@household/test/fixtures/product-api.fixture';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
-export const validatePaymentTransactionResponse = (response: Transaction.PaymentResponse, document: Transaction.PaymentDocument) => {
+export const validatePaymentTransactionResponse = (response: Responses.PaymentTransaction, document: Documents.PaymentTransaction) => {
   return new Comparer(response, {
     transactionId: getTransactionId(document),
     amount: document.amount,
@@ -32,7 +33,7 @@ export const validatePaymentTransactionResponse = (response: Transaction.Payment
 };
 
 export const expect = baseExpect.extend({
-  toHaveBeenSavedAsPaymentTransactionDocument(req: Transaction.PaymentRequest, document: Transaction.PaymentDocument) {
+  toHaveBeenSavedAsPaymentTransactionDocument(req: Requests.PaymentTransaction, document: Documents.PaymentTransaction) {
     if (!document) {
       return {
         pass: false,
@@ -63,7 +64,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected payment transaction to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveRelatedDocumentsChangedInPaymentTransaction(originalDocument: Transaction.PaymentDocument, currentDocument: Transaction.PaymentDocument, reassignments: {
+  toHaveRelatedDocumentsChangedInPaymentTransaction(originalDocument: Documents.PaymentTransaction, currentDocument: Documents.PaymentTransaction, reassignments: {
     recipient?: Reassignment<Api.Recipient.Id>;
     project?: Reassignment<Api.Project.Id>;
     product?: Reassignment<Api.Product.Id>;
@@ -112,7 +113,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match payment transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
-  toBeConvertedToPaymentTransaction(originalDocument: Transaction.DeferredDocument, currentDocument: Transaction.PaymentDocument) {
+  toBeConvertedToPaymentTransaction(originalDocument: Documents.DeferredTransaction, currentDocument: Documents.PaymentTransaction) {
 
     const comparer = new Comparer(currentDocument, {
       amount: originalDocument.amount,
@@ -137,8 +138,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match payment transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingPaymentTransactionDocument(received: APIResponse, document: Transaction.PaymentDocument) {
-    const response = await received.json() as Transaction.PaymentResponse[];
+  async toContainMatchingPaymentTransactionDocument(received: APIResponse, document: Documents.PaymentTransaction) {
+    const response = await received.json() as Responses.PaymentTransaction[];
 
     const matchingResponse = response.find(r => r.transactionId === getTransactionId(document));
 
@@ -158,8 +159,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match payment transaction document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toMatchPaymentTransactionDocument(res: APIResponse, document: Transaction.PaymentDocument) {
-    const response = await res.json() as Transaction.PaymentResponse;
+  async toMatchPaymentTransactionDocument(res: APIResponse, document: Documents.PaymentTransaction) {
+    const response = await res.json() as Responses.PaymentTransaction;
 
     const comparer = validatePaymentTransactionResponse(response, document);
 

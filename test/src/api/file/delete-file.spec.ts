@@ -1,4 +1,3 @@
-import { Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { fileDataFactory } from '@household/test/api/file/data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
@@ -20,7 +19,7 @@ const test = mergeTests(fileApiTest, transactionDbTest, fileDbTest, storageTest)
 
 test.describe('DELETE /file/v1/files/{fileId}', () => {
   let fileDocument: Documents.File;
-  let draftDocument: Transaction.DraftDocument;
+  let draftDocument: Documents.DraftTransaction;
 
   test.beforeEach(async () => {
     fileDocument = fileDataFactory.document();

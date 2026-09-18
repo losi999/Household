@@ -1,7 +1,7 @@
 import { listUsersServiceFactory, IListUsersService } from '@household/api/functions/list-users/list-users.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
 import { MockService, createMockService, validateError, validateNthFunctionCall } from '@household/shared/common/unit-testing';
-import { createUserResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { UserType as CognitoUserType } from '@aws-sdk/client-cognito-identity-provider';
 import { UserType } from '@household/shared/enums';
 
@@ -63,17 +63,17 @@ describe('List users service', () => {
 
     const result = await service();
     expect(result).toEqual([
-      createUserResponse({
+      testDataFactory.user.response.user({
         email: editorEmail,
         status,
         groups: [UserType.Editor],
       }),
-      createUserResponse({
+      testDataFactory.user.response.user({
         email: hairdresserEmail,
         status,
         groups: [UserType.Hairdresser],
       }),
-      createUserResponse({
+      testDataFactory.user.response.user({
         email: viewerEmail,
         status,
         groups: [],

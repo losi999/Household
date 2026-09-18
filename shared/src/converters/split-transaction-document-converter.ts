@@ -75,8 +75,15 @@ export const splitTransactionDocumentConverterFactory = (
 
   const instance: ISplitTransactionDocumentConverter = {
     create: ({ body, accounts, projects, categories, recipient, products }, expiresIn, generateId) => {
+      const amount = [
+        ...(body.splits ?? []),
+        ...(body.loans ?? []),
+      ].reduce((accumulator, currentValue) => {
+        return accumulator + currentValue.amount;
+      }, 0);
+
       return {
-        amount: body.amount,
+        amount,
         description: body.description,
         account: accounts[body.accountId],
         recipient: recipient ?? undefined,
@@ -107,11 +114,18 @@ export const splitTransactionDocumentConverterFactory = (
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ body: { accountId, amount, description, issuedAt, loans, splits }, accounts, projects, categories, recipient, products }, expiresIn) => {
+    update: ({ body: { accountId, description, issuedAt, loans, splits }, accounts, projects, categories, recipient, products }, expiresIn) => {
       const optionalSet: UpdateQuery<Documents.Transaction>['$set'] = {
         recipient,
         description,
       };
+
+      const amount = [
+        ...(splits ?? []),
+        ...(loans ?? []),
+      ].reduce((accumulator, currentValue) => {
+        return accumulator + currentValue.amount;
+      }, 0);
 
       return {
         update: {

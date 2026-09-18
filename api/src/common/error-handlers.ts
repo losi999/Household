@@ -69,12 +69,6 @@ export const httpErrors = {
       log('Delete transaction', ctx, error);
       throw httpError(statusCode, 'Error while deleting transaction');
     },
-    sumOfSplits: (ctx: {body: Requests.SplitTransaction; total: number;}, statusCode = 400) => {
-      if(ctx.body.amount !== ctx.total) {
-        log('Sum of splits must equal to total amount', ctx);
-        throw httpError(statusCode, 'Sum of splits must equal to total amount');
-      }
-    },
     sameAccountTransfer: (ctx: Api.Account.AccountId & Api.Transaction.TransferAccountId, statusCode = 400) => {
       if (ctx.accountId === ctx.transferAccountId) {
         log('Cannot transfer to same account', ctx);

@@ -1,5 +1,4 @@
-import { default as schema } from '@household/test/schemas/file-response-list';
-import { Transaction } from '@household/shared/types/types';
+import { responseList as schema } from '@household/shared/schemas/file';
 import { Documents } from '@household/shared/types/documents';
 import { fileDataFactory } from '@household/test/api/file/data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
@@ -20,7 +19,7 @@ const test = mergeTests(fileApiTest, transactionDbTest, fileDbTest);
 
 test.describe('GET /file/v1/files', () => {
   let fileDocument: Documents.File;
-  let draftDocument: Transaction.DraftDocument;
+  let draftDocument: Documents.DraftTransaction;
 
   test.beforeEach(async () => {
     fileDocument = fileDataFactory.document();

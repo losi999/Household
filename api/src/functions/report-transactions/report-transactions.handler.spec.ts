@@ -1,7 +1,7 @@
 import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/report-transactions/report-transactions.handler';
 import { IReportTransactionsService } from '@household/api/functions/report-transactions/report-transactions.service';
-import { createTransactionReport } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Report transactions handler', () => {
   let mockListTransactionsService: MockBusinessService<IReportTransactionsService>;
@@ -12,7 +12,7 @@ describe('Report transactions handler', () => {
     handlerFunction = handler(mockListTransactionsService);
   });
 
-  const transactions = [createTransactionReport()];
+  const transactions = [testDataFactory.transaction.report()];
   const handlerEvent = {
     body: '{}',
   } as AWSLambda.APIGatewayProxyEvent;

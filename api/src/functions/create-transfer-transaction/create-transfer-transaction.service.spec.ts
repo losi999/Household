@@ -1,5 +1,5 @@
 import { ICreateTransferTransactionService, createTransferTransactionServiceFactory } from '@household/api/functions/create-transfer-transaction/create-transfer-transaction.service';
-import { createTransferTransactionRequest, createAccountDocument, createTransferTransactionDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
@@ -22,13 +22,13 @@ describe('Create transfer transaction service', () => {
     service = createTransferTransactionServiceFactory(mockAccountService.service, mockTransactionService.service, mockTransferTransactionDocumentConverter.service);
   });
 
-  const queriedAccount = createAccountDocument();
-  const queriedTransferAccount = createAccountDocument();
+  const queriedAccount = testDataFactory.account.document();
+  const queriedTransferAccount = testDataFactory.account.document();
   let body: Requests.TransferTransaction;
-  const createdTransferDocument = createTransferTransactionDocument();
+  const createdTransferDocument = testDataFactory.transaction.document.transfer();
 
   beforeEach(() => {
-    body = createTransferTransactionRequest({
+    body = testDataFactory.transaction.request.transfer({
       accountId: getAccountId(queriedAccount),
       transferAccountId: getAccountId(queriedTransferAccount),
     });
@@ -36,13 +36,13 @@ describe('Create transfer transaction service', () => {
 
   describe('should return new id', () => {
     it('of created transfer transaction between 2 loan accounts', async () => {
-      const queriedLoanAccount1 = createAccountDocument({
+      const queriedLoanAccount1 = testDataFactory.account.document({
         accountType: AccountType.Loan,
       });
-      const queriedLoanAccount2 = createAccountDocument({
+      const queriedLoanAccount2 = testDataFactory.account.document({
         accountType: AccountType.Loan,
       });
-      body = createTransferTransactionRequest({
+      body = testDataFactory.transaction.request.transfer({
         ...body,
         accountId: getAccountId(queriedLoanAccount1),
         transferAccountId: getAccountId(queriedLoanAccount2),
@@ -100,10 +100,10 @@ describe('Create transfer transaction service', () => {
     });
 
     it('of created transfer transaction between a loan and non-loan accounts', async () => {
-      const queriedLoanAccount = createAccountDocument({
+      const queriedLoanAccount = testDataFactory.account.document({
         accountType: AccountType.Loan,
       });
-      body = createTransferTransactionRequest({
+      body = testDataFactory.transaction.request.transfer({
         ...body,
         transferAccountId: getAccountId(queriedLoanAccount),
       });
@@ -135,7 +135,7 @@ describe('Create transfer transaction service', () => {
 
   describe('should throw error', () => {
     it('if both accounts are the same', async () => {
-      body = createTransferTransactionRequest({
+      body = testDataFactory.transaction.request.transfer({
         ...body,
         accountId: getAccountId(queriedAccount),
         transferAccountId: getAccountId(queriedAccount),

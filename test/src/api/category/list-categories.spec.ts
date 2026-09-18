@@ -1,4 +1,4 @@
-import { default as schema } from '@household/test/schemas/category-response-list';
+import { responseList as schema } from '@household/shared/schemas/category';
 import { entries } from '@household/shared/common/utils';
 import { forbidUsers } from '@household/test/utils';
 import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';

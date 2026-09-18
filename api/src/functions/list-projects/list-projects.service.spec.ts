@@ -1,5 +1,5 @@
 import { IListProjectsService, listProjectsServiceFactory } from '@household/api/functions/list-projects/list-projects.service';
-import { createProjectDocument, createProjectResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
@@ -16,8 +16,8 @@ describe('List projects service', () => {
     service = listProjectsServiceFactory(mockProjectService.service, mockProjectDocumentConverter.service);
   });
 
-  const queriedDocument = createProjectDocument();
-  const convertedResponse = createProjectResponse();
+  const queriedDocument = testDataFactory.project.document();
+  const convertedResponse = testDataFactory.project.response();
 
   it('should return documents', async () => {
     mockProjectService.functions.listProjects.mockResolvedValue([queriedDocument]);

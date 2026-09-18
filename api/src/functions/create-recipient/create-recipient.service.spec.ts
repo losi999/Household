@@ -1,5 +1,5 @@
 import { ICreateRecipientService, createRecipientServiceFactory } from '@household/api/functions/create-recipient/create-recipient.service';
-import { createRecipientRequest, createRecipientDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getRecipientId } from '@household/shared/common/utils';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
@@ -16,8 +16,8 @@ describe('Create recipient service', () => {
     service = createRecipientServiceFactory(mockRecipientService.service, mockRecipientDocumentConverter.service);
   });
 
-  const body = createRecipientRequest();
-  const convertedRecipientDocument = createRecipientDocument();
+  const body = testDataFactory.recipient.request();
+  const convertedRecipientDocument = testDataFactory.recipient.document();
   const recipientId = getRecipientId(convertedRecipientDocument);
 
   it('should return new id', async () => {

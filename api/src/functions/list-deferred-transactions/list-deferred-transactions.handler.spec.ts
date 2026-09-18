@@ -1,6 +1,6 @@
 import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-deferred-transactions/list-deferred-transactions.handler';
-import { createDeferredTransactionResponse, createTransactionId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { IListDeferredTransactionsService } from '@household/api/functions/list-deferred-transactions/list-deferred-transactions.service';
 
 describe('List transactions handler', () => {
@@ -11,9 +11,9 @@ describe('List transactions handler', () => {
     mockListTransactionsService = vi.fn();
     handlerFunction = handler(mockListTransactionsService);
   });
-  const transactions = [createDeferredTransactionResponse()];
+  const transactions = [testDataFactory.transaction.response.deferred()];
 
-  const transactionId = createTransactionId();
+  const transactionId = testDataFactory.transaction.id();
 
   const handlerEvent = {
     queryStringParameters: {

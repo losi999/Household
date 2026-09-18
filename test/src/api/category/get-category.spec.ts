@@ -1,4 +1,4 @@
-import { default as schema } from '@household/test/schemas/category-response';
+import { response as schema } from '@household/shared/schemas/category';
 import { getCategoryId } from '@household/shared/common/utils';
 import { entries } from '@household/shared/common/utils';
 import { forbidUsers } from '@household/test/utils';

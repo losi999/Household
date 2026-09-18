@@ -253,7 +253,6 @@ export const splitRequest: ObjectSchema<Requests.SplitTransaction> = {
   anyOf: [
     combine<Requests.SplitTransaction>([
       issuedAt,
-      negativeAmount,
       description,
       accountId,
       recipientId,
@@ -261,7 +260,6 @@ export const splitRequest: ObjectSchema<Requests.SplitTransaction> = {
       loans,
     ], {
       required: [
-        'amount',
         'issuedAt',
         'accountId',
         'splits',
@@ -269,7 +267,6 @@ export const splitRequest: ObjectSchema<Requests.SplitTransaction> = {
     }),
     combine<Requests.SplitTransaction>([
       issuedAt,
-      negativeAmount,
       description,
       accountId,
       recipientId,
@@ -277,7 +274,6 @@ export const splitRequest: ObjectSchema<Requests.SplitTransaction> = {
       loans,
     ], {
       required: [
-        'amount',
         'issuedAt',
         'accountId',
         'loans',

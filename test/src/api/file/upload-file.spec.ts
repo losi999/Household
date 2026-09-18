@@ -1,7 +1,7 @@
 import { Requests } from '@household/shared/types/requests';
 import { Api } from '@household/shared/types/api';
 import { fileDataFactory } from '@household/test/api/file/data-factory';
-import { default as schema } from '@household/test/schemas/file-url-response';
+import { uploadUrl as schema } from '@household/shared/schemas/file';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 

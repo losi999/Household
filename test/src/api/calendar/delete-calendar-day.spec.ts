@@ -1,12 +1,12 @@
 import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Calendar } from '@household/shared/types/types';
 import { calendarDayDataFactory } from '@household/test/api/calendar/data-factory';
 
 import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
+import { Documents } from '@household/shared/types/documents';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect);
 
@@ -16,7 +16,7 @@ const test = mergeTests(calendarApiTest, calendarDayDbTest);
 
 test.describe('DELETE /calendar/v1/days/{day}', () => {
   let day: string;
-  let calendarDayDocument: Calendar.Day.Document;
+  let calendarDayDocument: Documents.CalendarDay;
 
   test.beforeEach(async () => {
     calendarDayDocument = calendarDayDataFactory.document.work();

@@ -1,5 +1,4 @@
-import { default as schema } from '@household/test/schemas/product-response-list';
-import { Product } from '@household/shared/types/types';
+import { groupedResponseList as schema } from '@household/shared/schemas/product';
 import { Documents } from '@household/shared/types/documents';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';

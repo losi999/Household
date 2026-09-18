@@ -2,20 +2,13 @@ import { settingDocumentConverter } from '@household/shared/dependencies/convert
 import { DataFactoryFunction } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 import { Documents } from '@household/shared/types/documents';
-import { faker } from '@faker-js/faker';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { SettingKey } from '@household/shared/enums';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 export const settingDataFactory = (() => {
-  const createSettingRequest: DataFactoryFunction<Requests.Setting> = (req) => {
-    return {
-      value: faker.string.uuid(),
-      ...req,
-    };
-  };
-
   const createSettingUpdate: DataFactoryFunction<Requests.Setting, DocumentUpdate<Documents.Setting>> = (req) => {
-    return settingDocumentConverter.update(createSettingRequest(req), Number(process.env.EXPIRES_IN));
+    return settingDocumentConverter.update(testDataFactory.setting.request(req), Number(process.env.EXPIRES_IN));
   };
 
   const createSettingDocument = (settingKey: SettingKey, req: Requests.Setting): Documents.Setting => {
@@ -27,8 +20,8 @@ export const settingDataFactory = (() => {
   };
 
   return {
-    key: (key?: string) => (key ?? faker.string.uuid()) as SettingKey,
-    request: createSettingRequest,
+    key: testDataFactory.setting.key,
+    request: testDataFactory.setting.request,
     document: createSettingDocument,
     update: createSettingUpdate,
   };

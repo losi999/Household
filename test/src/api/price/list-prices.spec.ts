@@ -1,5 +1,4 @@
-import { default as schema } from '@household/test/schemas/price-response-list';
-import { Price } from '@household/shared/types/types';
+import { responseList as schema } from '@household/shared/schemas/price';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
@@ -8,6 +7,7 @@ import { test as priceApiTest, expect as priceApiExpect } from '@household/test/
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { Documents } from '@household/shared/types/documents';
 
 const expect = mergeExpects(priceApiExpect, apiExpect);
 
@@ -16,9 +16,9 @@ const permissionMap = allowUsers('hairdresser');
 const test = mergeTests(priceApiTest, priceDbTest);
 
 test.describe('GET /price/v1/prices', () => {
-  let priceDocument1: Price.Document;
-  let priceDocument2: Price.Document;
-  let archivedPriceDocument: Price.Document;
+  let priceDocument1: Documents.Price;
+  let priceDocument2: Documents.Price;
+  let archivedPriceDocument: Documents.Price;
 
   test.beforeEach(async () => {
     priceDocument1 = priceDataFactory.document();

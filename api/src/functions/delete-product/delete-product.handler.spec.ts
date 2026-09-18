@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/delete-product/delete-product.handler';
 import { IDeleteProductService } from '@household/api/functions/delete-product/delete-product.service';
-import { createProductId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Delete product handler', () => {
   let mockDeleteProductService: MockBusinessService<IDeleteProductService>;
@@ -12,7 +12,7 @@ describe('Delete product handler', () => {
     handlerFunction = handler(mockDeleteProductService);
   });
 
-  const productId = createProductId();
+  const productId = testDataFactory.product.id();
   const handlerEvent = {
     pathParameters: {
       productId,

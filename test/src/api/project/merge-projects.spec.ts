@@ -4,7 +4,6 @@ import { test as projectApiTest, expect as projectApiExpect } from '@household/t
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
-import { Transaction } from '@household/shared/types/types';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
@@ -66,13 +65,13 @@ test.describe('POST /project/v1/projects/{projectId}/merge', () => {
 
         test.describe('in related transactions source project', () => {
           let unrelatedProjectDocument: Documents.Project;
-          let paymentTransactionDocument: Transaction.PaymentDocument;
-          let deferredTransactionDocument: Transaction.DeferredDocument;
-          let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
-          let splitTransactionDocument: Transaction.SplitDocument;
-          let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
-          let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
-          let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
+          let paymentTransactionDocument: Documents.PaymentTransaction;
+          let deferredTransactionDocument: Documents.DeferredTransaction;
+          let reimbursementTransactionDocument: Documents.ReimbursementTransaction;
+          let splitTransactionDocument: Documents.SplitTransaction;
+          let unrelatedPaymentTransactionDocument: Documents.PaymentTransaction;
+          let unrelatedDeferredTransactionDocument: Documents.DeferredTransaction;
+          let unrelatedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
           let accountDocument: Documents.Account;
           let loanAccountDocument: Documents.Account;
 

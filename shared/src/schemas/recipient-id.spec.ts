@@ -1,19 +1,19 @@
 import { recipientId as schema } from '@household/shared/schemas/recipient';
 import { Api } from '@household/shared/types/api';
-import { createRecipientId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Recipient id schema', () => {
   const tester = schemaTesterFactory<Api.Recipient.RecipientId>(schema);
 
   tester.validateSuccess({
-    recipientId: createRecipientId(),
+    recipientId: testDataFactory.recipient.id(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        recipientId: createRecipientId(),
+        recipientId: testDataFactory.recipient.id(),
         extra: 1,
       } as any, 'data');
     });
@@ -28,7 +28,7 @@ describe('Recipient id schema', () => {
       }, 'recipientId', 'string');
 
       tester.pattern({
-        recipientId: createRecipientId('not-valid'),
+        recipientId: testDataFactory.recipient.id('not-valid'),
       }, 'recipientId');
     });
   });

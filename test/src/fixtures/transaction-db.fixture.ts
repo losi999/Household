@@ -1,7 +1,8 @@
-import { Transaction } from '@household/shared/types/types';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 
 export const test = baseTest.extend<Pick<ITransactionService, 'saveTransaction' | 'saveTransactions' | 'findTransactionById' | 'getTransactionById' | 'listDraftTransactionsByFileId'>>({
   saveTransaction: async ({ logServiceCall }, use) => {
@@ -27,7 +28,7 @@ export const test = baseTest.extend<Pick<ITransactionService, 'saveTransaction' 
     await use(saveTransactions);
   },
   findTransactionById: async ({ logServiceCall }, use) => {
-    const findTransactionById: ITransactionService['findTransactionById'] = async <T extends Transaction.Document = Transaction.Document>(transactionId: Parameters<ITransactionService['findTransactionById']>[0]) => {
+    const findTransactionById: ITransactionService['findTransactionById'] = async <T extends Documents.Transaction = Documents.Transaction>(transactionId: Parameters<ITransactionService['findTransactionById']>[0]) => {
       const result = await transactionService.findTransactionById<T>(transactionId);
       await logServiceCall('findTransactionById', {
         transactionId,
@@ -38,7 +39,7 @@ export const test = baseTest.extend<Pick<ITransactionService, 'saveTransaction' 
     await use(findTransactionById);
   },
   getTransactionById: async ({ logServiceCall }, use) => {
-    const getTransactionById: ITransactionService['getTransactionById'] = async <T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id) => {
+    const getTransactionById: ITransactionService['getTransactionById'] = async <T extends Documents.Transaction = Documents.Transaction>(transactionId: Api.Transaction.Id) => {
       const result = await transactionService.getTransactionById<T>(transactionId);
       await logServiceCall('getTransactionById', {
         transactionId,

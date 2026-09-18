@@ -1,5 +1,5 @@
 import { IReportTransactionsService, reportTransactionsServiceFactory } from '@household/api/functions/report-transactions/report-transactions.service';
-import { createAccountId, createTransactionRawReport, createTransactionReport } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IReportDocumentConverter } from '@household/shared/converters/report-document-converter';
 import { ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
@@ -21,12 +21,12 @@ describe('Report transactions service', () => {
     service = reportTransactionsServiceFactory(mockReportDocumentConverter.service, mockTransactionService.service, mockTransactionDocumentConverter.service);
   });
 
-  const queriedDocument = createTransactionRawReport();
-  const convertedReport = createTransactionReport();
+  const queriedDocument = testDataFactory.transaction.document.report();
+  const convertedReport = testDataFactory.transaction.report();
   const body: Requests.Report = [
     {
       filterType: 'account',
-      items: [createAccountId()],
+      items: [testDataFactory.account.id()],
       include: true,
     },
   ];

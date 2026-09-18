@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/update-recipient/update-recipient.handler';
 import { IUpdateRecipientService } from '@household/api/functions/update-recipient/update-recipient.service';
-import { createRecipientId, createRecipientRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Update recipient handler', () => {
@@ -13,8 +13,8 @@ describe('Update recipient handler', () => {
     handlerFunction = handler(mockUpdateRecipientService);
   });
 
-  const recipientId = createRecipientId();
-  const body = createRecipientRequest();
+  const recipientId = testDataFactory.recipient.id();
+  const body = testDataFactory.recipient.request();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),

@@ -1,10 +1,8 @@
 import { entries, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Calendar, Customer, Price } from '@household/shared/types/types';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
-
 import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
@@ -13,6 +11,9 @@ import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-e
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
 import { DAY_END, DAY_START } from '@household/shared/constants';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 const expect = mergeExpects(calendarApiExpect, apiExpect, customerApiExpect);
 
@@ -21,9 +22,9 @@ const permissionMap = allowUsers('hairdresser');
 const test = mergeTests(calendarApiTest, priceDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('POST /calendar/v1/entries', () => {
-  let request: Calendar.Entry.Request;
-  let customerDocument: Customer.Document;
-  let priceDocument: Price.Document;
+  let request: Requests.CalendarEntry;
+  let customerDocument: Documents.Customer;
+  let priceDocument: Documents.Price;
 
   test.beforeEach(async () => {
     customerDocument = customerDataFactory.document();
@@ -60,7 +61,7 @@ test.describe('POST /calendar/v1/entries', () => {
               const res = await requestCreateCalendarEntry(request);
               expect(res).toBeCreatedResponse();
   
-              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
               expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
             });
 
@@ -71,7 +72,7 @@ test.describe('POST /calendar/v1/entries', () => {
               const res = await requestCreateCalendarEntry(request);
               expect(res).toBeCreatedResponse();
   
-              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
               expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
             });
           });
@@ -82,7 +83,7 @@ test.describe('POST /calendar/v1/entries', () => {
               const res = await requestCreateCalendarEntry(request);
               expect(res).toBeCreatedResponse();
   
-              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
               expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
             });
 
@@ -93,7 +94,7 @@ test.describe('POST /calendar/v1/entries', () => {
               const res = await requestCreateCalendarEntry(request);
               expect(res).toBeCreatedResponse();
   
-              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
               expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
             });
           });
@@ -116,7 +117,7 @@ test.describe('POST /calendar/v1/entries', () => {
               const res = await requestCreateCalendarEntry(request);
               expect(res).toBeCreatedResponse();
             
-              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
               expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
             });
 
@@ -138,7 +139,7 @@ test.describe('POST /calendar/v1/entries', () => {
               const res = await requestCreateCalendarEntry(request);
               expect(res).toBeCreatedResponse();
             
-              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
               expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
             });
             test('without additionalPrice', async ({ requestCreateCalendarEntry, savePrice, getCalendarEntryById, saveCustomer }) => {
@@ -159,7 +160,7 @@ test.describe('POST /calendar/v1/entries', () => {
               const res = await requestCreateCalendarEntry(request);
               expect(res).toBeCreatedResponse();
             
-              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
               expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
             });
             test('without prices', async ({ requestCreateCalendarEntry, getCalendarEntryById, saveCustomer }) => {
@@ -173,7 +174,7 @@ test.describe('POST /calendar/v1/entries', () => {
               const res = await requestCreateCalendarEntry(request);
               expect(res).toBeCreatedResponse();
 
-              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
               expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
             });
 
@@ -193,7 +194,7 @@ test.describe('POST /calendar/v1/entries', () => {
               const res = await requestCreateCalendarEntry(request);
               expect(res).toBeCreatedResponse();
             
-              const { calendarEntryId } = (await res.json()) as Calendar.Entry.CalendarEntryId;
+              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
               expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
               expect(customerDocument).toHaveBeenActivated(await findCustomerById(getCustomerId(customerDocument)));
             });
@@ -439,7 +440,7 @@ test.describe('POST /calendar/v1/entries', () => {
             test('is not mongo id', async ({ requestCreateCalendarEntry }) => {
               const res = await requestCreateCalendarEntry(calendarEntryDataFactory.request.work({
                 body: {
-                  customerId: 'not-mongo-id' as Customer.Id, 
+                  customerId: 'not-mongo-id' as Api.Customer.Id, 
                 }, 
               }));
               expect(res).toBeBadRequestResponse();
