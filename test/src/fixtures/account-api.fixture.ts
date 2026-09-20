@@ -101,6 +101,18 @@ export const validateAccountResponse = (response: Responses.Account, document: D
   });
 };
 
+export const validateAccountLeanResponse = (response: Responses.AccountLean, document: Documents.Account) => {
+  return new Comparer(response, {
+    accountId: getAccountId(document),
+    name: document.name,
+    accountType: document.accountType,
+    currency: document.currency,
+    owner: document.owner,
+    isOpen: document.isOpen,
+    fullName: `${document.name} (${document.owner})`,
+  });
+};
+
 export const expect = baseExpect.extend({
   async toHaveBeenSavedAsAccountDocument(req: Requests.Account, document: Documents.Account) {
     if (!document) {

@@ -99,11 +99,7 @@ const weekendResponse = combine<Responses.CalendarDayWeekend>([
   entries,
   {
     type: 'object',
-    required: [
-      'dayType',
-      'start',
-      'end',
-    ],
+    required: ['dayType'],
     properties: {
       start: {
         type: 'integer',

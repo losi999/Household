@@ -6,7 +6,7 @@ import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
 import { Comparer } from '@household/test/comparer';
-import { validateAccountResponse } from '@household/test/fixtures/account-api.fixture';
+import { validateAccountLeanResponse } from '@household/test/fixtures/account-api.fixture';
 import { validateRecipientResponse } from '@household/test/fixtures/recipient-api.fixture';
 import { validateCategoryResponse } from '@household/test/fixtures/category-api.fixture';
 import { validateProductResponse } from '@household/test/fixtures/product-api.fixture';
@@ -21,7 +21,7 @@ export const validatePaymentTransactionResponse = (response: Responses.PaymentTr
     description: document.description,
     transactionType: document.transactionType,
     project: validateProjectResponse(response.project, document.project),
-    account: validateAccountResponse(response.account, document.account),
+    account: validateAccountLeanResponse(response.account, document.account),
     recipient: validateRecipientResponse(response.recipient, document.recipient),
     category: validateCategoryResponse(response.category, document.category),
     product: validateProductResponse(response.product, document.product),

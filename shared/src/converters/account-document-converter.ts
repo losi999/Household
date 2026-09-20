@@ -10,6 +10,7 @@ export interface IAccountDocumentConverter {
   update(body: Requests.Account, expiresIn: number): DocumentUpdate<Documents.Account>;
   toReport(document: Documents.Account): Responses.AccountReport;
   toResponse(document: Documents.Account): Responses.Account;
+  toResponseLean(document: Documents.Account): Responses.AccountLean;
   toResponseList(docs: Documents.Account[]): Responses.Account[];
 }
 
@@ -44,6 +45,17 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         fullName: `${name} (${owner})`,
         accountId: getAccountId(_id),
         balance,
+      };
+    },
+    toResponseLean: ({ accountType, currency, owner, name, isOpen, _id }) => {
+      return {
+        accountType,
+        currency,
+        owner,
+        name,
+        isOpen,
+        fullName: `${name} (${owner})`,
+        accountId: getAccountId(_id),
       };
     },
     toReport: (document) => {

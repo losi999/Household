@@ -89,7 +89,7 @@ export const splitTransactionDocumentConverterFactory = (
         recipient: recipient ?? undefined,
         transactionType,
         issuedAt: new Date(body.issuedAt),
-        splits: body.splits?.map((s) => createSplitDocumentItem(s, categories[s.categoryId], projects[s.projectId], products[s.productId])) ?? [],
+        splits: body.splits?.map((s) => createSplitDocumentItem(s, categories[s.categoryId], projects[s.projectId], products[s.productId])),
         deferredSplits: body.loans?.map((s) => {
           const category = categories[s.categoryId];
 
@@ -97,7 +97,7 @@ export const splitTransactionDocumentConverterFactory = (
             body: {
               ...s,
               accountId: body.accountId,
-              issuedAt: undefined,
+              issuedAt: body.issuedAt,
               recipientId: undefined,
             },
             category,
@@ -109,7 +109,7 @@ export const splitTransactionDocumentConverterFactory = (
           }, expiresIn, generateId);
 
           return deferredDocument;
-        }) ?? [],
+        }),
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
@@ -118,6 +118,31 @@ export const splitTransactionDocumentConverterFactory = (
       const optionalSet: UpdateQuery<Documents.Transaction>['$set'] = {
         recipient,
         description,
+        deferredSplits: loans?.map((s) => {
+          const category = categories[s.categoryId];
+
+          const deferredDocument = deferredTransactionDocumentConverter.create({
+            body: {
+              ...s,
+              accountId: accountId,
+              issuedAt,
+              recipientId: undefined,
+            },
+            category,
+            ownerAccount: accounts[s.loanAccountId],
+            payingAccount: accounts[accountId],
+            product: products[s.productId],
+            project: projects[s.projectId],
+            recipient: undefined,
+          }, expiresIn);
+
+          if (s.transactionId) {
+            deferredDocument._id = new Types.ObjectId(s.transactionId);
+          }
+
+          return deferredDocument;
+        }),
+        splits: splits?.map((s) => createSplitDocumentItem(s, categories[s.categoryId], projects[s.projectId], products[s.productId])),
       };
 
       const amount = [
@@ -152,31 +177,6 @@ export const splitTransactionDocumentConverterFactory = (
             transactionType,
             issuedAt: new Date(issuedAt),
             expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
-            splits: splits?.map((s) => createSplitDocumentItem(s, categories[s.categoryId], projects[s.projectId], products[s.productId])) ?? [],
-            deferredSplits: loans?.map((s) => {
-              const category = categories[s.categoryId];
-
-              const deferredDocument = deferredTransactionDocumentConverter.create({
-                body: {
-                  ...s,
-                  accountId: accountId,
-                  issuedAt: undefined,
-                  recipientId: undefined,
-                },
-                category,
-                ownerAccount: accounts[s.loanAccountId],
-                payingAccount: accounts[accountId],
-                product: products[s.productId],
-                project: projects[s.projectId],
-                recipient,
-              }, expiresIn);
-
-              if (s.transactionId) {
-                deferredDocument._id = new Types.ObjectId(s.transactionId);
-              }
-
-              return deferredDocument;
-            }) ?? [],
             ...Object.entries(optionalSet).reduce((accumulator, [
               key,
               value,
@@ -201,7 +201,7 @@ export const splitTransactionDocumentConverterFactory = (
         transactionType,
         transactionId: getTransactionId(_id),
         issuedAt: issuedAt.toISOString(),
-        account: accountDocumentConverter.toResponse(account),
+        account: accountDocumentConverter.toResponseLean(account),
         recipient: recipient ? recipientDocumentConverter.toResponse(recipient) : undefined,
         splits: splits?.map(s => ({
           amount: s.amount,

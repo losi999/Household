@@ -161,53 +161,10 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
     },
     updateTransaction: async (transactionId, { update: updateQuery }) => {
       return mongodbService.inTransaction(async (models, session) => {
-        const old = await models.transactions.findByIdAndUpdate(transactionId, updateQuery, {
+        return models.transactions.findByIdAndUpdate(transactionId, updateQuery, {
           session,
-          returnOriginal: true,
           runValidators: true,
         });
-
-        const previousTransactionType = old.transactionType;
-        const currentTransactionType = updateQuery.$set.transactionType;
-        let deletedDeferredTransactionIds: Types.ObjectId[];
-
-        if (previousTransactionType === 'deferred' && currentTransactionType !== 'deferred') {
-          deletedDeferredTransactionIds = [old._id];
-        }
-
-        if (previousTransactionType === 'split' && old.deferredSplits?.length > 0) {
-          if (currentTransactionType === 'split' && updateQuery.$set.deferredSplits?.length > 0) {
-            const newDeferredTransactionIds = updateQuery.$set.deferredSplits.map((s: any) => s._id?.toString()) ;
-
-            deletedDeferredTransactionIds = old.deferredSplits.reduce((accumulator, currentValue) => {
-              return newDeferredTransactionIds.includes(currentValue._id.toString()) ? accumulator : [
-                ...accumulator,
-                currentValue._id,
-              ];
-            }, []);
-
-          } else {
-            deletedDeferredTransactionIds = old.deferredSplits.map(s => s._id);
-          }
-        }
-
-        if (deletedDeferredTransactionIds?.length > 0) {
-          await models.transactions.updateMany({
-            'payments.transaction': {
-              $in: deletedDeferredTransactionIds,
-            },
-          }, {
-            $pull: {
-              payments: {
-                transaction: {
-                  $in: deletedDeferredTransactionIds,
-                },
-              },
-            },
-          }, {
-            session,
-          });
-        }
       });
     },
     listTransactions: (match) => {

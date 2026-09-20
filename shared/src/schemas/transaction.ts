@@ -4,7 +4,7 @@ import { combine } from '@household/shared/common/schema-utils';
 import { ObjectSchema, StrictSchema } from '@household/shared/types/schema';
 import { Responses } from '@household/shared/types/responses';
 import { Requests } from '@household/shared/types/requests';
-import { accountId, response as accountResponse, report as accountReport } from '@household/shared/schemas/account';
+import { accountId, responseLean as accountResponse, report as accountReport } from '@household/shared/schemas/account';
 import { productId, response as productResponse, report as productReport } from '@household/shared/schemas/product';
 import { recipientId, response as recipientResponse, report as recipientReport } from '@household/shared/schemas/recipient';
 import { projectId, response as projectResponse, report as projectReport } from '@household/shared/schemas/project';
@@ -410,7 +410,7 @@ export const transferResponse = combine<Responses.TransferTransaction>([
 
 export const splitResponse = combine<Responses.SplitTransaction>([
   transactionId, 
-  negativeAmount,
+  amount,
   description,
   issuedAt,
   {
@@ -493,6 +493,11 @@ export const draftResponse = combine<Responses.DraftTransaction>([
 ], {
   optional: ['description'],
 });
+
+export const draftResponseList: StrictSchema<Responses.DraftTransaction[]> = {
+  type: 'array',
+  items: draftResponse,
+};
 
 export const report = combine<Responses.TransactionReport>([
   transactionId,

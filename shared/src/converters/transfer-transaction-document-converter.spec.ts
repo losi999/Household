@@ -9,7 +9,7 @@ describe('Transfer transaction document converter', () => {
   let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
 
   beforeEach(() => {
-    mockAccountDocumentConverter = createMockService('toResponse');
+    mockAccountDocumentConverter = createMockService('toResponseLean');
 
     vi.useFakeTimers().setSystemTime(new Date());
     converter = transferTransactionDocumentConverterFactory(mockAccountDocumentConverter.service);
@@ -104,8 +104,8 @@ describe('Transfer transaction document converter', () => {
 
   describe('toResponse', () => {
     it('should return response', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(accountResponse);
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(transferAccountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(accountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(transferAccountResponse);
 
       const doc = testDataFactory.transaction.document.transfer({
         account,
@@ -125,14 +125,14 @@ describe('Transfer transaction document converter', () => {
         transferAccount: transferAccountResponse,
 
       }));
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 1, account);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 2, transferAccount);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 1, account);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 2, transferAccount);
       expect.assertions(3);
     });
 
     it('should return response with inverted accounts', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(transferAccountResponse);
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(accountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(transferAccountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(accountResponse);
 
       const doc = testDataFactory.transaction.document.transfer({
         account,
@@ -152,16 +152,16 @@ describe('Transfer transaction document converter', () => {
         transferAccount: accountResponse,
 
       }));
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 1, transferAccount);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 2, account);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 1, transferAccount);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 2, account);
       expect.assertions(3);
     });
   });
 
   describe('toResponseList', () => {
     it('should return response', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(accountResponse);
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(transferAccountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(accountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(transferAccountResponse);
 
       const doc = testDataFactory.transaction.document.transfer({
         account,
@@ -182,8 +182,8 @@ describe('Transfer transaction document converter', () => {
           transferAccount: transferAccountResponse,
         }),
       ]);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 1, account);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 2, transferAccount);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 1, account);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 2, transferAccount);
       expect.assertions(3);
     });
   });

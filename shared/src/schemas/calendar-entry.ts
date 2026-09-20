@@ -229,7 +229,7 @@ const workResponse = combine<Responses.CalendarEntryWork>([
     properties: {
       entryType: {
         type: 'string',
-        enum: [CalendarEntryType.Issue],
+        enum: [CalendarEntryType.Work],
       },
       customer: customerResponse,
       resolution: {

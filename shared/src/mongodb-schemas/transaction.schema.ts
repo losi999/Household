@@ -53,6 +53,9 @@ const deferredSplitSchema = new Schema<Documents.DeferredTransaction>({
     ref: 'accounts',
     index: true,
   },
+  issuedAt: {
+    type: Schema.Types.Date,
+  },
   ownerAccount: {
     type: Schema.Types.ObjectId,
     ref: 'accounts',

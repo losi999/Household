@@ -18,7 +18,7 @@ describe('Deferred transaction document converter', () => {
   let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
 
   beforeEach(() => {
-    mockAccountDocumentConverter = createMockService('toResponse');
+    mockAccountDocumentConverter = createMockService('toResponseLean');
     mockProjectDocumentConverter = createMockService('toResponse');
     mockRecipientDocumentConverter = createMockService('toResponse');
     mockCategoryDocumentConverter = createMockService('toResponse');
@@ -192,8 +192,8 @@ describe('Deferred transaction document converter', () => {
 
   describe('toResponse', () => {
     it('should return response', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(payingAccountResponse);
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(ownerAccountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(payingAccountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(ownerAccountResponse);
       mockProjectDocumentConverter.functions.toResponse.mockReturnValue(projectResponse);
       mockCategoryDocumentConverter.functions.toResponse.mockReturnValue(categoryResponse);
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
@@ -229,8 +229,8 @@ describe('Deferred transaction document converter', () => {
         billingStartDate: billingStartDate.toISOString()
           .split('T')[0],
       }));
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 1, payingAccount);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 2, ownerAccount);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 1, payingAccount);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 2, ownerAccount);
       validateFunctionCall(mockProjectDocumentConverter.functions.toResponse, project);
       validateFunctionCall(mockCategoryDocumentConverter.functions.toResponse, regularCategory);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, recipient);
@@ -240,8 +240,8 @@ describe('Deferred transaction document converter', () => {
 
   describe('toResponseList', () => {
     it('should return response', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(payingAccountResponse);
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(ownerAccountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(payingAccountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(ownerAccountResponse);
       mockProjectDocumentConverter.functions.toResponse.mockReturnValue(projectResponse);
       mockCategoryDocumentConverter.functions.toResponse.mockReturnValue(categoryResponse);
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
@@ -279,8 +279,8 @@ describe('Deferred transaction document converter', () => {
             .split('T')[0],
         }),
       ]);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 1, payingAccount);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 2, ownerAccount);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 1, payingAccount);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 2, ownerAccount);
       validateFunctionCall(mockProjectDocumentConverter.functions.toResponse, project);
       validateFunctionCall(mockCategoryDocumentConverter.functions.toResponse, regularCategory);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, recipient);

@@ -201,7 +201,7 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
                 status: 'not-valid-enum' as any, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveConstantValueValidationError('body', 'status');
+              expect(res).toHaveEnumValidationError('body', 'status');
             });
           });
 

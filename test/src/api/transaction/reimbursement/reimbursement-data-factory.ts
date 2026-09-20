@@ -23,6 +23,10 @@ export const reimbursementTransactionDataFactory = (() => {
       throw 'Owner account type cannot be loan in reimbursement transaction';
     }
 
+    if (ctx?.body?.amount >= 0) {
+      throw 'Amount must be negative in reimbursement transaction';
+    }
+
     return reimbursementTransactionDocumentConverter.create({
       body: testDataFactory.transaction.request.payment({
         ...ctx.body,

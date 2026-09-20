@@ -82,7 +82,6 @@ const customerJobDuration: ObjectSchema<Api.Customer.Job.Duration> = {
 
 const customerJobAdditionalPrice: ObjectSchema<Api.Customer.Job.AdditionalPrice> = {
   type: 'object',
-  required: ['additionalPrice'],
   properties: {
     additionalPrice: {
       type: 'integer',
@@ -95,7 +94,6 @@ const customerJobBase = combine<Api.Customer.Job.Base>([
   customerJobDuration,
   {
     type: 'object',
-    required: ['description'],
     properties: {
       description: {
         type: 'string',
@@ -122,12 +120,7 @@ export const customerJobRequest = combine<Requests.CustomerJob>([
       },
     },
   },
-], {
-  optional: [
-    'description',
-    'additionalPrice',
-  ],
-});
+]);
 
 export const customerIdJobName: ObjectSchema<Api.Customer.CustomerId & {jobName: Api.Customer.Job.Name['name']}> = combine<Api.Customer.CustomerId & {jobName: Api.Customer.Job.Name['name']}>([
   customerId,

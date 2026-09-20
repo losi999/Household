@@ -18,7 +18,7 @@ describe('Payment transaction document converter', () => {
   let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
 
   beforeEach(() => {
-    mockAccountDocumentConverter = createMockService('toResponse');
+    mockAccountDocumentConverter = createMockService('toResponseLean');
     mockProjectDocumentConverter = createMockService('toResponse');
     mockRecipientDocumentConverter = createMockService('toResponse');
     mockCategoryDocumentConverter = createMockService('toResponse');
@@ -215,7 +215,7 @@ describe('Payment transaction document converter', () => {
 
   describe('toResponse', () => {
     it('should return response', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValue(accountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValue(accountResponse);
       mockProjectDocumentConverter.functions.toResponse.mockReturnValue(projectResponse);
       mockCategoryDocumentConverter.functions.toResponse.mockReturnValue(categoryResponse);
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
@@ -249,7 +249,7 @@ describe('Payment transaction document converter', () => {
         billingStartDate: billingStartDate.toISOString()
           .split('T')[0],
       }));
-      validateFunctionCall(mockAccountDocumentConverter.functions.toResponse, account);
+      validateFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, account);
       validateFunctionCall(mockProjectDocumentConverter.functions.toResponse, project);
       validateFunctionCall(mockCategoryDocumentConverter.functions.toResponse, regularCategory);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, recipient);
@@ -259,7 +259,7 @@ describe('Payment transaction document converter', () => {
 
   describe('toResponseList', () => {
     it('should return response', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValue(accountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValue(accountResponse);
       mockProjectDocumentConverter.functions.toResponse.mockReturnValue(projectResponse);
       mockCategoryDocumentConverter.functions.toResponse.mockReturnValue(categoryResponse);
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
@@ -295,7 +295,7 @@ describe('Payment transaction document converter', () => {
             .split('T')[0],
         }),
       ]);
-      validateFunctionCall(mockAccountDocumentConverter.functions.toResponse, account);
+      validateFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, account);
       validateFunctionCall(mockProjectDocumentConverter.functions.toResponse, project);
       validateFunctionCall(mockCategoryDocumentConverter.functions.toResponse, regularCategory);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, recipient);

@@ -146,7 +146,7 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
                 dayType: 'not-valid-const' as any, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveConstantValueValidationError('body', 'dayType');
+              expect(res).toHaveEnumValidationError('body', 'dayType');
             });
           });
 

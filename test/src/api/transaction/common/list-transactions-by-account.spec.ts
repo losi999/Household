@@ -335,7 +335,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 pageNumber: 1, 
               });
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('queryStringParameters', 'pageSize');
+              expect(res).toHaveDependentRequiredPropertyValidationError('queryStringParameters', 'pageNumber', 'pageSize');
             });
 
             test('is not number', async ({ requestGetTransactionListByAccount }) => {
@@ -363,7 +363,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 pageSize: 1, 
               });
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('queryStringParameters', 'pageNumber');
+              expect(res).toHaveDependentRequiredPropertyValidationError('queryStringParameters', 'pageSize', 'pageNumber');
             });
 
             test('is not number', async ({ requestGetTransactionListByAccount }) => {

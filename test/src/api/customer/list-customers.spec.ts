@@ -1,4 +1,4 @@
-import { response as schema } from '@household/shared/schemas/customer';
+import { responseList as schema } from '@household/shared/schemas/customer';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';

@@ -21,7 +21,9 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
   let req: Requests.Category;
 
   test.beforeEach(async () => {
-    req = categoryDataFactory.request();
+    req = categoryDataFactory.request({
+      parentCategoryId: undefined,
+    });
 
     categoryDocument = categoryDataFactory.document();
   });

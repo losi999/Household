@@ -21,7 +21,9 @@ test.describe('POST /category/v1/categories', () => {
   let grandparentCategoryDocument: Documents.Category;
 
   test.beforeEach(async () => {
-    req = categoryDataFactory.request();
+    req = categoryDataFactory.request({
+      parentCategoryId: undefined,
+    });
 
     grandparentCategoryDocument = categoryDataFactory.document();
     parentCategoryDocument = categoryDataFactory.document({

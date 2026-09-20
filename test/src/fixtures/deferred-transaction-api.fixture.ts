@@ -5,7 +5,7 @@ import { Reassignment } from '@household/test/types';
 import { Comparer } from '@household/test/comparer';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
-import { validateAccountResponse } from '@household/test/fixtures/account-api.fixture';
+import { validateAccountLeanResponse } from '@household/test/fixtures/account-api.fixture';
 import { validateCategoryResponse } from '@household/test/fixtures/category-api.fixture';
 import { validateProductResponse } from '@household/test/fixtures/product-api.fixture';
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
@@ -21,8 +21,8 @@ export const validateDeferredTransactionResponse = (response: Responses.Deferred
     description: document.description,
     transactionType: document.transactionType,
     project: validateProjectResponse(response.project, document.project),
-    payingAccount: validateAccountResponse(response.payingAccount, document.payingAccount),
-    ownerAccount: validateAccountResponse(response.ownerAccount, document.ownerAccount),
+    payingAccount: validateAccountLeanResponse(response.payingAccount, document.payingAccount),
+    ownerAccount: validateAccountLeanResponse(response.ownerAccount, document.ownerAccount),
     recipient: validateRecipientResponse(response.recipient, document.recipient),
     category: validateCategoryResponse(response.category, document.category),
     product: validateProductResponse(response.product, document.product),

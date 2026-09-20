@@ -327,7 +327,7 @@ test.describe('POST /calendar/v1/entries', () => {
                 }, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveConstantValueValidationError('body', 'entryType');
+              expect(res).toHaveEnumValidationError('body', 'entryType');
             });
           });
 

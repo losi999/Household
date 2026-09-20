@@ -67,7 +67,7 @@ export namespace Responses {
     & Api.Transaction.TransactionType<Enum.TransactionType.Payment>
     & {
       product: Product;
-      account: Account;
+      account: AccountLean;
       category: Category;
       project: Project;
       recipient: Recipient;
@@ -83,8 +83,8 @@ export namespace Responses {
     & Api.Transaction.TransactionType<Enum.TransactionType.Deferred>
     & {
       product: Product;
-      payingAccount: Account;
-      ownerAccount: Account;
+      payingAccount: AccountLean;
+      ownerAccount: AccountLean;
       category: Category;
       project: Project;
       recipient: Recipient;
@@ -100,8 +100,8 @@ export namespace Responses {
     & Api.Transaction.TransactionType<Enum.TransactionType.Reimbursement>
     & {
       product: Product;
-      payingAccount: Account;
-      ownerAccount: Account;
+      payingAccount: AccountLean;
+      ownerAccount: AccountLean;
       category: Category;
       project: Project;
       recipient: Recipient;
@@ -114,8 +114,8 @@ export namespace Responses {
     & Api.Transaction.TransactionType<Enum.TransactionType.Transfer>
     & Api.Transaction.TransferAmount
     & {
-      account: Account;
-      transferAccount: Account;
+      account: AccountLean;
+      transferAccount: AccountLean;
     };
 
   export type SplitItem = Api.Transaction.Amount
@@ -135,7 +135,7 @@ export namespace Responses {
     & Api.Transaction.IssuedAt<string>
     & Api.Transaction.TransactionType<Enum.TransactionType.Split>
     & {
-      account: Account;
+      account: AccountLean;
       recipient: Recipient;
       splits: SplitItem[];
       deferredSplits: DeferredTransaction[];

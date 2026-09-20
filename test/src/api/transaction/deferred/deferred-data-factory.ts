@@ -19,6 +19,10 @@ export const deferredTransactionDataFactory = (() => {
       throw 'Paying account type cannot be loan in deferred transaction';
     }
 
+    if (ctx?.body?.amount >= 0) {
+      throw 'Amount must be negative in deferred transaction';
+    }
+
     return deferredTransactionDocumentConverter.create({
       body: testDataFactory.transaction.request.payment({
         ...ctx.body,

@@ -403,7 +403,7 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                 }, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveConstantValueValidationError('body', 'entryType');
+              expect(res).toHaveEnumValidationError('body', 'entryType');
             });
           });
 

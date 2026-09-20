@@ -916,12 +916,15 @@ const createPaymentTransactionResponse: DataFactoryFunction<Responses.PaymentTra
 };
 
 const createDeferredTransactionDocument: DataFactoryFunction<Documents.DeferredTransaction> = (doc) => {
-  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
+  const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
 
   return {
     _id: createId(),
     transactionType: TransactionType.Deferred,
-    amount,
+    amount: faker.number.float({
+      min: -10000,
+      max: 0,
+    }),
     description,
     quantity,
     invoiceNumber,
@@ -940,12 +943,15 @@ const createDeferredTransactionDocument: DataFactoryFunction<Documents.DeferredT
 };
 
 const createDeferredTransactionResponse: DataFactoryFunction<Responses.DeferredTransaction> = (resp) => {
-  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
+  const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
 
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Deferred,
-    amount,
+    amount: faker.number.float({
+      min: -10000,
+      max: 0,
+    }),
     description,
     quantity,
     invoiceNumber,
@@ -963,12 +969,15 @@ const createDeferredTransactionResponse: DataFactoryFunction<Responses.DeferredT
 };
 
 const createReimbursementTransactionDocument: DataFactoryFunction<Documents.ReimbursementTransaction> = (doc) => {
-  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
+  const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
 
   return {
     _id: createId(),
     transactionType: TransactionType.Reimbursement,
-    amount,
+    amount: faker.number.float({
+      min: -10000,
+      max: 0,
+    }),
     description,
     quantity,
     invoiceNumber,
@@ -987,12 +996,15 @@ const createReimbursementTransactionDocument: DataFactoryFunction<Documents.Reim
 };
 
 const createReimbursementTransactionResponse: DataFactoryFunction<Responses.ReimbursementTransaction> = (resp) => {
-  const { amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
+  const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
 
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Reimbursement,
-    amount,
+    amount: faker.number.float({
+      min: -10000,
+      max: 0,
+    }),
     description,
     quantity,
     invoiceNumber,
@@ -1015,7 +1027,7 @@ const createSplitRequestItem: DataFactoryFunction<Requests.SplitItem> = (req) =>
   return {
     amount: faker.number.float({
       min: -10000,
-      max: 0,
+      max: 10000,
     }),
     description: faker.word.words({
       count: {
@@ -1095,28 +1107,15 @@ const createSplitTransactionRequest = (req?: RecursivePartial<Requests.SplitTran
 };
 
 const createSplitDocumentItem: DataFactoryFunction<Documents.SplitItem> = (doc) => {
-  const billingEndDate = faker.date.recent();
+  const { amount, description, billingEndDate, billingStartDate, invoiceNumber, quantity } = createSplitRequestItem();
 
   return {
-    amount: faker.number.float({
-      min: -10000,
-      max: 10000,
-    }),
-    description: faker.word.words({
-      count: {
-        min: 1,
-        max: 5,
-      },
-    }),
-    billingEndDate: billingEndDate,
-    billingStartDate: faker.date.recent({
-      refDate: addSeconds(-60 * 60 * 24, billingEndDate),
-      days: 90,
-    }),
-    invoiceNumber: faker.finance.accountNumber(),
-    quantity: faker.number.float({
-      max: 20,
-    }),
+    amount,
+    description,
+    billingEndDate: createDate(billingEndDate),
+    billingStartDate: createDate(billingStartDate),
+    invoiceNumber,
+    quantity,
     category: createCategoryDocument(),
     project: createProjectDocument(),
     product: createProductDocument(),
@@ -1124,23 +1123,14 @@ const createSplitDocumentItem: DataFactoryFunction<Documents.SplitItem> = (doc) 
   };
 };
 
-const createSplitTransactionDocument = (doc?: RecursivePartial<Documents.SplitTransaction>): Documents.SplitTransaction => {
-  const { splits, deferredSplits, ...rest } = doc ?? {};
+const createSplitTransactionDocument = (doc?: RecursivePartial<Omit<Documents.SplitTransaction, 'amount'>>): Documents.SplitTransaction => {
+  const deferredDocuments = Object.hasOwn(doc ?? {}, 'deferredSplits') ? doc.deferredSplits?.map(d => createDeferredTransactionDocument(d)) : [createDeferredTransactionDocument()];
 
-  const deferredDocuments = deferredSplits ? deferredSplits.map(l => createDeferredTransactionDocument(l)) : [
-    createDeferredTransactionDocument({
-      amount: -100,
-    }),
-  ];
-  const splitDocuments = splits ? splits.map(s => createSplitDocumentItem(s)) : [
-    createSplitDocumentItem({
-      amount: -100,
-    }),
-  ];
+  const splitDocuments = Object.hasOwn(doc ?? {}, 'splits') ? doc.splits?.map(l => createSplitDocumentItem(l)) : [createSplitDocumentItem()];
 
   const amount = [
-    ...deferredDocuments,
-    ...splitDocuments,
+    ...(deferredDocuments ?? []),
+    ...(splitDocuments ?? []),
   ].reduce((accumulator, currentValue) => {
     return accumulator + currentValue.amount;
   }, 0);
@@ -1148,7 +1138,6 @@ const createSplitTransactionDocument = (doc?: RecursivePartial<Documents.SplitTr
   return {
     _id: createId(),
     transactionType: TransactionType.Split,
-    amount: amount !== 0 ? amount : -200,
     description: faker.word.words({
       count: {
         min: 1,
@@ -1159,36 +1148,23 @@ const createSplitTransactionDocument = (doc?: RecursivePartial<Documents.SplitTr
     expiresAt: undefined,
     account: createAccountDocument(),
     recipient: createRecipientDocument(),
+    ...doc,
+    amount,
     splits: splitDocuments,
     deferredSplits: deferredDocuments,
-    ...rest,
   };
 };
 
 const createSplitResponseItem: DataFactoryFunction<Responses.SplitItem> = (resp) => {
-  const billingEndDate = faker.date.recent();
+  const { amount, description, billingEndDate, billingStartDate, invoiceNumber, quantity } = createSplitRequestItem();
 
   return {
-    amount: faker.number.float({
-      min: -10000,
-      max: 10000,
-    }),
-    description: faker.word.words({
-      count: {
-        min: 1,
-        max: 5,
-      },
-    }),
-    billingEndDate: billingEndDate.toISOString().split('T')[0],
-    billingStartDate: faker.date.recent({
-      refDate: addSeconds(-60 * 60 * 24, billingEndDate),
-      days: 90,
-    }).toISOString()
-      .split('T')[0],
-    invoiceNumber: faker.finance.accountNumber(),
-    quantity: faker.number.float({
-      max: 20,
-    }),
+    amount,
+    description,
+    billingEndDate,
+    billingStartDate,
+    invoiceNumber,
+    quantity,
     category: createCategoryResponse(),
     project: createProjectResponse(),
     product: createProductResponse(),
@@ -1196,23 +1172,14 @@ const createSplitResponseItem: DataFactoryFunction<Responses.SplitItem> = (resp)
   };
 };
 
-const createSplitTransactionResponse = (resp?: RecursivePartial<Responses.SplitTransaction>): Responses.SplitTransaction => {
-  const { splits, deferredSplits, ...rest } = resp ?? {};
+const createSplitTransactionResponse = (resp?: RecursivePartial<Omit<Responses.SplitTransaction, 'amount'>>): Responses.SplitTransaction => {
+  const deferredResponses = Object.hasOwn(resp ?? {}, 'deferredSplits') ? resp.deferredSplits?.map(d => createDeferredTransactionResponse(d)) : [createDeferredTransactionResponse()];
 
-  const deferredResponses = deferredSplits ? deferredSplits.map(l => createDeferredTransactionResponse(l)) : [
-    createDeferredTransactionResponse({
-      amount: -100,
-    }),
-  ];
-  const splitResponses = splits ? splits.map(s => createSplitResponseItem(s)) : [
-    createSplitResponseItem({
-      amount: -100,
-    }),
-  ];
+  const splitResponses = Object.hasOwn(resp ?? {}, 'splits') ? resp.splits?.map(l => createSplitResponseItem(l)) : [createSplitResponseItem()];
 
   const amount = [
-    ...deferredResponses,
-    ...splitResponses,
+    ...(deferredResponses ?? []),
+    ...(splitResponses ?? []),
   ].reduce((accumulator, currentValue) => {
     return accumulator + currentValue.amount;
   }, 0);
@@ -1220,7 +1187,6 @@ const createSplitTransactionResponse = (resp?: RecursivePartial<Responses.SplitT
   return {
     transactionId: createTransactionId(),
     transactionType: TransactionType.Split,
-    amount: amount !== 0 ? amount : -200,
     description: faker.word.words({
       count: {
         min: 1,
@@ -1230,9 +1196,10 @@ const createSplitTransactionResponse = (resp?: RecursivePartial<Responses.SplitT
     issuedAt: faker.date.recent().toISOString(),
     account: createAccountResponse(),
     recipient: createRecipientResponse(),
+    ...resp,
+    amount,
     splits: splitResponses,
     deferredSplits: deferredResponses,
-    ...rest,
   };
 };
 

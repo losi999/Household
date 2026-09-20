@@ -6,7 +6,7 @@ import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
 import { Comparer } from '@household/test/comparer';
-import { validateAccountResponse } from '@household/test/fixtures/account-api.fixture';
+import { validateAccountLeanResponse } from '@household/test/fixtures/account-api.fixture';
 import { validateRecipientResponse } from '@household/test/fixtures/recipient-api.fixture';
 import { validateCategoryResponse } from '@household/test/fixtures/category-api.fixture';
 import { validateProductResponse } from '@household/test/fixtures/product-api.fixture';
@@ -21,9 +21,9 @@ export const validateSplitTransactionResponse = (response: Responses.SplitTransa
     issuedAt: document.issuedAt.toISOString(),
     description: document.description,
     transactionType: document.transactionType,
-    account: validateAccountResponse(response.account, document.account),
+    account: validateAccountLeanResponse(response.account, document.account),
     recipient: validateRecipientResponse(response.recipient, document.recipient),
-    splits: response.splits.map((splitResponseItem, index) => {
+    splits: response.splits?.map((splitResponseItem, index) => {
       const splitDocument = document.splits[index];
 
       return new Comparer(splitResponseItem, {
@@ -37,12 +37,12 @@ export const validateSplitTransactionResponse = (response: Responses.SplitTransa
         billingEndDate: splitDocument.billingEndDate?.toISOString().split('T')[0],
         invoiceNumber: splitDocument.invoiceNumber,
       });
-    }),
-    deferredSplits: response.deferredSplits.map((deferredSplitResponseItem, index) => {
+    }) ?? [],
+    deferredSplits: response.deferredSplits?.map((deferredSplitResponseItem, index) => {
       const deferredSplitDocument = document.deferredSplits[index];
 
       return validateDeferredTransactionResponse(deferredSplitResponseItem, deferredSplitDocument);
-    }),
+    }) ?? [],
   });
 };
 
@@ -55,13 +55,21 @@ export const expect = baseExpect.extend({
       };
     }
 
+    const amount = [
+      ...(req.splits ?? []),
+      ...(req.loans ?? []),
+    ].reduce((accumulator, currentValue) => {
+      return accumulator + currentValue.amount;
+    }, 0);
+
     const comparer = new Comparer(document, {
+      amount,
       transactionType: TransactionType.Split,
       description: req.description,
       issuedAt: createDate(req.issuedAt).toISOString(),
       account: req.accountId,
       recipient: req.recipientId,
-      splits: document.splits.map((splitDocument, index) => {
+      splits: document.splits?.map((splitDocument, index) => {
         const splitRequest = req.splits[index];
 
         return new Comparer(splitDocument, {
@@ -76,7 +84,7 @@ export const expect = baseExpect.extend({
           invoiceNumber: splitDocument.category?.categoryType === CategoryType.Invoice ? splitRequest.invoiceNumber : undefined,
         });
       }),
-      deferredSplits: document.deferredSplits.map((splitDocument, index) => {
+      deferredSplits: document.deferredSplits?.map((splitDocument, index) => {
         const splitRequest = req.loans[index];
 
         return new Comparer(splitDocument, {
@@ -181,6 +189,7 @@ export const expect = baseExpect.extend({
 
         return new Comparer(splitDocument, {
           amount: originalSplit.amount,
+          issuedAt: originalSplit.issuedAt.toISOString(),
           transactionType: originalSplit.transactionType,
           payingAccount: getAccountId(originalSplit.payingAccount),
           ownerAccount: getAccountId(originalSplit.ownerAccount),

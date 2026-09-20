@@ -1,4 +1,4 @@
-import { responseList as schema } from '@household/shared/schemas/transaction';
+import { draftResponseList as schema } from '@household/shared/schemas/transaction';
 import { fileDataFactory } from '../../file/data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
 import { addSeconds, entries, getFileId } from '@household/shared/common/utils';
@@ -73,6 +73,7 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
           amount: duplicatedDraftDocument.amount,
         },
       ],
+      loans: undefined,
       account: accountDocument,
     });
     duplicateTransferDocument = transferTransactionDataFactory.document({
@@ -95,7 +96,7 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
     });
     duplicateDeferredDocument = deferredTransactionDataFactory.document({
       body: {
-        amount: duplicatedDraftDocument.amount,
+        amount: Math.abs(duplicatedDraftDocument.amount) * -1,
         issuedAt: addSeconds(3600, duplicatedDraftDocument.issuedAt).toISOString(),
       },
       account: accountDocument,
@@ -103,7 +104,7 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
     });
     duplicateReimbursementDocument = reimbursementTransactionDataFactory.document({
       body: {
-        amount: duplicatedDraftDocument.amount,
+        amount: Math.abs(duplicatedDraftDocument.amount) * -1,
         issuedAt: addSeconds(3600, duplicatedDraftDocument.issuedAt).toISOString(),
       },
       account: loanAccountDocument,

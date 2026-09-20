@@ -3,7 +3,7 @@ import { Comparer } from '@household/test/comparer';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { TransactionType } from '@household/shared/enums';
 import { createDate, getAccountId, getTransactionId } from '@household/shared/common/utils';
-import { validateAccountResponse } from '@household/test/fixtures/account-api.fixture';
+import { validateAccountLeanResponse } from '@household/test/fixtures/account-api.fixture';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -16,8 +16,8 @@ export const validateTransferTransactionResponse = (response: Responses.Transfer
     issuedAt: document.issuedAt.toISOString(),
     description: document.description,
     transactionType: document.transactionType,
-    account: validateAccountResponse(response.account, getAccountId(document.account) === viewingAccountId ? document.account : document.transferAccount),
-    transferAccount: validateAccountResponse(response.transferAccount, getAccountId(document.account) === viewingAccountId ? document.transferAccount : document.account),
+    account: validateAccountLeanResponse(response.account, getAccountId(document.account) === viewingAccountId ? document.account : document.transferAccount),
+    transferAccount: validateAccountLeanResponse(response.transferAccount, getAccountId(document.account) === viewingAccountId ? document.transferAccount : document.account),
   });
 };
 

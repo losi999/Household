@@ -28,6 +28,10 @@ export const splitTransactionDataFactory = (() => {
       throw 'Account cannot be loan in split transaction';
     }
 
+    if (Object.hasOwn(ctx, 'loans') && !ctx.loans && Object.hasOwn(ctx, 'splits') && !ctx.splits) {
+      throw 'Both splits and loans cannot be undefined in split transaction';
+    }
+
     const accounts: Dictionary<Documents.Account> = {
       [getAccountId(ctx.account)]: ctx.account,
     };
@@ -46,7 +50,7 @@ export const splitTransactionDataFactory = (() => {
         projectId: getProjectId(project),
         ...split,
       };
-    }) ?? [];
+    });
 
     const loans = ctx.loans?.map<Partial<Requests.LoanItem>>(({ category, product, project, loanAccount, ...split }) => {
       categories[getCategoryId(category)] = category;
@@ -62,14 +66,18 @@ export const splitTransactionDataFactory = (() => {
         transactionId: deferredTransactionDataFactory.id(), // TODO
         ...split,
       };
-    }) ?? [];
+    });
 
     const body = testDataFactory.transaction.request.split({
       ...ctx.body,
       accountId: getAccountId(ctx.account),
       recipientId: getRecipientId(ctx.recipient),
-      splits,
-      loans,
+      ...(Object.hasOwn(ctx, 'splits') ? {
+        splits,
+      } : {}),
+      ...(Object.hasOwn(ctx, 'loans') ? {
+        loans,
+      } : {}),
     });
 
     const doc = splitTransactionDocumentConverter.create({
