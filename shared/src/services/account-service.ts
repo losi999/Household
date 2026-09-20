@@ -105,7 +105,6 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
             $unset: [
               'ownerAccount',
               'payingAccount',
-              'isSettled',
             ],
           },
         ], {
@@ -156,7 +155,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
               'splits.payingAccount',
               'splits.transactionType',
               'splits.ownerAccount',
-              'splits.isSettled',
+              'splits.issuedAt',
               'splits._id',
             ],
           },

@@ -89,6 +89,7 @@ export const expect = baseExpect.extend({
 
         return new Comparer(splitDocument, {
           transactionType: TransactionType.Deferred,
+          issuedAt: createDate(req.issuedAt).toISOString(),
           payingAccount: req.accountId,
           ownerAccount: splitRequest.loanAccountId,
           amount: splitRequest.amount,
@@ -240,6 +241,7 @@ export const expect = baseExpect.extend({
 
         return new Comparer(splitDocument, {
           amount: originalSplit.amount,
+          issuedAt: originalSplit.issuedAt.toISOString(),
           transactionType: originalSplit.transactionType,
           payingAccount: getAccountId(originalSplit.payingAccount),
           ownerAccount: getAccountId(originalSplit.ownerAccount),
