@@ -3,7 +3,7 @@ import { customerId } from '@household/shared/schemas/customer';
 import { responseLeanList } from '@household/shared/schemas/calendar-entry';
 
 export const listCustomerWorks = createPath({
-  method: 'post',
+  method: 'get',
   tags: ['Customer'],
   parameters: [
     {

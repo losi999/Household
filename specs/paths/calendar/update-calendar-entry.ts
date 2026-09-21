@@ -13,8 +13,7 @@ export const updateCalendarEntry = createPath({
   ],
   requestBodySchema: request,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Calendar entry updated',
-    schema: calendarEntryId,
   },
 });

@@ -13,8 +13,7 @@ export const updateToSplitTransaction = createPath({
   ],
   requestBodySchema: splitRequest,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Transaction updated',
-    schema: transactionId,
   },
 });

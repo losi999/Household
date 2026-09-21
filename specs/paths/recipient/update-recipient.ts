@@ -13,8 +13,7 @@ export const updateRecipient = createPath({
   ],
   requestBodySchema: Recipient.request,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Recipient updated',
-    schema: Recipient.recipientId,
   },
 });

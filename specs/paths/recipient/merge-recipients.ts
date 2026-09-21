@@ -13,8 +13,7 @@ export const mergeRecipients = createPath({
   ],
   requestBodySchema: Recipient.idList,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Recipients merged',
-    schema: Recipient.recipientId,
   },
 });

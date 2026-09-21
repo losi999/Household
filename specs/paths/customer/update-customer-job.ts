@@ -18,7 +18,7 @@ export const updateCustomerJob = createPath({
   ],
   requestBodySchema: customerJobRequest,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Customer job updated',
   },
 });

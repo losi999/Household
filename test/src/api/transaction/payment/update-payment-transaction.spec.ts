@@ -113,10 +113,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
 
             test('using invoice category', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
@@ -131,10 +130,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
             test('using inventory category', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
               request = paymentTransactionDataFactory.request({
@@ -149,10 +147,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
           });
 
@@ -168,10 +165,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
             test(CategoryType.Inventory, async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = paymentTransactionDataFactory.request({
@@ -187,10 +183,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
 
             test(CategoryType.Invoice, async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
@@ -208,10 +203,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
 
             test('invoice.invoiceNumber', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
@@ -227,10 +221,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
 
             test('categoryId', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveProject, saveRecipient }) => {
@@ -244,10 +237,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
 
             test('recipientId', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject }) => {
@@ -261,10 +253,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
 
             test('projectId', async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveRecipient }) => {
@@ -278,10 +269,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveCategory(regularCategoryDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
           });
 
@@ -314,10 +304,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(paymentDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
 
             test(CategoryType.Inventory, async ({ requestUpdateToPaymentTransaction, saveAccount, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
@@ -334,9 +323,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(paymentDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -355,9 +344,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(paymentDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -385,9 +374,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(paymentDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -402,9 +391,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(paymentDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -419,9 +408,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(paymentDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -436,9 +425,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (payment)
               await saveCategory(regularCategoryDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(paymentDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
           });

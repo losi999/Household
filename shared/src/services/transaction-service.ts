@@ -16,10 +16,6 @@ export interface ITransactionService {
   deleteTransaction(transactionId: Api.Transaction.Id): Promise<unknown>;
   updateTransaction(transactionId: Api.Transaction.Id, updateQuery: DocumentUpdate<Documents.Transaction>): Promise<unknown>;
   listTransactions(match: PipelineStage.Match): Promise<Documents.RawTransaction[]>;
-  listDeferredTransactions(ctx?: {
-    deferredTransactionIds?: Api.Transaction.Id[];
-    excludedTransferTransactionId?: Api.Transaction.Id
-  }): Promise<Documents.DeferredTransaction[]>;
   listDraftTransactionsByFileId(fileId: Api.File.Id): Promise<Documents.DraftTransaction[]>;
   listTransactionsByAccountId(data: Api.Account.AccountId & Api.Pagination<number>): Promise<Documents.Transaction[]>;
 }
@@ -127,35 +123,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           }, {
             session,
           });
-        }
-
-        let deletedDeferredTransactionIds: Types.ObjectId[];
-
-        if (deleted.transactionType === TransactionType.Deferred) {
-          deletedDeferredTransactionIds = [deleted._id];
-        }
-
-        if (deleted.transactionType === TransactionType.Split && deleted.deferredSplits?.length > 0) {
-          deletedDeferredTransactionIds = deleted.deferredSplits.map(s => s._id);
-        }
-
-        if (deletedDeferredTransactionIds) {
-          await models.transactions.updateMany({
-            'payments.transaction': {
-              $in: deletedDeferredTransactionIds,
-            },
-          }, {
-            $pull: {
-              payments: {
-                transaction: {
-                  $in: deletedDeferredTransactionIds,
-                },
-              },
-            },
-          }, {
-            session,
-          });
-        }
+        }        
       });
 
     },
@@ -261,133 +229,6 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             session,
           });
 
-      });
-    },
-    listDeferredTransactions: ({ deferredTransactionIds, excludedTransferTransactionId } = {}) => {
-      return mongodbService.transactions(async (model, session) => {
-        return model.aggregate<Documents.DeferredTransaction>([
-          {
-            $unwind: {
-              path: '$deferredSplits',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $replaceRoot: {
-              newRoot: {
-                $mergeObjects: [
-                  '$$ROOT',
-                  '$deferredSplits',
-                ],
-              },
-            },
-          },
-          {
-            $match: {
-              ...(deferredTransactionIds?.length > 0 ? {
-                _id: {
-                  $in: deferredTransactionIds.map(id => new Types.ObjectId(id)),
-                },
-              } : {}),
-              transactionType: 'deferred',
-              isSettled: false,
-            },
-          },
-          {
-            $lookup: {
-              from: 'transactions',
-              let: {
-                transactionId: '$_id',
-              },
-              pipeline: [
-                ...(excludedTransferTransactionId ? [
-                  {
-                    $match: {
-                      _id: {
-                        $ne: new Types.ObjectId(excludedTransferTransactionId),
-                      },
-                    },
-                  },
-                ] : []),
-                {
-                  $unwind: {
-                    path: '$payments',
-                  },
-                },
-                {
-                  $match: {
-                    $expr: {
-                      $eq: [
-                        '$$transactionId',
-                        '$payments.transaction',
-                      ],
-                    },
-                  },
-                },
-                {
-                  $replaceRoot: {
-                    newRoot: '$payments',
-                  },
-                },
-              ],
-              as: 'repayments',
-            },
-          },
-          {
-            $set: {
-              remainingAmount: {
-                $subtract: [
-                  {
-                    $abs: '$amount',
-                  },
-                  {
-                    $sum: '$repayments.amount',
-                  },
-                ],
-
-              },
-            },
-          },
-          {
-            $unset: [
-              'deferredSplits',
-              'splits',
-              'repayments',
-              'account',
-            ],
-          },
-          ...(deferredTransactionIds?.length > 0 ? [] : [
-            {
-              $match: {
-                remainingAmount: {
-                  $gt: 0,
-                },
-              },
-            },
-          ]),
-          ...populateAggregate('payingAccount', 'accounts'),
-          ...populateAggregate('ownerAccount', 'accounts'),
-          ...populateAggregate('category', 'categories', [
-            {
-              $lookup: {
-                from: 'categories',
-                localField: 'ancestors',
-                foreignField: '_id',
-                as: 'ancestors',
-              },
-            },
-          ]),
-          ...populateAggregate('project', 'projects'),
-          ...populateAggregate('product', 'products'),
-          ...populateAggregate('recipient', 'recipients'),
-          {
-            $sort: {
-              issuedAt: -1,
-            },
-          },
-        ], {
-          session,
-        });
       });
     },
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {

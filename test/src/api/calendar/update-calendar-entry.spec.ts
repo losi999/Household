@@ -72,10 +72,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
   
               await saveCalendarEntry(calendarPersonalEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
   
-              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarPersonalEntryDocument)));
             });
 
             test('unsetting description', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
@@ -85,10 +84,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
   
               await saveCalendarEntry(calendarPersonalEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
   
-              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarPersonalEntryDocument)));
             });
           });
 
@@ -98,10 +96,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
   
               await saveCalendarEntry(calendarIssueEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
   
-              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarIssueEntryDocument)));
             });
 
             test('unsetting description', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
@@ -111,10 +108,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
   
               await saveCalendarEntry(calendarIssueEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
   
-              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId;
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarIssueEntryDocument)));
             });
           });
 
@@ -135,10 +131,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               await saveCustomer(customerDocument);
               await savePrice(priceDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
   
-              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId; 
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
             });
                
             test('unsetting description', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {     
@@ -158,10 +153,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               await saveCustomer(customerDocument);
               await savePrice(priceDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
   
-              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId; 
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
             });
                
             test('unsetting additionalPrice', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {     
@@ -181,10 +175,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               await saveCustomer(customerDocument);
               await savePrice(priceDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
   
-              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId; 
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
             });
 
             test('unsetting prices', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {          
@@ -197,10 +190,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               await saveCalendarEntry(calendarWorkEntryDocument);
               await saveCustomer(customerDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
   
-              const { calendarEntryId } = (await res.json()) as Api.Calendar.Entry.CalendarEntryId; 
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(calendarEntryId));
+              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
             });
           });
         });

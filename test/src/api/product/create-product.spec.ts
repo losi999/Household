@@ -19,7 +19,7 @@ const permissionMap = allowUsers('editor') ;
 
 const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
 
-test.describe('POST product/v1/products', () => {
+test.describe('POST /product/v1/categories/{categoryId}/products', () => {
   let request: Requests.Product;
   let categoryDocument: Documents.Category;
 

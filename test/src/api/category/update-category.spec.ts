@@ -54,10 +54,8 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
           await saveCategory(categoryDocument);
 
           const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
-          expect(res).toBeCreatedResponse();
-
-          const { categoryId } = (await res.json()) as Api.Category.CategoryId;
-          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId));
+          expect(res).toBeNoContentResponse();
+          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(categoryDocument)));
         });
 
         test.describe('children should be reassigned', () => {
@@ -85,7 +83,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory, otherParentCategory);
 
             const res = await requestUpdateCategory(getCategoryId(childCategory), req);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
 
             expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(childCategory)), otherParentCategory, ...otherParentCategory.ancestors);
             expect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
@@ -99,7 +97,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory);
 
             const res = await requestUpdateCategory(getCategoryId(childCategory), req);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
 
             expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(childCategory)));
           });
@@ -112,7 +110,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory, otherParentCategory);
 
             const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
             expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(categoryDocument)), otherParentCategory, ...otherParentCategory.ancestors);
             expect(childCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(childCategory)), await findCategoryById(getCategoryId(categoryDocument)));
             expect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));

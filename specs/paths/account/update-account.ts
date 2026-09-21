@@ -13,8 +13,7 @@ export const updateAccount = createPath({
   ],
   requestBodySchema: Account.request,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Account updated',
-    schema: Account.accountId,
   },
 });

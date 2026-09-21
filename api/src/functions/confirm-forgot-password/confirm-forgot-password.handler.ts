@@ -1,5 +1,5 @@
-import { errorResponse, okResponse } from '@household/api/common/response-factory';
-import { IConfirmForgotPasswordService } from '@household/api/functions/confirm-forgot-password/confirm-forgot-password-service';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
+import { IConfirmForgotPasswordService } from '@household/api/functions/confirm-forgot-password/confirm-forgot-password.service';
 
 export default (confirmForgotPassword: IConfirmForgotPasswordService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
@@ -16,6 +16,6 @@ export default (confirmForgotPassword: IConfirmForgotPasswordService): AWSLambda
       return errorResponse(error);
     }
 
-    return okResponse();
+    return noContentResponse();
   };
 };

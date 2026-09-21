@@ -1,5 +1,5 @@
-import { default as handler } from '@household/api/functions/confirm-forgot-password/confirm-forgot-password-handler';
-import { IConfirmForgotPasswordService } from '@household/api/functions/confirm-forgot-password/confirm-forgot-password-service';
+import { default as handler } from '@household/api/functions/confirm-forgot-password/confirm-forgot-password.handler';
+import { IConfirmForgotPasswordService } from '@household/api/functions/confirm-forgot-password/confirm-forgot-password.service';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 
@@ -47,6 +47,6 @@ describe('Confirm forgot password handler', () => {
       body,
       email,
     });
-    expect(response.statusCode).toEqual(200);
+    expect(response.statusCode).toEqual(204);
   });
 });

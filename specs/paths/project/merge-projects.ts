@@ -13,8 +13,7 @@ export const mergeProjects = createPath({
   ],
   requestBodySchema: Project.idList,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Projects merged',
-    schema: Project.projectId,
   },
 });

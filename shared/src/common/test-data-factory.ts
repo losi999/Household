@@ -1,6 +1,6 @@
 import { addDays, addSeconds, createDate, dateToISODateString } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
-import { DocumentUpdate, RecursivePartial } from '@household/shared/types/common';
+import { DataFactoryFunction, DocumentUpdate, RecursivePartial } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -9,8 +9,6 @@ import { faker } from '@faker-js/faker';
 import { DAY_LENGTH, priceUnitsOfMeasurement, unitsOfMeasurement, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 
 const createId = <I>(id?: string): I => (id ?? faker.database.mongodbObjectId()) as I;
-
-type DataFactoryFunction<T> = (input?: Partial<T>) => T;
 
 const createReportAccountFilter: DataFactoryFunction<Api.Report.AccountFilter> = (req) => {
   return {

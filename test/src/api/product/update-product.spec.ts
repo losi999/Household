@@ -63,10 +63,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
             await saveCategory(categoryDocument);
             await saveProduct(productDocument);
             const res = await requestUpdateProduct(getProductId(productDocument), request);
-            expect(res).toBeCreatedResponse();
-
-            const { productId } = (await res.json()) as Api.Product.ProductId;
-            expect(request).toHaveBeenSavedAsProductDocument(await findProductById(productId), getCategoryId(categoryDocument));
+            expect(res).toBeNoContentResponse();
+            expect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(productDocument)), getCategoryId(categoryDocument));
           });
         });
 

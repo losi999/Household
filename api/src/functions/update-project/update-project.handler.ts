@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IUpdateProjectService } from '@household/api/functions/update-project/update-project.service';
 import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
@@ -18,8 +18,6 @@ export default (updateProject: IUpdateProjectService): AWSLambda.APIGatewayProxy
       return errorResponse(error);
     }
 
-    return createdResponse({
-      projectId,
-    });
+    return noContentResponse();
   };
 };

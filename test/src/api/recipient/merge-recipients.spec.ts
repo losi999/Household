@@ -58,7 +58,7 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
           await saveRecipients(sourceRecipientDocument, targetRecipientDocument);
 
           const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
-          expect(res).toBeCreatedResponse();
+          expect(res).toBeNoContentResponse();
 
           expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
         });
@@ -148,7 +148,7 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
             );
 
             const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
 
             expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
 

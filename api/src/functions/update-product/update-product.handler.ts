@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IUpdateProductService } from '@household/api/functions/update-product/update-product.service';
 import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
@@ -18,8 +18,6 @@ export default (updateProduct: IUpdateProductService): AWSLambda.APIGatewayProxy
       return errorResponse(error);
     }
 
-    return createdResponse({
-      productId,
-    });
+    return noContentResponse();
   };
 };

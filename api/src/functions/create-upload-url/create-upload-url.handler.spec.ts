@@ -54,7 +54,7 @@ describe('Create upload url handler', () => {
       body,
       expiresIn,
     });
-    expect(response.statusCode).toEqual(200);
+    expect(response.statusCode).toEqual(201);
     expect(JSON.parse(response.body).url).toEqual(url);
     expect(JSON.parse(response.body).fileId).toEqual(fileId);
     expect.assertions(4);

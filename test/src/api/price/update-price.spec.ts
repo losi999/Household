@@ -51,10 +51,8 @@ test.describe('PUT /price/v1/prices/{priceId}', () => {
           test('with complete body', async ({ requestUpdatePrice, savePrice, findPriceById }) => {
             await savePrice(priceDocument);
             const res = await requestUpdatePrice(getPriceId(priceDocument), request);
-            expect(res).toBeCreatedResponse();
-
-            const { priceId } = await res.json() as Api.Price.PriceId;
-            expect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(priceId));
+            expect(res).toBeNoContentResponse();
+            expect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(getPriceId(priceDocument)));
           });
         });
 

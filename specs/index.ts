@@ -51,7 +51,6 @@ import { updateToSplitTransaction } from './paths/transaction/update-to-split-tr
 import { updateToTransferTransaction } from './paths/transaction/update-to-transfer-transaction';
 import { listTransactionsByAccount } from './paths/transaction/list-transactions-by-account';
 import { getTransaction } from './paths/transaction/get-transaction';
-import { listDeferredTransactions } from './paths/transaction/list-deferred-transactions';
 import { deleteTransaction } from './paths/transaction/delete-transaction';
 import { listTransactionsByFile } from './paths/transaction/list-transactions-by-file';
 import { listCustomers } from './paths/customer/list-customers';
@@ -157,9 +156,6 @@ const document = new OpenApiBuilder()
   })
   .addPath('/transaction/v1/transactions/split', {
     ...createSplitTransaction,
-  })
-  .addPath('/transaction/v1/transactions/deferred', {
-    ...listDeferredTransactions,
   })
   .addPath('/transaction/v1/transactions/{transactionId}/payment', {
     ...updateToPaymentTransaction,

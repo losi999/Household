@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IUpdateCustomerService } from '@household/api/functions/update-customer/update-customer.service';
 import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
@@ -18,8 +18,6 @@ export default (updateCustomer: IUpdateCustomerService): AWSLambda.APIGatewayPro
       return errorResponse(error);
     }
 
-    return createdResponse({
-      customerId,
-    });
+    return noContentResponse();
   };
 };

@@ -74,7 +74,7 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
             await saveCategories(sourceCategoryDocument, targetCategoryDocument, childOfSourceCategoryDocument);
 
             const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
 
             expect(await findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
             
@@ -102,7 +102,7 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
             await saveProduct(productDocument);
 
             const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
 
             expect(await findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
             
@@ -224,7 +224,7 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
               await saveTransactions(paymentTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument, splitTransactionDocument);
 
               const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
 
               expect(await findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
               expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {

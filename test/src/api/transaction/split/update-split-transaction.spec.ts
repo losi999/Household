@@ -148,8 +148,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
             await saveRecipient(recipientDocument);
             await saveProduct(productDocument);
             const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-            expect(res).toBeCreatedResponse();
-            const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+            expect(res).toBeNoContentResponse();
+            const transactionId = getTransactionId(originalDocument);
             expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
           });
 
@@ -182,8 +182,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
             await saveTransactions(splitDocument);
             await saveAccounts(accountDocument, secondaryAccountDocument);
             const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
-            expect(res).toBeCreatedResponse();
-            const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+            expect(res).toBeNoContentResponse();
+            const transactionId = getTransactionId(originalDocument);
             expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
           });
 
@@ -200,8 +200,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -216,8 +216,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveProject(projectDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -233,8 +233,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -250,8 +250,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -272,8 +272,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -296,8 +296,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -321,8 +321,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -344,8 +344,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -366,8 +366,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -388,8 +388,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -410,8 +410,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -434,8 +434,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -459,8 +459,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -482,8 +482,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -504,8 +504,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -526,8 +526,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
           });
@@ -562,8 +562,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -578,8 +578,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveProject(projectDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -595,8 +595,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              expect(res).toBeNoContentResponse();
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -619,9 +619,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
 
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
           });

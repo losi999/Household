@@ -13,8 +13,7 @@ export const updateToTransferTransaction = createPath({
   ],
   requestBodySchema: transferRequest,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Transaction updated',
-    schema: transactionId,
   },
 });

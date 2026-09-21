@@ -13,8 +13,7 @@ export const updatePrice = createPath({
   ],
   requestBodySchema: request,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Price updated',
-    schema: priceId,
   },
 });

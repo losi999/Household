@@ -14,7 +14,7 @@ export const confirmUser = createPath({
   ],
   requestBodySchema: Auth.confirmUserRequest,
   response: {
-    statusCode: 200,
+    statusCode: 204,
     description: 'User confirmed',
   },
 });

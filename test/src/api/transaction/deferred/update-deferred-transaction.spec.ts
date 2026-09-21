@@ -118,9 +118,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
                             
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -136,9 +136,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
             test('using inventory category', async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
@@ -154,9 +154,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
           });
@@ -173,9 +173,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
             test(CategoryType.Inventory, async ({ requestUpdateToPaymentTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
@@ -192,9 +192,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -213,9 +213,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -232,9 +232,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -249,9 +249,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -266,9 +266,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -283,9 +283,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveCategory(regularCategoryDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
           });
@@ -321,9 +321,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -342,9 +342,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -364,9 +364,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -395,9 +395,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -413,9 +413,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -431,9 +431,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -449,9 +449,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
               await saveCategory(regularCategoryDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(deferredDocument), request);
-              expect(res).toBeCreatedResponse();
+              expect(res).toBeNoContentResponse();
               
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              const transactionId = getTransactionId(originalDocument);
               expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
             });
           });

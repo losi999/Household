@@ -162,22 +162,6 @@ Resources:
             Auth:
               Authorizer: CognitoAuthorizer
 
-  ListDeferredTransactions:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub Household-${Env}-ListDeferredTransactions
-      CodeUri: dist/api/list-deferred-transactions
-      Role: !Ref LambdaRoleArn
-      Events:
-        API:
-          Type: Api
-          Properties:
-            RestApiId: !Ref TransactionApi
-            Path: /v1/transactions/deferred
-            Method: GET
-            Auth:
-              Authorizer: CognitoAuthorizer
-
   GetTransaction:
     Type: AWS::Serverless::Function
     Properties:

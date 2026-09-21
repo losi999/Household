@@ -49,10 +49,8 @@ test.describe('PUT /recipient/v1/recipients/{recipientId}', () => {
           await saveRecipient(recipientDocument);
 
           const res = await requestUpdateRecipient(getRecipientId(recipientDocument), req);
-          apiExpect(res).toBeCreatedResponse();
-
-          const { recipientId } = (await res.json()) as Api.Recipient.RecipientId;
-          recipientApiExpect(req).toHaveBeenSavedAsRecipientDocument(await findRecipientById(recipientId));
+          apiExpect(res).toBeNoContentResponse();
+          recipientApiExpect(req).toHaveBeenSavedAsRecipientDocument(await findRecipientById(getRecipientId(recipientDocument)));
         });
 
         test.describe('should return error', () => {

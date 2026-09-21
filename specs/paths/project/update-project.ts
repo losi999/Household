@@ -13,8 +13,7 @@ export const updateProject = createPath({
   ],
   requestBodySchema: Project.request,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Project updated',
-    schema: Project.projectId,
   },
 });

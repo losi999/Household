@@ -31,7 +31,7 @@ test.describe('POST user/v1/users/{email}/confirm', () => {
       test('with complete body', async ({ requestConfirmUser, createUser, getUser }) => {
         await createUser(pendingUser, UserType.Editor, true);
         const res = await requestConfirmUser(pendingUser.email, request);
-        expect(res).toBeOkResponse();
+        expect(res).toBeNoContentResponse();
 
         expect(await getUser(pendingUser)).toHaveBeenConfirmed();
       });

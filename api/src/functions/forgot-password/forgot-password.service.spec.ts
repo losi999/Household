@@ -1,4 +1,4 @@
-import { IForgotPasswordService, forgotPasswordServiceFactory } from '@household/api/functions/forgot-password/forgot-password-service';
+import { IForgotPasswordService, forgotPasswordServiceFactory } from '@household/api/functions/forgot-password/forgot-password.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
 import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 

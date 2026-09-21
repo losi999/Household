@@ -49,10 +49,8 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
         test('should update account', async ({ requestUpdateAccount, saveAccount, findAccountById }) => {
           await saveAccount(accountDocument);
           const res = await requestUpdateAccount(getAccountId(accountDocument), request);
-          expect(res).toBeCreatedResponse();
-          
-          const { accountId } = (await res.json()) as Api.Account.AccountId;
-          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
+          expect(res).toBeNoContentResponse();
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(getAccountId(accountDocument)));
         });
 
         test('should update account with an existing name for a different owner', async ({ requestUpdateAccount, saveAccounts, findAccountById }) => {
@@ -63,10 +61,8 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
 
           await saveAccounts(accountDocument, sameNameAccountDocument);
           const res = await requestUpdateAccount(getAccountId(accountDocument), request);
-          expect(res).toBeCreatedResponse();
-
-          const { accountId } = (await res.json()) as Api.Account.AccountId;
-          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
+          expect(res).toBeNoContentResponse();
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(getAccountId(accountDocument)));
         });
         test.describe('should return error', () => {
           test.describe('if body', () => {

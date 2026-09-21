@@ -1,21 +1,18 @@
-import * as Category from '@household/shared/schemas/category';
-import * as Product from '@household/shared/schemas/product';
 import { createPath } from '@household/shared/common/schema-utils';
+import { day } from '@household/shared/schemas/calendar';
 
 export const deleteCalendarDay = createPath({
-  method: 'post',
-  tags: ['Product'],
+  method: 'delete',
+  tags: ['Calendar'],
   parameters: [
     {
       in: 'path',
-      name: 'categoryId',
-      schema: Category.categoryId.properties.categoryId,
+      name: 'day',
+      schema: day.properties.day,
     },
   ],
-  requestBodySchema: Product.request,
   response: {
-    statusCode: 201,
-    description: 'Product created',
-    schema: Product.productId,
+    statusCode: 204,
+    description: 'Day reset to default',
   },
 });

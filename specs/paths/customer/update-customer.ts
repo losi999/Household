@@ -13,8 +13,7 @@ export const updateCustomer = createPath({
   ],
   requestBodySchema: customerRequest,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Customer updated',
-    schema: customerId,
   },
 });

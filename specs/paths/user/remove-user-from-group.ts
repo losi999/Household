@@ -2,7 +2,7 @@ import * as User from '@household/shared/schemas/user';
 import { createPath } from '@household/shared/common/schema-utils';
 
 export const removeUserFromGroup = createPath({
-  method: 'post',
+  method: 'delete',
   tags: ['User'],
   parameters: [
     {

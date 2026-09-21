@@ -71,9 +71,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
             await saveTransaction(originalDocument);
             await saveAccounts(accountDocument, transferAccountDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
-            expect(res).toBeCreatedResponse();
-            const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
+            expect(res).toBeNoContentResponse();
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
           });
 
           test('between a non-loan and a loan account', async ({ requestUpdateToTransferTransaction, saveAccounts, saveTransaction, getTransactionById }) => {
@@ -89,9 +88,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
             await saveTransaction(originalDocument);
             await saveAccounts(accountDocument, loanAccountDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
-            expect(res).toBeCreatedResponse();
-            const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
+            expect(res).toBeNoContentResponse();
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
           });
 
           test('between two loan accounts', async ({ requestUpdateToTransferTransaction, saveAccounts, saveTransaction, getTransactionById }) => {
@@ -111,9 +109,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
             await saveTransaction(originalDocument);
             await saveAccounts(accountDocument, transferAccountDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
-            expect(res).toBeCreatedResponse();
-            const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
+            expect(res).toBeNoContentResponse();
+            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
           });
 
           test.describe('without optional properties', () => {
@@ -126,9 +123,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               await saveAccount(accountDocument);
               await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
+              expect(res).toBeNoContentResponse();
+              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
 
             test('transferAmount', async ({ requestUpdateToTransferTransaction, saveAccount, saveTransaction, getTransactionById }) => {
@@ -140,9 +136,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               await saveAccount(accountDocument);
               await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
+              expect(res).toBeNoContentResponse();
+              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
           });
 
@@ -168,9 +163,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               await saveAccount(accountDocument);
               await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(transferDocument), request);
-              expect(res).toBeCreatedResponse();
-              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(transactionId));
+              expect(res).toBeNoContentResponse();
+              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
           });
         });

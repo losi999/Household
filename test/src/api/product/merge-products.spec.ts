@@ -156,7 +156,7 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
           await saveTransactions(paymentTransactionDocument, splitTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument);
 
           const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
-          expect(res).toBeCreatedResponse();
+          expect(res).toBeNoContentResponse();
 
           expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
           expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {

@@ -13,8 +13,7 @@ export const updateCategory = createPath({
   ],
   requestBodySchema: Category.request,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Category updated',
-    schema: Category.categoryId,
   },
 });

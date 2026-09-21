@@ -1,5 +1,5 @@
-import { default as handler } from '@household/api/functions/forgot-password/forgot-password-handler';
-import { IForgotPasswordService } from '@household/api/functions/forgot-password/forgot-password-service';
+import { default as handler } from '@household/api/functions/forgot-password/forgot-password.handler';
+import { IForgotPasswordService } from '@household/api/functions/forgot-password/forgot-password.service';
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 
 describe('Forgot password handler', () => {
@@ -43,6 +43,6 @@ describe('Forgot password handler', () => {
     validateFunctionCall(mockForgotPasswordService, {
       body,
     });
-    expect(response.statusCode).toEqual(200);
+    expect(response.statusCode).toEqual(204);
   });
 });

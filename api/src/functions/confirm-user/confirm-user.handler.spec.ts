@@ -48,7 +48,7 @@ describe('Confirm user handler', () => {
       body,
       email,
     });
-    expect(response.statusCode).toEqual(200);
+    expect(response.statusCode).toEqual(204);
     expect.assertions(2);
   });
 });

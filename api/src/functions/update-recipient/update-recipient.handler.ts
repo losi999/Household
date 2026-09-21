@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IUpdateRecipientService } from '@household/api/functions/update-recipient/update-recipient.service';
 import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
@@ -18,8 +18,6 @@ export default (updateRecipient: IUpdateRecipientService): AWSLambda.APIGatewayP
       return errorResponse(error);
     }
 
-    return createdResponse({
-      recipientId,
-    });
+    return noContentResponse();
   };
 };

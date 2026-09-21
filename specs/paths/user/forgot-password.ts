@@ -6,7 +6,7 @@ export const forgotPassword = createPath({
   tags: ['User'],
   requestBodySchema: Auth.forgotPasswordRequest,
   response: {
-    statusCode: 200,
+    statusCode: 204,
     description: 'Password reset initiated',
   },
 });

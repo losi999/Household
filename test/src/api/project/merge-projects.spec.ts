@@ -58,7 +58,7 @@ test.describe('POST /project/v1/projects/{projectId}/merge', () => {
           await saveProjects(sourceProjectDocument, targetProjectDocument);
 
           const res = await requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)]);
-          expect(res).toBeCreatedResponse();
+          expect(res).toBeNoContentResponse();
           
           expect(await findProjectById(getProjectId(sourceProjectDocument))).toHaveBeenDeletedFromDatabase();
         });
@@ -161,7 +161,7 @@ test.describe('POST /project/v1/projects/{projectId}/merge', () => {
             await saveProjects(sourceProjectDocument, targetProjectDocument, unrelatedProjectDocument);
 
             const res = await requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)]);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
           
             expect(await findProjectById(getProjectId(sourceProjectDocument))).toHaveBeenDeletedFromDatabase();
 

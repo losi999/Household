@@ -68,10 +68,8 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
           await saveCustomers(customerDocument, blacklistedCustomer);
           await savePrice(priceDocument);
           const res = await requestUpdateCustomer(getCustomerId(customerDocument), request);
-          expect(res).toBeCreatedResponse();
-
-          const { customerId } = (await res.json()) as Api.Customer.CustomerId;
-          expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId), customerDocument);
+          expect(res).toBeNoContentResponse();
+          expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(getCustomerId(customerDocument)), customerDocument);
         });
 
         test.describe('should return error', () => {

@@ -47,8 +47,7 @@ describe('Merge projects handler', () => {
       projectId,
       body,
     });
-    expect(response.statusCode).toEqual(201);
-    expect(JSON.parse(response.body).projectId).toEqual(projectId);
-    expect.assertions(3);
+    expect(response.statusCode).toEqual(204);
+    expect.assertions(2);
   });
 });

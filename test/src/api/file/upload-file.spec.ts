@@ -48,7 +48,7 @@ test.describe('POST /file/v1/files', () => {
         test.describe('should upload file', () => {
           test('with complete body', async ({ requestCreateUploadUrl, requestUploadFile, findFileById, checkFile }) => {
             const urlRes = await requestCreateUploadUrl(request);
-            expect(urlRes).toBeOkResponse();
+            expect(urlRes).toBeCreatedResponse();
             expect(urlRes).toMatchSchema(schema);
 
             const { fileId, url } = (await urlRes.json()) as Api.File.FileId & Api.File.Url;

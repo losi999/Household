@@ -13,8 +13,7 @@ export const mergeCategories = createPath({
   ],
   requestBodySchema: Category.idList,
   response: {
-    statusCode: 201,
+    statusCode: 204,
     description: 'Categories merged',
-    schema: Category.categoryId,
   },
 });

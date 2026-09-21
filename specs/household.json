@@ -120,25 +120,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Account created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "accountId"
-                  ],
-                  "properties": {
-                    "accountId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Account created"
           }
         }
       }
@@ -277,25 +260,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Account updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "accountId"
-                  ],
-                  "properties": {
-                    "accountId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Account updated"
           }
         }
       },
@@ -499,25 +465,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Project updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "projectId"
-                  ],
-                  "properties": {
-                    "projectId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Project updated"
           }
         }
       },
@@ -574,25 +523,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Projects merged",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "projectId"
-                  ],
-                  "properties": {
-                    "projectId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Projects merged"
           }
         }
       }
@@ -759,25 +691,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Recipient updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "recipientId"
-                  ],
-                  "properties": {
-                    "recipientId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Recipient updated"
           }
         }
       },
@@ -834,25 +749,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Recipients merged",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "recipientId"
-                  ],
-                  "properties": {
-                    "recipientId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Recipients merged"
           }
         }
       }
@@ -1199,25 +1097,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Category updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "categoryId"
-                  ],
-                  "properties": {
-                    "categoryId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Category updated"
           }
         }
       },
@@ -1274,25 +1155,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Categories merged",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "categoryId"
-                  ],
-                  "properties": {
-                    "categoryId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Categories merged"
           }
         }
       }
@@ -1510,25 +1374,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Product updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "productId"
-                  ],
-                  "properties": {
-                    "productId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Product updated"
           }
         }
       },
@@ -1585,25 +1432,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Products merged",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "productId"
-                  ],
-                  "properties": {
-                    "productId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Products merged"
           }
         }
       }
@@ -1705,9 +1535,6 @@
                               "fullName": {
                                 "type": "string",
                                 "minLength": 1
-                              },
-                              "balance": {
-                                "type": "number"
                               }
                             },
                             "required": [
@@ -1717,8 +1544,7 @@
                               "currency",
                               "accountType",
                               "owner",
-                              "fullName",
-                              "balance"
+                              "fullName"
                             ]
                           },
                           "category": {
@@ -1970,9 +1796,6 @@
                               "fullName": {
                                 "type": "string",
                                 "minLength": 1
-                              },
-                              "balance": {
-                                "type": "number"
                               }
                             },
                             "required": [
@@ -1982,8 +1805,7 @@
                               "currency",
                               "accountType",
                               "owner",
-                              "fullName",
-                              "balance"
+                              "fullName"
                             ]
                           },
                           "transferAccount": {
@@ -2022,9 +1844,6 @@
                               "fullName": {
                                 "type": "string",
                                 "minLength": 1
-                              },
-                              "balance": {
-                                "type": "number"
                               }
                             },
                             "required": [
@@ -2034,8 +1853,7 @@
                               "currency",
                               "accountType",
                               "owner",
-                              "fullName",
-                              "balance"
+                              "fullName"
                             ]
                           },
                           "transactionType": {
@@ -2064,8 +1882,7 @@
                             "pattern": "^[a-f0-9]{24}$"
                           },
                           "amount": {
-                            "type": "number",
-                            "exclusiveMaximum": 0
+                            "type": "number"
                           },
                           "description": {
                             "type": "string",
@@ -2111,9 +1928,6 @@
                               "fullName": {
                                 "type": "string",
                                 "minLength": 1
-                              },
-                              "balance": {
-                                "type": "number"
                               }
                             },
                             "required": [
@@ -2123,8 +1937,7 @@
                               "currency",
                               "accountType",
                               "owner",
-                              "fullName",
-                              "balance"
+                              "fullName"
                             ]
                           },
                           "recipient": {
@@ -2602,9 +2415,6 @@
                                     "fullName": {
                                       "type": "string",
                                       "minLength": 1
-                                    },
-                                    "balance": {
-                                      "type": "number"
                                     }
                                   },
                                   "required": [
@@ -2614,8 +2424,7 @@
                                     "currency",
                                     "accountType",
                                     "owner",
-                                    "fullName",
-                                    "balance"
+                                    "fullName"
                                   ]
                                 },
                                 "ownerAccount": {
@@ -2654,9 +2463,6 @@
                                     "fullName": {
                                       "type": "string",
                                       "minLength": 1
-                                    },
-                                    "balance": {
-                                      "type": "number"
                                     }
                                   },
                                   "required": [
@@ -2666,8 +2472,7 @@
                                     "currency",
                                     "accountType",
                                     "owner",
-                                    "fullName",
-                                    "balance"
+                                    "fullName"
                                   ]
                                 }
                               },
@@ -2944,9 +2749,6 @@
                               "fullName": {
                                 "type": "string",
                                 "minLength": 1
-                              },
-                              "balance": {
-                                "type": "number"
                               }
                             },
                             "required": [
@@ -2956,8 +2758,7 @@
                               "currency",
                               "accountType",
                               "owner",
-                              "fullName",
-                              "balance"
+                              "fullName"
                             ]
                           },
                           "ownerAccount": {
@@ -2996,9 +2797,6 @@
                               "fullName": {
                                 "type": "string",
                                 "minLength": 1
-                              },
-                              "balance": {
-                                "type": "number"
                               }
                             },
                             "required": [
@@ -3008,8 +2806,7 @@
                               "currency",
                               "accountType",
                               "owner",
-                              "fullName",
-                              "balance"
+                              "fullName"
                             ]
                           }
                         },
@@ -3276,9 +3073,6 @@
                               "fullName": {
                                 "type": "string",
                                 "minLength": 1
-                              },
-                              "balance": {
-                                "type": "number"
                               }
                             },
                             "required": [
@@ -3288,8 +3082,7 @@
                               "currency",
                               "accountType",
                               "owner",
-                              "fullName",
-                              "balance"
+                              "fullName"
                             ]
                           },
                           "ownerAccount": {
@@ -3328,9 +3121,6 @@
                               "fullName": {
                                 "type": "string",
                                 "minLength": 1
-                              },
-                              "balance": {
-                                "type": "number"
                               }
                             },
                             "required": [
@@ -3340,8 +3130,7 @@
                               "currency",
                               "accountType",
                               "owner",
-                              "fullName",
-                              "balance"
+                              "fullName"
                             ]
                           }
                         },
@@ -3467,9 +3256,6 @@
                             "fullName": {
                               "type": "string",
                               "minLength": 1
-                            },
-                            "balance": {
-                              "type": "number"
                             }
                           },
                           "required": [
@@ -3479,8 +3265,7 @@
                             "currency",
                             "accountType",
                             "owner",
-                            "fullName",
-                            "balance"
+                            "fullName"
                           ]
                         },
                         "category": {
@@ -3732,9 +3517,6 @@
                             "fullName": {
                               "type": "string",
                               "minLength": 1
-                            },
-                            "balance": {
-                              "type": "number"
                             }
                           },
                           "required": [
@@ -3744,8 +3526,7 @@
                             "currency",
                             "accountType",
                             "owner",
-                            "fullName",
-                            "balance"
+                            "fullName"
                           ]
                         },
                         "transferAccount": {
@@ -3784,9 +3565,6 @@
                             "fullName": {
                               "type": "string",
                               "minLength": 1
-                            },
-                            "balance": {
-                              "type": "number"
                             }
                           },
                           "required": [
@@ -3796,8 +3574,7 @@
                             "currency",
                             "accountType",
                             "owner",
-                            "fullName",
-                            "balance"
+                            "fullName"
                           ]
                         },
                         "transactionType": {
@@ -3826,8 +3603,7 @@
                           "pattern": "^[a-f0-9]{24}$"
                         },
                         "amount": {
-                          "type": "number",
-                          "exclusiveMaximum": 0
+                          "type": "number"
                         },
                         "description": {
                           "type": "string",
@@ -3873,9 +3649,6 @@
                             "fullName": {
                               "type": "string",
                               "minLength": 1
-                            },
-                            "balance": {
-                              "type": "number"
                             }
                           },
                           "required": [
@@ -3885,8 +3658,7 @@
                             "currency",
                             "accountType",
                             "owner",
-                            "fullName",
-                            "balance"
+                            "fullName"
                           ]
                         },
                         "recipient": {
@@ -4364,9 +4136,6 @@
                                   "fullName": {
                                     "type": "string",
                                     "minLength": 1
-                                  },
-                                  "balance": {
-                                    "type": "number"
                                   }
                                 },
                                 "required": [
@@ -4376,8 +4145,7 @@
                                   "currency",
                                   "accountType",
                                   "owner",
-                                  "fullName",
-                                  "balance"
+                                  "fullName"
                                 ]
                               },
                               "ownerAccount": {
@@ -4416,9 +4184,6 @@
                                   "fullName": {
                                     "type": "string",
                                     "minLength": 1
-                                  },
-                                  "balance": {
-                                    "type": "number"
                                   }
                                 },
                                 "required": [
@@ -4428,8 +4193,7 @@
                                   "currency",
                                   "accountType",
                                   "owner",
-                                  "fullName",
-                                  "balance"
+                                  "fullName"
                                 ]
                               }
                             },
@@ -4706,9 +4470,6 @@
                             "fullName": {
                               "type": "string",
                               "minLength": 1
-                            },
-                            "balance": {
-                              "type": "number"
                             }
                           },
                           "required": [
@@ -4718,8 +4479,7 @@
                             "currency",
                             "accountType",
                             "owner",
-                            "fullName",
-                            "balance"
+                            "fullName"
                           ]
                         },
                         "ownerAccount": {
@@ -4758,9 +4518,6 @@
                             "fullName": {
                               "type": "string",
                               "minLength": 1
-                            },
-                            "balance": {
-                              "type": "number"
                             }
                           },
                           "required": [
@@ -4770,8 +4527,7 @@
                             "currency",
                             "accountType",
                             "owner",
-                            "fullName",
-                            "balance"
+                            "fullName"
                           ]
                         }
                       },
@@ -5038,9 +4794,6 @@
                             "fullName": {
                               "type": "string",
                               "minLength": 1
-                            },
-                            "balance": {
-                              "type": "number"
                             }
                           },
                           "required": [
@@ -5050,8 +4803,7 @@
                             "currency",
                             "accountType",
                             "owner",
-                            "fullName",
-                            "balance"
+                            "fullName"
                           ]
                         },
                         "ownerAccount": {
@@ -5090,9 +4842,6 @@
                             "fullName": {
                               "type": "string",
                               "minLength": 1
-                            },
-                            "balance": {
-                              "type": "number"
                             }
                           },
                           "required": [
@@ -5102,8 +4851,7 @@
                             "currency",
                             "accountType",
                             "owner",
-                            "fullName",
-                            "balance"
+                            "fullName"
                           ]
                         }
                       },
@@ -5328,357 +5076,6 @@
         }
       }
     },
-    "/transaction/v1/transactions/deferred": {
-      "get": {
-        "tags": [
-          "Transaction"
-        ],
-        "responses": {
-          "200": {
-            "description": "List of transactions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "transactionId": {
-                        "type": "string",
-                        "pattern": "^[a-f0-9]{24}$"
-                      },
-                      "amount": {
-                        "type": "number",
-                        "exclusiveMaximum": 0
-                      },
-                      "issuedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "description": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "billingStartDate": {
-                        "type": "string",
-                        "format": "date"
-                      },
-                      "billingEndDate": {
-                        "type": "string",
-                        "format": "date"
-                      },
-                      "invoiceNumber": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "quantity": {
-                        "type": "number",
-                        "exclusiveMinimum": 0
-                      },
-                      "transactionType": {
-                        "type": "string",
-                        "enum": [
-                          "deferred"
-                        ]
-                      },
-                      "category": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                          "categoryId": {
-                            "type": "string",
-                            "pattern": "^[a-f0-9]{24}$"
-                          },
-                          "name": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "categoryType": {
-                            "type": "string",
-                            "enum": [
-                              "regular",
-                              "invoice",
-                              "inventory"
-                            ]
-                          },
-                          "fullName": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "ancestors": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "additionalProperties": false,
-                              "properties": {
-                                "categoryId": {
-                                  "type": "string",
-                                  "pattern": "^[a-f0-9]{24}$"
-                                },
-                                "name": {
-                                  "type": "string",
-                                  "minLength": 1
-                                },
-                                "categoryType": {
-                                  "type": "string",
-                                  "enum": [
-                                    "regular",
-                                    "invoice",
-                                    "inventory"
-                                  ]
-                                }
-                              },
-                              "required": [
-                                "categoryId",
-                                "name",
-                                "categoryType"
-                              ]
-                            }
-                          },
-                          "parentCategory": {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                              "categoryId": {
-                                "type": "string",
-                                "pattern": "^[a-f0-9]{24}$"
-                              },
-                              "name": {
-                                "type": "string",
-                                "minLength": 1
-                              },
-                              "categoryType": {
-                                "type": "string",
-                                "enum": [
-                                  "regular",
-                                  "invoice",
-                                  "inventory"
-                                ]
-                              },
-                              "fullName": {
-                                "type": "string",
-                                "minLength": 1
-                              }
-                            },
-                            "required": [
-                              "categoryId",
-                              "name",
-                              "categoryType",
-                              "fullName"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "categoryId",
-                          "name",
-                          "categoryType",
-                          "fullName",
-                          "ancestors"
-                        ]
-                      },
-                      "project": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                          "projectId": {
-                            "type": "string",
-                            "pattern": "^[a-f0-9]{24}$"
-                          },
-                          "name": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "description": {
-                            "type": "string",
-                            "minLength": 1
-                          }
-                        },
-                        "required": [
-                          "projectId",
-                          "name"
-                        ]
-                      },
-                      "product": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                          "brand": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "measurement": {
-                            "type": "number",
-                            "exclusiveMinimum": 0
-                          },
-                          "unitOfMeasurement": {
-                            "type": "string",
-                            "enum": [
-                              "cm",
-                              "db",
-                              "g",
-                              "kg",
-                              "l",
-                              "m",
-                              "ml"
-                            ]
-                          },
-                          "productId": {
-                            "type": "string",
-                            "pattern": "^[a-f0-9]{24}$"
-                          },
-                          "fullName": {
-                            "type": "string",
-                            "minLength": 1
-                          }
-                        },
-                        "required": [
-                          "brand",
-                          "measurement",
-                          "unitOfMeasurement",
-                          "productId",
-                          "fullName"
-                        ]
-                      },
-                      "recipient": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                          "recipientId": {
-                            "type": "string",
-                            "pattern": "^[a-f0-9]{24}$"
-                          },
-                          "name": {
-                            "type": "string",
-                            "minLength": 1
-                          }
-                        },
-                        "required": [
-                          "recipientId",
-                          "name"
-                        ]
-                      },
-                      "payingAccount": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                          "accountId": {
-                            "type": "string",
-                            "pattern": "^[a-f0-9]{24}$"
-                          },
-                          "isOpen": {
-                            "type": "boolean"
-                          },
-                          "name": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "currency": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "accountType": {
-                            "type": "string",
-                            "enum": [
-                              "bankAccount",
-                              "cash",
-                              "creditCard",
-                              "loan",
-                              "cafeteria"
-                            ]
-                          },
-                          "owner": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "fullName": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "balance": {
-                            "type": "number"
-                          }
-                        },
-                        "required": [
-                          "accountId",
-                          "isOpen",
-                          "name",
-                          "currency",
-                          "accountType",
-                          "owner",
-                          "fullName",
-                          "balance"
-                        ]
-                      },
-                      "ownerAccount": {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "properties": {
-                          "accountId": {
-                            "type": "string",
-                            "pattern": "^[a-f0-9]{24}$"
-                          },
-                          "isOpen": {
-                            "type": "boolean"
-                          },
-                          "name": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "currency": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "accountType": {
-                            "type": "string",
-                            "enum": [
-                              "bankAccount",
-                              "cash",
-                              "creditCard",
-                              "loan",
-                              "cafeteria"
-                            ]
-                          },
-                          "owner": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "fullName": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "balance": {
-                            "type": "number"
-                          }
-                        },
-                        "required": [
-                          "accountId",
-                          "isOpen",
-                          "name",
-                          "currency",
-                          "accountType",
-                          "owner",
-                          "fullName",
-                          "balance"
-                        ]
-                      }
-                    },
-                    "required": [
-                      "amount",
-                      "transactionId",
-                      "issuedAt",
-                      "transactionType",
-                      "payingAccount",
-                      "ownerAccount"
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/transaction/v1/transactions/{transactionId}/payment": {
       "put": {
         "tags": [
@@ -5764,25 +5161,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Transaction updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "transactionId"
-                  ],
-                  "properties": {
-                    "transactionId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Transaction updated"
           }
         }
       }
@@ -5844,25 +5224,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Transaction updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "transactionId"
-                  ],
-                  "properties": {
-                    "transactionId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Transaction updated"
           }
         }
       }
@@ -5893,25 +5256,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Transaction updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "transactionId"
-                  ],
-                  "properties": {
-                    "transactionId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Transaction updated"
           }
         }
       }
@@ -6294,9 +5640,6 @@
                                     "fullName": {
                                       "type": "string",
                                       "minLength": 1
-                                    },
-                                    "balance": {
-                                      "type": "number"
                                     }
                                   },
                                   "required": [
@@ -6306,8 +5649,7 @@
                                     "currency",
                                     "accountType",
                                     "owner",
-                                    "fullName",
-                                    "balance"
+                                    "fullName"
                                   ]
                                 },
                                 "category": {
@@ -6559,9 +5901,6 @@
                                     "fullName": {
                                       "type": "string",
                                       "minLength": 1
-                                    },
-                                    "balance": {
-                                      "type": "number"
                                     }
                                   },
                                   "required": [
@@ -6571,8 +5910,7 @@
                                     "currency",
                                     "accountType",
                                     "owner",
-                                    "fullName",
-                                    "balance"
+                                    "fullName"
                                   ]
                                 },
                                 "transferAccount": {
@@ -6611,9 +5949,6 @@
                                     "fullName": {
                                       "type": "string",
                                       "minLength": 1
-                                    },
-                                    "balance": {
-                                      "type": "number"
                                     }
                                   },
                                   "required": [
@@ -6623,8 +5958,7 @@
                                     "currency",
                                     "accountType",
                                     "owner",
-                                    "fullName",
-                                    "balance"
+                                    "fullName"
                                   ]
                                 },
                                 "transactionType": {
@@ -6653,8 +5987,7 @@
                                   "pattern": "^[a-f0-9]{24}$"
                                 },
                                 "amount": {
-                                  "type": "number",
-                                  "exclusiveMaximum": 0
+                                  "type": "number"
                                 },
                                 "description": {
                                   "type": "string",
@@ -6700,9 +6033,6 @@
                                     "fullName": {
                                       "type": "string",
                                       "minLength": 1
-                                    },
-                                    "balance": {
-                                      "type": "number"
                                     }
                                   },
                                   "required": [
@@ -6712,8 +6042,7 @@
                                     "currency",
                                     "accountType",
                                     "owner",
-                                    "fullName",
-                                    "balance"
+                                    "fullName"
                                   ]
                                 },
                                 "recipient": {
@@ -7191,9 +6520,6 @@
                                           "fullName": {
                                             "type": "string",
                                             "minLength": 1
-                                          },
-                                          "balance": {
-                                            "type": "number"
                                           }
                                         },
                                         "required": [
@@ -7203,8 +6529,7 @@
                                           "currency",
                                           "accountType",
                                           "owner",
-                                          "fullName",
-                                          "balance"
+                                          "fullName"
                                         ]
                                       },
                                       "ownerAccount": {
@@ -7243,9 +6568,6 @@
                                           "fullName": {
                                             "type": "string",
                                             "minLength": 1
-                                          },
-                                          "balance": {
-                                            "type": "number"
                                           }
                                         },
                                         "required": [
@@ -7255,8 +6577,7 @@
                                           "currency",
                                           "accountType",
                                           "owner",
-                                          "fullName",
-                                          "balance"
+                                          "fullName"
                                         ]
                                       }
                                     },
@@ -7533,9 +6854,6 @@
                                     "fullName": {
                                       "type": "string",
                                       "minLength": 1
-                                    },
-                                    "balance": {
-                                      "type": "number"
                                     }
                                   },
                                   "required": [
@@ -7545,8 +6863,7 @@
                                     "currency",
                                     "accountType",
                                     "owner",
-                                    "fullName",
-                                    "balance"
+                                    "fullName"
                                   ]
                                 },
                                 "ownerAccount": {
@@ -7585,9 +6902,6 @@
                                     "fullName": {
                                       "type": "string",
                                       "minLength": 1
-                                    },
-                                    "balance": {
-                                      "type": "number"
                                     }
                                   },
                                   "required": [
@@ -7597,8 +6911,7 @@
                                     "currency",
                                     "accountType",
                                     "owner",
-                                    "fullName",
-                                    "balance"
+                                    "fullName"
                                   ]
                                 }
                               },
@@ -7865,9 +7178,6 @@
                                     "fullName": {
                                       "type": "string",
                                       "minLength": 1
-                                    },
-                                    "balance": {
-                                      "type": "number"
                                     }
                                   },
                                   "required": [
@@ -7877,8 +7187,7 @@
                                     "currency",
                                     "accountType",
                                     "owner",
-                                    "fullName",
-                                    "balance"
+                                    "fullName"
                                   ]
                                 },
                                 "ownerAccount": {
@@ -7917,9 +7226,6 @@
                                     "fullName": {
                                       "type": "string",
                                       "minLength": 1
-                                    },
-                                    "balance": {
-                                      "type": "number"
                                     }
                                   },
                                   "required": [
@@ -7929,8 +7235,7 @@
                                     "currency",
                                     "accountType",
                                     "owner",
-                                    "fullName",
-                                    "balance"
+                                    "fullName"
                                   ]
                                 }
                               },
@@ -8329,7 +7634,7 @@
           }
         },
         "responses": {
-          "200": {
+          "204": {
             "description": "User confirmed"
           }
         }
@@ -8554,7 +7859,7 @@
           }
         },
         "responses": {
-          "200": {
+          "204": {
             "description": "Password reset initiated"
           }
         }
@@ -8739,8 +8044,6 @@
                         "required": [
                           "name",
                           "duration",
-                          "description",
-                          "additionalPrice",
                           "prices",
                           "title"
                         ]
@@ -8844,25 +8147,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Customer updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "customerId"
-                  ],
-                  "properties": {
-                    "customerId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Customer updated"
           }
         }
       },
@@ -9114,7 +8400,7 @@
           }
         },
         "responses": {
-          "201": {
+          "204": {
             "description": "Customer job updated"
           }
         }
@@ -9363,25 +8649,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Price updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "priceId"
-                  ],
-                  "properties": {
-                    "priceId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Price updated"
           }
         }
       },
@@ -9642,7 +8911,7 @@
                                     "entryType": {
                                       "type": "string",
                                       "enum": [
-                                        "issue"
+                                        "work"
                                       ]
                                     },
                                     "customer": {
@@ -9741,8 +9010,6 @@
                                             "required": [
                                               "name",
                                               "duration",
-                                              "description",
-                                              "additionalPrice",
                                               "prices",
                                               "title"
                                             ]
@@ -9839,7 +9106,6 @@
                                     "start",
                                     "end",
                                     "calendarEntryId",
-                                    "additionalPrice",
                                     "prices",
                                     "entryType",
                                     "customer"
@@ -10044,7 +9310,7 @@
                                     "entryType": {
                                       "type": "string",
                                       "enum": [
-                                        "issue"
+                                        "work"
                                       ]
                                     },
                                     "customer": {
@@ -10143,8 +9409,6 @@
                                             "required": [
                                               "name",
                                               "duration",
-                                              "description",
-                                              "additionalPrice",
                                               "prices",
                                               "title"
                                             ]
@@ -10241,7 +9505,6 @@
                                     "start",
                                     "end",
                                     "calendarEntryId",
-                                    "additionalPrice",
                                     "prices",
                                     "entryType",
                                     "customer"
@@ -10438,7 +9701,7 @@
                                     "entryType": {
                                       "type": "string",
                                       "enum": [
-                                        "issue"
+                                        "work"
                                       ]
                                     },
                                     "customer": {
@@ -10537,8 +9800,6 @@
                                             "required": [
                                               "name",
                                               "duration",
-                                              "description",
-                                              "additionalPrice",
                                               "prices",
                                               "title"
                                             ]
@@ -10635,7 +9896,6 @@
                                     "start",
                                     "end",
                                     "calendarEntryId",
-                                    "additionalPrice",
                                     "prices",
                                     "entryType",
                                     "customer"
@@ -10838,7 +10098,7 @@
                                     "entryType": {
                                       "type": "string",
                                       "enum": [
-                                        "issue"
+                                        "work"
                                       ]
                                     },
                                     "customer": {
@@ -10937,8 +10197,6 @@
                                             "required": [
                                               "name",
                                               "duration",
-                                              "description",
-                                              "additionalPrice",
                                               "prices",
                                               "title"
                                             ]
@@ -11035,7 +10293,6 @@
                                     "start",
                                     "end",
                                     "calendarEntryId",
-                                    "additionalPrice",
                                     "prices",
                                     "entryType",
                                     "customer"
@@ -11064,9 +10321,7 @@
                         "required": [
                           "day",
                           "entries",
-                          "dayType",
-                          "start",
-                          "end"
+                          "dayType"
                         ]
                       }
                     ]
@@ -11153,78 +10408,24 @@
           }
         }
       },
-      "post": {
+      "delete": {
         "tags": [
-          "Product"
+          "Calendar"
         ],
         "parameters": [
           {
-            "name": "categoryId",
+            "name": "day",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[a-f0-9]{24}$"
+              "format": "date"
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                  "brand": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "measurement": {
-                    "type": "number",
-                    "exclusiveMinimum": 0
-                  },
-                  "unitOfMeasurement": {
-                    "type": "string",
-                    "enum": [
-                      "cm",
-                      "db",
-                      "g",
-                      "kg",
-                      "l",
-                      "m",
-                      "ml"
-                    ]
-                  }
-                },
-                "required": [
-                  "brand",
-                  "measurement",
-                  "unitOfMeasurement"
-                ]
-              }
-            }
-          }
-        },
         "responses": {
-          "201": {
-            "description": "Product created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "productId"
-                  ],
-                  "properties": {
-                    "productId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Day reset to default"
           }
         }
       }
@@ -11614,7 +10815,7 @@
                         "entryType": {
                           "type": "string",
                           "enum": [
-                            "issue"
+                            "work"
                           ]
                         },
                         "customer": {
@@ -11713,8 +10914,6 @@
                                 "required": [
                                   "name",
                                   "duration",
-                                  "description",
-                                  "additionalPrice",
                                   "prices",
                                   "title"
                                 ]
@@ -11811,7 +11010,6 @@
                         "start",
                         "end",
                         "calendarEntryId",
-                        "additionalPrice",
                         "prices",
                         "entryType",
                         "customer"
@@ -12004,25 +11202,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Calendar entry updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "calendarEntryId"
-                  ],
-                  "properties": {
-                    "calendarEntryId": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{24}$"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Calendar entry updated"
           }
         }
       },

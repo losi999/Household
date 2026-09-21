@@ -54,8 +54,7 @@ describe('Update to payment transaction handler', () => {
       body,
       expiresIn,
     });
-    expect(response.statusCode).toEqual(201);
-    expect(JSON.parse(response.body).transactionId).toEqual(transactionId);
-    expect.assertions(3);
+    expect(response.statusCode).toEqual(204);
+    expect.assertions(2);
   });
 });
