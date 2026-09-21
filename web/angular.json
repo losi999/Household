@@ -159,7 +159,8 @@
             ],
             "styles": [
               "projects/household/src/styles.scss"
-            ]
+            ],
+            "serviceWorker": "projects/household/ngsw-config.json"
           },
           "configurations": {
             "PROD": {
