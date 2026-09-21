@@ -1,10 +1,10 @@
 {
-  "name": "Household",
-  "short_name": "Household",
+  "name": "Háztartás",
+  "short_name": "Háztartás",
   "description": "Household finances and planning",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#105FB3",
   "theme_color": "#ffffff",
   "icons": [
     {
