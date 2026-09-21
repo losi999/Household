@@ -4,7 +4,7 @@ import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pi
 import { IconText } from '@household/shared-ui';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { PaginatePipe } from '@hairdressing/app/pipes/paginate-pipe';
-import { Calendar } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { DatePipe } from '@angular/common';
 
 @Component({
@@ -21,7 +21,7 @@ import { DatePipe } from '@angular/common';
   styleUrl: './customer-details-works.scss',
 })
 export class CustomerDetailsWorks {
-  works = input.required<Calendar.Entry.WorkEntryResponseBase[]>();
+  works = input.required<Responses.CalendarEntryWorkLean[]>();
   pageSize = input(5);
   title = input.required<string>();
 }

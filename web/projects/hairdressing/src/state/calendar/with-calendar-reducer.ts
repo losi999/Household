@@ -4,12 +4,14 @@ import { LimitedCalendarDay } from '@hairdressing/types';
 import { calculateWorkdayLimits } from '@household/shared/common/utils';
 import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
-import { Calendar, Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { signalStoreFeature } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
 
 export const withCalendarReducer = () => {
-  const createCalendarEntryResponseFromRequest = (calendarEntryId: Calendar.Entry.Id, request: Calendar.Entry.Request, customer: Customer.Response): Calendar.Entry.Response => {
+  const createCalendarEntryResponseFromRequest = (calendarEntryId: Api.Calendar.Entry.Id, request: Requests.CalendarEntry, customer: Responses.Customer): Responses.CalendarEntry => {
     if (request.entryType === CalendarEntryType.Work) {
       return {
         calendarEntryId,

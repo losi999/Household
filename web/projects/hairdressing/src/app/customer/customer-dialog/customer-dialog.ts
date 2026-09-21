@@ -3,13 +3,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { ClearableInput } from '@household/shared-ui';
-import { Customer } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { form, FormField, required } from '@angular/forms/signals';
 import { toUndefined } from '@household/shared/common/utils';
 
-export type CustomerDialogData = Customer.Response;
-export type CustomerDialogResult = Customer.Request;
+export type CustomerDialogData = Responses.Customer;
+export type CustomerDialogResult = Requests.Customer;
 
 @Component({
   imports: [
@@ -27,7 +28,7 @@ export class CustomerDialog {
   private dialogRef = inject<MatDialogRef<CustomerDialog, CustomerDialogResult>>(MatDialogRef);
   public customer = inject<CustomerDialogData>(MAT_DIALOG_DATA);
 
-  customerModel = signal<Customer.Request>({
+  customerModel = signal<Requests.Customer>({
     name: this.customer?.name || '',
     description: this.customer?.description || '',
     isGroup: this.customer?.isGroup || false,

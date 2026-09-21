@@ -4,7 +4,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 import { FormsModule } from '@angular/forms';
 import { SignalErrorStateMatcher } from '@household/shared-ui';
@@ -25,11 +26,11 @@ import { customerEvents } from '@hairdressing/state/customer/customer-events';
   templateUrl: './customer-autocomplete-input.html',
   styleUrl: './customer-autocomplete-input.scss',
 })
-export class CustomerAutocompleteInput implements FormValueControl<Customer.Response> {
+export class CustomerAutocompleteInput implements FormValueControl<Responses.Customer> {
   readonly customerStore = inject(CustomerStore);
   private customerEvents = injectDispatch(customerEvents);
   
-  value = model<Customer.Response>();
+  value = model<Responses.Customer>();
 
   touched = model<boolean>(false);
 
@@ -37,7 +38,7 @@ export class CustomerAutocompleteInput implements FormValueControl<Customer.Resp
   errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
   label = input.required<string>();
-  exclude = input<Customer.Id[]>([]);
+  exclude = input<Api.Customer.Id[]>([]);
     
   matcher = new SignalErrorStateMatcher(this.touched);
 

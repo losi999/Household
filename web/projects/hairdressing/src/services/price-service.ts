@@ -1,7 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { API_URL } from '@household/shared-ui';
-import { Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 @Injectable({
   providedIn: 'root',
@@ -11,18 +13,18 @@ export class PriceService {
   private apiUrl = inject(API_URL);
 
   listPrices() {
-    return this.httpClient.get<Price.Response[]>(`${this.apiUrl}/price/v1/prices`);
+    return this.httpClient.get<Responses.Price[]>(`${this.apiUrl}/price/v1/prices`);
   }
   
-  createPrice(body: Price.Request) {
-    return this.httpClient.post<Price.PriceId>(`${this.apiUrl}/price/v1/prices`, body);
+  createPrice(body: Requests.Price) {
+    return this.httpClient.post<Api.Price.PriceId>(`${this.apiUrl}/price/v1/prices`, body);
   }
   
-  updatePrice(priceId: Price.Id, body: Price.Request) {
-    return this.httpClient.put<Price.PriceId>(`${this.apiUrl}/price/v1/prices/${priceId}`, body);
+  updatePrice(priceId: Api.Price.Id, body: Requests.Price) {
+    return this.httpClient.put<Api.Price.PriceId>(`${this.apiUrl}/price/v1/prices/${priceId}`, body);
   }
   
-  deletePrice(priceId: Price.Id) {
+  deletePrice(priceId: Api.Price.Id) {
     return this.httpClient.delete(`${this.apiUrl}/price/v1/prices/${priceId}`);
   }
 }

@@ -4,7 +4,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 import { FormValueControl, ValidationError } from '@angular/forms/signals';
 import { FormsModule } from '@angular/forms';
 import { SignalErrorStateMatcher } from '@household/shared-ui';
@@ -25,11 +26,11 @@ import { priceEvents } from '@hairdressing/state/price/price-events';
   templateUrl: './price-autocomplete-input.html',
   styleUrl: './price-autocomplete-input.scss',
 })
-export class PriceAutocompleteInput implements FormValueControl<Price.Response> {
+export class PriceAutocompleteInput implements FormValueControl<Responses.Price> {
   private priceStore = inject(PriceStore);
   private priceEvents = injectDispatch(priceEvents);
 
-  value = model<Price.Response>();
+  value = model<Responses.Price>();
 
   touched = model<boolean>(false);
 
@@ -37,7 +38,7 @@ export class PriceAutocompleteInput implements FormValueControl<Price.Response> 
   errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
 
   label = input.required<string>();
-  exclude = input<Price.Id[]>([]);
+  exclude = input<Api.Price.Id[]>([]);
   
   matcher = new SignalErrorStateMatcher(this.touched);
 

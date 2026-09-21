@@ -113,13 +113,13 @@ jobs:
           name: Build API
           command: yarn build:api
 
-      # - run:
-      #     name: Build Hairdressing Web
-      #     command: yarn build:hairdressing -c $ENV
+      - run:
+          name: Build Hairdressing Web
+          command: yarn build:hairdressing -c $ENV
 
-      # - run:
-      #     name: Build Household Web
-      #     command: yarn build:household -c $ENV
+      - run:
+          name: Build Household Web
+          command: yarn build:household -c $ENV
 
       - persist_to_workspace:
           root: ~/
@@ -239,21 +239,21 @@ workflows:
           name: unit_test_api
           requires:
             - install
-      # - unit_test_web:
-      #     name: unit_test_web_household
-      #     test_command: "household"
-      #     requires:
-      #       - install
-      # - unit_test_web:
-      #     name: unit_test_web_hairdressing
-      #     test_command: "hairdressing"
-      #     requires:
-      #       - install
-      # - unit_test_web:
-      #     name: unit_test_web_shared_ui
-      #     test_command: "shared-ui"
-      #     requires:
-      #       - install
+      - unit_test_web:
+          name: unit_test_web_household
+          test_command: "household"
+          requires:
+            - install
+      - unit_test_web:
+          name: unit_test_web_hairdressing
+          test_command: "hairdressing"
+          requires:
+            - install
+      - unit_test_web:
+          name: unit_test_web_shared_ui
+          test_command: "shared-ui"
+          requires:
+            - install
       - lint:
           name: lint
           requires:
@@ -272,14 +272,14 @@ workflows:
             # - unit_test_web_shared_ui
             - lint
             - build
-      # - web_hairdressing_deploy:
-      #     name: web_hairdressing_deploy
-      #     requires:
-      #       - api_deploy
-      # - web_household_deploy:
-      #     name: web_household_deploy
-      #     requires:
-      #       - api_deploy
+      - web_hairdressing_deploy:
+          name: web_hairdressing_deploy
+          requires:
+            - api_deploy
+      - web_household_deploy:
+          name: web_household_deploy
+          requires:
+            - api_deploy
       - api_test_setup:
           requires:
             - api_deploy

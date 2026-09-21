@@ -6,9 +6,9 @@ import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pi
 import { JobPriceSummary } from '@hairdressing/app/shared/job-price-summary/job-price-summary';
 import { IconText } from '@household/shared-ui';
 import { dateToISODateString } from '@household/shared/common/utils';
-import { Calendar } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
-export type CalendarEntryDetailsDialogData = Calendar.Entry.Response;
+export type CalendarEntryDetailsDialogData = Responses.CalendarEntry;
 export enum CalendarEntryDetailsDialogResult {
   Edit = 'edit',
   Delete = 'delete',

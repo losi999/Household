@@ -10,7 +10,9 @@ import { customerApiEvents, customerEvents } from '@hairdressing/state/customer/
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of, throwError } from 'rxjs';
 import { CustomerDialog } from '@hairdressing/app/customer/customer-dialog/customer-dialog';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { PriceStore } from '@hairdressing/state/price/price-store';
 import { CustomerJobReport } from '@hairdressing/types';
 import { CustomerJobDialog } from '@hairdressing/app/customer/customer-job-dialog/customer-job-dialog';
@@ -563,8 +565,8 @@ describe('Customer store', () => {
     });
     
     describe('should update computed properties', () => {
-      let jobA: Customer.Job.Response;
-      let jobB: Customer.Job.Response;
+      let jobA: Responses.CustomerJob;
+      let jobB: Responses.CustomerJob;
       beforeEach(() => {
         jobA = testDataFactory.customer.job.response({
           duration: 1,
@@ -870,9 +872,9 @@ describe('Customer store', () => {
   });
 
   describe('dispatching updateCustomerInitiated', () => {
-    let customerRequest: Customer.Request;
-    let customerId: Customer.Id;
-    let originalCustomer: Customer.Response;
+    let customerRequest: Requests.Customer;
+    let customerId: Api.Customer.Id;
+    let originalCustomer: Responses.Customer;
 
     beforeEach(() => {
       originalCustomer = testDataFactory.customer.response({
@@ -1012,7 +1014,7 @@ describe('Customer store', () => {
   });
 
   describe('dispatching deleteCustomerInitiated', () => {
-    let customerId: Customer.Id;
+    let customerId: Api.Customer.Id;
 
     beforeEach(() => {
       const originalCustomer = testDataFactory.customer.response({

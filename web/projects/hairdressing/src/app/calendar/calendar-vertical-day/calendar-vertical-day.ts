@@ -8,7 +8,8 @@ import { CustomerJob, LimitedCalendarDay } from '@hairdressing/types';
 import { dateToISODateString } from '@household/shared/common/utils';
 import { DAY_LENGTH } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
-import { Calendar } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 import { injectDispatch } from '@ngrx/signals/events';
 
 @Component({
@@ -29,7 +30,7 @@ export class CalendarVerticalDay {
   column = input.required<number>();
   pendingCustomerJob = input<CustomerJob>();
 
-  proposedTimeIntervals = computed<Calendar.TimeInterval[]>(() => {
+  proposedTimeIntervals = computed<Api.Calendar.TimeInterval[]>(() => {
     if (!this.pendingCustomerJob()) {
       return [];
     }
@@ -63,7 +64,7 @@ export class CalendarVerticalDay {
       }
     });
 
-    const intervals: Calendar.TimeInterval[] = [];
+    const intervals: Api.Calendar.TimeInterval[] = [];
     let start: number;
 
     for (let i = dayStart; i < dayEnd; i += 1) {
@@ -96,14 +97,14 @@ export class CalendarVerticalDay {
     return this.day().day <= dateToISODateString(new Date());
   });
 
-  onEntryClick(entry: Calendar.Entry.Response) {
+  onEntryClick(entry: Responses.CalendarEntry) {
     this.calendarEvents.viewCalendarEntry({
       ...entry,
       day: this.day().day,
     });    
   }
 
-  onProposalClick(timeInterval: Calendar.TimeInterval) {
+  onProposalClick(timeInterval: Api.Calendar.TimeInterval) {
     if (this.pendingCustomerJob().duration === timeInterval.end - timeInterval.start) {
       this.calendarEvents.confirmCalendarEntryProposal({
         day: this.day().day,

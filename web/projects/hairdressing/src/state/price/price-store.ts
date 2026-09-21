@@ -1,5 +1,6 @@
 import { Searchable } from '@household/shared/types/common';
-import { Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 import { signalStore, withState } from '@ngrx/signals';
 import { withPriceApiEvents } from '@hairdressing/state/price/with-price-api-events';
 import { withPriceEvents } from '@hairdressing/state/price/with-price-events';
@@ -9,8 +10,8 @@ import { inject, ValueProvider, InjectionToken } from '@angular/core';
 const PRICE_STORE_INITIAL_STATE = new InjectionToken<PriceState>('PRICE_STORE_INITIAL_STATE');
 
 export type PriceState = {
-  priceList: Searchable<Price.Response>[];
-  isInProgress: Price.Id[];
+  priceList: Searchable<Responses.Price>[];
+  isInProgress: Api.Price.Id[];
 };
 
 export const providePriceStoreInitialState = (state: PriceState = {

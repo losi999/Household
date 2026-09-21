@@ -5,7 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 import { JobPriceSummary } from '@hairdressing/app/shared/job-price-summary/job-price-summary';
 import { injectDispatch } from '@ngrx/signals/events';
 import { customerEvents } from '@hairdressing/state/customer/customer-events';
@@ -28,8 +29,8 @@ export class CustomerDetailsJobItem {
   private customerEvents = injectDispatch(customerEvents);
   private activatedRoute = inject(ActivatedRoute);
   
-  customerId: Customer.Id = this.activatedRoute.snapshot.paramMap.get('customerId') as Customer.Id;
-  job = input.required<Customer.Job.Response>();
+  customerId: Api.Customer.Id = this.activatedRoute.snapshot.paramMap.get('customerId') as Api.Customer.Id;
+  job = input.required<Responses.CustomerJob>();
 
   onEdit() {
     this.customerEvents.updateCustomerJob({

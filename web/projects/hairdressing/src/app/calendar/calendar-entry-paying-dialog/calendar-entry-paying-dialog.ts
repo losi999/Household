@@ -9,10 +9,11 @@ import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pi
 import { JobPriceCalculator, JobPriceCalculatorValue } from '@hairdressing/app/shared/job-price-calculator/job-price-calculator';
 import { IconText, AmountInput, exclusiveMin } from '@household/shared-ui';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
-import { Calendar } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
-export type CalendarEntryPayingDialogData = Calendar.Entry.WorkEntryResponse;
-export type CalendarEntryPayingDialogResult = Calendar.Entry.ResolutionRequest;
+export type CalendarEntryPayingDialogData = Responses.CalendarEntryWork;
+export type CalendarEntryPayingDialogResult = Requests.CalendarEntryResolution;
 
 @Component({
   imports: [

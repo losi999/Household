@@ -11,7 +11,9 @@ import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of, throwError } from 'rxjs';
 import { PriceDialog } from '@hairdressing/app/price/price-dialog/price-dialog';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
-import { Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 describe('Price store', () => {
   let initialState: PriceState; 
@@ -361,9 +363,9 @@ describe('Price store', () => {
   });
 
   describe('dispatching updatePriceInitiated', () => {
-    let priceRequest: Price.Request;
-    let priceId: Price.Id;
-    let originalPrice: Price.Response;
+    let priceRequest: Requests.Price;
+    let priceId: Api.Price.Id;
+    let originalPrice: Responses.Price;
 
     beforeEach(() => {
       priceRequest = testDataFactory.price.request();
@@ -495,8 +497,8 @@ describe('Price store', () => {
   });
 
   describe('dispatching deletePriceInitiated', () => {
-    let originalPrice: Price.Response;
-    let priceId: Price.Id;
+    let originalPrice: Responses.Price;
+    let priceId: Api.Price.Id;
     
     beforeEach(() => {
       originalPrice = testDataFactory.price.response();

@@ -3,7 +3,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSliderModule } from '@angular/material/slider';
-import { Calendar } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatRadioModule } from '@angular/material/radio';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
@@ -16,8 +18,8 @@ enum ShiftType{
   Afternoon = 'afternoon',
   Custom = 'custom',
 }
-export type CalendarWorkdayDialogData = Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>;
-export type CalendarWorkdayDialogResult = Calendar.DayProp & Partial<Calendar.Day.Request>;
+export type CalendarWorkdayDialogData = Exclude<Responses.CalendarDay, Responses.CalendarDayHoliday>;
+export type CalendarWorkdayDialogResult = Api.Calendar.Day & Partial<Requests.CalendarDay>;
 
 @Component({
   selector: 'hairdressing-calendar-workday-dialog',

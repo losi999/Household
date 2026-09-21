@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { priceEvents } from '@hairdressing/state/price/price-events';
 import { PriceStore } from '@hairdressing/state/price/price-store';
-import { Price } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { injectDispatch } from '@ngrx/signals/events';
 
 @Component({
@@ -16,7 +16,7 @@ import { injectDispatch } from '@ngrx/signals/events';
   styleUrl: './price-list-item.scss',
 })
 export class PriceListItem {
-  price = input.required<Price.Response>();
+  price = input.required<Responses.Price>();
   private priceEvents = injectDispatch(priceEvents);
   private readonly priceStore = inject(PriceStore);
   

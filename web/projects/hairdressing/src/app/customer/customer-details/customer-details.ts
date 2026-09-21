@@ -3,7 +3,8 @@ import { Toolbar } from '@hairdressing/app/shared/toolbar/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { ActivatedRoute } from '@angular/router';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 import { MatDividerModule } from '@angular/material/divider';
 import { IconText } from '@household/shared-ui';
 import { CustomerDetailsWorks } from '@hairdressing/app/customer/customer-details-works/customer-details-works';
@@ -34,7 +35,7 @@ export class CustomerDetails {
   private activatedRoute = inject(ActivatedRoute);
   private customerStore = inject(CustomerStore);
 
-  customerId = this.activatedRoute.snapshot.paramMap.get('customerId') as Customer.Id;
+  customerId = this.activatedRoute.snapshot.paramMap.get('customerId') as Api.Customer.Id;
 
   customer = computed(() => {
     return this.customerStore.customerList().find(c => c.customerId === this.customerId);
@@ -79,7 +80,7 @@ export class CustomerDetails {
     this.customerEvents.addCustomerToBlacklist(this.customer());
   }
 
-  onRemoveFromBlacklist(customer: Customer.ResponseBase) {
+  onRemoveFromBlacklist(customer: Responses.CustomerLean) {
     this.customerEvents.deleteCustomerFromBlacklist({
       currentCustomer: this.customer(),
       selectedCustomer: customer,

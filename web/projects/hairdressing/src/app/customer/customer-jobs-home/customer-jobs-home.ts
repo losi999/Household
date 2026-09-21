@@ -10,7 +10,7 @@ import { CustomerJobReportSort } from '@hairdressing/types';
 import { DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { Customer, Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { RouterLink } from '@angular/router';
 import { priceApiEvents } from '@hairdressing/state/price/price-events';
 
@@ -50,13 +50,13 @@ export class CustomerJobsHome {
     this.priceApiEvents.listPricesInitiated();
   }
 
-  onAddPriceFilter(priceId: Price.Id) {
+  onAddPriceFilter(priceId: Api.Price.Id) {
     this.customerEvents.addPriceFilter({
       priceId,
     });
   }
 
-  onRemovePriceFilter(priceId: Price.Id) {
+  onRemovePriceFilter(priceId: Api.Price.Id) {
     this.customerEvents.removePriceFilter({
       priceId,
     });
@@ -76,7 +76,7 @@ export class CustomerJobsHome {
     }
   }
 
-  onEditJob(customerId: Customer.Id, jobName: string) {
+  onEditJob(customerId: Api.Customer.Id, jobName: string) {
     const job = this.customerStore.customerList().find(c => c.customerId === customerId)?.jobs.find(j => j.name === jobName);
     this.customerEvents.updateCustomerJob({
       customerId,
