@@ -1,11 +1,9 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeleteTransactionService {
-  (ctx: {
-    transactionId: Transaction.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Transaction.TransactionId): Promise<unknown>;
 }
 
 export const deleteTransactionServiceFactory = (

@@ -1,5 +1,5 @@
 import { IListFilesService, listFilesServiceFactory } from '@household/api/functions/list-files/list-files.service';
-import { createFileDocument, createFileResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { IFileService } from '@household/shared/services/file-service';
@@ -16,8 +16,8 @@ describe('List files service', () => {
     service = listFilesServiceFactory(mockFileService.service, mockFileDocumentConverter.service);
   });
 
-  const queriedDocument = createFileDocument();
-  const convertedResponse = createFileResponse();
+  const queriedDocument = testDataFactory.file.document();
+  const convertedResponse = testDataFactory.file.response();
 
   it('should return documents', async () => {
     mockFileService.functions.listFiles.mockResolvedValue([queriedDocument]);

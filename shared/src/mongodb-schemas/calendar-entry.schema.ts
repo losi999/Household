@@ -1,8 +1,8 @@
 import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
-import { Calendar } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-export const calendarEntrySchema = new Schema<Calendar.Entry.Document>({
+export const calendarEntrySchema = new Schema<Documents.CalendarEntry>({
   day: {
     type: String,
     required: true,

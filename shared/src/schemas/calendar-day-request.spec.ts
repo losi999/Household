@@ -1,11 +1,11 @@
-import { default as schema } from '@household/shared/schemas/calendar-day-request';
-import { Calendar } from '@household/shared/types/types';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { request as schema } from '@household/shared/schemas/calendar-day';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { DAY_END, DAY_START } from '@household/shared/constants';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Calendar workday request schema', () => {
-  const tester = jsonSchemaTesterFactory<Calendar.Day.WorkdayRequest>(schema);
+  const tester = schemaTesterFactory<Requests.CalendarDay>(schema);
   tester.validateSuccess(testDataFactory.calendar.day.request.workday());
 
   describe('should deny', () => {
@@ -25,7 +25,7 @@ describe('Calendar workday request schema', () => {
         dayType: 1 as any,
       }), 'dayType', 'string');
 
-      tester.const(testDataFactory.calendar.day.request.workday({
+      tester.enum(testDataFactory.calendar.day.request.workday({
         dayType: 'not-enum-value' as any,
       }), 'dayType');
     });
@@ -74,7 +74,7 @@ describe('Calendar workday request schema', () => {
 });
 
 describe('Calendar vacation request schema', () => {
-  const tester = jsonSchemaTesterFactory<Calendar.Day.VacationRequest>(schema);
+  const tester = schemaTesterFactory<Requests.CalendarDay>(schema);
   tester.validateSuccess(testDataFactory.calendar.day.request.vacation());
 
   describe('should deny', () => {
@@ -96,7 +96,7 @@ describe('Calendar vacation request schema', () => {
         dayType: 1 as any,
       }, 'dayType', 'string');
 
-      tester.const({
+      tester.enum({
         ...testDataFactory.calendar.day.request.vacation(),
         dayType: 'not-enum-value' as any,
       }, 'dayType');

@@ -1,4 +1,4 @@
-import { createDocumentUpdate, createFileDocument, createFileRequest, createFileResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getFileId } from '@household/shared/common/utils';
 import { fileDocumentConverterFactory, IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { FileProcessingStatus, FileType } from '@household/shared/enums';
@@ -22,13 +22,13 @@ describe('File document converter', () => {
   const draftCount = 5;
   const processingStatus = FileProcessingStatus.Completed;
 
-  const body = createFileRequest({
+  const body = testDataFactory.file.request({
     timezone,
     fileType,
 
   });
 
-  const queriedDocument = createFileDocument({
+  const queriedDocument = testDataFactory.file.document({
     timezone,
     fileType,
     createdAt: now,
@@ -40,7 +40,7 @@ describe('File document converter', () => {
   describe('create', () => {
     it('should return document', () => {
       const result = converter.create(body, undefined);
-      expect(result).toEqual(createFileDocument({
+      expect(result).toEqual(testDataFactory.file.document({
         timezone,
         fileType,
         expiresAt: undefined,
@@ -50,7 +50,7 @@ describe('File document converter', () => {
 
     it('should return expiring document', () => {
       const result = converter.create(body, expiresIn);
-      expect(result).toEqual(createFileDocument({
+      expect(result).toEqual(testDataFactory.file.document({
         timezone,
         fileType,
         expiresAt: addSeconds(expiresIn, now),
@@ -63,7 +63,7 @@ describe('File document converter', () => {
   describe('update status', () => {
     it('should update document', () => {
       const result = converter.updateStatus(FileProcessingStatus.Completed);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             processingStatus: 'completed',
@@ -77,7 +77,7 @@ describe('File document converter', () => {
     it('should return response', () => {
 
       const result = converter.toResponse(queriedDocument);
-      expect(result).toEqual(createFileResponse({
+      expect(result).toEqual(testDataFactory.file.response({
         fileId: getFileId(queriedDocument),
         fileType,
         draftCount,
@@ -91,7 +91,7 @@ describe('File document converter', () => {
 
       const result = converter.toResponseList([queriedDocument]);
       expect(result).toEqual([
-        createFileResponse({
+        testDataFactory.file.response({
           fileId: getFileId(queriedDocument),
           fileType,
           draftCount,

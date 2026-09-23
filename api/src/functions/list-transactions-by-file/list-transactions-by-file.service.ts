@@ -1,10 +1,11 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { File, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListTransactionsByFileService {
-  (ctx: File.FileId): Promise<Transaction.DraftResponse[]>;
+  (ctx: Api.File.FileId): Promise<Responses.DraftTransaction[]>;
 }
 
 export const listTransactionsByFileServiceFactory = (

@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 import { PriceListItem } from '@hairdressing/app/price/price-list-item/price-list-item';
-import { Price } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 import { MatListModule } from '@angular/material/list';
 
 @Component({
@@ -13,5 +13,5 @@ import { MatListModule } from '@angular/material/list';
   styleUrl: './price-list.scss',
 })
 export class PriceList {
-  prices = input.required<Price.Response[]>();
+  prices = input.required<Responses.Price[]>();
 }

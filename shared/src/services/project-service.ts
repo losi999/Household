@@ -1,18 +1,19 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Project } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 
 export interface IProjectService {
-  saveProject(doc: Project.Document): Promise<Project.Document>;
-  saveProjects(...docs: Project.Document[]): Promise<unknown>;
-  findProjectById(projectId: Project.Id): Promise<Project.Document>;
-  deleteProject(projectId: Project.Id): Promise<unknown>;
-  updateProject(projectId: Project.Id, updateQuery: DocumentUpdate<Project.Document>): Promise<unknown>;
-  listProjects(): Promise<Project.Document[]>;
-  findProjectsByIds(projectIds: Project.Id[]): Promise<Project.Document[]>;
+  saveProject(doc: Documents.Project): Promise<Documents.Project>;
+  saveProjects(...docs: Documents.Project[]): Promise<unknown>;
+  findProjectById(projectId: Api.Project.Id): Promise<Documents.Project>;
+  deleteProject(projectId: Api.Project.Id): Promise<unknown>;
+  updateProject(projectId: Api.Project.Id, updateQuery: DocumentUpdate<Documents.Project>): Promise<unknown>;
+  listProjects(): Promise<Documents.Project[]>;
+  findProjectsByIds(projectIds: Api.Project.Id[]): Promise<Documents.Project[]>;
   mergeProjects(ctx: {
-    targetProjectId: Project.Id;
-    sourceProjectIds: Project.Id[];
+    targetProjectId: Api.Project.Id;
+    sourceProjectIds: Api.Project.Id[];
   }): Promise<unknown>;
 }
 

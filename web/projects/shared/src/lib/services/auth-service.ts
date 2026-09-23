@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { Auth } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs';
 import { API_URL, authEvents } from '@household/shared-ui';
@@ -13,13 +14,13 @@ export class AuthService {
   private apiUrl = inject(API_URL);
   private authEventDispatcher = injectDispatch(authEvents);
 
-  login(request: Auth.Login.Request) {
-    return this.httpClient.post<Auth.Login.Response>(`${this.apiUrl}/user/v1/login`, request);
+  login(request: Requests.Login) {
+    return this.httpClient.post<Responses.Login>(`${this.apiUrl}/user/v1/login`, request);
   }
 
-  refreshToken(request: Auth.RefreshToken.Request) {
-    return this.httpClient.post<Auth.RefreshToken.Response>(`${this.apiUrl}/user/v1/refreshToken`, request).pipe(
-      tap((data: Auth.RefreshToken.Response) => {
+  refreshToken(request: Requests.RefreshToken) {
+    return this.httpClient.post<Responses.RefreshToken>(`${this.apiUrl}/user/v1/refreshToken`, request).pipe(
+      tap((data: Responses.RefreshToken) => {
         this.authEventDispatcher.tokensRetrieved({
           idToken: data.idToken,
           refreshToken: request.refreshToken,

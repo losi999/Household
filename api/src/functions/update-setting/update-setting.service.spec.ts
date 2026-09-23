@@ -1,5 +1,5 @@
 import { IUpdateSettingService, updateSettingServiceFactory } from '@household/api/functions/update-setting/update-setting.service';
-import { createSettingRequest, createSettingDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ISettingDocumentConverter } from '@household/shared/converters/setting-document-converter';
 import { ISettingService } from '@household/shared/services/setting-service';
@@ -16,10 +16,10 @@ describe('Update setting service', () => {
     service = updateSettingServiceFactory(mockSettingService.service, mockSettingDocumentConverter.service);
   });
 
-  const body = createSettingRequest();
-  const queriedDocument = createSettingDocument();
+  const body = testDataFactory.setting.request();
+  const queriedDocument = testDataFactory.setting.document();
   const settingKey = queriedDocument.settingKey;
-  const updateQuery = createDocumentUpdate();
+  const updateQuery = testDataFactory.documentUpdate();
 
   it('should return if setting is updated', async () => {
     mockSettingDocumentConverter.functions.update.mockReturnValue(updateQuery);

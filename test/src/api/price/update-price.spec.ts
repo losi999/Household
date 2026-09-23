@@ -1,5 +1,4 @@
 import { entries, getPriceId } from '@household/shared/common/utils';
-import { Price } from '@household/shared/types/types';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { allowUsers } from '@household/test/utils';
 
@@ -7,6 +6,9 @@ import { test as priceApiTest, expect as priceApiExpect } from '@household/test/
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 const expect = mergeExpects(priceApiExpect, apiExpect);
 
@@ -15,8 +17,8 @@ const permissionMap = allowUsers('hairdresser') ;
 const test = mergeTests(priceApiTest, priceDbTest);
 
 test.describe('PUT /price/v1/prices/{priceId}', () => {
-  let request: Price.Request;
-  let priceDocument: Price.Document;
+  let request: Requests.Price;
+  let priceDocument: Documents.Price;
 
   test.beforeEach(async () => {
     request = priceDataFactory.request();
@@ -49,10 +51,8 @@ test.describe('PUT /price/v1/prices/{priceId}', () => {
           test('with complete body', async ({ requestUpdatePrice, savePrice, findPriceById }) => {
             await savePrice(priceDocument);
             const res = await requestUpdatePrice(getPriceId(priceDocument), request);
-            expect(res).toBeCreatedResponse();
-
-            const { priceId } = await res.json() as Price.PriceId;
-            expect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(priceId));
+            expect(res).toBeNoContentResponse();
+            expect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(getPriceId(priceDocument)));
           });
         });
 

@@ -1,5 +1,4 @@
 import { entries, getCustomerId } from '@household/shared/common/utils';
-import { Customer } from '@household/shared/types/types';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/utils';
 
@@ -9,6 +8,7 @@ import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { Documents } from '@household/shared/types/documents';
 
 const expect = mergeExpects(customerApiExpect, apiExpect);
 
@@ -17,7 +17,7 @@ const permissionMap = allowUsers('hairdresser') ;
 const test = mergeTests(customerApiTest, customerDbTest, customerDbTest, calendarEntryDbTest);
 
 test.describe('DELETE /customer/v1/customers/{customerId}', () => {
-  let customerDocument: Customer.Document;
+  let customerDocument: Documents.Customer;
 
   test.beforeEach(async () => {
     customerDocument = customerDataFactory.document();

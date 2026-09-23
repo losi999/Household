@@ -1,5 +1,5 @@
 import { IDatabaseArchiveService, databaseArchiveServiceFactory } from '@household/api/functions/database-archive/database-archive.service';
-import { createAccountDocument, createProjectDocument, createRecipientDocument, createPaymentTransactionDocument, createCategoryDocument, createProductDocument, createSettingDocument, createFileDocument, testDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { IStorageService } from '@household/shared/services/storage-service';
@@ -23,14 +23,14 @@ describe('Database archive service', () => {
     vi.useRealTimers();
   });
 
-  const accounts = [createAccountDocument()];
-  const projects = [createProjectDocument()];
-  const categories = [createCategoryDocument()];
-  const recipients = [createRecipientDocument()];
-  const transactions = [createPaymentTransactionDocument()];
-  const products = [createProductDocument()];
-  const settings = [createSettingDocument()];
-  const files = [createFileDocument()];
+  const accounts = [testDataFactory.account.document()];
+  const projects = [testDataFactory.project.document()];
+  const categories = [testDataFactory.category.document()];
+  const recipients = [testDataFactory.recipient.document()];
+  const transactions = [testDataFactory.transaction.document.payment()];
+  const products = [testDataFactory.product.document()];
+  const settings = [testDataFactory.setting.document()];
+  const files = [testDataFactory.file.document()];
   const customers = [testDataFactory.customer.document()];
   const calendarDays = [testDataFactory.calendar.day.document()];
   const calendarEntries = [testDataFactory.calendar.entry.document()];

@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MinutesToHourPipe } from '@hairdressing/app/pipes/minutes-to-hour-pipe';
 import { PriceAutocompleteInput } from '@hairdressing/app/price/price-autocomplete-input/price-autocomplete-input';
 import { HoldableButton } from '@household/shared-ui';
-import { Price } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export const requiredPrices = (field: SchemaPath<JobPriceCalculatorValue>, min: number, config?: {message: string}) => {
   validate(field, (ctx) => {
@@ -26,7 +26,7 @@ export const requiredPrices = (field: SchemaPath<JobPriceCalculatorValue>, min: 
 
 export type JobPriceCalculatorValue = {
   prices: {
-    price: Price.Response;
+    price: Responses.Price;
     quantity: number;
   }[]
   additionalPrice: number;
@@ -58,7 +58,7 @@ export class JobPriceCalculator implements FormValueControl<JobPriceCalculatorVa
       .filter(p => p);
   });
 
-  selectedPrice = model<Price.Response>();
+  selectedPrice = model<Responses.Price>();
 
   total = computed(() => {
     return this.value().prices.reduce((accumulator, currentValue) => {

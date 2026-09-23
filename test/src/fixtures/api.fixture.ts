@@ -2,7 +2,7 @@ import { validatorService } from '@household/shared/dependencies/services/valida
 import { User } from '@household/test/types';
 import { expect as baseExpect, APIResponse, APIRequestContext, MatcherReturnType } from '@playwright/test';
 import { test as baseTest } from '@household/test/fixtures/logging.fixture';
-import { JSONSchema7 } from 'json-schema';
+import { StrictSchema } from '@household/shared/types/schema';
 
 export type ApiFixture = {
   userType: User;
@@ -121,7 +121,7 @@ export const expect = baseExpect.extend({
       pass: message === expectedMessage,
     };
   },
-  async toMatchSchema(received: APIResponse, schema: JSONSchema7) {
+  async toMatchSchema(received: APIResponse, schema: StrictSchema<any>) {
     const validation = validatorService.validate(await received.json(), schema);
     return {
       message: () => `expected response to match schema, but got validation error: ${validation}`,

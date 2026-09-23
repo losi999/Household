@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/calendar-entry-resolution-request';
-import { Calendar } from '@household/shared/types/types';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { resolutionRequest as schema } from '@household/shared/schemas/calendar-entry';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Calendar entry resolution request schema', () => {
-  const tester = jsonSchemaTesterFactory<Calendar.Entry.ResolutionRequest>(schema);
+  const tester = schemaTesterFactory<Requests.CalendarEntryResolution>(schema);
   tester.validateSuccess(testDataFactory.calendar.entry.resolution.request());
 
   describe('should deny', () => {
@@ -24,7 +24,7 @@ describe('Calendar entry resolution request schema', () => {
         status: 1 as any,
       }), 'status', 'string');
 
-      tester.const(testDataFactory.calendar.entry.resolution.request({
+      tester.enum(testDataFactory.calendar.entry.resolution.request({
         status: 'not-enum' as any,
       }), 'status');
     });

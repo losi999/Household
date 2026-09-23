@@ -1,6 +1,6 @@
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
-import { File } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { IExcelParserService } from '@household/shared/services/excel-parser-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
@@ -11,8 +11,7 @@ import { FileProcessingStatus } from '@household/shared/enums';
 export interface IBulkTransactionImporterService {
   (ctx: {
     bucketName: string;
-    fileId: File.Id;
-  }): Promise<unknown>;
+  } & Api.File.FileId): Promise<unknown>;
 }
 
 export const bulkTransactionImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: (bucketName: string) => IStorageService, excelParser: IExcelParserService, draftTransactionDocumentConverter: IDraftTransactionDocumentConverter, transactionService: ITransactionService): IBulkTransactionImporterService =>

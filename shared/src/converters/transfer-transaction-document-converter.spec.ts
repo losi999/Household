@@ -1,125 +1,63 @@
-import { createAccountDocument, createAccountResponse, createTransferTransactionDocument, createTransferTransactionRequest, createTransferTransactionResponse, createDeferredTransactionDocument } from '@household/shared/common/test-data-factory';
-import { addSeconds, getTransactionId, toDictionary, getAccountId } from '@household/shared/common/utils';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { addSeconds, getTransactionId, getAccountId, createDate } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { createMockService, MockService, validateNthFunctionCall } from '@household/shared/common/unit-testing';
-import { Transaction } from '@household/shared/types/types';
 import { ITransferTransactionDocumentConverter, transferTransactionDocumentConverterFactory } from '@household/shared/converters/transfer-transaction-document-converter';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
 
 describe('Transfer transaction document converter', () => {
   let converter: ITransferTransactionDocumentConverter;
   let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
-  let mockDeferredTransactionDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
-  const now = new Date();
 
   beforeEach(() => {
-    mockAccountDocumentConverter = createMockService('toResponse');
-    mockDeferredTransactionDocumentConverter = createMockService('toResponse');
+    mockAccountDocumentConverter = createMockService('toResponseLean');
 
-    vi.useFakeTimers().setSystemTime(now);
-    converter = transferTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockDeferredTransactionDocumentConverter.service);
+    vi.useFakeTimers().setSystemTime(new Date());
+    converter = transferTransactionDocumentConverterFactory(mockAccountDocumentConverter.service);
   });
 
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  const amount = 12000;
-  const transferAmount = -12;
-  const description = 'bevásárlás';
   const expiresIn = 3600;
 
-  const account = createAccountDocument();
+  const account = testDataFactory.account.document();
 
-  const accountResponse = createAccountResponse();
+  const accountResponse = testDataFactory.account.response();
 
-  const transferAccountName = 'transfer account';
-  const transferAccount = createAccountDocument({
-    name: transferAccountName,
-  });
-  const transferAccountResponse = createAccountResponse({
-    name: transferAccountName,
-  });
+  const transferAccount = testDataFactory.account.document();
 
-  let body: Transaction.TransferRequest;
-
-  const queriedDocument = createTransferTransactionDocument({
-    account,
-    transferAccount,
-    amount,
-    transferAmount,
-    description,
-    issuedAt: now,
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  beforeEach(() => {
-    body = createTransferTransactionRequest({
-      amount,
-      transferAmount,
-      description,
-      issuedAt: now.toISOString(),
-    });
-  });
+  const transferAccountResponse = testDataFactory.account.response();
 
   describe('create', () => {
     it('should return document', () => {
-      const result = converter.create({
-        body,
-        account,
-        transferAccount,
-        transactions: undefined,
-      }, undefined);
-      expect(result).toEqual(createTransferTransactionDocument({
-        account,
-        transferAccount,
-        transferAmount,
-        amount,
-        description,
-        issuedAt: now,
-        expiresAt: undefined,
-        _id: undefined,
-      }));
-    });
+      const body = testDataFactory.transaction.request.transfer();
 
-    it('should return document with payments', () => {
-      const deferredTransaction = createDeferredTransactionDocument();
-      const paymentAmount = -10;
-      body = createTransferTransactionRequest({
-        ...body,
-        payments: [
-          {
-            amount: paymentAmount,
-            transactionId: getTransactionId(deferredTransaction),
-          },
-        ],
-      });
+      const { amount, issuedAt, transferAmount, description } = body;
+
       const result = converter.create({
         body,
         account,
         transferAccount,
-        transactions: toDictionary([deferredTransaction], '_id'),
       }, undefined);
-      expect(result).toEqual(createTransferTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.transfer({
         account,
         transferAccount,
         transferAmount,
         amount,
         description,
-        issuedAt: now,
+        issuedAt: createDate(issuedAt),
         expiresAt: undefined,
         _id: undefined,
-        payments: [
-          {
-            amount: paymentAmount,
-            transaction: deferredTransaction,
-          },
-        ],
       }));
     });
 
     it('should return document if transferAmount is missing', () => {
+      const body = testDataFactory.transaction.request.transfer({
+        transferAmount: undefined,
+      });
+
+      const { amount, issuedAt, description } = body;
       const result = converter.create({
         body: {
           ...body,
@@ -127,35 +65,37 @@ describe('Transfer transaction document converter', () => {
         },
         account,
         transferAccount,
-        transactions: undefined,
       }, undefined);
-      expect(result).toEqual(createTransferTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.transfer({
         account,
         transferAccount,
         transferAmount: amount * -1,
         amount,
         description,
-        issuedAt: now,
+        issuedAt: createDate(issuedAt),
         expiresAt: undefined,
         _id: undefined,
       }));
     });
 
     it('should return expiring document', () => {
+      const body = testDataFactory.transaction.request.transfer();
+
+      const { amount, issuedAt, transferAmount, description } = body;
+
       const result = converter.create({
         body,
         account,
         transferAccount,
-        transactions: undefined,
       }, expiresIn);
-      expect(result).toEqual(createTransferTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.transfer({
         account,
         transferAccount,
         amount,
         transferAmount,
         description,
-        issuedAt: now,
-        expiresAt: addSeconds(expiresIn, now),
+        issuedAt: createDate(issuedAt),
+        expiresAt: addSeconds(expiresIn),
         _id: undefined,
       }));
     });
@@ -164,65 +104,86 @@ describe('Transfer transaction document converter', () => {
 
   describe('toResponse', () => {
     it('should return response', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(accountResponse);
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(transferAccountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(accountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(transferAccountResponse);
 
-      const result = converter.toResponse(queriedDocument, getAccountId(account));
-      expect(result).toEqual(createTransferTransactionResponse({
-        transactionId: getTransactionId(queriedDocument),
+      const doc = testDataFactory.transaction.document.transfer({
+        account,
+        transferAccount,
+      });
+
+      const { amount, issuedAt, transferAmount, description } = doc;
+
+      const result = converter.toResponse(doc, getAccountId(account));
+      expect(result).toEqual(testDataFactory.transaction.response.transfer({
+        transactionId: getTransactionId(doc),
         description,
         amount,
         transferAmount,
-        issuedAt: now.toISOString(),
+        issuedAt: issuedAt.toISOString(),
         account: accountResponse,
         transferAccount: transferAccountResponse,
 
       }));
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 1, account);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 2, transferAccount);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 1, account);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 2, transferAccount);
       expect.assertions(3);
     });
 
     it('should return response with inverted accounts', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(transferAccountResponse);
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(accountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(transferAccountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(accountResponse);
 
-      const result = converter.toResponse(queriedDocument, getAccountId(transferAccount));
-      expect(result).toEqual(createTransferTransactionResponse({
-        transactionId: getTransactionId(queriedDocument),
+      const doc = testDataFactory.transaction.document.transfer({
+        account,
+        transferAccount,
+      });
+
+      const { amount, issuedAt, transferAmount, description } = doc;
+
+      const result = converter.toResponse(doc, getAccountId(transferAccount));
+      expect(result).toEqual(testDataFactory.transaction.response.transfer({
+        transactionId: getTransactionId(doc),
         description,
         amount: transferAmount,
         transferAmount: amount,
-        issuedAt: now.toISOString(),
+        issuedAt: issuedAt.toISOString(),
         account: transferAccountResponse,
         transferAccount: accountResponse,
 
       }));
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 1, transferAccount);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 2, account);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 1, transferAccount);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 2, account);
       expect.assertions(3);
     });
   });
 
   describe('toResponseList', () => {
     it('should return response', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(accountResponse);
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValueOnce(transferAccountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(accountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValueOnce(transferAccountResponse);
 
-      const result = converter.toResponseList([queriedDocument], getAccountId(account));
+      const doc = testDataFactory.transaction.document.transfer({
+        account,
+        transferAccount,
+      });
+
+      const { amount, issuedAt, transferAmount, description } = doc;
+
+      const result = converter.toResponseList([doc], getAccountId(account));
       expect(result).toEqual([
-        createTransferTransactionResponse({
-          transactionId: getTransactionId(queriedDocument),
+        testDataFactory.transaction.response.transfer({
+          transactionId: getTransactionId(doc),
           description,
           amount,
           transferAmount,
-          issuedAt: now.toISOString(),
+          issuedAt: issuedAt.toISOString(),
           account: accountResponse,
           transferAccount: transferAccountResponse,
         }),
       ]);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 1, account);
-      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponse, 2, transferAccount);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 1, account);
+      validateNthFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, 2, transferAccount);
       expect.assertions(3);
     });
   });

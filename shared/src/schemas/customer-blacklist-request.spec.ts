@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/customer-blacklist-request';
-import { Customer } from '@household/shared/types/types';
+import { customerBlacklistRequest as schema } from '@household/shared/schemas/customer';
+import { Api } from '@household/shared/types/api';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Customer blacklist request schema', () => {
-  const tester = jsonSchemaTesterFactory<Customer.Id[]>(schema);
+  const tester = schemaTesterFactory<Api.Customer.Id[]>(schema);
 
   tester.validateSuccess([
     testDataFactory.customer.id(),

@@ -1,4 +1,4 @@
-import { createdResponse, errorResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IUpdateAccountService } from '@household/api/functions/update-account/update-account.service';
 import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
@@ -18,8 +18,6 @@ export default (updateAccount: IUpdateAccountService): AWSLambda.APIGatewayProxy
       return errorResponse(error);
     }
 
-    return createdResponse({
-      accountId,
-    });
+    return noContentResponse();
   };
 };

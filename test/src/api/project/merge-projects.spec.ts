@@ -4,7 +4,7 @@ import { test as projectApiTest, expect as projectApiExpect } from '@household/t
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
-import { Account, Project, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
@@ -24,8 +24,8 @@ const test = mergeTests(projectApiTest, accountDbTest, transactionDbTest, projec
 
 test.describe('POST /project/v1/projects/{projectId}/merge', () => {
 
-  let sourceProjectDocument: Project.Document;
-  let targetProjectDocument: Project.Document;
+  let sourceProjectDocument: Documents.Project;
+  let targetProjectDocument: Documents.Project;
 
   test.beforeEach(async () => {
     sourceProjectDocument = projectDataFactory.document();
@@ -58,22 +58,22 @@ test.describe('POST /project/v1/projects/{projectId}/merge', () => {
           await saveProjects(sourceProjectDocument, targetProjectDocument);
 
           const res = await requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)]);
-          expect(res).toBeCreatedResponse();
+          expect(res).toBeNoContentResponse();
           
           expect(await findProjectById(getProjectId(sourceProjectDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('in related transactions source project', () => {
-          let unrelatedProjectDocument: Project.Document;
-          let paymentTransactionDocument: Transaction.PaymentDocument;
-          let deferredTransactionDocument: Transaction.DeferredDocument;
-          let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
-          let splitTransactionDocument: Transaction.SplitDocument;
-          let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
-          let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
-          let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
-          let accountDocument: Account.Document;
-          let loanAccountDocument: Account.Document;
+          let unrelatedProjectDocument: Documents.Project;
+          let paymentTransactionDocument: Documents.PaymentTransaction;
+          let deferredTransactionDocument: Documents.DeferredTransaction;
+          let reimbursementTransactionDocument: Documents.ReimbursementTransaction;
+          let splitTransactionDocument: Documents.SplitTransaction;
+          let unrelatedPaymentTransactionDocument: Documents.PaymentTransaction;
+          let unrelatedDeferredTransactionDocument: Documents.DeferredTransaction;
+          let unrelatedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
+          let accountDocument: Documents.Account;
+          let loanAccountDocument: Documents.Account;
 
           test.beforeEach(async () => {
             accountDocument = accountDataFactory.document();
@@ -161,7 +161,7 @@ test.describe('POST /project/v1/projects/{projectId}/merge', () => {
             await saveProjects(sourceProjectDocument, targetProjectDocument, unrelatedProjectDocument);
 
             const res = await requestMergeProjects(getProjectId(targetProjectDocument), [getProjectId(sourceProjectDocument)]);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
           
             expect(await findProjectById(getProjectId(sourceProjectDocument))).toHaveBeenDeletedFromDatabase();
 

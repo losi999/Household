@@ -1,5 +1,5 @@
 import { IUpdateProductService, updateProductServiceFactory } from '@household/api/functions/update-product/update-product.service';
-import { createProductRequest, createProductDocument, createDocumentUpdate } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProductId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
@@ -17,10 +17,10 @@ describe('Update product service', () => {
     service = updateProductServiceFactory(mockProductService.service, mockProductDocumentConverter.service);
   });
 
-  const body = createProductRequest();
-  const queriedDocument = createProductDocument();
+  const body = testDataFactory.product.request();
+  const queriedDocument = testDataFactory.product.document();
   const productId = getProductId(queriedDocument);
-  const updateQuery = createDocumentUpdate();
+  const updateQuery = testDataFactory.documentUpdate();
 
   it('should return if product is updated', async () => {
     mockProductService.functions.findProductById.mockResolvedValue(queriedDocument);

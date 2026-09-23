@@ -2,6 +2,8 @@ export const headerExpiresIn = 'Household-ExpiresIn';
 export const headerSuppressEmail = 'Household-SuppressEmail';
 export const FILE_UPLOAD_LINK_EXPIRATION = 60;
 
+export const MONGO_ID_PATTERN = '^[a-f0-9]{24}$';
+
 export const WORKDAY_LENGTH = 28;
 export const WORKDAY_START = 28;
 export const WORKDAY_END = 84;

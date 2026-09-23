@@ -1,11 +1,9 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ICategoryService } from '@household/shared/services/category-service';
-import { Category } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeleteCategoryService {
-  (ctx: {
-    categoryId: Category.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Category.CategoryId): Promise<unknown>;
 }
 
 export const deleteCategoryServiceFactory = (

@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IUpdateToPaymentTransactionService } from '@household/api/functions/update-to-payment-transaction/update-to-payment-transaction.service';
 import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
@@ -18,8 +18,6 @@ export default (updateTransaction: IUpdateToPaymentTransactionService): AWSLambd
       return errorResponse(error);
     }
 
-    return createdResponse({
-      transactionId,
-    });
+    return noContentResponse();
   };
 };

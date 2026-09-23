@@ -4,15 +4,15 @@ import { CalendarEntryType } from '@household/shared/enums';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
-import { DocumentUpdate } from '@household/shared/types/common';
-import { Calendar } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { DocumentUpdate, ExpiresIn } from '@household/shared/types/common';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateCalendarEntryService {
   (ctx: {
-    body: Calendar.Entry.Request;
-    calendarEntryId: Calendar.Entry.Id;
-    expiresIn: number;
-  }): Promise<unknown>;
+    body: Requests.CalendarEntry;
+  } & Api.Calendar.Entry.CalendarEntryId & ExpiresIn): Promise<unknown>;
 }
 
 export const updateCalendarEntryServiceFactory = (
@@ -38,7 +38,7 @@ export const updateCalendarEntryServiceFactory = (
 
     httpErrors.calendarEntry.alreadyResolved(queried);
     
-    let update: DocumentUpdate<Calendar.Entry.Document>;
+    let update: DocumentUpdate<Documents.CalendarEntry>;
     if (body.entryType === CalendarEntryType.Work) {
       const customer = await customerService.findCustomerById(body.customerId).catch(httpErrors.customer.getById({
         customerId: body.customerId,

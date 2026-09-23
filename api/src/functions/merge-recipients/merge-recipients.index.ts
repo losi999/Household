@@ -1,7 +1,6 @@
 import { default as handler } from '@household/api/functions/merge-recipients/merge-recipients.handler';
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
-import { default as pathParameters } from '@household/shared/schemas/recipient-id';
-import { default as body } from '@household/shared/schemas/recipient-id-list';
+import { recipientId as pathParameters, idList as body } from '@household/shared/schemas/recipient';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
 import { recipientService } from '@household/shared/dependencies/services/recipient-service';
 import { default as index } from '@household/api/handlers/index.handler';

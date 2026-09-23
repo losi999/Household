@@ -35,7 +35,7 @@ describe('authenticatedGuard', () => {
       data: {
         requiredUserType,
       },
-    }, undefined);
+    }, undefined, undefined);
 
     expect(result).toBe(true);
     validateFunctionCall(mockDispatcher.dispatch);
@@ -48,7 +48,7 @@ describe('authenticatedGuard', () => {
       data: {
         requiredUserType,
       },
-    }, undefined);
+    }, undefined, undefined);
 
     expect(result).toBe(false);
     validateFunctionCall(mockDispatcher.dispatch, navigationEvents.loggedOutHomepage(), {
@@ -64,7 +64,7 @@ describe('authenticatedGuard', () => {
       data: {
         requiredUserType,
       },
-    }, undefined);
+    }, undefined, undefined);
 
     expect(result).toBe(false);
     validateFunctionCall(mockDispatcher.dispatch, navigationEvents.loggedOutHomepage(), {

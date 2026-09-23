@@ -2,12 +2,11 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
 import { ICustomerService } from '@household/shared/services/customer-service';
-import { Calendar, Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListCustomerWorksService {
-  (ctx: {
-    customerId: Customer.Id;
-  }): Promise<Calendar.Entry.WorkEntryResponseBase[]>;
+  (ctx: Api.Customer.CustomerId): Promise<Responses.CalendarEntryWorkLean[]>;
 }
 
 export const listCustomerWorksServiceFactory = (

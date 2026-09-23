@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-transactions-by-file/list-transactions-by-file.handler';
 import { IListTransactionsByFileService } from '@household/api/functions/list-transactions-by-file/list-transactions-by-file.service';
-import { createDraftTransactionResponse, createFileId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('List transactions by file handler', () => {
   let mockListTransactionsByFileService: MockBusinessService<IListTransactionsByFileService>;
@@ -12,8 +12,8 @@ describe('List transactions by file handler', () => {
     handlerFunction = handler(mockListTransactionsByFileService);
   });
 
-  const fileId = createFileId();
-  const transactions = [createDraftTransactionResponse()];
+  const fileId = testDataFactory.file.id();
+  const transactions = [testDataFactory.transaction.response.draft()];
   const handlerEvent = {
     pathParameters: {
       fileId,

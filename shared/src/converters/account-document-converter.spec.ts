@@ -1,14 +1,12 @@
-import { createAccountDocument, createAccountReport, createAccountRequest, createAccountResponse, createDocumentUpdate } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getAccountId } from '@household/shared/common/utils';
 import { accountDocumentConverterFactory, IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
-import { AccountType } from '@household/shared/enums';
 
 describe('Account document converter', () => {
   let converter: IAccountDocumentConverter;
-  const now = new Date();
 
   beforeEach(() => {
-    vi.useFakeTimers().setSystemTime(now);
+    vi.useFakeTimers().setSystemTime(new Date());
     converter = accountDocumentConverterFactory();
   });
 
@@ -16,36 +14,16 @@ describe('Account document converter', () => {
     vi.useRealTimers();
   });
 
-  const name = 'Pénztárca';
-  const owner = 'owner1';
-  const currency = 'Ft';
-  const accountType = AccountType.Cash;
   const expiresIn = 3600;
-  const balance = 12000;
-  const isOpen = false;
-
-  const body = createAccountRequest({
-    accountType,
-    currency,
-    name,
-    owner,
-  });
-  const queriedDocument = createAccountDocument({
-    name,
-    currency,
-    accountType,
-    balance,
-
-    isOpen,
-    owner,
-    createdAt: now,
-    updatedAt: now,
-  });
 
   describe('create', () => {
     it('should return document', () => {
+      const body = testDataFactory.account.request();
+
+      const { accountType, currency, name, owner } = body;
+
       const result = converter.create(body, undefined);
-      expect(result).toEqual(createAccountDocument({
+      expect(result).toEqual(testDataFactory.account.document({
         accountType,
         currency,
         name,
@@ -58,15 +36,19 @@ describe('Account document converter', () => {
     });
 
     it('should return expiring document', () => {
+      const body = testDataFactory.account.request();
+
+      const { accountType, currency, name, owner } = body;
+
       const result = converter.create(body, expiresIn);
-      expect(result).toEqual(createAccountDocument({
+      expect(result).toEqual(testDataFactory.account.document({
         accountType,
         currency,
         name,
         owner,
         isOpen: true,
         balance: undefined,
-        expiresAt: addSeconds(expiresIn, now),
+        expiresAt: addSeconds(expiresIn),
         _id: undefined,
       }));
     });
@@ -75,12 +57,14 @@ describe('Account document converter', () => {
 
   describe('update', () => {
     it('should update document', () => {
+      const body = testDataFactory.account.request();
+
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             ...body,
-            expiresAt: addSeconds(expiresIn, now),
+            expiresAt: addSeconds(expiresIn),
           },
         },
       }));
@@ -89,9 +73,13 @@ describe('Account document converter', () => {
 
   describe('toResponse', () => {
     it('should return response', () => {
-      const result = converter.toResponse(queriedDocument);
-      expect(result).toEqual(createAccountResponse({
-        accountId: getAccountId(queriedDocument),
+      const doc = testDataFactory.account.document();
+
+      const { accountType, currency, name, owner, balance, isOpen } = doc;
+
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(testDataFactory.account.response({
+        accountId: getAccountId(doc),
         accountType,
         balance,
         currency,
@@ -104,9 +92,13 @@ describe('Account document converter', () => {
 
   describe('toReport', () => {
     it('should return response', () => {
-      const result = converter.toReport(queriedDocument);
-      expect(result).toEqual(createAccountReport({
-        accountId: getAccountId(queriedDocument),
+      const doc = testDataFactory.account.document();
+
+      const { currency, name, owner } = doc;
+
+      const result = converter.toReport(doc);
+      expect(result).toEqual(testDataFactory.account.report({
+        accountId: getAccountId(doc),
         currency,
         fullName: `${name} (${owner})`,
       }));
@@ -115,10 +107,14 @@ describe('Account document converter', () => {
 
   describe('toResponseList', () => {
     it('should return response list', () => {
-      const result = converter.toResponseList([queriedDocument]);
+      const doc = testDataFactory.account.document();
+
+      const { accountType, currency, name, owner, balance, isOpen } = doc;
+
+      const result = converter.toResponseList([doc]);
       expect(result).toEqual([
-        createAccountResponse({
-          accountId: getAccountId(queriedDocument),
+        testDataFactory.account.response({
+          accountId: getAccountId(doc),
           accountType,
           balance,
           currency,

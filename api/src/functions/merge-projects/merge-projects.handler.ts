@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IMergeProjectsService } from '@household/api/functions/merge-projects/merge-projects.service';
 import { castPathParameters } from '@household/shared/common/aws-utils';
 
@@ -17,8 +17,6 @@ export default (mergeProjects: IMergeProjectsService): AWSLambda.APIGatewayProxy
       return errorResponse(error);
     }
 
-    return createdResponse({
-      projectId,
-    });
+    return noContentResponse();
   };
 };

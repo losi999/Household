@@ -9,7 +9,8 @@ import { addDays, dateToISODateString, timeSlotToTimeString } from '@household/s
 import { CalendarEntryType } from '@household/shared/enums';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DatePipe, KeyValuePipe } from '@angular/common';
-import { Calendar, Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
 import { CalendarVerticalDay } from '../calendar-vertical-day/calendar-vertical-day';
 import { injectDispatch } from '@ngrx/signals/events';
@@ -52,7 +53,7 @@ export class CalendarHome {
     week: string; 
     year: string;
     weekOf: string;
-    customerId: Customer.Id;
+    customerId: Api.Customer.Id;
     jobName: string;
   }>(this.activatedRoute.queryParams);
 
@@ -241,7 +242,7 @@ export class CalendarHome {
     });
   }
 
-  onSetWorkDay(day: Exclude<Calendar.Day.Response, Calendar.Day.HolidayResponse>) {
+  onSetWorkDay(day: Exclude<Responses.CalendarDay, Responses.CalendarDayHoliday>) {
     this.calendarEvents.setWorkDay(day);
   }
 }

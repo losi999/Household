@@ -1,5 +1,5 @@
 import { IDeleteTransactionService, deleteTransactionServiceFactory } from '@household/api/functions/delete-transaction/delete-transaction.service';
-import { createTransactionId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 
@@ -13,7 +13,7 @@ describe('Delete transaction service', () => {
     service = deleteTransactionServiceFactory(mockTransactionService.service);
   });
 
-  const transactionId = createTransactionId();
+  const transactionId = testDataFactory.transaction.id();
 
   it('should return if document is deleted', async () => {
     mockTransactionService.functions.deleteTransaction.mockResolvedValue(undefined);

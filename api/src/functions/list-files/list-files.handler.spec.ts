@@ -1,7 +1,7 @@
 import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-files/list-files.handler';
 import { IListFilesService } from '@household/api/functions/list-files/list-files.service';
-import { createFileResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('List files handler', () => {
   let mockListFilesService: MockBusinessService<IListFilesService>;
@@ -12,7 +12,7 @@ describe('List files handler', () => {
     handlerFunction = handler(mockListFilesService);
   });
 
-  const files = [createFileResponse()];
+  const files = [testDataFactory.file.response()];
   const handlerEvent = {} as AWSLambda.APIGatewayProxyEvent;
 
   it('should handle business service error', async () => {

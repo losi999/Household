@@ -4,7 +4,7 @@ import { test as projectApiTest, expect as projectApiExpect } from '@household/t
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
-import { Account, Project, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
@@ -24,7 +24,7 @@ const test = mergeTests(projectApiTest, accountDbTest, transactionDbTest, projec
 
 test.describe('DELETE /project/v1/projects/{projectId}', () => {
 
-  let projectDocument: Project.Document;
+  let projectDocument: Documents.Project;
 
   test.beforeEach(async () => {
     projectDocument = projectDataFactory.document();
@@ -62,16 +62,16 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
         });
 
         test.describe('in related transactions project', () => {
-          let unrelatedProjectDocument: Project.Document;
-          let paymentTransactionDocument: Transaction.PaymentDocument;
-          let deferredTransactionDocument: Transaction.DeferredDocument;
-          let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
-          let splitTransactionDocument: Transaction.SplitDocument;
-          let unrelatedPaymentTransactionDocument: Transaction.PaymentDocument;
-          let unrelatedDeferredTransactionDocument: Transaction.DeferredDocument;
-          let unrelatedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
-          let accountDocument: Account.Document;
-          let loanAccountDocument: Account.Document;
+          let unrelatedProjectDocument: Documents.Project;
+          let paymentTransactionDocument: Documents.PaymentTransaction;
+          let deferredTransactionDocument: Documents.DeferredTransaction;
+          let reimbursementTransactionDocument: Documents.ReimbursementTransaction;
+          let splitTransactionDocument: Documents.SplitTransaction;
+          let unrelatedPaymentTransactionDocument: Documents.PaymentTransaction;
+          let unrelatedDeferredTransactionDocument: Documents.DeferredTransaction;
+          let unrelatedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
+          let accountDocument: Documents.Account;
+          let loanAccountDocument: Documents.Account;
 
           test.beforeEach(async () => {
             accountDocument = accountDataFactory.document();

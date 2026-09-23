@@ -1,20 +1,22 @@
-import { Customer, Price } from '@household/shared/types/types';
 import { customerDocumentConverter } from '@household/shared/dependencies/converters/customer-document-converter';
 import { getPriceId } from '@household/shared/common/utils';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 export const customerDataFactory = (() => {
   const createCustomerDocument = (ctx?: {
-    body?: Partial<Customer.Request>
+    body?: Partial<Requests.Customer>
     jobs?: {
-      body?: Partial<Omit<Customer.Job.Request, 'prices'>>;
-      prices: (Partial<Customer.Job.Quantity> & {price: Price.Document})[];
+      body?: Partial<Omit<Requests.CustomerJob, 'prices'>>;
+      prices: (Partial<Api.Customer.Job.Quantity> & {price: Documents.Price})[];
     }[];
-    blacklistedCustomers?: Customer.Document[];
-  }): Customer.Document => {
+    blacklistedCustomers?: Documents.Customer[];
+  }): Documents.Customer => {
     const defaultCustomerDocument = customerDocumentConverter.create(testDataFactory.customer.request(ctx?.body), Number(process.env.EXPIRES_IN), true);
 
-    const jobs = ctx?.jobs?.map<Customer.Job.Document>((j) => {
+    const jobs = ctx?.jobs?.map<Documents.CustomerJob>((j) => {
       const jobUpdate = customerDocumentConverter.addJob(testDataFactory.customer.job.request({
         body: j.body,
         prices: j.prices?.map(({ price, ...rest }) => {

@@ -1,19 +1,20 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Category, Product } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 
 export interface IProductService {
-  saveProduct(doc: Product.Document): Promise<Product.Document>;
-  saveProducts(...docs: Product.Document[]): Promise<unknown>;
-  findProductById(productId: Product.Id): Promise<Product.Document>;
-  listProductsByIds(productIds: Product.Id[]): Promise<Product.Document[]>;
-  deleteProduct(productId: Product.Id): Promise<unknown>;
-  updateProduct(productId: Product.Id, updateQuery: DocumentUpdate<Product.Document>): Promise<unknown>;
+  saveProduct(doc: Documents.Product): Promise<Documents.Product>;
+  saveProducts(...docs: Documents.Product[]): Promise<unknown>;
+  findProductById(productId: Api.Product.Id): Promise<Documents.Product>;
+  listProductsByIds(productIds: Api.Product.Id[]): Promise<Documents.Product[]>;
+  deleteProduct(productId: Api.Product.Id): Promise<unknown>;
+  updateProduct(productId: Api.Product.Id, updateQuery: DocumentUpdate<Documents.Product>): Promise<unknown>;
   mergeProducts(ctx: {
-    targetProductId: Product.Id;
-    sourceProductIds: Product.Id[];
+    targetProductId: Api.Product.Id;
+    sourceProductIds: Api.Product.Id[];
   }): Promise<unknown>;
-  listProducts(): Promise<Category.Document[]>;
+  listProducts(): Promise<Documents.Category[]>;
 }
 
 export const productServiceFactory = (mongodbService: IMongodbService): IProductService => {

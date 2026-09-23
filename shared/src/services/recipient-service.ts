@@ -1,18 +1,19 @@
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Recipient } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 
 export interface IRecipientService {
-  saveRecipient(doc: Recipient.Document): Promise<Recipient.Document>;
-  saveRecipients(...docs: Recipient.Document[]): Promise<unknown>;
-  findRecipientById(recipientId: Recipient.Id): Promise<Recipient.Document>;
-  deleteRecipient(recipientId: Recipient.Id): Promise<unknown>;
-  updateRecipient(recipientId: Recipient.Id, updateQuery: DocumentUpdate<Recipient.Document>): Promise<unknown>;
-  listRecipients(): Promise<Recipient.Document[]>;
-  findRecipientsByIds(recipientIds: Recipient.Id[]): Promise<Recipient.Document[]>;
+  saveRecipient(doc: Documents.Recipient): Promise<Documents.Recipient>;
+  saveRecipients(...docs: Documents.Recipient[]): Promise<unknown>;
+  findRecipientById(recipientId: Api.Recipient.Id): Promise<Documents.Recipient>;
+  deleteRecipient(recipientId: Api.Recipient.Id): Promise<unknown>;
+  updateRecipient(recipientId: Api.Recipient.Id, updateQuery: DocumentUpdate<Documents.Recipient>): Promise<unknown>;
+  listRecipients(): Promise<Documents.Recipient[]>;
+  findRecipientsByIds(recipientIds: Api.Recipient.Id[]): Promise<Documents.Recipient[]>;
   mergeRecipients(ctx: {
-    targetRecipientId: Recipient.Id;
-    sourceRecipientIds: Recipient.Id[];
+    targetRecipientId: Api.Recipient.Id;
+    sourceRecipientIds: Api.Recipient.Id[];
   }): Promise<unknown>;
 }
 

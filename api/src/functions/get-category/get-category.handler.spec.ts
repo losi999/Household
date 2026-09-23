@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/get-category/get-category.handler';
 import { IGetCategoryService } from '@household/api/functions/get-category/get-category.service';
-import { createCategoryId, createCategoryResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Get category handler', () => {
   let mockGetCategoryService: MockBusinessService<IGetCategoryService>;
@@ -12,8 +12,8 @@ describe('Get category handler', () => {
     handlerFunction = handler(mockGetCategoryService);
   });
 
-  const categoryId = createCategoryId();
-  const category = createCategoryResponse();
+  const categoryId = testDataFactory.category.id();
+  const category = testDataFactory.category.response();
   const handlerEvent = {
     pathParameters: {
       categoryId,

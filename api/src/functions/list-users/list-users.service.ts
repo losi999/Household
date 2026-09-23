@@ -2,19 +2,19 @@ import { UserStatusType } from '@aws-sdk/client-cognito-identity-provider';
 import { httpErrors } from '@household/api/common/error-handlers';
 import { UserType } from '@household/shared/enums';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { User } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListUsersService {
-  (): Promise<User.Response[]>;
+  (): Promise<Responses.User[]>;
 }
 
 export const listUsersServiceFactory = (identityService: IIdentityService): IListUsersService => {
   return async () => {
-    
+
     const users = await identityService.listUsers().catch(httpErrors.cognito.listUsers());
-    
+
     const userMap = users.Users.reduce<{
-      [email: string]: User.Response
+      [email: string]: Responses.User
     }>((accumulator, currentValue) => {
       const email = currentValue.Attributes.find(a => a.Name === 'email').Value ;
       return {

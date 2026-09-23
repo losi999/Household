@@ -1,13 +1,13 @@
 import { errorResponse, createdResponse } from '@household/api/common/response-factory';
 import { ICreateCustomerService } from '@household/api/functions/create-customer/create-customer.service';
 import { getExpiresInHeader } from '@household/shared/common/aws-utils';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export default (createCustomer: ICreateCustomerService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const body = JSON.parse(event.body);
 
-    let customerId: Customer.Id;
+    let customerId: Api.Customer.Id;
     try {
       customerId = await createCustomer({
         body,

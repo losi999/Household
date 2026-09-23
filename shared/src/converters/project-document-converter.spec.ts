@@ -1,14 +1,13 @@
-import { createDocumentUpdate, createProjectDocument, createProjectReport, createProjectRequest, createProjectResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getProjectId } from '@household/shared/common/utils';
 import { projectDocumentConverterFactory, IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
-import { Project } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 
 describe('Project document converter', () => {
   let converter: IProjectDocumentConverter;
-  const now = new Date();
 
   beforeEach(() => {
-    vi.useFakeTimers().setSystemTime(now);
+    vi.useFakeTimers().setSystemTime(new Date());
     converter = projectDocumentConverterFactory();
   });
 
@@ -16,25 +15,16 @@ describe('Project document converter', () => {
     vi.useRealTimers();
   });
 
-  const name = 'Nyaralás';
-  const description = '2022';
   const expiresIn = 3600;
-
-  const body = createProjectRequest({
-    description,
-    name,
-  });
-  const queriedDocument = createProjectDocument({
-    name,
-    description,
-    createdAt: now,
-    updatedAt: now,
-  });
 
   describe('create', () => {
     it('should return document', () => {
+      const body = testDataFactory.project.request();
+
+      const { name, description } = body;
+
       const result = converter.create(body, undefined);
-      expect(result).toEqual(createProjectDocument({
+      expect(result).toEqual(testDataFactory.project.document({
         description,
         name,
         expiresAt: undefined,
@@ -43,11 +33,15 @@ describe('Project document converter', () => {
     });
 
     it('should return expiring document', () => {
+      const body = testDataFactory.project.request();
+
+      const { name, description } = body;
+
       const result = converter.create(body, expiresIn);
-      expect(result).toEqual(createProjectDocument({
+      expect(result).toEqual(testDataFactory.project.document({
         description,
         name,
-        expiresAt: addSeconds(expiresIn, now),
+        expiresAt: addSeconds(expiresIn),
         _id: undefined,
       }));
     });
@@ -56,28 +50,32 @@ describe('Project document converter', () => {
 
   describe('update', () => {
     it('should update document', () => {
+      const body = testDataFactory.project.request();
+
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             ...body,
-            expiresAt: addSeconds(expiresIn, now),
+            expiresAt: addSeconds(expiresIn),
           },
         },
       }));
     });
 
     it('should unset description', () => {
-      const modifiedBody: Project.Request = {
+      const body = testDataFactory.project.request();
+
+      const modifiedBody: Requests.Project = {
         ...body,
         description: undefined,
       };
       const result = converter.update(modifiedBody, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             ...modifiedBody,
-            expiresAt: addSeconds(expiresIn, now),
+            expiresAt: addSeconds(expiresIn),
           },
           $unset: {
             description: true,
@@ -89,9 +87,13 @@ describe('Project document converter', () => {
 
   describe('toResponse', () => {
     it('should return response', () => {
-      const result = converter.toResponse(queriedDocument);
-      expect(result).toEqual(createProjectResponse({
-        projectId: getProjectId(queriedDocument),
+      const doc = testDataFactory.project.document();
+
+      const { name, description } = doc;
+
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(testDataFactory.project.response({
+        projectId: getProjectId(doc),
         description,
         name,
       }));
@@ -100,10 +102,14 @@ describe('Project document converter', () => {
 
   describe('toResponseList', () => {
     it('should return response list', () => {
-      const result = converter.toResponseList([queriedDocument]);
+      const doc = testDataFactory.project.document();
+
+      const { name, description } = doc;
+      
+      const result = converter.toResponseList([doc]);
       expect(result).toEqual([
-        createProjectResponse({
-          projectId: getProjectId(queriedDocument),
+        testDataFactory.project.response({
+          projectId: getProjectId(doc),
           description,
           name,
         }),
@@ -113,9 +119,13 @@ describe('Project document converter', () => {
 
   describe('toReport', () => {
     it('should return response', () => {
-      const result = converter.toReport(queriedDocument);
-      expect(result).toEqual(createProjectReport({
-        projectId: getProjectId(queriedDocument),
+      const doc = testDataFactory.project.document();
+
+      const { name } = doc;
+      
+      const result = converter.toReport(doc);
+      expect(result).toEqual(testDataFactory.project.report({
+        projectId: getProjectId(doc),
         name,
       }));
     });

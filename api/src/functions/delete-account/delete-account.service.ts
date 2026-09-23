@@ -1,11 +1,9 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IAccountService } from '@household/shared/services/account-service';
-import { Account } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeleteAccountService {
-  (ctx: {
-    accountId: Account.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Account.AccountId): Promise<unknown>;
 }
 
 export const deleteAccountServiceFactory = (

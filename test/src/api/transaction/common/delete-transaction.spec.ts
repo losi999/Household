@@ -1,6 +1,6 @@
 import { entries, getCalendarEntryId, getTransactionId } from '@household/shared/common/utils';
 import { AccountType } from '@household/shared/enums';
-import { Account, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
@@ -27,15 +27,15 @@ const permissionMap = forbidUsers('viewer') ;
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, calendarEntryDbTest, customerDbTest);
 
 test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
-  let accountDocument: Account.Document;
-  let loanAccountDocument: Account.Document;
-  let transferAccountDocument: Account.Document;
-  let paymentTransactionDocument: Transaction.PaymentDocument;
-  let splitTransactionDocument: Transaction.SplitDocument;
-  let transferTransactionDocument: Transaction.TransferDocument;
-  let deferredTransactionDocument: Transaction.DeferredDocument;
-  let reimbursementTransactionDocument: Transaction.ReimbursementDocument;
-  let loanTransferTransactionDocument: Transaction.TransferDocument;
+  let accountDocument: Documents.Account;
+  let loanAccountDocument: Documents.Account;
+  let transferAccountDocument: Documents.Account;
+  let paymentTransactionDocument: Documents.PaymentTransaction;
+  let splitTransactionDocument: Documents.SplitTransaction;
+  let transferTransactionDocument: Documents.TransferTransaction;
+  let deferredTransactionDocument: Documents.DeferredTransaction;
+  let reimbursementTransactionDocument: Documents.ReimbursementTransaction;
+  let loanTransferTransactionDocument: Documents.TransferTransaction;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
@@ -121,20 +121,12 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
           });
 
           test('split transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransactions, findTransactionById }) => {
-            const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
-              account: accountDocument,
-              transferAccount: transferAccountDocument,
-              transactions: [splitTransactionDocument.deferredSplits[0]],
-            });
-
             await saveAccounts(accountDocument, transferAccountDocument, loanAccountDocument);
-            await saveTransactions(splitTransactionDocument, repayingTransferTransactionDocument);
+            await saveTransactions(splitTransactionDocument);
             const res = await requestDeleteTransaction(getTransactionId(splitTransactionDocument));
             expect(res).toBeNoContentResponse();
 
             expect(await findTransactionById(getTransactionId(splitTransactionDocument))).toHaveBeenDeletedFromDatabase();
-
-            expect(repayingTransferTransactionDocument).toHavePaymentRemoved(await findTransactionById(getTransactionId(repayingTransferTransactionDocument)), getTransactionId(splitTransactionDocument.deferredSplits[0]));
             
           });
 
@@ -148,20 +140,12 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
           });
 
           test('deferred transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransactions, findTransactionById }) => {
-            const repayingTransferTransactionDocument = transferTransactionDataFactory.document({
-              account: accountDocument,
-              transferAccount: transferAccountDocument,
-              transactions: [deferredTransactionDocument],
-            });
-
             await saveAccounts(accountDocument, transferAccountDocument, loanAccountDocument);
-            await saveTransactions(deferredTransactionDocument, repayingTransferTransactionDocument);
+            await saveTransactions(deferredTransactionDocument);
             const res = await requestDeleteTransaction(getTransactionId(deferredTransactionDocument));
             expect(res).toBeNoContentResponse();
             
             expect(await findTransactionById(getTransactionId(deferredTransactionDocument))).toHaveBeenDeletedFromDatabase();
-
-            expect(repayingTransferTransactionDocument).toHavePaymentRemoved(await findTransactionById(getTransactionId(repayingTransferTransactionDocument)), getTransactionId(deferredTransactionDocument));
           });
 
           test('reimbursement transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransaction, findTransactionById }) => {

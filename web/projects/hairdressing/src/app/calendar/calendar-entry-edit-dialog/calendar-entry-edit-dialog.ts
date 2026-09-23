@@ -3,7 +3,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ClearableInput, HoldableButton } from '@household/shared-ui';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
-import { Calendar, Customer } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { DurationStepper } from '@hairdressing/app/shared/duration-stepper/duration-stepper';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -22,8 +23,8 @@ import { injectDispatch } from '@ngrx/signals/events';
 import { calendarEvents } from '@hairdressing/state/calendar/calendar-events';
 import { MatIconModule } from '@angular/material/icon';
 import { DAY_LENGTH } from '@household/shared/constants';
-export type CalendarEntryEditDialogData = Partial<Calendar.Entry.Response>;
-export type CalendarEntryEditDialogResult = Calendar.Entry.Request;
+export type CalendarEntryEditDialogData = Partial<Responses.CalendarEntry>;
+export type CalendarEntryEditDialogResult = Requests.CalendarEntry;
 
 @Component({
   imports: [
@@ -52,7 +53,7 @@ export class CalendarEntryEditDialog {
   private dialogRef = inject<MatDialogRef<CalendarEntryEditDialog, CalendarEntryEditDialogResult>>(MatDialogRef);
   entry = inject<CalendarEntryEditDialogData>(MAT_DIALOG_DATA);
 
-  CUSTOM_JOB: Customer.Job.Response = {
+  CUSTOM_JOB: Responses.CustomerJob = {
     name: v4(),
     title: undefined,
     duration: 4,
@@ -84,8 +85,8 @@ export class CalendarEntryEditDialog {
   });
 
   entryModel = signal<{
-    customer: Customer.Response,
-    job: Customer.Job.Response,
+    customer: Responses.Customer,
+    job: Responses.CustomerJob,
     title: string;
     description: string;
     day: Date;

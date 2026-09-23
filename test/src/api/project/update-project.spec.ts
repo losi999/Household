@@ -3,7 +3,8 @@ import { allowUsers } from '@household/test/utils';
 import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
-import { Project } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
 import { mergeTests } from '@playwright/test';
 
@@ -12,8 +13,8 @@ const permissionMap = allowUsers('editor');
 const test = mergeTests(projectApiTest, projectDbTest);
 
 test.describe('PUT /project/v1/projects/{projectId}', () => {
-  let req: Project.Request;
-  let projectDocument: Project.Document;
+  let req: Requests.Project;
+  let projectDocument: Documents.Project;
 
   test.beforeEach(async () => {
     req = projectDataFactory.request();
@@ -48,10 +49,8 @@ test.describe('PUT /project/v1/projects/{projectId}', () => {
             await saveProject(projectDocument);
 
             const res = await requestUpdateProject(getProjectId(projectDocument), req);
-            apiExpect(res).toBeCreatedResponse();
-
-            const { projectId } = (await res.json()) as Project.ProjectId;
-            projectApiExpect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
+            apiExpect(res).toBeNoContentResponse();
+            projectApiExpect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(getProjectId(projectDocument)));
           });
 
           test.describe('without optional property in body', () => {
@@ -63,10 +62,8 @@ test.describe('PUT /project/v1/projects/{projectId}', () => {
               });
 
               const res = await requestUpdateProject(getProjectId(projectDocument), req);
-              apiExpect(res).toBeCreatedResponse();
-              
-              const { projectId } = (await res.json()) as Project.ProjectId;
-              projectApiExpect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
+              apiExpect(res).toBeNoContentResponse();
+              projectApiExpect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(getProjectId(projectDocument)));
             });
           });
         });

@@ -2,12 +2,13 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateCustomerJobService {
   (ctx: {
-    body: Customer.Job.Request
-  } & Customer.CustomerId & Customer.Job.Name): Promise<unknown>;
+    body: Requests.CustomerJob
+  } & Api.Customer.CustomerId & Api.Customer.Job.Name): Promise<unknown>;
 }
 
 export const updateCustomerJobServiceFactory = (

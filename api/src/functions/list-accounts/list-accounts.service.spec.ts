@@ -1,5 +1,5 @@
 import { IListAccountsService, listAccountsServiceFactory } from '@household/api/functions/list-accounts/list-accounts.service';
-import { createAccountDocument, createAccountResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
@@ -16,8 +16,8 @@ describe('List accounts service', () => {
     service = listAccountsServiceFactory(mockAccountService.service, mockAccountDocumentConverter.service);
   });
 
-  const queriedDocument = createAccountDocument();
-  const convertedResponse = createAccountResponse();
+  const queriedDocument = testDataFactory.account.document();
+  const convertedResponse = testDataFactory.account.response();
 
   it('should return documents', async () => {
     mockAccountService.functions.listAccounts.mockResolvedValue([queriedDocument]);

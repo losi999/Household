@@ -1,13 +1,15 @@
 import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getPriceId } from '@household/shared/common/utils';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Price } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IPriceDocumentConverter {
-  create(body: Price.Request, expiresIn: number, generateId?: boolean): Price.Document;
-  update(body: Price.Request, expiresIn: number): DocumentUpdate<Price.Document>;
-  toResponse(doc: Price.Document): Price.Response;
-  toResponseList(docs: Price.Document[]): Price.Response[];
+  create(body: Requests.Price, expiresIn: number, generateId?: boolean): Documents.Price;
+  update(body: Requests.Price, expiresIn: number): DocumentUpdate<Documents.Price>;
+  toResponse(doc: Documents.Price): Responses.Price;
+  toResponseList(docs: Documents.Price[]): Responses.Price[];
 }
 
 export const priceDocumentConverterFactory = (): IPriceDocumentConverter => {

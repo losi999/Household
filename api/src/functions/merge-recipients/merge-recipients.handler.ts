@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IMergeRecipientsService } from '@household/api/functions/merge-recipients/merge-recipients.service';
 import { castPathParameters } from '@household/shared/common/aws-utils';
 
@@ -17,8 +17,6 @@ export default (mergeRecipients: IMergeRecipientsService): AWSLambda.APIGatewayP
       return errorResponse(error);
     }
 
-    return createdResponse({
-      recipientId,
-    });
+    return noContentResponse();
   };
 };

@@ -2,19 +2,21 @@ import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Category, Product } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
+import { Documents } from '@household/shared/types/documents';
 
 export interface IProductDocumentConverter {
   create(data: {
-    body: Product.Request;
-    category: Category.Document
-  }, expiresIn: number, generateId?: boolean): Product.Document;
-  update(body: Product.Request, expiresIn: number): DocumentUpdate<Product.Document>;
-  toGroupedResponse(category: Category.Document): Product.GroupedResponse;
-  toGroupedResponseList(categories: Category.Document[]): Product.GroupedResponse[];
-  toResponse(document: Product.Document): Product.Response;
-  toReport(document: Product.Document): Product.Report;
-  toResponseList(documents: Product.Document[]): Product.Response[];
+    body: Requests.Product;
+    category: Documents.Category
+  }, expiresIn: number, generateId?: boolean): Documents.Product;
+  update(body: Requests.Product, expiresIn: number): DocumentUpdate<Documents.Product>;
+  toGroupedResponse(category: Documents.Category): Responses.ProductGroupedResponse;
+  toGroupedResponseList(categories: Documents.Category[]): Responses.ProductGroupedResponse[];
+  toResponse(document: Documents.Product): Responses.Product;
+  toReport(document: Documents.Product): Responses.ProductReport;
+  toResponseList(documents: Documents.Product[]): Responses.Product[];
 }
 
 export const productDocumentConverterFactory = (categoryDocumentConverter: ICategoryDocumentConverter): IProductDocumentConverter => {

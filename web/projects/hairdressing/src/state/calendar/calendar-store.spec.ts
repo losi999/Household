@@ -9,7 +9,8 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { calendarApiEvents, calendarEvents } from '@hairdressing/state/calendar/calendar-events';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of, throwError } from 'rxjs';
-import { Calendar } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 import { CustomerStore } from '@hairdressing/state/customer/customer-store';
 import { CalendarWorkdayDialog } from '@hairdressing/app/calendar/calendar-workday-dialog/calendar-workday-dialog';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
@@ -940,9 +941,9 @@ describe('Calendar store', () => {
 
   describe('dispatching listCalendarDaysCompleted', () => {
     let day: string;
-    let workEntry: Calendar.Entry.WorkEntryResponse;
-    let issueEntry: Calendar.Entry.IssueEntryResponse;
-    let personalEntry: Calendar.Entry.PersonalEntryResponse;
+    let workEntry: Responses.CalendarEntryWork;
+    let issueEntry: Responses.CalendarEntryIssue;
+    let personalEntry: Responses.CalendarEntryPersonal;
 
     beforeEach(() => {
       day = testDataFactory.calendar.day.futureDay();
@@ -1115,9 +1116,9 @@ describe('Calendar store', () => {
 
   describe('dispatching updateCalendarDayCompleted', () => {
     let day: string;
-    let workEntry: Calendar.Entry.WorkEntryResponse;
-    let issueEntry: Calendar.Entry.IssueEntryResponse;
-    let personalEntry: Calendar.Entry.PersonalEntryResponse;
+    let workEntry: Responses.CalendarEntryWork;
+    let issueEntry: Responses.CalendarEntryIssue;
+    let personalEntry: Responses.CalendarEntryPersonal;
 
     beforeEach(() => {
       day = testDataFactory.calendar.day.futureDay();
@@ -1321,8 +1322,8 @@ describe('Calendar store', () => {
 
   describe('dispatching deleteCalendarDayCompleted', () => {
     let day: string;
-    let issueEntry: Calendar.Entry.IssueEntryResponse;
-    let personalEntry: Calendar.Entry.PersonalEntryResponse;
+    let issueEntry: Responses.CalendarEntryIssue;
+    let personalEntry: Responses.CalendarEntryPersonal;
 
     beforeEach(() => {
       day = testDataFactory.calendar.day.futureDay();
@@ -1513,7 +1514,7 @@ describe('Calendar store', () => {
   describe('dispatching createCalendarEntryCompleted', () => {
     let day: string;
     let originalDay: LimitedCalendarDay;
-    let calendarEntryId: Calendar.Entry.Id;
+    let calendarEntryId: Api.Calendar.Entry.Id;
 
     beforeEach(() => {
       day = testDataFactory.calendar.day.futureDay();
@@ -1784,7 +1785,7 @@ describe('Calendar store', () => {
   });
 
   describe('dispatching updateCalendarEntryCompleted', () => {
-    let calendarEntryId: Calendar.Entry.Id;
+    let calendarEntryId: Api.Calendar.Entry.Id;
       
     beforeEach(() => {
       calendarEntryId = testDataFactory.calendar.entry.id(); 
@@ -1793,7 +1794,7 @@ describe('Calendar store', () => {
     describe('on the same', () => {
       let day: string;
       let originalDay: LimitedCalendarDay;
-      let originalEntry: Calendar.Entry.Response;
+      let originalEntry: Responses.CalendarEntry;
 
       beforeEach(() => {
         day = testDataFactory.calendar.day.futureDay();
@@ -2103,7 +2104,7 @@ describe('Calendar store', () => {
       let dayTo: string;
       let originalDayFrom: LimitedCalendarDay;
       let originalDayTo: LimitedCalendarDay;
-      let originalEntry: Calendar.Entry.Response;
+      let originalEntry: Responses.CalendarEntry;
 
       beforeEach(() => {
         dayFrom = testDataFactory.calendar.day.pastDay();
@@ -2476,8 +2477,8 @@ describe('Calendar store', () => {
   describe('dispatching deleteCalendarEntryCompleted', () => {
     let day: string;
     let originalDay: LimitedCalendarDay;
-    let calendarEntryId: Calendar.Entry.Id;
-    let originalEntry: Calendar.Entry.Response;
+    let calendarEntryId: Api.Calendar.Entry.Id;
+    let originalEntry: Responses.CalendarEntry;
 
     beforeEach(() => {
       day = testDataFactory.calendar.day.futureDay();
@@ -2711,9 +2712,9 @@ describe('Calendar store', () => {
 
   describe('dispatching resolveCalendarWorkEntryCompleted', () => {
     let day: string;
-    let calendarEntryId: Calendar.Entry.Id;
+    let calendarEntryId: Api.Calendar.Entry.Id;
     let originalDay: LimitedCalendarDay;
-    let originalEntry: Calendar.Entry.WorkEntryResponse;
+    let originalEntry: Responses.CalendarEntryWork;
 
     beforeEach(() => {
       day = testDataFactory.calendar.day.pastDay();

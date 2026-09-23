@@ -4,19 +4,20 @@ import { withCustomerEvents } from '@hairdressing/state/customer/with-customer-e
 import { withCustomerReducer } from '@hairdressing/state/customer/with-customer-reducer';
 import { CustomerJobReport, CustomerJobReportSort } from '@hairdressing/types';
 import { Searchable } from '@household/shared/types/common';
-import { Customer, Calendar, Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 import { signalStore, withComputed, withState } from '@ngrx/signals';
 import { inject, ValueProvider, InjectionToken } from '@angular/core';
 
 const CUSTOMER_STORE_INITIAL_STATE = new InjectionToken<CustomerState>('CUSTOMER_STORE_INITIAL_STATE');
 
 export type CustomerState = { 
-  customerList: Searchable<Customer.Response>[];
-  isInProgress: Customer.Id[];
+  customerList: Searchable<Responses.Customer>[];
+  isInProgress: Api.Customer.Id[];
   customerWorks: {
-    [customerId: Customer.Id]: Calendar.Entry.WorkEntryResponseBase[];
+    [customerId: Api.Customer.Id]: Responses.CalendarEntryWorkLean[];
   };
-  priceIdFilters: Price.Id[];
+  priceIdFilters: Api.Price.Id[];
   jobListSortBy: CustomerJobReportSort;
   jobListSortOrder: 'asc' | 'desc'
 };

@@ -2,13 +2,14 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { getAccountId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
-import { Account } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
+import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateAccountService {
   (ctx: {
-    body: Account.Request;
-    expiresIn: number;
-  }): Promise<Account.Id>;
+    body: Requests.Account;
+  } & ExpiresIn): Promise<Api.Account.Id>;
 }
 
 export const createAccountServiceFactory = (

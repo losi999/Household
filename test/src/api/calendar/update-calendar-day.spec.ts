@@ -1,6 +1,5 @@
 import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Calendar } from '@household/shared/types/types';
 import { calendarDayDataFactory } from '@household/test/api/calendar/data-factory';
 
 import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
@@ -8,6 +7,8 @@ import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
 import { DAY_END, DAY_START } from '@household/shared/constants';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 const test = mergeTests(calendarApiTest, calendarDayDbTest);
 
@@ -16,9 +17,9 @@ const expect = mergeExpects(calendarApiExpect, apiExpect);
 const permissionMap = allowUsers('hairdresser');
 
 test.describe.serial('PUT /calendar/v1/days/{day}', () => {
-  let request: Calendar.Day.Request;
+  let request: Requests.CalendarDay;
   let day: string;
-  let calendarDayDocument: Calendar.Day.Document;
+  let calendarDayDocument: Documents.CalendarDay;
 
   test.beforeEach(async () => {
     request = calendarDayDataFactory.request.workday();
@@ -145,7 +146,7 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
                 dayType: 'not-valid-const' as any, 
               }));
               expect(res).toBeBadRequestResponse();
-              expect(res).toHaveConstantValueValidationError('body', 'dayType');
+              expect(res).toHaveEnumValidationError('body', 'dayType');
             });
           });
 

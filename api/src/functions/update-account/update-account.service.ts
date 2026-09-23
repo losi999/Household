@@ -1,14 +1,14 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
-import { Account } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateAccountService {
   (ctx: {
-    accountId: Account.Id;
-    expiresIn: number; body:
-    Account.Request;
-  }): Promise<unknown>;
+    body: Requests.Account;
+  } & Api.Account.AccountId & ExpiresIn): Promise<unknown>;
 }
 
 export const updateAccountServiceFactory = (

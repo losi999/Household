@@ -7,30 +7,32 @@ import { IProjectDocumentConverter } from '@household/shared/converters/project-
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { DocumentUpdate, Unset } from '@household/shared/types/common';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { UpdateQuery } from 'mongoose';
 
 export interface IDeferredTransactionDocumentConverter {
   create(data: {
-    body: Transaction.PaymentRequest;
-    payingAccount: Account.Document;
-    ownerAccount: Account.Document;
-    category: Category.Document;
-    recipient: Recipient.Document;
-    project: Project.Document;
-    product: Product.Document;
-  }, expiresIn: number, generateId?: boolean): Transaction.DeferredDocument;
+    body: Requests.PaymentTransaction;
+    payingAccount: Documents.Account;
+    ownerAccount: Documents.Account;
+    category: Documents.Category;
+    recipient: Documents.Recipient;
+    project: Documents.Project;
+    product: Documents.Product;
+  }, expiresIn: number, generateId?: boolean): Documents.DeferredTransaction;
   update(data: {
-    body: Transaction.PaymentRequest;
-    payingAccount: Account.Document;
-    ownerAccount: Account.Document;
-    category: Category.Document;
-    recipient: Recipient.Document;
-    project: Project.Document;
-    product: Product.Document;
-  }, expiresIn: number): DocumentUpdate<Transaction.Document>;
-  toResponse(document: Transaction.DeferredDocument): Transaction.DeferredResponse;
-  toResponseList(documents: Transaction.DeferredDocument[]): Transaction.DeferredResponse[];
+    body: Requests.PaymentTransaction;
+    payingAccount: Documents.Account;
+    ownerAccount: Documents.Account;
+    category: Documents.Category;
+    recipient: Documents.Recipient;
+    project: Documents.Project;
+    product: Documents.Product;
+  }, expiresIn: number): DocumentUpdate<Documents.Transaction>;
+  toResponse(document: Documents.DeferredTransaction): Responses.DeferredTransaction;
+  toResponseList(documents: Documents.DeferredTransaction[]): Responses.DeferredTransaction[];
 }
 
 export const deferredTransactionDocumentConverterFactory = (
@@ -41,19 +43,18 @@ export const deferredTransactionDocumentConverterFactory = (
   productDocumentConverter: IProductDocumentConverter,
 ): IDeferredTransactionDocumentConverter => {
   const transactionType = TransactionType.Deferred;
-  const defaultUnset: Unset<Transaction.Document, Transaction.DeferredDocument> = {
+  const defaultUnset: Unset<Documents.Transaction, Documents.DeferredTransaction> = {
     transferAccount: true,
     transferAmount: true,
     file: true,
     potentialDuplicates: true,
-    payments: true,
     deferredSplits: true,
     splits: true,
     account: true,
   };
 
   const instance: IDeferredTransactionDocumentConverter = {
-    create: ({ body: { issuedAt, amount, description, isSettled, quantity, invoiceNumber, billingEndDate, billingStartDate }, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn, generateId) => {
+    create: ({ body: { issuedAt, amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate }, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn, generateId) => {
       return {
         amount,
         description,
@@ -64,7 +65,6 @@ export const deferredTransactionDocumentConverterFactory = (
         project: project ?? undefined,
         issuedAt: createDate(issuedAt),
         transactionType,
-        isSettled: isSettled ?? false,
         quantity: category?.categoryType === CategoryType.Inventory ? quantity : undefined,
         product: category?.categoryType === CategoryType.Inventory ? product ?? undefined : undefined,
         invoiceNumber: category?.categoryType === CategoryType.Invoice ? invoiceNumber : undefined,
@@ -74,8 +74,8 @@ export const deferredTransactionDocumentConverterFactory = (
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
       };
     },
-    update: ({ body: { issuedAt, quantity, invoiceNumber, billingEndDate, billingStartDate, amount, description, isSettled }, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn) => {
-      const optionalSet: UpdateQuery<Transaction.Document>['$set'] = {
+    update: ({ body: { issuedAt, quantity, invoiceNumber, billingEndDate, billingStartDate, amount, description }, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn) => {
+      const optionalSet: UpdateQuery<Documents.Transaction>['$set'] = {
         recipient,
         category,
         project,
@@ -111,7 +111,6 @@ export const deferredTransactionDocumentConverterFactory = (
             ownerAccount,
             issuedAt: new Date(issuedAt),
             transactionType,
-            isSettled: isSettled ?? false,
             expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
             ...Object.entries(optionalSet).reduce((accumulator, [
               key,
@@ -130,25 +129,23 @@ export const deferredTransactionDocumentConverterFactory = (
         },
       };
     },
-    toResponse: ({ amount, description, invoiceNumber, isSettled, quantity, transactionType, issuedAt, payingAccount, ownerAccount, billingEndDate, billingStartDate, product, category, recipient, project, remainingAmount, _id }) => {
+    toResponse: ({ amount, description, invoiceNumber, quantity, transactionType, issuedAt, payingAccount, ownerAccount, billingEndDate, billingStartDate, product, category, recipient, project, _id }) => {
       return {
         amount,
         description,
         invoiceNumber,
-        isSettled,
         quantity,
         transactionType,
         transactionId: getTransactionId(_id),
         issuedAt: issuedAt?.toISOString(),
-        payingAccount: payingAccount ? accountDocumentConverter.toResponse(payingAccount) : undefined,
-        ownerAccount: ownerAccount ? accountDocumentConverter.toResponse(ownerAccount) : undefined,
+        payingAccount: payingAccount ? accountDocumentConverter.toResponseLean(payingAccount) : undefined,
+        ownerAccount: ownerAccount ? accountDocumentConverter.toResponseLean(ownerAccount) : undefined,
         billingEndDate: billingEndDate?.toISOString().split('T')[0],
         billingStartDate: billingStartDate?.toISOString().split('T')[0],
         product: product ? productDocumentConverter.toResponse(product) : undefined,
         category: category ? categoryDocumentConverter.toResponse(category) : undefined,
         recipient: recipient ? recipientDocumentConverter.toResponse(recipient) : undefined,
         project: project ? projectDocumentConverter.toResponse(project) : undefined,
-        remainingAmount,
       };
     },
     toResponseList: (docs) => docs.map(d => instance.toResponse(d)),

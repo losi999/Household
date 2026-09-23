@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/merge-recipients/merge-recipients.handler';
 import { IMergeRecipientsService } from '@household/api/functions/merge-recipients/merge-recipients.service';
-import { createRecipientId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Merge recipients handler', () => {
   let mockMergeRecipientsService: MockBusinessService<IMergeRecipientsService>;
@@ -12,8 +12,8 @@ describe('Merge recipients handler', () => {
     handlerFunction = handler(mockMergeRecipientsService);
   });
 
-  const recipientId = createRecipientId();
-  const body = [createRecipientId()];
+  const recipientId = testDataFactory.recipient.id();
+  const body = [testDataFactory.recipient.id()];
   const handlerEvent = {
     body: JSON.stringify(body),
     pathParameters: {
@@ -47,8 +47,7 @@ describe('Merge recipients handler', () => {
       recipientId,
       body,
     });
-    expect(response.statusCode).toEqual(201);
-    expect(JSON.parse(response.body).recipientId).toEqual(recipientId);
-    expect.assertions(3);
+    expect(response.statusCode).toEqual(204);
+    expect.assertions(2);
   });
 });

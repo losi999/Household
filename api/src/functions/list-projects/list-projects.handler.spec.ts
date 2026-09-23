@@ -1,7 +1,7 @@
 import { MockBusinessService } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/list-projects/list-projects.handler';
 import { IListProjectsService } from '@household/api/functions/list-projects/list-projects.service';
-import { createProjectResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('List projects handler', () => {
   let mockListProjectsService: MockBusinessService<IListProjectsService>;
@@ -12,7 +12,7 @@ describe('List projects handler', () => {
     handlerFunction = handler(mockListProjectsService);
   });
 
-  const projects = [createProjectResponse()];
+  const projects = [testDataFactory.project.response()];
   const handlerEvent = {} as AWSLambda.APIGatewayProxyEvent;
 
   it('should handle business service error', async () => {

@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IMergeProductsService } from '@household/api/functions/merge-products/merge-products.service';
 import { castPathParameters } from '@household/shared/common/aws-utils';
 
@@ -17,8 +17,6 @@ export default (mergeProducts: IMergeProductsService): AWSLambda.APIGatewayProxy
       return errorResponse(error);
     }
 
-    return createdResponse({
-      productId,
-    });
+    return noContentResponse();
   };
 };

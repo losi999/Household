@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/update-account/update-account.handler';
 import { IUpdateAccountService } from '@household/api/functions/update-account/update-account.service';
-import { createAccountId, createAccountRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Update account handler', () => {
@@ -13,8 +13,8 @@ describe('Update account handler', () => {
     handlerFunction = handler(mockUpdateAccountService);
   });
 
-  const accountId = createAccountId();
-  const body = createAccountRequest();
+  const accountId = testDataFactory.account.id();
+  const body = testDataFactory.account.request();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),
@@ -54,8 +54,7 @@ describe('Update account handler', () => {
       body,
       expiresIn,
     });
-    expect(response.statusCode).toEqual(201);
-    expect(JSON.parse(response.body).accountId).toEqual(accountId);
-    expect.assertions(3);
+    expect(response.statusCode).toEqual(204);
+    expect.assertions(2);
   });
 });

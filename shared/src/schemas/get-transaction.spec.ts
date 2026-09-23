@@ -1,21 +1,21 @@
 import { default as schema } from '@household/shared/schemas/get-transaction';
-import { Account, Transaction } from '@household/shared/types/types';
-import { createAccountId, createTransactionId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
+import { Api } from '@household/shared/types/api';
 
 describe('Get transaction schema', () => {
-  const tester = jsonSchemaTesterFactory<Account.AccountId & Transaction.TransactionId>(schema);
+  const tester = schemaTesterFactory<Api.Account.AccountId & Api.Transaction.TransactionId>(schema);
 
   tester.validateSuccess({
-    accountId: createAccountId(),
-    transactionId: createTransactionId(),
+    accountId: testDataFactory.account.id(),
+    transactionId: testDataFactory.transaction.id(),
   });
 
   describe('should deny', () => {
     describe('if data', () => {
       tester.additionalProperties({
-        accountId: createAccountId(),
-        transactionId: createTransactionId(),
+        accountId: testDataFactory.account.id(),
+        transactionId: testDataFactory.transaction.id(),
         extra: 1,
       } as any, 'data');
     });
@@ -23,34 +23,34 @@ describe('Get transaction schema', () => {
     describe('if data.accountId', () => {
       tester.required({
         accountId: undefined,
-        transactionId: createTransactionId(),
+        transactionId: testDataFactory.transaction.id(),
       }, 'accountId');
 
       tester.type({
         accountId: 1 as any,
-        transactionId: createTransactionId(),
+        transactionId: testDataFactory.transaction.id(),
       }, 'accountId', 'string');
 
       tester.pattern({
-        accountId: createAccountId('not-valid'),
-        transactionId: createTransactionId(),
+        accountId: testDataFactory.account.id('not-valid'),
+        transactionId: testDataFactory.transaction.id(),
       }, 'accountId');
     });
 
     describe('if data.transactionId', () => {
       tester.required({
-        accountId: createAccountId(),
+        accountId: testDataFactory.account.id(),
         transactionId: undefined,
       }, 'transactionId');
 
       tester.type({
-        accountId: createAccountId(),
+        accountId: testDataFactory.account.id(),
         transactionId: 1 as any,
       }, 'transactionId', 'string');
 
       tester.pattern({
-        accountId: createAccountId(),
-        transactionId: createTransactionId('not-valid'),
+        accountId: testDataFactory.account.id(),
+        transactionId: testDataFactory.transaction.id('not-valid'),
       }, 'transactionId');
     });
   });

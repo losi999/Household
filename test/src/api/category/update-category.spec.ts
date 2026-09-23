@@ -4,7 +4,9 @@ import { allowUsers } from '@household/test/utils';
 import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { Category } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
@@ -15,11 +17,13 @@ const expect = mergeExpects(categoryApiExpect, apiExpect);
 const test = mergeTests(categoryApiTest, categoryDbTest);
 
 test.describe('PUT /category/v1/categories/{categoryId}', () => {
-  let categoryDocument: Category.Document;
-  let req: Category.Request;
+  let categoryDocument: Documents.Category;
+  let req: Requests.Category;
 
   test.beforeEach(async () => {
-    req = categoryDataFactory.request();
+    req = categoryDataFactory.request({
+      parentCategoryId: undefined,
+    });
 
     categoryDocument = categoryDataFactory.document();
   });
@@ -50,16 +54,14 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
           await saveCategory(categoryDocument);
 
           const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
-          expect(res).toBeCreatedResponse();
-
-          const { categoryId } = (await res.json()) as Category.CategoryId;
-          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId));
+          expect(res).toBeNoContentResponse();
+          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(categoryDocument)));
         });
 
         test.describe('children should be reassigned', () => {
-          let childCategory: Category.Document;
-          let grandChildCategory: Category.Document;
-          let otherParentCategory: Category.Document;
+          let childCategory: Documents.Category;
+          let grandChildCategory: Documents.Category;
+          let otherParentCategory: Documents.Category;
 
           test.beforeEach(async () => {
             childCategory = categoryDataFactory.document({
@@ -81,7 +83,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory, otherParentCategory);
 
             const res = await requestUpdateCategory(getCategoryId(childCategory), req);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
 
             expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(childCategory)), otherParentCategory, ...otherParentCategory.ancestors);
             expect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
@@ -95,7 +97,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory);
 
             const res = await requestUpdateCategory(getCategoryId(childCategory), req);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
 
             expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(childCategory)));
           });
@@ -108,7 +110,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory, otherParentCategory);
 
             const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
-            expect(res).toBeCreatedResponse();
+            expect(res).toBeNoContentResponse();
             expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(categoryDocument)), otherParentCategory, ...otherParentCategory.ancestors);
             expect(childCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(childCategory)), await findCategoryById(getCategoryId(categoryDocument)));
             expect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
@@ -246,7 +248,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
 
           test.describe('if categoryId', () => {
             test('is not mongo id', async ({ requestUpdateCategory }) => {
-              const res = await requestUpdateCategory('not-valid' as Category.Id, req);
+              const res = await requestUpdateCategory('not-valid' as Api.Category.Id, req);
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('pathParameters', 'categoryId');
             });

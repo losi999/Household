@@ -1,5 +1,5 @@
 import { IDeleteRecipientService, deleteRecipientServiceFactory } from '@household/api/functions/delete-recipient/delete-recipient.service';
-import { createRecipientId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 
@@ -12,7 +12,7 @@ describe('Delete recipient service', () => {
     service = deleteRecipientServiceFactory(mockRecipientService.service);
   });
 
-  const recipientId = createRecipientId();
+  const recipientId = testDataFactory.recipient.id();
 
   it('should return if document is deleted', async () => {
     mockRecipientService.functions.deleteRecipient.mockResolvedValue(undefined);

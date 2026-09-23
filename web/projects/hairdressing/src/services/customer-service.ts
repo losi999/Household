@@ -1,7 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { API_URL } from '@household/shared-ui';
-import { Calendar, Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 @Injectable({
   providedIn: 'root',
@@ -11,46 +13,46 @@ export class CustomerService {
   private apiUrl = inject(API_URL);
   
   listCustomers() {
-    return this.httpClient.get<Customer.Response[]>(`${this.apiUrl}/customer/v1/customers`);
+    return this.httpClient.get<Responses.Customer[]>(`${this.apiUrl}/customer/v1/customers`);
   }
 
-  createCustomer(body: Customer.Request) {
-    return this.httpClient.post<Customer.CustomerId>(`${this.apiUrl}/customer/v1/customers`, body);
+  createCustomer(body: Requests.Customer) {
+    return this.httpClient.post<Api.Customer.CustomerId>(`${this.apiUrl}/customer/v1/customers`, body);
   }
 
-  getCustomerById(customerId: Customer.Id) {
-    return this.httpClient.get<Customer.Response>(`${this.apiUrl}/customer/v1/customers/${customerId}`);
+  getCustomerById(customerId: Api.Customer.Id) {
+    return this.httpClient.get<Responses.Customer>(`${this.apiUrl}/customer/v1/customers/${customerId}`);
   }
 
-  updateCustomer(customerId: Customer.Id, body: Customer.Request) {
-    return this.httpClient.put<Customer.CustomerId>(`${this.apiUrl}/customer/v1/customers/${customerId}`, body);
+  updateCustomer(customerId: Api.Customer.Id, body: Requests.Customer) {
+    return this.httpClient.put<Api.Customer.CustomerId>(`${this.apiUrl}/customer/v1/customers/${customerId}`, body);
   }
 
-  deleteCustomer(customerId: Customer.Id) {
+  deleteCustomer(customerId: Api.Customer.Id) {
     return this.httpClient.delete(`${this.apiUrl}/customer/v1/customers/${customerId}`);
   }
 
-  createCustomerJob(customerId: Customer.Id, body: Customer.Job.Request) {
+  createCustomerJob(customerId: Api.Customer.Id, body: Requests.CustomerJob) {
     return this.httpClient.post(`${this.apiUrl}/customer/v1/customers/${customerId}/jobs`, body);
   }
 
-  updateCustomerJob(customerId: Customer.Id, jobName: Customer.Job.Name['name'], body: Customer.Job.Request) {
+  updateCustomerJob(customerId: Api.Customer.Id, jobName: Api.Customer.Job.Name['name'], body: Requests.CustomerJob) {
     return this.httpClient.put(`${this.apiUrl}/customer/v1/customers/${customerId}/jobs/${jobName}`, body);
   }
 
-  deleteCustomerJob(customerId: Customer.Id, jobName: Customer.Job.Name['name']) {
+  deleteCustomerJob(customerId: Api.Customer.Id, jobName: Api.Customer.Job.Name['name']) {
     return this.httpClient.delete(`${this.apiUrl}/customer/v1/customers/${customerId}/jobs/${jobName}`);
   }
 
-  listCustomerWorks(customerId: Customer.Id) {
-    return this.httpClient.get<Calendar.Entry.WorkEntryResponseBase[]>(`${this.apiUrl}/customer/v1/customers/${customerId}/works`);
+  listCustomerWorks(customerId: Api.Customer.Id) {
+    return this.httpClient.get<Responses.CalendarEntryWorkLean[]>(`${this.apiUrl}/customer/v1/customers/${customerId}/works`);
   }
 
-  updateCustomerBlacklist(body: Customer.Id[]) {
+  updateCustomerBlacklist(body: Api.Customer.Id[]) {
     return this.httpClient.put(`${this.apiUrl}/customer/v1/customers/blacklist`, body);
   }
 
-  deleteCustomerBlacklist(body: Customer.Id[]) {
+  deleteCustomerBlacklist(body: Api.Customer.Id[]) {
     return this.httpClient.delete(`${this.apiUrl}/customer/v1/customers/blacklist`, {
       body,
     });

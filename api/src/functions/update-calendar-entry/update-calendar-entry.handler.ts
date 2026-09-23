@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IUpdateCalendarEntryService } from '@household/api/functions/update-calendar-entry/update-calendar-entry.service';
 import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
@@ -18,8 +18,6 @@ export default (updateCalendarEntry: IUpdateCalendarEntryService): AWSLambda.API
       return errorResponse(error);
     }
 
-    return createdResponse({
-      calendarEntryId,
-    });
+    return noContentResponse();
   };
 };

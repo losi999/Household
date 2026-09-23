@@ -6,7 +6,8 @@ import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { Category, Product } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType, CategoryType } from '@household/shared/enums';
@@ -27,7 +28,7 @@ const expect = mergeExpects(categoryApiExpect, apiExpect, transactionApiExpect, 
 const test = mergeTests(categoryApiTest, accountDbTest, transactionDbTest, categoryDbTest, productDbTest);
 
 test.describe('DELETE /category/v1/categories/{categoryId}', () => {
-  let categoryDocument: Category.Document;
+  let categoryDocument: Documents.Category;
 
   test.beforeEach(async () => {
     categoryDocument = categoryDataFactory.document();
@@ -65,8 +66,8 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
         });
 
         test.describe('children should be reassigned', () => {
-          let childCategory: Category.Document;
-          let grandChildCategory: Category.Document;
+          let childCategory: Documents.Category;
+          let grandChildCategory: Documents.Category;
 
           test.beforeEach(async () => {
             childCategory = categoryDataFactory.document({
@@ -115,8 +116,8 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
                 },
               });
 
-              let productDocument: Product.Document;
-              let unrelatedProductDocument: Product.Document;
+              let productDocument: Documents.Product;
+              let unrelatedProductDocument: Documents.Product;
 
               if (categoryType === CategoryType.Inventory) {
                 productDocument = productDataFactory.document({
@@ -273,7 +274,7 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
         test.describe('should return error', () => {
           test.describe('if categoryId', () => {
             test('is not mongo id', async ({ requestDeleteCategory }) => {
-              const res = await requestDeleteCategory('not-valid' as Category.Id);
+              const res = await requestDeleteCategory('not-valid' as Api.Category.Id);
               expect(res).toBeBadRequestResponse();
               expect(res).toHavePatternValidationError('pathParameters', 'categoryId');
             });

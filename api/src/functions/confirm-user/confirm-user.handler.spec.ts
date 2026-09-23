@@ -1,6 +1,6 @@
 import { default as handler } from '@household/api/functions/confirm-user/confirm-user.handler';
 import { IConfirmUserService } from '@household/api/functions/confirm-user/confirm-user.service';
-import { createConfirmUserRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 
 describe('Confirm user handler', () => {
@@ -14,7 +14,7 @@ describe('Confirm user handler', () => {
   });
 
   const email = 'user@email.com';
-  const body = createConfirmUserRequest();
+  const body = testDataFactory.user.request.confirmUser();
   const handlerEvent = {
     pathParameters: {
       email,
@@ -48,7 +48,7 @@ describe('Confirm user handler', () => {
       body,
       email,
     });
-    expect(response.statusCode).toEqual(200);
+    expect(response.statusCode).toEqual(204);
     expect.assertions(2);
   });
 });

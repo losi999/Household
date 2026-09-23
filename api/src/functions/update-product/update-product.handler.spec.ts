@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/update-product/update-product.handler';
 import { IUpdateProductService } from '@household/api/functions/update-product/update-product.service';
-import { createProductId, createProductRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Update product handler', () => {
@@ -13,8 +13,8 @@ describe('Update product handler', () => {
     handlerFunction = handler(mockUpdateProductService);
   });
 
-  const productId = createProductId();
-  const body = createProductRequest();
+  const productId = testDataFactory.product.id();
+  const body = testDataFactory.product.request();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),
@@ -54,8 +54,7 @@ describe('Update product handler', () => {
       body,
       expiresIn,
     });
-    expect(response.statusCode).toEqual(201);
-    expect(JSON.parse(response.body).productId).toEqual(productId);
-    expect.assertions(3);
+    expect(response.statusCode).toEqual(204);
+    expect.assertions(2);
   });
 });

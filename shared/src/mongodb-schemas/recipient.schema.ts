@@ -1,7 +1,7 @@
-import { Recipient } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-export const recipientSchema = new Schema<Recipient.Document>({
+export const recipientSchema = new Schema<Documents.Recipient>({
   name: {
     type: String,
     required: true,

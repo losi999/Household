@@ -1,19 +1,20 @@
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { reimbursementTransactionDocumentConverter } from '@household/shared/dependencies/converters/reimbursement-transaction-document-converter';
-import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { AccountType } from '@household/shared/enums';
+import { Requests } from '@household/shared/types/requests';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 export const reimbursementTransactionDataFactory = (() => {
   const createReimbursementTransactionDocument = (ctx: {
-    body?: Partial<Transaction.PaymentRequest>;
-    account: Account.Document;
-    loanAccount: Account.Document;
-    category?: Category.Document;
-    product?: Product.Document;
-    project?: Project.Document;
-    recipient?: Recipient.Document;
-  }): Transaction.ReimbursementDocument => {
+    body?: Partial<Requests.PaymentTransaction>;
+    account: Documents.Account;
+    loanAccount: Documents.Account;
+    category?: Documents.Category;
+    product?: Documents.Product;
+    project?: Documents.Project;
+    recipient?: Documents.Recipient;
+  }): Documents.ReimbursementTransaction => {
     if (ctx.account.accountType !== AccountType.Loan) {
       throw 'Paying account type must be loan in reimbursement transaction';
     }
@@ -22,8 +23,12 @@ export const reimbursementTransactionDataFactory = (() => {
       throw 'Owner account type cannot be loan in reimbursement transaction';
     }
 
+    if (ctx?.body?.amount >= 0) {
+      throw 'Amount must be negative in reimbursement transaction';
+    }
+
     return reimbursementTransactionDocumentConverter.create({
-      body: paymentTransactionDataFactory.request({
+      body: testDataFactory.transaction.request.payment({
         ...ctx.body,
         accountId: getAccountId(ctx.account),
         loanAccountId: getAccountId(ctx.loanAccount),
@@ -42,8 +47,8 @@ export const reimbursementTransactionDataFactory = (() => {
   };
 
   return {
-    id: paymentTransactionDataFactory.id,
-    request: paymentTransactionDataFactory.request,
+    id: testDataFactory.transaction.id,
+    request: testDataFactory.transaction.request.payment,
     document: createReimbursementTransactionDocument,
   };
 })();

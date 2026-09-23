@@ -1,4 +1,4 @@
-import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { addSeconds } from '@household/shared/common/utils';
 import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
@@ -31,7 +31,7 @@ describe('Calendar day document converter', () => {
       });
 
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             ...body,
@@ -45,7 +45,7 @@ describe('Calendar day document converter', () => {
       const body = testDataFactory.calendar.day.request.vacation();
 
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             ...body,

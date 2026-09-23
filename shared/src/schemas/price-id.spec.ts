@@ -1,10 +1,10 @@
-import { default as schema } from '@household/shared/schemas/price-id';
-import { Price } from '@household/shared/types/types';
+import { priceId as schema } from '@household/shared/schemas/price';
+import { Api } from '@household/shared/types/api';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Price id schema', () => {
-  const tester = jsonSchemaTesterFactory<Price.PriceId>(schema);
+  const tester = schemaTesterFactory<Api.Price.PriceId>(schema);
 
   tester.validateSuccess({
     priceId: testDataFactory.price.id(),

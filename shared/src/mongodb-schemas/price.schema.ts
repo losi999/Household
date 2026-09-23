@@ -1,8 +1,8 @@
 import { priceUnitsOfMeasurement } from '@household/shared/constants';
-import { Price } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-export const priceSchema = new Schema<Price.Document>({
+export const priceSchema = new Schema<Documents.Price>({
   name: {
     type: String,
     required: true,

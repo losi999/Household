@@ -1,9 +1,9 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IRemoveUserFromGroup {
-  (ctx: User.Group & User.Email): Promise<unknown>;
+  (ctx: Api.User.Group & Api.User.Email): Promise<unknown>;
 }
 
 export const removeUserFromGroupServiceFactory = (identityService: IIdentityService): IRemoveUserFromGroup => {

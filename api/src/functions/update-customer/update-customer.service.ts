@@ -1,14 +1,14 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateCustomerService {
   (ctx: {
-    body: Customer.Request;
-    customerId: Customer.Id;
-    expiresIn: number;
-  }): Promise<unknown>;
+    body: Requests.Customer;
+  } & Api.Customer.CustomerId & ExpiresIn): Promise<unknown>;
 }
 
 export const updateCustomerServiceFactory = (

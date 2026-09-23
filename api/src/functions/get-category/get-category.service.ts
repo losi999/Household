@@ -1,10 +1,11 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
-import { Category } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IGetCategoryService {
-  (ctx: Category.CategoryId): Promise<Category.Response>;
+  (ctx: Api.Category.CategoryId): Promise<Responses.Category>;
 }
 
 export const getCategoryServiceFactory = (

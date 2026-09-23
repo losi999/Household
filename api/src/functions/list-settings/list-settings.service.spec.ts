@@ -1,5 +1,5 @@
 import { IListSettingsService, listSettingsServiceFactory } from '@household/api/functions/list-settings/list-settings.service';
-import { createSettingDocument, createSettingResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ISettingDocumentConverter } from '@household/shared/converters/setting-document-converter';
 import { ISettingService } from '@household/shared/services/setting-service';
@@ -16,8 +16,8 @@ describe('List settings service', () => {
     service = listSettingsServiceFactory(mockSettingService.service, mockSettingDocumentConverter.service);
   });
 
-  const queriedDocument = createSettingDocument();
-  const convertedResponse = createSettingResponse();
+  const queriedDocument = testDataFactory.setting.document();
+  const convertedResponse = testDataFactory.setting.response();
 
   it('should return documents', async () => {
     mockSettingService.functions.listSettings.mockResolvedValue([queriedDocument]);

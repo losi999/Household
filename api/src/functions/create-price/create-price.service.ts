@@ -2,13 +2,14 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { getPriceId } from '@household/shared/common/utils';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 import { IPriceService } from '@household/shared/services/price-service';
-import { Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
+import { Requests } from '@household/shared/types/requests';
 
 export interface ICreatePriceService {
   (ctx: {
-    body: Price.Request;
-    expiresIn: number;
-  }): Promise<Price.Id>;
+    body: Requests.Price;
+  } & ExpiresIn): Promise<Api.Price.Id>;
 }
 
 export const createPriceServiceFactory = (

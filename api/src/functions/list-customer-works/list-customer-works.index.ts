@@ -2,7 +2,7 @@ import { default as handler } from '@household/api/functions/list-customer-works
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { listCustomerWorksServiceFactory } from '@household/api/functions/list-customer-works/list-customer-works.service';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
-import { default as pathParameters } from '@household/shared/schemas/customer-id';
+import { customerId as pathParameters } from '@household/shared/schemas/customer';
 import { customerService } from '@household/shared/dependencies/services/customer-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';

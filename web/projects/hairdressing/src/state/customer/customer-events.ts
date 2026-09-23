@@ -1,5 +1,7 @@
 import { CustomerJobReportSort } from '@hairdressing/types';
-import { Calendar, Customer, Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { type } from '@ngrx/signals';
 import { eventGroup } from '@ngrx/signals/events';
 
@@ -7,18 +9,18 @@ export const customerEvents = eventGroup({
   source: 'Customer',
   events: {
     createCustomer: type<void>(),
-    updateCustomer: type<Customer.Response>(),
-    deleteCustomer: type<Customer.Response>(),
-    createCustomerJob: type<Customer.CustomerId>(),
-    updateCustomerJob: type<Customer.CustomerId & Customer.Job.Response>(),
-    deleteCustomerJob: type<Customer.CustomerId & Customer.Job.Name>(),
-    addCustomerToBlacklist: type<Customer.Response>(),
+    updateCustomer: type<Responses.Customer>(),
+    deleteCustomer: type<Responses.Customer>(),
+    createCustomerJob: type<Api.Customer.CustomerId>(),
+    updateCustomerJob: type<Api.Customer.CustomerId & Responses.CustomerJob>(),
+    deleteCustomerJob: type<Api.Customer.CustomerId & Api.Customer.Job.Name>(),
+    addCustomerToBlacklist: type<Responses.Customer>(),
     deleteCustomerFromBlacklist: type<{
-      currentCustomer: Customer.Response;
-      selectedCustomer: Customer.ResponseBase;
+      currentCustomer: Responses.Customer;
+      selectedCustomer: Responses.CustomerLean;
     }>(),
-    addPriceFilter: type<Price.PriceId>(),
-    removePriceFilter: type<Price.PriceId>(),
+    addPriceFilter: type<Api.Price.PriceId>(),
+    removePriceFilter: type<Api.Price.PriceId>(),
     sortJobs: type<{sortBy: CustomerJobReportSort; sortOrder: 'asc' | 'desc'}>(),
   },
 });
@@ -27,26 +29,26 @@ export const customerApiEvents = eventGroup({
   source: 'Customer API',
   events: {
     listCustomersInitiated: type<void>(),
-    listCustomersCompleted: type<Customer.Response[]>(),
-    createCustomerInitiated: type<Customer.Request>(),
-    createCustomerCompleted: type<Customer.CustomerId & Customer.Request>(),
-    updateCustomerInitiated: type<Customer.CustomerId & Customer.Request>(),
-    updateCustomerCompleted: type<Customer.CustomerId & Customer.Request>(),
-    updateCustomerFailed: type<Customer.CustomerId>(),
-    deleteCustomerInitiated: type<Customer.CustomerId>(),
-    deleteCustomerCompleted: type<Customer.CustomerId>(),
-    deleteCustomerFailed: type<Customer.CustomerId>(),
-    createCustomerJobInitiated: type<Customer.CustomerId & Customer.Job.Request>(),
-    createCustomerJobCompleted: type<Customer.CustomerId & Customer.Job.Request & {priceList: Price.Response[]}>(),
-    updateCustomerJobInitiated: type<Customer.CustomerId & {jobName: Customer.Job.Name['name']} & Customer.Job.Request>(),
-    updateCustomerJobCompleted: type<Customer.CustomerId & {jobName: Customer.Job.Name['name']} & Customer.Job.Request & {priceList: Price.Response[]}>(),    
-    deleteCustomerJobInitiated: type<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),
-    deleteCustomerJobCompleted: type<Customer.CustomerId & {jobName: Customer.Job.Name['name']}>(),    
-    listCustomerWorksInitiated: type<Customer.CustomerId>(),
-    listCustomerWorksCompleted: type<Customer.CustomerId & {works: Calendar.Entry.WorkEntryResponseBase[]}>(),
-    addCustomerToBlacklistInitiated: type<Customer.Response[]>(),
-    addCustomerToBlacklistCompleted: type<Customer.Response[]>(),
-    deleteCustomerFromBlacklistInitiated: type<Customer.Id[]>(),
-    deleteCustomerFromBlacklistCompleted: type<Customer.Id[]>(),
+    listCustomersCompleted: type<Responses.Customer[]>(),
+    createCustomerInitiated: type<Requests.Customer>(),
+    createCustomerCompleted: type<Api.Customer.CustomerId & Requests.Customer>(),
+    updateCustomerInitiated: type<Api.Customer.CustomerId & Requests.Customer>(),
+    updateCustomerCompleted: type<Api.Customer.CustomerId & Requests.Customer>(),
+    updateCustomerFailed: type<Api.Customer.CustomerId>(),
+    deleteCustomerInitiated: type<Api.Customer.CustomerId>(),
+    deleteCustomerCompleted: type<Api.Customer.CustomerId>(),
+    deleteCustomerFailed: type<Api.Customer.CustomerId>(),
+    createCustomerJobInitiated: type<Api.Customer.CustomerId & Requests.CustomerJob>(),
+    createCustomerJobCompleted: type<Api.Customer.CustomerId & Requests.CustomerJob & {priceList: Responses.Price[]}>(),
+    updateCustomerJobInitiated: type<Api.Customer.CustomerId & {jobName: Api.Customer.Job.Name['name']} & Requests.CustomerJob>(),
+    updateCustomerJobCompleted: type<Api.Customer.CustomerId & {jobName: Api.Customer.Job.Name['name']} & Requests.CustomerJob & {priceList: Responses.Price[]}>(),    
+    deleteCustomerJobInitiated: type<Api.Customer.CustomerId & {jobName: Api.Customer.Job.Name['name']}>(),
+    deleteCustomerJobCompleted: type<Api.Customer.CustomerId & {jobName: Api.Customer.Job.Name['name']}>(),    
+    listCustomerWorksInitiated: type<Api.Customer.CustomerId>(),
+    listCustomerWorksCompleted: type<Api.Customer.CustomerId & {works: Responses.CalendarEntryWorkLean[]}>(),
+    addCustomerToBlacklistInitiated: type<Responses.Customer[]>(),
+    addCustomerToBlacklistCompleted: type<Responses.Customer[]>(),
+    deleteCustomerFromBlacklistInitiated: type<Api.Customer.Id[]>(),
+    deleteCustomerFromBlacklistCompleted: type<Api.Customer.Id[]>(),
   },
 });

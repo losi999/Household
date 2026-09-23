@@ -1,4 +1,4 @@
-import { Setting } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
 import { settingDataFactory } from '@household/test/api/setting/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
@@ -16,7 +16,7 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(settingApiTest, settingDbTest);
 
 test.describe('POST /setting/v1/settings/{settingKey}', () => {
-  let request: Setting.Request;
+  let request: Requests.Setting;
   let settingKey: SettingKey;
 
   test.beforeEach(async () => {

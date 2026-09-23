@@ -4,13 +4,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { AmountInput, ClearableInput } from '@household/shared-ui';
-import { Price } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { MatSelectModule } from '@angular/material/select';
 import { priceUnitsOfMeasurement } from '@household/shared/constants';
 import { exclusiveMin } from '@household/shared-ui';
 
-export type PriceDialogData = Price.Response;
-export type PriceDialogResult = Price.Request;
+export type PriceDialogData = Responses.Price;
+export type PriceDialogResult = Requests.Price;
 
 @Component({
   selector: 'hairdressing-price-dialog',
@@ -30,7 +31,7 @@ export class PriceDialog {
   private dialogRef = inject<MatDialogRef<PriceDialog, PriceDialogResult>>(MatDialogRef);
   public price = inject<PriceDialogData>(MAT_DIALOG_DATA);
 
-  priceModel = signal<Price.Request>({
+  priceModel = signal<Requests.Price>({
     name: this.price?.name || '',
     amount: this.price?.amount || 0,
     unitOfMeasurement: this.price?.unitOfMeasurement || 'db',

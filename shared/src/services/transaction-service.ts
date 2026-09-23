@@ -3,24 +3,21 @@ import { populate } from '@household/shared/common/utils';
 import { TransactionType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
-import { Account, Common, File, Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 import { PipelineStage, Types } from 'mongoose';
+import { Documents } from '@household/shared/types/documents';
 
 export interface ITransactionService {
-  saveTransaction(doc: Transaction.Document): Promise<Transaction.Document>;
-  saveTransactions(...docs: Transaction.Document[]): Promise<any>;
-  findTransactionById<T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T>;
-  getTransactionById<T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T>;
-  getTransactionByIdAndAccountId(query: Transaction.TransactionId & Account.AccountId): Promise<Transaction.Document>;
-  deleteTransaction(transactionId: Transaction.Id): Promise<unknown>;
-  updateTransaction(transactionId: Transaction.Id, updateQuery: DocumentUpdate<Transaction.Document>): Promise<unknown>;
-  listTransactions(match: PipelineStage.Match): Promise<Transaction.RawReport[]>;
-  listDeferredTransactions(ctx?: {
-    deferredTransactionIds?: Transaction.Id[];
-    excludedTransferTransactionId?: Transaction.Id
-  }): Promise<Transaction.DeferredDocument[]>;
-  listDraftTransactionsByFileId(fileId: File.Id): Promise<Transaction.DraftDocument[]>;
-  listTransactionsByAccountId(data: Account.AccountId & Common.Pagination<number>): Promise<Transaction.Document[]>;
+  saveTransaction(doc: Documents.Transaction): Promise<Documents.Transaction>;
+  saveTransactions(...docs: Documents.Transaction[]): Promise<any>;
+  findTransactionById<T extends Documents.Transaction = Documents.Transaction>(transactionId: Api.Transaction.Id): Promise<T>;
+  getTransactionById<T extends Documents.Transaction = Documents.Transaction>(transactionId: Api.Transaction.Id): Promise<T>;
+  getTransactionByIdAndAccountId(query: Api.Transaction.TransactionId & Api.Account.AccountId): Promise<Documents.Transaction>;
+  deleteTransaction(transactionId: Api.Transaction.Id): Promise<unknown>;
+  updateTransaction(transactionId: Api.Transaction.Id, updateQuery: DocumentUpdate<Documents.Transaction>): Promise<unknown>;
+  listTransactions(match: PipelineStage.Match): Promise<Documents.RawTransaction[]>;
+  listDraftTransactionsByFileId(fileId: Api.File.Id): Promise<Documents.DraftTransaction[]>;
+  listTransactionsByAccountId(data: Api.Account.AccountId & Api.Pagination<number>): Promise<Documents.Transaction[]>;
 }
 
 export const transactionServiceFactory = (mongodbService: IMongodbService): ITransactionService => {
@@ -42,7 +39,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         });
       });
     },
-    findTransactionById: <T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T> => {
+    findTransactionById: <T extends Documents.Transaction = Documents.Transaction>(transactionId: Api.Transaction.Id): Promise<T> => {
       if (transactionId) {
         return mongodbService.transactions(async (model, session) => {
           return await model.findById(transactionId).session(session)
@@ -50,7 +47,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         });
       }
     },
-    getTransactionById: <T extends Transaction.Document = Transaction.Document>(transactionId: Transaction.Id): Promise<T> => {
+    getTransactionById: <T extends Documents.Transaction = Documents.Transaction>(transactionId: Api.Transaction.Id): Promise<T> => {
       if (transactionId) {
         return mongodbService.transactions(async (model, session) => {
           return await model.findById(transactionId)
@@ -84,7 +81,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
       }
 
       const [transaction] = await mongodbService.transactions(async (model, session) => {
-        return model.aggregate<Transaction.Document>(
+        return model.aggregate<Documents.Transaction>(
           [
             {
               $match: {
@@ -126,87 +123,16 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
           }, {
             session,
           });
-        }
-
-        let deletedDeferredTransactionIds: Types.ObjectId[];
-
-        if (deleted.transactionType === TransactionType.Deferred) {
-          deletedDeferredTransactionIds = [deleted._id];
-        }
-
-        if (deleted.transactionType === TransactionType.Split && deleted.deferredSplits?.length > 0) {
-          deletedDeferredTransactionIds = deleted.deferredSplits.map(s => s._id);
-        }
-
-        if (deletedDeferredTransactionIds) {
-          await models.transactions.updateMany({
-            'payments.transaction': {
-              $in: deletedDeferredTransactionIds,
-            },
-          }, {
-            $pull: {
-              payments: {
-                transaction: {
-                  $in: deletedDeferredTransactionIds,
-                },
-              },
-            },
-          }, {
-            session,
-          });
-        }
+        }        
       });
 
     },
     updateTransaction: async (transactionId, { update: updateQuery }) => {
       return mongodbService.inTransaction(async (models, session) => {
-        const old = await models.transactions.findByIdAndUpdate(transactionId, updateQuery, {
+        return models.transactions.findByIdAndUpdate(transactionId, updateQuery, {
           session,
-          returnOriginal: true,
           runValidators: true,
         });
-
-        const previousTransactionType = old.transactionType;
-        const currentTransactionType = updateQuery.$set.transactionType;
-        let deletedDeferredTransactionIds: Types.ObjectId[];
-
-        if (previousTransactionType === 'deferred' && currentTransactionType !== 'deferred') {
-          deletedDeferredTransactionIds = [old._id];
-        }
-
-        if (previousTransactionType === 'split' && old.deferredSplits?.length > 0) {
-          if (currentTransactionType === 'split' && updateQuery.$set.deferredSplits?.length > 0) {
-            const newDeferredTransactionIds = updateQuery.$set.deferredSplits.map((s: any) => s._id?.toString()) ;
-
-            deletedDeferredTransactionIds = old.deferredSplits.reduce((accumulator, currentValue) => {
-              return newDeferredTransactionIds.includes(currentValue._id.toString()) ? accumulator : [
-                ...accumulator,
-                currentValue._id,
-              ];
-            }, []);
-
-          } else {
-            deletedDeferredTransactionIds = old.deferredSplits.map(s => s._id);
-          }
-        }
-
-        if (deletedDeferredTransactionIds?.length > 0) {
-          await models.transactions.updateMany({
-            'payments.transaction': {
-              $in: deletedDeferredTransactionIds,
-            },
-          }, {
-            $pull: {
-              payments: {
-                transaction: {
-                  $in: deletedDeferredTransactionIds,
-                },
-              },
-            },
-          }, {
-            session,
-          });
-        }
       });
     },
     listTransactions: (match) => {
@@ -303,133 +229,6 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
             session,
           });
 
-      });
-    },
-    listDeferredTransactions: ({ deferredTransactionIds, excludedTransferTransactionId } = {}) => {
-      return mongodbService.transactions(async (model, session) => {
-        return model.aggregate<Transaction.DeferredDocument>([
-          {
-            $unwind: {
-              path: '$deferredSplits',
-              preserveNullAndEmptyArrays: true,
-            },
-          },
-          {
-            $replaceRoot: {
-              newRoot: {
-                $mergeObjects: [
-                  '$$ROOT',
-                  '$deferredSplits',
-                ],
-              },
-            },
-          },
-          {
-            $match: {
-              ...(deferredTransactionIds?.length > 0 ? {
-                _id: {
-                  $in: deferredTransactionIds.map(id => new Types.ObjectId(id)),
-                },
-              } : {}),
-              transactionType: 'deferred',
-              isSettled: false,
-            },
-          },
-          {
-            $lookup: {
-              from: 'transactions',
-              let: {
-                transactionId: '$_id',
-              },
-              pipeline: [
-                ...(excludedTransferTransactionId ? [
-                  {
-                    $match: {
-                      _id: {
-                        $ne: new Types.ObjectId(excludedTransferTransactionId),
-                      },
-                    },
-                  },
-                ] : []),
-                {
-                  $unwind: {
-                    path: '$payments',
-                  },
-                },
-                {
-                  $match: {
-                    $expr: {
-                      $eq: [
-                        '$$transactionId',
-                        '$payments.transaction',
-                      ],
-                    },
-                  },
-                },
-                {
-                  $replaceRoot: {
-                    newRoot: '$payments',
-                  },
-                },
-              ],
-              as: 'repayments',
-            },
-          },
-          {
-            $set: {
-              remainingAmount: {
-                $subtract: [
-                  {
-                    $abs: '$amount',
-                  },
-                  {
-                    $sum: '$repayments.amount',
-                  },
-                ],
-
-              },
-            },
-          },
-          {
-            $unset: [
-              'deferredSplits',
-              'splits',
-              'repayments',
-              'account',
-            ],
-          },
-          ...(deferredTransactionIds?.length > 0 ? [] : [
-            {
-              $match: {
-                remainingAmount: {
-                  $gt: 0,
-                },
-              },
-            },
-          ]),
-          ...populateAggregate('payingAccount', 'accounts'),
-          ...populateAggregate('ownerAccount', 'accounts'),
-          ...populateAggregate('category', 'categories', [
-            {
-              $lookup: {
-                from: 'categories',
-                localField: 'ancestors',
-                foreignField: '_id',
-                as: 'ancestors',
-              },
-            },
-          ]),
-          ...populateAggregate('project', 'projects'),
-          ...populateAggregate('product', 'products'),
-          ...populateAggregate('recipient', 'recipients'),
-          {
-            $sort: {
-              issuedAt: -1,
-            },
-          },
-        ], {
-          session,
-        });
       });
     },
     listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {

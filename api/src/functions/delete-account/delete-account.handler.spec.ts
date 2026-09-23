@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/delete-account/delete-account.handler';
 import { IDeleteAccountService } from '@household/api/functions/delete-account/delete-account.service';
-import { createAccountId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Delete account handler', () => {
   let mockDeleteAccountService: MockBusinessService<IDeleteAccountService>;
@@ -12,7 +12,7 @@ describe('Delete account handler', () => {
     handlerFunction = handler(mockDeleteAccountService);
   });
 
-  const accountId = createAccountId();
+  const accountId = testDataFactory.account.id();
   const handlerEvent = {
     pathParameters: {
       accountId,

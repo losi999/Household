@@ -2,7 +2,7 @@ import { default as handler } from '@household/api/functions/delete-calendar-ent
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { deleteCalendarEntryServiceFactory } from '@household/api/functions/delete-calendar-entry/delete-calendar-entry.service';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
-import { default as pathParameters } from '@household/shared/schemas/calendar-entry-id';
+import { calendarEntryId as pathParameters } from '@household/shared/schemas/calendar-entry';
 import { calendarEntryService } from '@household/shared/dependencies/services/calendar-entry-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';

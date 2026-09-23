@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/get-account/get-account.handler';
 import { IGetAccountService } from '@household/api/functions/get-account/get-account.service';
-import { createAccountId, createAccountResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Get account handler', () => {
   let mockGetAccountService: MockBusinessService<IGetAccountService>;
@@ -12,8 +12,8 @@ describe('Get account handler', () => {
     handlerFunction = handler(mockGetAccountService);
   });
 
-  const accountId = createAccountId();
-  const account = createAccountResponse();
+  const accountId = testDataFactory.account.id();
+  const account = testDataFactory.account.response();
   const handlerEvent = {
     pathParameters: {
       accountId,

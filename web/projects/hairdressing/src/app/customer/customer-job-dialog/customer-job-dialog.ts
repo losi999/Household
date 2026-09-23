@@ -6,16 +6,18 @@ import { DurationStepper } from '@hairdressing/app/shared/duration-stepper/durat
 import { JobPriceCalculator, JobPriceCalculatorValue, requiredPrices } from '@hairdressing/app/shared/job-price-calculator/job-price-calculator';
 import { ClearableInput } from '@household/shared-ui';
 import { toUndefined } from '@household/shared/common/utils';
-import { Customer } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
-export type CustomerJobDialogData = Customer.CustomerId 
+export type CustomerJobDialogData = Api.Customer.CustomerId 
 & {
-  job?: Customer.Job.Response
+  job?: Responses.CustomerJob
 };
-export type CustomerJobDialogResult = Customer.CustomerId 
-& Customer.Job.Request 
+export type CustomerJobDialogResult = Api.Customer.CustomerId 
+& Requests.CustomerJob 
 & {
-  jobName: Customer.Job.Name['name']
+  jobName: Api.Customer.Job.Name['name']
 };
 
 @Component({
@@ -34,7 +36,7 @@ export class CustomerJobDialog {
   private dialogRef = inject<MatDialogRef<CustomerJobDialog, CustomerJobDialogResult>>(MatDialogRef);
   public data = inject<CustomerJobDialogData>(MAT_DIALOG_DATA);
 
-  customerJobModel = signal<Omit<Customer.Job.Request, 'prices' | 'additionalPrice'> & { cost: JobPriceCalculatorValue }>({
+  customerJobModel = signal<Omit<Requests.CustomerJob, 'prices' | 'additionalPrice'> & { cost: JobPriceCalculatorValue }>({
     name: this.data.job?.name ?? '',
     description: this.data.job?.description ?? '',
     duration: this.data.job?.duration ?? 1,

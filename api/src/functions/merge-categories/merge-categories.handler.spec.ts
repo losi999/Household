@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/merge-categories/merge-categories.handler';
 import { IMergeCategoriesService } from '@household/api/functions/merge-categories/merge-categories.service';
-import { createCategoryId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Merge categories handler', () => {
   let mockMergeCategoriesService: MockBusinessService<IMergeCategoriesService>;
@@ -12,8 +12,8 @@ describe('Merge categories handler', () => {
     handlerFunction = handler(mockMergeCategoriesService);
   });
 
-  const categoryId = createCategoryId();
-  const body = [createCategoryId()];
+  const categoryId = testDataFactory.category.id();
+  const body = [testDataFactory.category.id()];
   const handlerEvent = {
     body: JSON.stringify(body),
     pathParameters: {
@@ -47,8 +47,7 @@ describe('Merge categories handler', () => {
       categoryId,
       body,
     });
-    expect(response.statusCode).toEqual(201);
-    expect(JSON.parse(response.body).categoryId).toEqual(categoryId);
-    expect.assertions(3);
+    expect(response.statusCode).toEqual(204);
+    expect.assertions(2);
   });
 });

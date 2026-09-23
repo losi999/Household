@@ -1,24 +1,27 @@
 import { getRecipientId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { Recipient } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
 import { test as baseTest } from '@household/test/fixtures/api.fixture';
 import { expect as baseExpect, APIResponse } from '@playwright/test';
 
 type RecipientApiFixture = {
-  requestGetRecipient(recipientId: Recipient.Id): Promise<APIResponse>;
+  requestGetRecipient(recipientId: Api.Recipient.Id): Promise<APIResponse>;
   requestListRecipients(): Promise<APIResponse>;
-  requestCreateRecipient(recipient: Recipient.Request): Promise<APIResponse>;
-  requestUpdateRecipient(recipientId: Recipient.Id, recipient: Recipient.Request): Promise<APIResponse>;
-  requestDeleteRecipient(recipientId: Recipient.Id): Promise<APIResponse>;
-  requestMergeRecipients(recipientId: Recipient.Id, sourceRecipientIds: Recipient.Id[]): Promise<APIResponse>;
+  requestCreateRecipient(recipient: Requests.Recipient): Promise<APIResponse>;
+  requestUpdateRecipient(recipientId: Api.Recipient.Id, recipient: Requests.Recipient): Promise<APIResponse>;
+  requestDeleteRecipient(recipientId: Api.Recipient.Id): Promise<APIResponse>;
+  requestMergeRecipients(recipientId: Api.Recipient.Id, sourceRecipientIds: Api.Recipient.Id[]): Promise<APIResponse>;
 };
 
 export const test = baseTest.extend<RecipientApiFixture>({
   requestGetRecipient: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestGetRecipient = async (recipientId: Recipient.Id) => {
+    const requestGetRecipient = async (recipientId: Api.Recipient.Id) => {
       return loggedRequest.get(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}`, {
         headers: {
           Authorization: authToken,
@@ -44,7 +47,7 @@ export const test = baseTest.extend<RecipientApiFixture>({
   requestCreateRecipient: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestCreateRecipient = async (recipient: Recipient.Request) => {
+    const requestCreateRecipient = async (recipient: Requests.Recipient) => {
       return loggedRequest.post(`${process.env.BASE_URL}/recipient/v1/recipients`, {
         headers: {
           Authorization: authToken,
@@ -59,7 +62,7 @@ export const test = baseTest.extend<RecipientApiFixture>({
   requestUpdateRecipient: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestUpdateRecipient = async (recipientId: Recipient.Id, recipient: Recipient.Request) => {
+    const requestUpdateRecipient = async (recipientId: Api.Recipient.Id, recipient: Requests.Recipient) => {
       return loggedRequest.put(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}`, {
         headers: {
           Authorization: authToken,
@@ -74,7 +77,7 @@ export const test = baseTest.extend<RecipientApiFixture>({
   requestDeleteRecipient: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeleteRecipient = async (recipientId: Recipient.Id) => {
+    const requestDeleteRecipient = async (recipientId: Api.Recipient.Id) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}`, {
         headers: {
           Authorization: authToken,
@@ -87,7 +90,7 @@ export const test = baseTest.extend<RecipientApiFixture>({
   requestMergeRecipients: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestMergeRecipients = async (recipientId: Recipient.Id, sourceRecipientIds: Recipient.Id[]) => {
+    const requestMergeRecipients = async (recipientId: Api.Recipient.Id, sourceRecipientIds: Api.Recipient.Id[]) => {
       return loggedRequest.post(`${process.env.BASE_URL}/recipient/v1/recipients/${recipientId}/merge`, {
         headers: {
           Authorization: authToken,
@@ -100,7 +103,7 @@ export const test = baseTest.extend<RecipientApiFixture>({
   },
 });
 
-export const validateRecipientResponse = (response: Recipient.Response, document: Recipient.Document) => {
+export const validateRecipientResponse = (response: Responses.Recipient, document: Documents.Recipient) => {
   return new Comparer(response, {
     recipientId: getRecipientId(document),
     name: document?.name,
@@ -108,7 +111,7 @@ export const validateRecipientResponse = (response: Recipient.Response, document
 };
 
 export const expect = baseExpect.extend({
-  async toHaveBeenSavedAsRecipientDocument(req: Recipient.Request, document: Recipient.Document) {
+  async toHaveBeenSavedAsRecipientDocument(req: Requests.Recipient, document: Documents.Recipient) {
     if (!document) {
       return {
         pass: false,
@@ -127,14 +130,14 @@ export const expect = baseExpect.extend({
       message: () => `Expected recipient to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenDeletedFromDatabase(document: Recipient.Document) {
+  toHaveBeenDeletedFromDatabase(document: Documents.Recipient) {
     return {
       pass: !document,
       message: () => `Expected recipient to be deleted from database, but it was found with id ${getRecipientId(document)}`,
     };
   },
-  async toMatchRecipientDocument(received: APIResponse, document: Recipient.Document) {
-    const response = await received.json() as Recipient.Response;
+  async toMatchRecipientDocument(received: APIResponse, document: Documents.Recipient) {
+    const response = await received.json() as Responses.Recipient;
 
     const errors = validateRecipientResponse(response, document).validate();
 
@@ -143,8 +146,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match recipient document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingRecipientDocument(received: APIResponse, document: Recipient.Document) {
-    const response = await received.json() as Recipient.Response[];
+  async toContainMatchingRecipientDocument(received: APIResponse, document: Documents.Recipient) {
+    const response = await received.json() as Responses.Recipient[];
 
     const matchingResponse = response.find(r => r.recipientId === getRecipientId(document));
 

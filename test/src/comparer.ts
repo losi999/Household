@@ -1,14 +1,14 @@
 import { entries, getId } from '@household/shared/common/utils';
 import { Branding } from '@household/shared/types/common';
-import { Internal } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 
 type Expected<T> = {
   [P in keyof T]?: 
-  T[P] extends Internal.Id[] ? (Branding<string, any> | IComparer)[] :
+  T[P] extends Documents.Id[] ? (Branding<string, any> | IComparer)[] :
     T[P] extends object[] ? IComparer[] :
       T[P] extends (infer U)[] ? U[] :
         T[P] extends Branding<string, infer U> ? Branding<string, U> :
-          T[P] extends Internal.Id ? Branding<string, any> : 
+          T[P] extends Documents.Id ? Branding<string, any> : 
             T[P] extends Date ? string :
               T[P] extends object ? IComparer :
                 T[P];

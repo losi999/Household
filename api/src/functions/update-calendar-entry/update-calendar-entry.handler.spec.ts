@@ -54,8 +54,7 @@ describe('Update calendar entry handler', () => {
       body,
       expiresIn,
     });
-    expect(response.statusCode).toEqual(201);
-    expect(JSON.parse(response.body).calendarEntryId).toEqual(calendarEntryId);
-    expect.assertions(3);
+    expect(response.statusCode).toEqual(204);
+    expect.assertions(2);
   });
 });

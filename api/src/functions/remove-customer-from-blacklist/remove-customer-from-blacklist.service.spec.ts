@@ -1,5 +1,5 @@
 import { IRemoveCustomerFromBlacklistService, removeCustomerFromBlacklistServiceFactory } from '@household/api/functions/remove-customer-from-blacklist/remove-customer-from-blacklist.service';
-import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall, validateNthFunctionCall } from '@household/shared/common/unit-testing';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
@@ -17,14 +17,14 @@ describe('Remove customer from blacklist service', () => {
 
   const customerIdA = testDataFactory.customer.id();
   const queriedCustomerA = testDataFactory.customer.document();
-  const documentUpdateA = createDocumentUpdate({
+  const documentUpdateA = testDataFactory.documentUpdate({
     update: {
       $set: {
         update: 'A',
       },
     },
   });
-  const documentUpdateB = createDocumentUpdate({
+  const documentUpdateB = testDataFactory.documentUpdate({
     update: {
       $set: {
         update: 'B',

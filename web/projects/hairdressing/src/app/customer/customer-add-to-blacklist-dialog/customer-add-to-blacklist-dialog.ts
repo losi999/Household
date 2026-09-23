@@ -3,11 +3,11 @@ import { form, required, FormField } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { CustomerAutocompleteInput } from '@hairdressing/app/customer/customer-autocomplete-input/customer-autocomplete-input';
-import { Customer } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
-export type CustomerAddToBlacklistDialogData = Customer.Response;
+export type CustomerAddToBlacklistDialogData = Responses.Customer;
 
-export type CustomerAddToBlacklistDialogResult = Customer.Response[];
+export type CustomerAddToBlacklistDialogResult = Responses.Customer[];
 
 @Component({
   selector: 'hairdressing-customer-add-to-blacklist-dialog',
@@ -24,7 +24,7 @@ export class CustomerAddToBlacklistDialog {
   dialogRef = inject<MatDialogRef<CustomerAddToBlacklistDialog, CustomerAddToBlacklistDialogResult>>(MatDialogRef);
   customer = inject<CustomerAddToBlacklistDialogData>(MAT_DIALOG_DATA);
 
-  blacklistModel = signal<Customer.Response>(null);
+  blacklistModel = signal<Responses.Customer>(null);
 
   blacklistForm = form(this.blacklistModel, (schemaPath) => {
     required(schemaPath, {

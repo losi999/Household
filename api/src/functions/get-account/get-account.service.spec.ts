@@ -1,5 +1,5 @@
 import { IGetAccountService, getAccountServiceFactory } from '@household/api/functions/get-account/get-account.service';
-import { createAccountDocument, createAccountId, createAccountResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
@@ -16,9 +16,9 @@ describe('Get account service', () => {
     service = getAccountServiceFactory(mockAccountService.service, mockAccountDocumentConverter.service);
   });
 
-  const accountId = createAccountId();
-  const queriedDocument = createAccountDocument();
-  const convertedResponse = createAccountResponse();
+  const accountId = testDataFactory.account.id();
+  const queriedDocument = testDataFactory.account.document();
+  const convertedResponse = testDataFactory.account.response();
 
   it('should return account', async () => {
     mockAccountService.functions.getAccountById.mockResolvedValue(queriedDocument);

@@ -1,30 +1,33 @@
 import { hasPriceId } from '@household/shared/common/type-guards';
 import { getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { Customer, Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
 import { APIResponse } from '@playwright/test';
 
 type CustomerApiFixture = {
-  requestCreateCustomer(customer: Customer.Request): Promise<APIResponse>;
-  requestUpdateCustomer(customerId: Customer.Id, customer: Customer.Request): Promise<APIResponse>;
-  requestDeleteCustomer(customerId: Customer.Id): Promise<APIResponse>;
-  requestGetCustomer(customerId: Customer.Id): Promise<APIResponse>;
+  requestCreateCustomer(customer: Requests.Customer): Promise<APIResponse>;
+  requestUpdateCustomer(customerId: Api.Customer.Id, customer: Requests.Customer): Promise<APIResponse>;
+  requestDeleteCustomer(customerId: Api.Customer.Id): Promise<APIResponse>;
+  requestGetCustomer(customerId: Api.Customer.Id): Promise<APIResponse>;
   requestListCustomers(): Promise<APIResponse>;
-  requestListCustomerWorks(customerId: Customer.Id): Promise<APIResponse>;
-  requestCreateCustomerJob(customerId: Customer.Id, job: Customer.Job.Request): Promise<APIResponse>;
-  requestUpdateCustomerJob(customerId: Customer.Id, jobName: Customer.Job.Name['name'], job: Customer.Job.Request): Promise<APIResponse>;
-  requestDeleteCustomerJob(customerId: Customer.Id, jobName: Customer.Job.Name['name']): Promise<APIResponse>;
-  requestAddCustomerToBlacklist(body: Customer.Id[]): Promise<APIResponse>;
-  requestRemoveCustomerFromBlacklist(body: Customer.Id[]): Promise<APIResponse>;
+  requestListCustomerWorks(customerId: Api.Customer.Id): Promise<APIResponse>;
+  requestCreateCustomerJob(customerId: Api.Customer.Id, job: Requests.CustomerJob): Promise<APIResponse>;
+  requestUpdateCustomerJob(customerId: Api.Customer.Id, jobName: Api.Customer.Job.Name['name'], job: Requests.CustomerJob): Promise<APIResponse>;
+  requestDeleteCustomerJob(customerId: Api.Customer.Id, jobName: Api.Customer.Job.Name['name']): Promise<APIResponse>;
+  requestAddCustomerToBlacklist(body: Api.Customer.Id[]): Promise<APIResponse>;
+  requestRemoveCustomerFromBlacklist(body: Api.Customer.Id[]): Promise<APIResponse>;
 };
 
 export const test = baseTest.extend<CustomerApiFixture>({
   requestCreateCustomer: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestCreateCustomer = async (customer: Customer.Request) => {
+    const requestCreateCustomer = async (customer: Requests.Customer) => {
       return loggedRequest.post(`${process.env.BASE_URL}/customer/v1/customers`, {
         headers: {
           Authorization: authToken,
@@ -39,7 +42,7 @@ export const test = baseTest.extend<CustomerApiFixture>({
   requestUpdateCustomer: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestUpdateCustomer = async (customerId: Customer.Id, customer: Customer.Request) => {
+    const requestUpdateCustomer = async (customerId: Api.Customer.Id, customer: Requests.Customer) => {
       return loggedRequest.put(`${process.env.BASE_URL}/customer/v1/customers/${customerId}`, {
         headers: {
           Authorization: authToken,
@@ -54,7 +57,7 @@ export const test = baseTest.extend<CustomerApiFixture>({
   requestDeleteCustomer: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeleteCustomer = async (customerId: Customer.Id) => {
+    const requestDeleteCustomer = async (customerId: Api.Customer.Id) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/customer/v1/customers/${customerId}`, {
         headers: {
           Authorization: authToken,
@@ -67,7 +70,7 @@ export const test = baseTest.extend<CustomerApiFixture>({
   requestGetCustomer: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestGetCustomer = async (customerId: Customer.Id) => {
+    const requestGetCustomer = async (customerId: Api.Customer.Id) => {
       return loggedRequest.get(`${process.env.BASE_URL}/customer/v1/customers/${customerId}`, {
         headers: {
           Authorization: authToken,
@@ -93,7 +96,7 @@ export const test = baseTest.extend<CustomerApiFixture>({
   requestListCustomerWorks: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestListCustomerWorks = async (customerId: Customer.Id) => {
+    const requestListCustomerWorks = async (customerId: Api.Customer.Id) => {
       return loggedRequest.get(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/works`, {
         headers: {
           Authorization: authToken,
@@ -106,7 +109,7 @@ export const test = baseTest.extend<CustomerApiFixture>({
   requestCreateCustomerJob: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestCreateCustomerJob = async (customerId: Customer.Id, job: Customer.Job.Request) => {
+    const requestCreateCustomerJob = async (customerId: Api.Customer.Id, job: Requests.CustomerJob) => {
       return loggedRequest.post(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/jobs`, {
         headers: {
           Authorization: authToken,
@@ -121,7 +124,7 @@ export const test = baseTest.extend<CustomerApiFixture>({
   requestUpdateCustomerJob: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestUpdateCustomerJob = async (customerId: Customer.Id, jobName: Customer.Job.Name['name'], job: Customer.Job.Request) => {
+    const requestUpdateCustomerJob = async (customerId: Api.Customer.Id, jobName: Api.Customer.Job.Name['name'], job: Requests.CustomerJob) => {
       return loggedRequest.put(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/jobs/${jobName}`, {
         headers: {
           Authorization: authToken,
@@ -136,7 +139,7 @@ export const test = baseTest.extend<CustomerApiFixture>({
   requestDeleteCustomerJob: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeleteCustomerJob = async (customerId: Customer.Id, jobName: Customer.Job.Name['name']) => {
+    const requestDeleteCustomerJob = async (customerId: Api.Customer.Id, jobName: Api.Customer.Job.Name['name']) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/customer/v1/customers/${customerId}/jobs/${jobName}`, {
         headers: {
           Authorization: authToken,
@@ -150,7 +153,7 @@ export const test = baseTest.extend<CustomerApiFixture>({
   requestAddCustomerToBlacklist: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestAddCustomerToBlacklist = async (body: Customer.Id[]) => {
+    const requestAddCustomerToBlacklist = async (body: Api.Customer.Id[]) => {
       return loggedRequest.put(`${process.env.BASE_URL}/customer/v1/customers/blacklist`, {
         headers: {
           Authorization: authToken,
@@ -165,7 +168,7 @@ export const test = baseTest.extend<CustomerApiFixture>({
   requestRemoveCustomerFromBlacklist: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestRemoveCustomerFromBlacklist = async (body: Customer.Id[]) => {
+    const requestRemoveCustomerFromBlacklist = async (body: Api.Customer.Id[]) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/customer/v1/customers/blacklist`, {
         headers: {
           Authorization: authToken,
@@ -179,7 +182,7 @@ export const test = baseTest.extend<CustomerApiFixture>({
   },
 });
 
-export const validateCustomerJobPriceResponse = (priceResponses: (Price.Response & Customer.Job.Quantity)[], priceDocuments: Customer.Job.Document['prices']) => {
+export const validateCustomerJobPriceResponse = (priceResponses: (Responses.Price & Api.Customer.Job.Quantity)[], priceDocuments: Documents.CustomerJob['prices']) => {
   return priceResponses.map((priceResponse, index) => {
     const priceDocument = priceDocuments[index];
 
@@ -193,7 +196,7 @@ export const validateCustomerJobPriceResponse = (priceResponses: (Price.Response
   });
 };
 
-const validateCustomerResponseBase = (response: Customer.ResponseBase, document: Customer.Document) => {
+const validateCustomerResponseBase = (response: Responses.CustomerLean, document: Documents.Customer) => {
   return new Comparer(response, {
     customerId: getCustomerId(document),
     name: document.name,
@@ -203,7 +206,7 @@ const validateCustomerResponseBase = (response: Customer.ResponseBase, document:
   });
 };
 
-export const validateCustomerResponse = (response: Customer.Response, document: Customer.Document) => {
+export const validateCustomerResponse = (response: Responses.Customer, document: Documents.Customer) => {
   return new Comparer(response, [
     validateCustomerResponseBase(response, document),
     {
@@ -229,7 +232,7 @@ export const validateCustomerResponse = (response: Customer.Response, document: 
   ]);
 };
 
-const compareCustomerBaseProperties = (actual: Customer.Document, expected: Customer.Document | Customer.Request) => {
+const compareCustomerBaseProperties = (actual: Documents.Customer, expected: Documents.Customer | Requests.Customer) => {
   return new Comparer(actual, {
     name: expected.name,
     description: expected.description,
@@ -238,7 +241,7 @@ const compareCustomerBaseProperties = (actual: Customer.Document, expected: Cust
   });
 };
 
-const compareCustomerBlacklists = (actual: Customer.Document, expectedBlacklistedCustomers: Customer.Document[]) => {
+const compareCustomerBlacklists = (actual: Documents.Customer, expectedBlacklistedCustomers: Documents.Customer[]) => {
   return new Comparer(actual, {
     blacklistedCustomers: expectedBlacklistedCustomers.map((blacklistedCustomer) => {
       return getCustomerId(blacklistedCustomer);
@@ -246,7 +249,7 @@ const compareCustomerBlacklists = (actual: Customer.Document, expectedBlackliste
   });
 };
 
-const compareCustomerJobs = (actual: Customer.Document, expectedCustomerJobs: Customer.Job.Document[], request?: Customer.Job.Request, jobName?: Customer.Job.Name['name']) => { 
+const compareCustomerJobs = (actual: Documents.Customer, expectedCustomerJobs: Documents.CustomerJob[], request?: Requests.CustomerJob, jobName?: Api.Customer.Job.Name['name']) => { 
   return new Comparer(actual, {
     jobs: actual.jobs.map((actualJob, index) => {
       const expectedJob = expectedCustomerJobs[index] && expectedCustomerJobs[index].name !== jobName ? expectedCustomerJobs[index] : request;
@@ -270,7 +273,7 @@ const compareCustomerJobs = (actual: Customer.Document, expectedCustomerJobs: Cu
 };
 
 export const expect = baseExpect.extend({
-  toHaveBeenSavedAsCustomerDocument(req: Customer.Request, currentDocument: Customer.Document, originalDocument?: Customer.Document) {
+  toHaveBeenSavedAsCustomerDocument(req: Requests.Customer, currentDocument: Documents.Customer, originalDocument?: Documents.Customer) {
     if (!currentDocument) {
       return {
         pass: false,
@@ -295,14 +298,14 @@ export const expect = baseExpect.extend({
     };
   },
 
-  toHaveBeenDeletedFromDatabase(document: Customer.Document) {
+  toHaveBeenDeletedFromDatabase(document: Documents.Customer) {
     return {
       pass: !document,
       message: () => `Expected customer to be deleted from database, but it was found with id ${getCustomerId(document)}`,
     };
   },
-  async toMatchCustomerDocument(received: APIResponse, document: Customer.Document) {
-    const response = await received.json() as Customer.Response;
+  async toMatchCustomerDocument(received: APIResponse, document: Documents.Customer) {
+    const response = await received.json() as Responses.Customer;
   
     const errors = validateCustomerResponse(response, document).validate();
   
@@ -311,8 +314,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match customer document, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingCustomerDocument(received: APIResponse, document: Customer.Document) {
-    const response = await received.json() as Customer.Response[];
+  async toContainMatchingCustomerDocument(received: APIResponse, document: Documents.Customer) {
+    const response = await received.json() as Responses.Customer[];
   
     const matchingResponse = response.find(r => r.customerId === getCustomerId(document));
   
@@ -330,7 +333,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match customer document, but it did not:\n${errors.join('\n')}`,
     };
   }, 
-  toHaveBeenRenamed(originalDocument: Customer.Document, currentDocument: Customer.Document) {
+  toHaveBeenRenamed(originalDocument: Documents.Customer, currentDocument: Documents.Customer) {
     const comparer = new Comparer(currentDocument, [
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
@@ -348,7 +351,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected customer to be renamed, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenArchived(originalDocument: Customer.Document, currentDocument: Customer.Document) {
+  toHaveBeenArchived(originalDocument: Documents.Customer, currentDocument: Documents.Customer) {
     const comparer = new Comparer(currentDocument, [
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
@@ -365,7 +368,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected customer to be archived, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenActivated(originalDocument: Customer.Document, currentDocument: Customer.Document) {
+  toHaveBeenActivated(originalDocument: Documents.Customer, currentDocument: Documents.Customer) {
     const comparer = new Comparer(currentDocument, [
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
@@ -382,7 +385,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected customer to be activated, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenAddedToBlacklist(blacklistedCustomer: Customer.Document, originalDocument: Customer.Document, currentDocument: Customer.Document) {
+  toHaveBeenAddedToBlacklist(blacklistedCustomer: Documents.Customer, originalDocument: Documents.Customer, currentDocument: Documents.Customer) {
     const comparer = new Comparer(currentDocument, [
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, [
@@ -402,7 +405,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected customer to be added to blacklist, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenRemovedFromBlacklist(blacklistedCustomer: Customer.Document, originalDocument: Customer.Document, currentDocument: Customer.Document) {
+  toHaveBeenRemovedFromBlacklist(blacklistedCustomer: Documents.Customer, originalDocument: Documents.Customer, currentDocument: Documents.Customer) {
     const comparer = new Comparer(currentDocument, [
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers.filter(c => getCustomerId(c) !== getCustomerId(blacklistedCustomer))),
@@ -419,7 +422,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected customer to be removed from blacklist, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenAddedToCustomerJobs(req: Customer.Job.Request, originalDocument: Customer.Document, currentDocument: Customer.Document) {
+  toHaveBeenAddedToCustomerJobs(req: Requests.CustomerJob, originalDocument: Documents.Customer, currentDocument: Documents.Customer) {
     const comparer = new Comparer(currentDocument, [
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
@@ -436,7 +439,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected customer job to be added, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenRemovedFromCustomerJobs(jobName: Customer.Job.Request['name'], originalDocument: Customer.Document, currentDocument: Customer.Document) {
+  toHaveBeenRemovedFromCustomerJobs(jobName: Requests.CustomerJob['name'], originalDocument: Documents.Customer, currentDocument: Documents.Customer) {
     const comparer = new Comparer(currentDocument, [
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),
@@ -453,7 +456,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected customer job to be removed, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenUpdatedInCustomerJobs(req: Customer.Job.Request, jobName: Customer.Job.Request['name'], originalDocument: Customer.Document, currentDocument: Customer.Document) {
+  toHaveBeenUpdatedInCustomerJobs(req: Requests.CustomerJob, jobName: Requests.CustomerJob['name'], originalDocument: Documents.Customer, currentDocument: Documents.Customer) {
     const comparer = new Comparer(currentDocument, [
       compareCustomerBaseProperties(currentDocument, originalDocument),
       compareCustomerBlacklists(currentDocument, originalDocument.blacklistedCustomers),

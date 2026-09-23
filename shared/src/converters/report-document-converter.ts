@@ -1,9 +1,10 @@
-import { Report, Transaction } from '@household/shared/types/types';
 import { PipelineStage, Types } from 'mongoose';
 import { Filter, FilterOperators } from 'mongodb';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IReportDocumentConverter {
-  createFilterQuery(body: Report.Request): PipelineStage.Match;
+  createFilterQuery(body: Requests.Report): PipelineStage.Match;
 }
 
 export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
@@ -15,11 +16,11 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
         },
       };
 
-      const includedDateQueries: Filter<Transaction.Document> = {
+      const includedDateQueries: Filter<Documents.Transaction> = {
         $or: [],
       };
 
-      const excludedDateQueries: Filter<Transaction.Document>[] = [];
+      const excludedDateQueries: Filter<Documents.Transaction>[] = [];
 
       body.forEach((filter) => {
         switch(filter.filterType) {
@@ -36,7 +37,7 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
           } break;
           case 'issuedAt': {
             if(filter.include) {
-              const query: Filter<Transaction.Document> = {
+              const query: Filter<Documents.Transaction> = {
                 issuedAt: {},
               };
               if (filter.from) {
@@ -49,7 +50,7 @@ export const reportDocumentConverterFactory = (): IReportDocumentConverter => {
 
               includedDateQueries.$or.push(query);
             } else {
-              const query: Filter<Transaction.Document> = {
+              const query: Filter<Documents.Transaction> = {
                 $or: [],
               };
 

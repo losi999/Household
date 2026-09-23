@@ -1,6 +1,7 @@
 import { entries, getAccountId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Account } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
@@ -14,8 +15,8 @@ const permissionMap = allowUsers('editor') ;
 const test = mergeTests(accountApiTest, accountDbTest);
 
 test.describe('PUT /account/v1/accounts/{accountId}', () => {
-  let request: Account.Request;
-  let accountDocument: Account.Document;
+  let request: Requests.Account;
+  let accountDocument: Documents.Account;
 
   test.beforeEach(async () => {
     request = accountDataFactory.request();
@@ -47,10 +48,8 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
         test('should update account', async ({ requestUpdateAccount, saveAccount, findAccountById }) => {
           await saveAccount(accountDocument);
           const res = await requestUpdateAccount(getAccountId(accountDocument), request);
-          expect(res).toBeCreatedResponse();
-          
-          const { accountId } = (await res.json()) as Account.AccountId;
-          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
+          expect(res).toBeNoContentResponse();
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(getAccountId(accountDocument)));
         });
 
         test('should update account with an existing name for a different owner', async ({ requestUpdateAccount, saveAccounts, findAccountById }) => {
@@ -61,10 +60,8 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
 
           await saveAccounts(accountDocument, sameNameAccountDocument);
           const res = await requestUpdateAccount(getAccountId(accountDocument), request);
-          expect(res).toBeCreatedResponse();
-
-          const { accountId } = (await res.json()) as Account.AccountId;
-          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
+          expect(res).toBeNoContentResponse();
+          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(getAccountId(accountDocument)));
         });
         test.describe('should return error', () => {
           test.describe('if body', () => {

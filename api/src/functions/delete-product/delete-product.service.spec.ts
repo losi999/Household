@@ -1,5 +1,5 @@
 import { IDeleteProductService, deleteProductServiceFactory } from '@household/api/functions/delete-product/delete-product.service';
-import { createProductId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IProductService } from '@household/shared/services/product-service';
 
@@ -13,7 +13,7 @@ describe('Delete product service', () => {
     service = deleteProductServiceFactory(mockProductService.service);
   });
 
-  const productId = createProductId();
+  const productId = testDataFactory.product.id();
 
   it('should return if document is deleted', async () => {
     mockProductService.functions.deleteProduct.mockResolvedValue(undefined);

@@ -1,11 +1,9 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { IProjectService } from '@household/shared/services/project-service';
-import { Project } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
 
 export interface IDeleteProjectService {
-  (ctx: {
-    projectId: Project.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Project.ProjectId): Promise<unknown>;
 }
 
 export const deleteProjectServiceFactory = (

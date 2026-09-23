@@ -1,12 +1,12 @@
-import { errorResponse, okResponse } from '@household/api/common/response-factory';
+import { createdResponse, errorResponse } from '@household/api/common/response-factory';
 import { ICreateUploadUrlService } from '@household/api/functions/create-upload-url/create-upload-url.service';
 import { getExpiresInHeader } from '@household/shared/common/aws-utils';
-import { File } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (createUploadUrlService: ICreateUploadUrlService): AWSLambda.APIGatewayProxyHandler =>
   async (event) => {
     const body = JSON.parse(event.body);
-    let response: File.Url & File.FileId;
+    let response: Responses.FileUploadUrl;
 
     try {
       response = await createUploadUrlService({
@@ -18,5 +18,5 @@ export default (createUploadUrlService: ICreateUploadUrlService): AWSLambda.APIG
       return errorResponse(error);
     }
 
-    return okResponse(response);
+    return createdResponse(response);
   };

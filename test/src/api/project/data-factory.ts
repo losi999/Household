@@ -1,30 +1,17 @@
 import { projectDocumentConverter } from '@household/shared/dependencies/converters/project-document-converter';
 import { DataFactoryFunction } from '@household/shared/types/common';
-import { Project } from '@household/shared/types/types';
-import { faker } from '@faker-js/faker';
-import { createId } from '@household/test/utils';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 export const projectDataFactory = (() => {
-  const createProjectRequest: DataFactoryFunction<Project.Request> = (req) => {
-    return {
-      name: `${faker.commerce.department()} ${faker.string.uuid()}`,
-      description: faker.word.words({
-        count: {
-          min: 1,
-          max: 5,
-        },
-      }),
-      ...req,
-    };
-  };
-
-  const createProjectDocument: DataFactoryFunction<Project.Request, Project.Document> = (req) => {
-    return projectDocumentConverter.create(createProjectRequest(req), Number(process.env.EXPIRES_IN), true);
+  const createProjectDocument: DataFactoryFunction<Requests.Project, Documents.Project> = (req) => {
+    return projectDocumentConverter.create(testDataFactory.project.request(req), Number(process.env.EXPIRES_IN), true);
   };
 
   return {
-    id: (createId<Project.Id>),
-    request: createProjectRequest,
+    id: testDataFactory.project.id,
+    request: testDataFactory.project.request,
     document: createProjectDocument,
   };
 })();

@@ -1,8 +1,8 @@
 import { CalendarDayType } from '@household/shared/enums';
-import { Calendar } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
-export const calendarDaySchema = new Schema<Calendar.Day.Document>({
+export const calendarDaySchema = new Schema<Documents.CalendarDay>({
   day: {
     type: String,
     required: true,

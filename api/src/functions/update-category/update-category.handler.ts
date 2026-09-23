@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IUpdateCategoryService } from '@household/api/functions/update-category/update-category.service';
 import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
@@ -18,8 +18,6 @@ export default (updateCategory: IUpdateCategoryService): AWSLambda.APIGatewayPro
       return errorResponse(error);
     }
 
-    return createdResponse({
-      categoryId,
-    });
+    return noContentResponse();
   };
 };

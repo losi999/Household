@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/delete-file/delete-file.handler';
 import { IDeleteFileService } from '@household/api/functions/delete-file/delete-file.service';
-import { createFileId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Delete file handler', () => {
   let mockDeleteFileService: MockBusinessService<IDeleteFileService>;
@@ -12,7 +12,7 @@ describe('Delete file handler', () => {
     handlerFunction = handler(mockDeleteFileService);
   });
 
-  const fileId = createFileId();
+  const fileId = testDataFactory.file.id();
   const handlerEvent = {
     pathParameters: {
       fileId,

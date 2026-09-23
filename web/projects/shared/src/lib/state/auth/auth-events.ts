@@ -1,19 +1,21 @@
 import { UserType } from '@household/shared/enums';
-import { Auth, User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 import { type } from '@ngrx/signals';
 import { eventGroup } from '@ngrx/signals/events';
 
 export const authEvents = eventGroup({
   source: 'Auth',
   events: {
-    logInInitiated: type<Auth.Login.Request & {
+    logInInitiated: type<Requests.Login & {
       requiredUserType?: UserType;
     }>(),
-    tokensRetrieved: type<Auth.Login.Response>(),
-    logInCompleted: type<Auth.Login.Response & {
+    tokensRetrieved: type<Responses.Login>(),
+    logInCompleted: type<Responses.Login & {
       userTypes: UserType[]
     }>(),
-    confirmUserInitiated: type<Auth.ConfirmUser.Request & User.Email>(),
+    confirmUserInitiated: type<Requests.ConfirmUser & Api.User.Email>(),
     confirmUserCompleted: type<void>(),
     logOut: type<void>(),
   },

@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/merge-products/merge-products.handler';
 import { IMergeProductsService } from '@household/api/functions/merge-products/merge-products.service';
-import { createProductId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Merge products handler', () => {
   let mockMergeProductsService: MockBusinessService<IMergeProductsService>;
@@ -12,8 +12,8 @@ describe('Merge products handler', () => {
     handlerFunction = handler(mockMergeProductsService);
   });
 
-  const productId = createProductId();
-  const body = [createProductId()];
+  const productId = testDataFactory.product.id();
+  const body = [testDataFactory.product.id()];
   const handlerEvent = {
     body: JSON.stringify(body),
     pathParameters: {
@@ -47,8 +47,7 @@ describe('Merge products handler', () => {
       productId,
       body,
     });
-    expect(response.statusCode).toEqual(201);
-    expect(JSON.parse(response.body).productId).toEqual(productId);
-    expect.assertions(3);
+    expect(response.statusCode).toEqual(204);
+    expect.assertions(2);
   });
 });

@@ -1,6 +1,5 @@
 import { entries, getCustomerId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Customer, Price } from '@household/shared/types/types';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
@@ -8,6 +7,8 @@ import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 const expect = mergeExpects(customerApiExpect, apiExpect);
 
@@ -16,10 +17,10 @@ const permissionMap = allowUsers('hairdresser');
 const test = mergeTests(customerApiTest, priceDbTest, customerDbTest);
 
 test.describe('PUT /customer/v1/customers/{customerId}', () => {
-  let request: Customer.Request;
-  let customerDocument: Customer.Document;
-  let blacklistedCustomer: Customer.Document;
-  let priceDocument: Price.Document;
+  let request: Requests.Customer;
+  let customerDocument: Documents.Customer;
+  let blacklistedCustomer: Documents.Customer;
+  let priceDocument: Documents.Price;
 
   test.beforeEach(async () => {
     request = customerDataFactory.request();
@@ -66,10 +67,8 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
           await saveCustomers(customerDocument, blacklistedCustomer);
           await savePrice(priceDocument);
           const res = await requestUpdateCustomer(getCustomerId(customerDocument), request);
-          expect(res).toBeCreatedResponse();
-
-          const { customerId } = (await res.json()) as Customer.CustomerId;
-          expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(customerId), customerDocument);
+          expect(res).toBeNoContentResponse();
+          expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(getCustomerId(customerDocument)), customerDocument);
         });
 
         test.describe('should return error', () => {

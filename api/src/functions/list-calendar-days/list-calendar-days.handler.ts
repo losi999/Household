@@ -1,13 +1,13 @@
 
 import { errorResponse, okResponse } from '@household/api/common/response-factory';
 import { IListCalendarDaysService } from '@household/api/functions/list-calendar-days/list-calendar-days.service';
-import { Calendar } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (listCalendarDays: IListCalendarDaysService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const { dateFrom, dateTo } = event.queryStringParameters;
 
-    let days: Calendar.Day.Response[];
+    let days: Responses.CalendarDay[];
     try {
       days = await listCalendarDays({
         dateFrom,

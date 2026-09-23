@@ -1,11 +1,11 @@
 import { okResponse } from '@household/api/common/response-factory';
 import { IRefreshTokenService } from '@household/api/functions/refresh-token/refresh-token.service';
-import { Auth } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export default (refreshToken: IRefreshTokenService): AWSLambda.APIGatewayProxyHandler => {
   return async (event) => {
     const body = JSON.parse(event.body);
-    let loginResponse: Auth.RefreshToken.Response;
+    let loginResponse: Responses.RefreshToken;
     try {
       loginResponse = await refreshToken({
         body,

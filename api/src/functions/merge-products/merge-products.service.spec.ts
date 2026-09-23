@@ -1,5 +1,5 @@
 import { IMergeProductsService, mergeProductsServiceFactory } from '@household/api/functions/merge-products/merge-products.service';
-import { createCategoryDocument, createProductDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProductId } from '@household/shared/common/utils';
 import { IProductService } from '@household/shared/services/product-service';
@@ -14,11 +14,11 @@ describe('Merge product service', () => {
     service = mergeProductsServiceFactory(mockProductService.service);
   });
 
-  const categoryDocument = createCategoryDocument();
-  const targetProductDocument = createProductDocument({
+  const categoryDocument = testDataFactory.category.document();
+  const targetProductDocument = testDataFactory.product.document({
     category: categoryDocument,
   });
-  const sourceProductDocument = createProductDocument({
+  const sourceProductDocument = testDataFactory.product.document({
     category: categoryDocument,
   });
   const sourceProductId = getProductId(sourceProductDocument);
@@ -93,8 +93,8 @@ describe('Merge product service', () => {
     });
 
     it('if products belong to different categories', async () => {
-      const differentCategoryProductdocument = createProductDocument({
-        category: createCategoryDocument(),
+      const differentCategoryProductdocument = testDataFactory.product.document({
+        category: testDataFactory.category.document(),
       });
       mockProductService.functions.listProductsByIds.mockResolvedValue([
         targetProductDocument,

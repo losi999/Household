@@ -1,5 +1,5 @@
 import { IListRecipientsService, listRecipientsServiceFactory } from '@household/api/functions/list-recipients/list-recipients.service';
-import { createRecipientDocument, createRecipientResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { IRecipientService } from '@household/shared/services/recipient-service';
@@ -16,8 +16,8 @@ describe('List recipients service', () => {
     service = listRecipientsServiceFactory(mockRecipientService.service, mockRecipientDocumentConverter.service);
   });
 
-  const queriedDocument = createRecipientDocument();
-  const convertedResponse = createRecipientResponse();
+  const queriedDocument = testDataFactory.recipient.document();
+  const convertedResponse = testDataFactory.recipient.response();
 
   it('should return documents', async () => {
     mockRecipientService.functions.listRecipients.mockResolvedValue([queriedDocument]);

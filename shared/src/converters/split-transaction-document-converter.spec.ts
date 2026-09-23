@@ -1,5 +1,5 @@
-import { createAccountDocument, createAccountResponse, createCategoryDocument, createCategoryResponse, createProjectDocument, createProjectResponse, createRecipientDocument, createRecipientResponse, createSplitTransactionDocument, createSplitTransactionRequest, createSplitTransactionResponse, createProductDocument, createSplitResponseItem, createProductResponse, createSplitRequestItem, createSplitDocumentItem, createDeferredTransactionDocument, createDeferredTransactionResponse, createLoanRequestItem } from '@household/shared/common/test-data-factory';
-import { addSeconds, getTransactionId, getProjectId, getCategoryId, toDictionary, getAccountId, getProductId } from '@household/shared/common/utils';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { addSeconds, getTransactionId, getProjectId, getCategoryId, toDictionary, getAccountId, getProductId, createDate } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
@@ -18,17 +18,16 @@ describe('Split transaction document converter', () => {
   let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
   let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
   let mockDeferredDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
-  const now = new Date();
 
   beforeEach(() => {
-    mockAccountDocumentConverter = createMockService('toResponse');
+    mockAccountDocumentConverter = createMockService('toResponseLean');
     mockProjectDocumentConverter = createMockService('toResponse');
     mockRecipientDocumentConverter = createMockService('toResponse');
     mockCategoryDocumentConverter = createMockService('toResponse');
     mockProductDocumentConverter = createMockService('toResponse');
     mockDeferredDocumentConverter = createMockService('create', 'toResponse');
 
-    vi.useFakeTimers().setSystemTime(now);
+    vi.useFakeTimers().setSystemTime(new Date());
     converter = splitTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockDeferredDocumentConverter.service);
   });
 
@@ -36,98 +35,78 @@ describe('Split transaction document converter', () => {
     vi.useRealTimers();
   });
 
-  const description = 'bevásárlás';
   const expiresIn = 3600;
-  const quantity = 100;
-  const invoiceNumber = '2022asdf';
-  const billingStartDate = '2022-03-01';
-  const billingEndDate = '2022-03-10';
 
-  const account = createAccountDocument();
-  const loanAccount = createAccountDocument();
-  const project = createProjectDocument();
-  const recipient = createRecipientDocument();
-  const regularCategory = createCategoryDocument();
-  const invoiceCategory = createCategoryDocument({
+  const account = testDataFactory.account.document();
+  const loanAccount = testDataFactory.account.document();
+  const project = testDataFactory.project.document();
+  const recipient = testDataFactory.recipient.document();
+  const regularCategory = testDataFactory.category.document({
+    categoryType: CategoryType.Regular,
+  });
+  const invoiceCategory = testDataFactory.category.document({
     categoryType: CategoryType.Invoice,
   });
-  const inventoryCategory = createCategoryDocument({
+  const inventoryCategory = testDataFactory.category.document({
     categoryType: CategoryType.Inventory,
   });
-  const product = createProductDocument();
+  const product = testDataFactory.product.document();
   const productId = getProductId(product);
 
-  const accountResponse = createAccountResponse();
-  const categoryResponse = createCategoryResponse();
-  const projectResponse = createProjectResponse();
-  const recipientResponse = createRecipientResponse();
-  const productResponse = createProductResponse();
-
-  const body = createSplitTransactionRequest({
-    accountId: getAccountId(account),
-    description,
-    issuedAt: now.toISOString(),
-    loans: [
-      createLoanRequestItem({
-        description,
-        categoryId: getCategoryId(regularCategory),
-        projectId: getProjectId(project),
-        loanAccountId: getAccountId(loanAccount),
-      }),
-    ],
-    splits: [
-      createSplitRequestItem({
-        description,
-        categoryId: getCategoryId(regularCategory),
-        projectId: getProjectId(project),
-      }),
-      createSplitRequestItem({
-        description,
-        categoryId: getCategoryId(inventoryCategory),
-        projectId: getProjectId(project),
-        quantity,
-        productId,
-      }),
-      createSplitRequestItem({
-        description,
-        categoryId: getCategoryId(invoiceCategory),
-        projectId: getProjectId(project),
-        invoiceNumber,
-        billingEndDate,
-        billingStartDate,
-      }),
-    ],
-  });
-
-  const deferredTransaction = createDeferredTransactionDocument({
-    _id: undefined,
-  });
-  const deferredTransactionResponse = createDeferredTransactionResponse();
-
-  const queriedDocument = createSplitTransactionDocument({
-    account,
-    recipient,
-    description,
-    issuedAt: now,
-    createdAt: now,
-    updatedAt: now,
-    splits: [
-      createSplitDocumentItem({
-        category: regularCategory,
-        description,
-        project,
-        product,
-        quantity,
-        invoiceNumber,
-        billingEndDate: new Date(billingEndDate),
-        billingStartDate: new Date(billingStartDate),
-      }),
-    ],
-    deferredSplits: [deferredTransaction],
-  });
+  const accountResponse = testDataFactory.account.response();
+  const categoryResponse = testDataFactory.category.response();
+  const projectResponse = testDataFactory.project.response();
+  const recipientResponse = testDataFactory.recipient.response();
+  const productResponse = testDataFactory.product.response();
 
   describe('create', () => {
     it('should return document', () => {
+      const body = testDataFactory.transaction.request.split({
+        accountId: getAccountId(account),
+        loans: [
+          {
+            categoryId: getCategoryId(regularCategory),
+            projectId: getProjectId(project),
+            loanAccountId: getAccountId(loanAccount),
+          },
+        ],
+        splits: [
+          {
+            categoryId: getCategoryId(regularCategory),
+            projectId: getProjectId(project),
+          },
+          {
+            categoryId: getCategoryId(inventoryCategory),
+            projectId: getProjectId(project),
+            productId,
+          },
+          {
+            categoryId: getCategoryId(invoiceCategory),
+            projectId: getProjectId(project),
+          },
+        ],
+      });
+
+      const { description, issuedAt, loans: [loan], splits: [
+        regularSplit,
+        inventorySplit,
+        invoiceSplit,
+      ] } = body;
+
+      const deferredTransaction = testDataFactory.transaction.document.deferred({
+        category: regularCategory,
+        project,
+        payingAccount: account,
+        ownerAccount: loanAccount,
+        amount: loan.amount,
+        description: loan.description,
+        quantity: undefined,
+        invoiceNumber: undefined,
+        billingStartDate: undefined,
+        billingEndDate: undefined,
+        product: undefined,
+      });
+
       mockDeferredDocumentConverter.functions.create.mockReturnValue(deferredTransaction);
 
       const result = converter.create({
@@ -142,51 +121,65 @@ describe('Split transaction document converter', () => {
         products: toDictionary([product], '_id'),
         recipient,
       }, undefined);
-      expect(result).toEqual(createSplitTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.split({
         account,
         recipient,
         description,
-        issuedAt: now,
+        issuedAt: createDate(issuedAt),
         expiresAt: undefined,
         _id: undefined,
-        splits: [
-          createSplitDocumentItem({
-            category: regularCategory,
-            description,
-            project,
-            product: undefined,
-            quantity: undefined,
-            invoiceNumber: undefined,
-            billingEndDate: undefined,
-            billingStartDate: undefined,
-          }),
-          createSplitDocumentItem({
-            category: inventoryCategory,
-            description,
-            project,
-            quantity,
-            product,
-            invoiceNumber: undefined,
-            billingEndDate: undefined,
-            billingStartDate: undefined,
-          }),
-          createSplitDocumentItem({
-            category: invoiceCategory,
-            description,
-            project,
-            product: undefined,
-            quantity: undefined,
-            invoiceNumber,
-            billingEndDate: new Date(billingEndDate),
-            billingStartDate: new Date(billingStartDate),
-          }),
-        ],
         deferredSplits: [deferredTransaction],
+        splits: [
+          {
+            amount: regularSplit.amount,
+            description: regularSplit.description,
+            category: regularCategory,
+            project,
+            quantity: undefined,
+            invoiceNumber: undefined,
+            billingStartDate: undefined,
+            billingEndDate: undefined,
+            product: undefined,
+          },
+          {
+            amount: inventorySplit.amount,
+            description: inventorySplit.description,
+            category: inventoryCategory,
+            project,
+            quantity: inventorySplit.quantity,
+            invoiceNumber: undefined,
+            billingStartDate: undefined,
+            billingEndDate: undefined,
+            product,
+          },
+          {
+            amount: invoiceSplit.amount,
+            description: invoiceSplit.description,
+            category: invoiceCategory,
+            project,
+            quantity: undefined,
+            invoiceNumber: invoiceSplit.invoiceNumber,
+            billingStartDate: createDate(invoiceSplit.billingStartDate),
+            billingEndDate: createDate(invoiceSplit.billingEndDate),
+            product: undefined,
+          },
+        ],
       }));
     });
 
     it('should return expiring document', () => {
-      mockDeferredDocumentConverter.functions.create.mockReturnValue(deferredTransaction);
+      const body = testDataFactory.transaction.request.split({
+        accountId: getAccountId(account),
+        loans: undefined,
+        splits: [
+          {
+            categoryId: getCategoryId(regularCategory),
+            projectId: getProjectId(project),
+          },
+        ],
+      });
+
+      const { description, issuedAt, splits: [split] } = body;
 
       const result = converter.create({
         body,
@@ -200,130 +193,161 @@ describe('Split transaction document converter', () => {
         products: toDictionary([product], '_id'),
         recipient,
       }, expiresIn);
-      expect(result).toEqual(createSplitTransactionDocument({
+      expect(result).toEqual(testDataFactory.transaction.document.split({
         account,
         recipient,
         description,
-        issuedAt: now,
-        expiresAt: addSeconds(expiresIn, now),
+        issuedAt: createDate(issuedAt),
+        expiresAt: addSeconds(expiresIn),
         _id: undefined,
         splits: [
-          createSplitDocumentItem({
+          {
+            amount: split.amount,
+            description: split.description,
             category: regularCategory,
-            description,
             project,
-            product: undefined,
             quantity: undefined,
             invoiceNumber: undefined,
-            billingEndDate: undefined,
             billingStartDate: undefined,
-          }),
-          createSplitDocumentItem({
-            category: inventoryCategory,
-            description,
-            project,
-            quantity,
-            product,
-            invoiceNumber: undefined,
             billingEndDate: undefined,
-            billingStartDate: undefined,
-          }),
-          createSplitDocumentItem({
-            category: invoiceCategory,
-            description,
-            project,
             product: undefined,
-            quantity: undefined,
-            invoiceNumber,
-            billingEndDate: new Date(billingEndDate),
-            billingStartDate: new Date(billingStartDate),
-          }),
+          },
         ],
-        deferredSplits: [deferredTransaction],
+        deferredSplits: undefined,
       }));
     });
   });
 
   describe('toResponse', () => {
     it('should return response', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValue(accountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValue(accountResponse);
       mockProjectDocumentConverter.functions.toResponse.mockReturnValue(projectResponse);
       mockCategoryDocumentConverter.functions.toResponse.mockReturnValue(categoryResponse);
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
       mockProductDocumentConverter.functions.toResponse.mockReturnValue(productResponse);
+
+      const doc = testDataFactory.transaction.document.split({
+        account,
+        recipient,
+        deferredSplits: [
+          {
+            category: regularCategory,
+            project,
+            payingAccount: account,
+            ownerAccount: loanAccount,
+          },
+        ],
+        splits: [
+          {
+            category: regularCategory,
+            product,
+            project,
+          },
+        ],
+      });
+
+      const { description, issuedAt, deferredSplits: [deferred], splits: [split] } = doc;
+
+      const deferredTransactionResponse = testDataFactory.transaction.response.deferred({
+        amount: deferred.amount,
+      });
       mockDeferredDocumentConverter.functions.toResponse.mockReturnValue(deferredTransactionResponse);
 
-      const result = converter.toResponse(queriedDocument);
-      expect(result).toEqual(createSplitTransactionResponse({
-        transactionId: getTransactionId(queriedDocument),
+      const result = converter.toResponse(doc);
+      expect(result).toEqual(testDataFactory.transaction.response.split({
+        transactionId: getTransactionId(doc),
         description,
-        issuedAt: now.toISOString(),
+        issuedAt: issuedAt.toISOString(),
         account: accountResponse,
         recipient: recipientResponse,
         splits: [
-          createSplitResponseItem({
-            description,
+          {
+            amount: split.amount,
+            description: split.description,
             category: categoryResponse,
             project: projectResponse,
+            quantity: split.quantity,
+            invoiceNumber: split.invoiceNumber,
+            billingStartDate: split.billingStartDate.toISOString().split('T')[0],
+            billingEndDate: split.billingEndDate.toISOString().split('T')[0],
             product: productResponse,
-            quantity,
-            invoiceNumber,
-            billingEndDate: new Date(billingEndDate).toISOString()
-              .split('T')[0],
-            billingStartDate: new Date(billingStartDate).toISOString()
-              .split('T')[0],
-          }),
+          },
         ],
         deferredSplits: [deferredTransactionResponse],
       }));
-      validateFunctionCall(mockAccountDocumentConverter.functions.toResponse, account);
+      validateFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, account);
       validateFunctionCall(mockProjectDocumentConverter.functions.toResponse, project);
       validateFunctionCall(mockCategoryDocumentConverter.functions.toResponse, regularCategory);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, recipient);
-      validateFunctionCall(mockDeferredDocumentConverter.functions.toResponse, deferredTransaction);
+      validateFunctionCall(mockDeferredDocumentConverter.functions.toResponse, deferred);
       expect.assertions(6);
     });
   });
 
   describe('toResponseList', () => {
     it('should return response', () => {
-      mockAccountDocumentConverter.functions.toResponse.mockReturnValue(accountResponse);
+      mockAccountDocumentConverter.functions.toResponseLean.mockReturnValue(accountResponse);
       mockProjectDocumentConverter.functions.toResponse.mockReturnValue(projectResponse);
       mockCategoryDocumentConverter.functions.toResponse.mockReturnValue(categoryResponse);
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
       mockProductDocumentConverter.functions.toResponse.mockReturnValue(productResponse);
+
+      const doc = testDataFactory.transaction.document.split({
+        account,
+        recipient,
+        deferredSplits: [
+          {
+            category: regularCategory,
+            project,
+            payingAccount: account,
+            ownerAccount: loanAccount,
+          },
+        ],
+        splits: [
+          {
+            category: regularCategory,
+            product,
+            project,
+          },
+        ],
+      });
+
+      const { description, issuedAt, deferredSplits: [deferred], splits: [split] } = doc;
+
+      const deferredTransactionResponse = testDataFactory.transaction.response.deferred({
+        amount: deferred.amount,
+      });
       mockDeferredDocumentConverter.functions.toResponse.mockReturnValue(deferredTransactionResponse);
 
-      const result = converter.toResponseList([queriedDocument]);
+      const result = converter.toResponseList([doc]);
       expect(result).toEqual([
-        createSplitTransactionResponse({
-          transactionId: getTransactionId(queriedDocument),
+        testDataFactory.transaction.response.split({
+          transactionId: getTransactionId(doc),
           description,
-          issuedAt: now.toISOString(),
+          issuedAt: issuedAt.toISOString(),
           account: accountResponse,
           recipient: recipientResponse,
           splits: [
-            createSplitResponseItem({
-              description,
+            {
+              amount: split.amount,
+              description: split.description,
               category: categoryResponse,
               project: projectResponse,
+              quantity: split.quantity,
+              invoiceNumber: split.invoiceNumber,
+              billingStartDate: split.billingStartDate.toISOString().split('T')[0],
+              billingEndDate: split.billingEndDate.toISOString().split('T')[0],
               product: productResponse,
-              quantity,
-              invoiceNumber,
-              billingEndDate: new Date(billingEndDate).toISOString()
-                .split('T')[0],
-              billingStartDate: new Date(billingStartDate).toISOString()
-                .split('T')[0],
-            }),
+            },
           ],
           deferredSplits: [deferredTransactionResponse],
         }),
       ]);
-      validateFunctionCall(mockAccountDocumentConverter.functions.toResponse, account);
+      validateFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, account);
       validateFunctionCall(mockProjectDocumentConverter.functions.toResponse, project);
       validateFunctionCall(mockCategoryDocumentConverter.functions.toResponse, regularCategory);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, recipient);
-      validateFunctionCall(mockDeferredDocumentConverter.functions.toResponse, deferredTransaction);
+      validateFunctionCall(mockDeferredDocumentConverter.functions.toResponse, deferred);
       expect.assertions(6);
     });
   });

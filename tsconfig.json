@@ -37,6 +37,7 @@
   "include": [
     "api/src",
     "shared/src",
-    "test"
+    "test",
+    "specs"
   ]
 }

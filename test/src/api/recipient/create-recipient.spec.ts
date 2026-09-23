@@ -3,7 +3,8 @@ import { allowUsers } from '@household/test/utils';
 import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { Recipient } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 
@@ -14,7 +15,7 @@ const expect = mergeExpects(recipientApiExpect, apiExpect);
 const test = mergeTests(recipientApiTest, recipientDbTest);
 
 test.describe('POST /recipient/v1/recipients', () => {
-  let req: Recipient.Request;
+  let req: Requests.Recipient;
 
   test.beforeEach(async () => {
     req = recipientDataFactory.request();
@@ -46,7 +47,7 @@ test.describe('POST /recipient/v1/recipients', () => {
           const res = await requestCreateRecipient(req);
           expect(res).toBeCreatedResponse();
 
-          const { recipientId } = (await res.json()) as Recipient.RecipientId;
+          const { recipientId } = (await res.json()) as Api.Recipient.RecipientId;
           expect(req).toHaveBeenSavedAsRecipientDocument(await findRecipientById(recipientId));
         });
 

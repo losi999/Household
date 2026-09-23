@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/create-account/create-account.handler';
 import { ICreateAccountService } from '@household/api/functions/create-account/create-account.service';
-import { createAccountId, createAccountRequest } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { headerExpiresIn } from '@household/shared/constants';
 
 describe('Create account handler', () => {
@@ -12,7 +12,7 @@ describe('Create account handler', () => {
     mockCreateAccountService = vi.fn();
     handlerFunction = handler(mockCreateAccountService);
   });
-  const body = createAccountRequest();
+  const body = testDataFactory.account.request();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),
@@ -40,7 +40,7 @@ describe('Create account handler', () => {
   });
 
   it('should respond with success', async () => {
-    const accountId = createAccountId();
+    const accountId = testDataFactory.account.id();
 
     mockCreateAccountService.mockResolvedValue(accountId);
 

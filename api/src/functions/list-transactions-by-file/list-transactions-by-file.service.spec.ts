@@ -1,5 +1,5 @@
 import { IListTransactionsByFileService, listTransactionsByFileServiceFactory } from '@household/api/functions/list-transactions-by-file/list-transactions-by-file.service';
-import { createDraftTransactionDocument, createDraftTransactionResponse, createFileId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { IDraftTransactionDocumentConverter } from '@household/shared/converters/draft-transaction-document-converter';
 import { ITransactionService } from '@household/shared/services/transaction-service';
@@ -16,9 +16,9 @@ describe('List transactions by file service', () => {
     service = listTransactionsByFileServiceFactory(mockTransactionService.service, mockDraftTransactionDocumentConverter.service);
   });
 
-  const fileId = createFileId();
-  const queriedDocument = createDraftTransactionDocument();
-  const convertedResponse = createDraftTransactionResponse();
+  const fileId = testDataFactory.file.id();
+  const queriedDocument = testDataFactory.transaction.document.draft();
+  const convertedResponse = testDataFactory.transaction.response.draft();
 
   it('should return documents', async () => {
     mockTransactionService.functions.listDraftTransactionsByFileId.mockResolvedValue([queriedDocument]);

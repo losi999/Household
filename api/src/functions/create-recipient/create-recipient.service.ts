@@ -2,13 +2,14 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { getRecipientId } from '@household/shared/common/utils';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { IRecipientService } from '@household/shared/services/recipient-service';
-import { Recipient } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
+import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateRecipientService {
   (ctx: {
-    body: Recipient.Request;
-    expiresIn: number;
-  }): Promise<Recipient.Id>;
+    body: Requests.Recipient;
+  } & ExpiresIn): Promise<Api.Recipient.Id>;
 }
 
 export const createRecipientServiceFactory = (

@@ -1,26 +1,29 @@
 import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
+import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
 import { APIResponse, expect as baseExpect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
 import { Comparer } from '@household/test/comparer';
-import { validateAccountResponse } from '@household/test/fixtures/account-api.fixture';
+import { validateAccountLeanResponse } from '@household/test/fixtures/account-api.fixture';
 import { validateRecipientResponse } from '@household/test/fixtures/recipient-api.fixture';
 import { validateCategoryResponse } from '@household/test/fixtures/category-api.fixture';
 import { validateProductResponse } from '@household/test/fixtures/product-api.fixture';
 import { validateDeferredTransactionResponse } from '@household/test/fixtures/deferred-transaction-api.fixture';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
-export const validateSplitTransactionResponse = (response: Transaction.SplitResponse, document: Transaction.SplitDocument, repayments?: Record<Transaction.Id, number>) => {
+export const validateSplitTransactionResponse = (response: Responses.SplitTransaction, document: Documents.SplitTransaction) => {
   return new Comparer(response, {
     transactionId: getTransactionId(document),
     amount: document.amount,
     issuedAt: document.issuedAt.toISOString(),
     description: document.description,
     transactionType: document.transactionType,
-    account: validateAccountResponse(response.account, document.account),
+    account: validateAccountLeanResponse(response.account, document.account),
     recipient: validateRecipientResponse(response.recipient, document.recipient),
-    splits: response.splits.map((splitResponseItem, index) => {
+    splits: response.splits?.map((splitResponseItem, index) => {
       const splitDocument = document.splits[index];
 
       return new Comparer(splitResponseItem, {
@@ -34,17 +37,17 @@ export const validateSplitTransactionResponse = (response: Transaction.SplitResp
         billingEndDate: splitDocument.billingEndDate?.toISOString().split('T')[0],
         invoiceNumber: splitDocument.invoiceNumber,
       });
-    }),
-    deferredSplits: response.deferredSplits.map((deferredSplitResponseItem, index) => {
+    }) ?? [],
+    deferredSplits: response.deferredSplits?.map((deferredSplitResponseItem, index) => {
       const deferredSplitDocument = document.deferredSplits[index];
 
-      return validateDeferredTransactionResponse(deferredSplitResponseItem, deferredSplitDocument, repayments?.[getTransactionId(deferredSplitDocument)]);
-    }),
+      return validateDeferredTransactionResponse(deferredSplitResponseItem, deferredSplitDocument);
+    }) ?? [],
   });
 };
 
 export const expect = baseExpect.extend({
-  toHaveBeenSavedAsSplitTransactionDocument(req: Transaction.SplitRequest, document: Transaction.SplitDocument) {
+  toHaveBeenSavedAsSplitTransactionDocument(req: Requests.SplitTransaction, document: Documents.SplitTransaction) {
     if (!document) {
       return {
         pass: false,
@@ -52,14 +55,21 @@ export const expect = baseExpect.extend({
       };
     }
 
+    const amount = [
+      ...(req.splits ?? []),
+      ...(req.loans ?? []),
+    ].reduce((accumulator, currentValue) => {
+      return accumulator + currentValue.amount;
+    }, 0);
+
     const comparer = new Comparer(document, {
+      amount,
       transactionType: TransactionType.Split,
       description: req.description,
-      amount: req.amount,
       issuedAt: createDate(req.issuedAt).toISOString(),
       account: req.accountId,
       recipient: req.recipientId,
-      splits: document.splits.map((splitDocument, index) => {
+      splits: document.splits?.map((splitDocument, index) => {
         const splitRequest = req.splits[index];
 
         return new Comparer(splitDocument, {
@@ -74,14 +84,14 @@ export const expect = baseExpect.extend({
           invoiceNumber: splitDocument.category?.categoryType === CategoryType.Invoice ? splitRequest.invoiceNumber : undefined,
         });
       }),
-      deferredSplits: document.deferredSplits.map((splitDocument, index) => {
+      deferredSplits: document.deferredSplits?.map((splitDocument, index) => {
         const splitRequest = req.loans[index];
 
         return new Comparer(splitDocument, {
           transactionType: TransactionType.Deferred,
+          issuedAt: createDate(req.issuedAt).toISOString(),
           payingAccount: req.accountId,
           ownerAccount: splitRequest.loanAccountId,
-          isSettled: splitRequest.isSettled ?? false,
           amount: splitRequest.amount,
           description: splitRequest.description,
           project: splitRequest.projectId,
@@ -102,11 +112,11 @@ export const expect = baseExpect.extend({
       message: () => `Expected split transaction to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveRelatedDocumentsChangedInSplitTransaction(originalDocument: Transaction.SplitDocument, currentDocument: Transaction.SplitDocument, reassignments: {
-    recipient?: Reassignment<Recipient.Id>;
-    project?: Reassignment<Project.Id>;
-    product?: Reassignment<Product.Id>;
-    category?: Reassignment<Category.Document>;
+  toHaveRelatedDocumentsChangedInSplitTransaction(originalDocument: Documents.SplitTransaction, currentDocument: Documents.SplitTransaction, reassignments: {
+    recipient?: Reassignment<Api.Recipient.Id>;
+    project?: Reassignment<Api.Project.Id>;
+    product?: Reassignment<Api.Product.Id>;
+    category?: Reassignment<Documents.Category>;
   }) {
 
     const comparer = new Comparer(currentDocument, {
@@ -122,8 +132,8 @@ export const expect = baseExpect.extend({
         let expectedInvoiceNumber: string;
         let expectedBillingStartDate: string;
         let expectedBillingEndDate: string;
-        let expectedProduct: Product.Id;
-        let expectedCategory: Category.Id;
+        let expectedProduct: Api.Product.Id;
+        let expectedCategory: Api.Category.Id;
 
         if (reassignments.category && getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from)) {
           expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.invoiceNumber : undefined;
@@ -159,8 +169,8 @@ export const expect = baseExpect.extend({
         let expectedInvoiceNumber: string;
         let expectedBillingStartDate: string;
         let expectedBillingEndDate: string;
-        let expectedProduct: Product.Id;
-        let expectedCategory: Category.Id;
+        let expectedProduct: Api.Product.Id;
+        let expectedCategory: Api.Category.Id;
 
         if (reassignments.category && getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from)) {
           expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.invoiceNumber : undefined;
@@ -180,8 +190,8 @@ export const expect = baseExpect.extend({
 
         return new Comparer(splitDocument, {
           amount: originalSplit.amount,
+          issuedAt: originalSplit.issuedAt.toISOString(),
           transactionType: originalSplit.transactionType,
-          isSettled: originalSplit.isSettled,
           payingAccount: getAccountId(originalSplit.payingAccount),
           ownerAccount: getAccountId(originalSplit.ownerAccount),
           description: originalSplit.description,
@@ -203,7 +213,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match split transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenConvertedToRegularSplitItems(originalDocument: Transaction.SplitDocument, currentDocument: Transaction.SplitDocument, deletedAccountId: Account.Id) {
+  toHaveBeenConvertedToRegularSplitItems(originalDocument: Documents.SplitTransaction, currentDocument: Documents.SplitTransaction, deletedAccountId: Api.Account.Id) {
     const comparer = new Comparer(currentDocument, {
       amount: originalDocument.amount,
       issuedAt: originalDocument.issuedAt.toISOString(),
@@ -231,8 +241,8 @@ export const expect = baseExpect.extend({
 
         return new Comparer(splitDocument, {
           amount: originalSplit.amount,
+          issuedAt: originalSplit.issuedAt.toISOString(),
           transactionType: originalSplit.transactionType,
-          isSettled: originalSplit.isSettled,
           payingAccount: getAccountId(originalSplit.payingAccount),
           ownerAccount: getAccountId(originalSplit.ownerAccount),
           description: originalSplit.description,
@@ -254,8 +264,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match split transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingSplitTransactionDocument(received: APIResponse, document: Transaction.SplitDocument, repayments?: Record<Transaction.Id, number>) {
-    const response = await received.json() as Transaction.SplitResponse[];
+  async toContainMatchingSplitTransactionDocument(received: APIResponse, document: Documents.SplitTransaction) {
+    const response = await received.json() as Responses.SplitTransaction[];
 
     const matchingResponse = response.find(r => r.transactionId === getTransactionId(document));
 
@@ -266,7 +276,7 @@ export const expect = baseExpect.extend({
       };
     }
 
-    const comparer = validateSplitTransactionResponse(matchingResponse, document, repayments);
+    const comparer = validateSplitTransactionResponse(matchingResponse, document);
 
     const errors = comparer.validate();
     
@@ -275,10 +285,10 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match split transaction document, but it did not:\n${errors.join('\n')}`,
     };  
   },
-  async toMatchSplitTransactionDocument(res: APIResponse, document: Transaction.SplitDocument, repayments?: Record<Transaction.Id, number>) {
-    const response = await res.json() as Transaction.SplitResponse;
+  async toMatchSplitTransactionDocument(res: APIResponse, document: Documents.SplitTransaction) {
+    const response = await res.json() as Responses.SplitTransaction;
   
-    const comparer = validateSplitTransactionResponse(response, document, repayments);
+    const comparer = validateSplitTransactionResponse(response, document);
 
     const errors = comparer.validate();
     

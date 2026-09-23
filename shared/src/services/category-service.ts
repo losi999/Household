@@ -1,21 +1,22 @@
 import { DocumentUpdate } from '@household/shared/types/common';
 import { CategoryType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Category } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 import { Types } from 'mongoose';
 
 export interface ICategoryService {
-  saveCategory(doc: Category.Document): Promise<Category.Document>;
-  saveCategories(...docs: Category.Document[]): Promise<unknown>;
-  findCategoryById(categoryId: Category.Id): Promise<Category.Document>;
-  getCategoryById(categoryId: Category.Id): Promise<Category.Document>;
-  deleteCategory(categoryId: Category.Id): Promise<unknown>;
-  updateCategory(categoryId: Category.Id, updateQuery: DocumentUpdate<Category.Document>): Promise<unknown>;
-  listCategories(): Promise<Category.Document[]>;
-  findCategoriesByIds(categoryIds: Category.Id[]): Promise<Category.Document[]>;
+  saveCategory(doc: Documents.Category): Promise<Documents.Category>;
+  saveCategories(...docs: Documents.Category[]): Promise<unknown>;
+  findCategoryById(categoryId: Api.Category.Id): Promise<Documents.Category>;
+  getCategoryById(categoryId: Api.Category.Id): Promise<Documents.Category>;
+  deleteCategory(categoryId: Api.Category.Id): Promise<unknown>;
+  updateCategory(categoryId: Api.Category.Id, updateQuery: DocumentUpdate<Documents.Category>): Promise<unknown>;
+  listCategories(): Promise<Documents.Category[]>;
+  findCategoriesByIds(categoryIds: Api.Category.Id[]): Promise<Documents.Category[]>;
   mergeCategories(ctx: {
-    targetCategoryId: Category.Id;
-    sourceCategoryIds: Category.Id[];
+    targetCategoryId: Api.Category.Id;
+    sourceCategoryIds: Api.Category.Id[];
   }): Promise<unknown>;
 }
 
@@ -153,7 +154,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
             $set: {
               ancestors: {
                 $concatArrays: [
-                  updateQuery.$set.ancestors.map((a: Category.Document) => a._id),
+                  updateQuery.$set.ancestors.map((a: Documents.Category) => a._id),
                   {
                     $filter: {
                       input: '$ancestors',
@@ -162,7 +163,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
                         $not: {
                           $in: [
                             '$$ancestorId',
-                            doc.ancestors.map((a: Category.Document) => a._id),
+                            doc.ancestors.map((a: Documents.Category) => a._id),
                           ],
                         },
                       },

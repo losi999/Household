@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IUpdateToSplitTransactionService } from '@household/api/functions/update-to-split-transaction/update-to-split-transaction.service';
 import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
@@ -18,8 +18,6 @@ export default (updateTransaction: IUpdateToSplitTransactionService): AWSLambda.
       return errorResponse(error);
     }
 
-    return createdResponse({
-      transactionId,
-    });
+    return noContentResponse();
   };
 };

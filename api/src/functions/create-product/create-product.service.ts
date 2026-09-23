@@ -3,13 +3,14 @@ import { getProductId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
-import { Category, Product } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
+import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateProductService {
   (ctx: {
-    body: Product.Request;
-    expiresIn: number;
-  } & Category.CategoryId): Promise<Product.Id>;
+    body: Requests.Product;
+  } & Api.Category.CategoryId & ExpiresIn): Promise<Api.Product.Id>;
 }
 
 export const createProductServiceFactory = (

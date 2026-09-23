@@ -1,14 +1,17 @@
 import { getPriceId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { Price } from '@household/shared/types/types';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
 import { Comparer } from '@household/test/comparer';
 import { APIResponse } from '@playwright/test';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 type PriceApiFixture = {
-  requestCreatePrice(price: Price.Request): Promise<APIResponse>;
-  requestUpdatePrice(priceId: Price.Id, price: Price.Request): Promise<APIResponse>;
-  requestDeletePrice(priceId: Price.Id): Promise<APIResponse>;
+  requestCreatePrice(price: Requests.Price): Promise<APIResponse>;
+  requestUpdatePrice(priceId: Api.Price.Id, price: Requests.Price): Promise<APIResponse>;
+  requestDeletePrice(priceId: Api.Price.Id): Promise<APIResponse>;
   requestListPrices(): Promise<APIResponse>;
 };
 
@@ -16,7 +19,7 @@ export const test = baseTest.extend<PriceApiFixture>({
   requestCreatePrice: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestCreatePrice = async (price: Price.Request) => {
+    const requestCreatePrice = async (price: Requests.Price) => {
       return loggedRequest.post(`${process.env.BASE_URL}/price/v1/prices`, {
         headers: {
           Authorization: authToken,
@@ -31,7 +34,7 @@ export const test = baseTest.extend<PriceApiFixture>({
   requestUpdatePrice: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestUpdatePrice = async (priceId: Price.Id, price: Price.Request) => {
+    const requestUpdatePrice = async (priceId: Api.Price.Id, price: Requests.Price) => {
       return loggedRequest.put(`${process.env.BASE_URL}/price/v1/prices/${priceId}`, {
         headers: {
           Authorization: authToken,
@@ -46,7 +49,7 @@ export const test = baseTest.extend<PriceApiFixture>({
   requestDeletePrice: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
-    const requestDeletePrice = async (priceId: Price.Id) => {
+    const requestDeletePrice = async (priceId: Api.Price.Id) => {
       return loggedRequest.delete(`${process.env.BASE_URL}/price/v1/prices/${priceId}`, {
         headers: {
           Authorization: authToken,
@@ -72,7 +75,7 @@ export const test = baseTest.extend<PriceApiFixture>({
 });
 
 export const expect = baseExpect.extend({
-  async toHaveBeenSavedAsPriceDocument(req: Price.Request, document: Price.Document) {
+  async toHaveBeenSavedAsPriceDocument(req: Requests.Price, document: Documents.Price) {
     if (!document) {
       return {
         pass: false,
@@ -94,13 +97,13 @@ export const expect = baseExpect.extend({
       message: () => `Expected price to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveBeenDeletedFromDatabase(document: Price.Document) {
+  toHaveBeenDeletedFromDatabase(document: Documents.Price) {
     return {
       pass: !document,
       message: () => `Expected price to be deleted from database, but it was found with id ${getPriceId(document)}`,
     };
   },
-  toHaveBeenArchivedInDatabase(originalDocument: Price.Document, currentDocument: Price.Document) {
+  toHaveBeenArchivedInDatabase(originalDocument: Documents.Price, currentDocument: Documents.Price) {
     const comparer = new Comparer(currentDocument, {
       name: originalDocument.name,
       amount: originalDocument.amount,
@@ -115,8 +118,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected price to be archived in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingPriceDocument(received: APIResponse, document: Price.Document) {
-    const response = await received.json() as Price.Response[];
+  async toContainMatchingPriceDocument(received: APIResponse, document: Documents.Price) {
+    const response = await received.json() as Responses.Price[];
   
     const matchingResponse = response.find(r => r.priceId === getPriceId(document));
   
@@ -141,8 +144,8 @@ export const expect = baseExpect.extend({
       message: () => `Expected response to match price document, but it did not:\n${errors.join('\n')}`,
     };
   }, 
-  async toNotContainMatchingPriceDocument(received: APIResponse, document: Price.Document) {
-    const response = await received.json() as Price.Response[];
+  async toNotContainMatchingPriceDocument(received: APIResponse, document: Documents.Price) {
+    const response = await received.json() as Responses.Price[];
   
     const matchingResponse = response.find(r => r.priceId === getPriceId(document));
   

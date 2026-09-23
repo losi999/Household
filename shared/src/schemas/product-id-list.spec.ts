@@ -1,12 +1,12 @@
-import { default as schema } from '@household/shared/schemas/product-id-list';
-import { Product } from '@household/shared/types/types';
-import { createProductId } from '@household/shared/common/test-data-factory';
-import { jsonSchemaTesterFactory } from '@household/shared/common/json-schema-tester';
+import { idList as schema } from '@household/shared/schemas/product';
+import { Api } from '@household/shared/types/api';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { schemaTesterFactory } from '@household/shared/common/schema-utils';
 
 describe('Product id list schema', () => {
-  const tester = jsonSchemaTesterFactory<Product.Id[]>(schema);
+  const tester = schemaTesterFactory<Api.Product.Id[]>(schema);
 
-  tester.validateSuccess([createProductId()]);
+  tester.validateSuccess([testDataFactory.product.id()]);
 
   describe('should deny', () => {
     describe('if data', () => {
@@ -18,7 +18,7 @@ describe('Product id list schema', () => {
     describe('if data[0]', () => {
       tester.type([1 as any], 'data/0', 'string');
 
-      tester.pattern([createProductId('not-valid')], 'data/0');
+      tester.pattern([testDataFactory.product.id('not-valid')], 'data/0');
     });
   });
 });

@@ -1,13 +1,13 @@
 import { DocumentUpdate } from '@household/shared/types/common';
 import { SettingKey } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
-import { Setting } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 
 export interface ISettingService {
-  updateSetting(key: SettingKey, updateQuery: DocumentUpdate<Setting.Document>): Promise<unknown>;
-  listSettings(): Promise<Setting.Document[]>;
-  listSettingsByKeys(...settingKeys: SettingKey[]): Promise<Setting.Document[]>;
-  getSettingByKey<V extends string | number | boolean>(settingKey: SettingKey): Promise<Setting.Document<V>>;
+  updateSetting(key: SettingKey, updateQuery: DocumentUpdate<Documents.Setting>): Promise<unknown>;
+  listSettings(): Promise<Documents.Setting[]>;
+  listSettingsByKeys(...settingKeys: SettingKey[]): Promise<Documents.Setting[]>;
+  getSettingByKey<V extends string | number | boolean>(settingKey: SettingKey): Promise<Documents.Setting<V>>;
 }
 
 export const settingServiceFactory = (mongodbService: IMongodbService): ISettingService => {
@@ -54,7 +54,7 @@ export const settingServiceFactory = (mongodbService: IMongodbService): ISetting
             .session(session)
             .lean();   
 
-          return ret as unknown as Setting.Document<V>;
+          return ret as unknown as Documents.Setting<V>;
         });
       }
     },

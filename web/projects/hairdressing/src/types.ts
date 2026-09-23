@@ -1,22 +1,23 @@
-import { Calendar, Customer, Price } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 
-export type LimitedCalendarDay = Calendar.Day.Response & {
+export type LimitedCalendarDay = Responses.CalendarDay & {
   calculatedStart: number; 
   calculatedEnd: number;
 };
 
-export type CustomerJob = Customer.Job.Response & {
-  customer: Customer.Response
+export type CustomerJob = Responses.CustomerJob & {
+  customer: Responses.Customer
 };
 
-export type CustomerJobReport = Customer.CustomerId 
-& Customer.Job.Duration
+export type CustomerJobReport = Api.Customer.CustomerId 
+& Api.Customer.Job.Duration
 & {
-  customerName: Customer.Name['name'];
-  jobName: Customer.Job.Name['name'];
+  customerName: Api.Customer.Name['name'];
+  jobName: Api.Customer.Job.Name['name'];
   total: number;
   hourlyRate: number;
-  prices: (Price.Response & Customer.Job.Quantity)[]
+  prices: (Responses.Price & Api.Customer.Job.Quantity)[]
 };
 
 export type CustomerJobReportSort = keyof Pick<CustomerJobReport, 'duration' | 'total' | 'hourlyRate'>;

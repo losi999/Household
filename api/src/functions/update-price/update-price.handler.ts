@@ -1,4 +1,4 @@
-import { errorResponse, createdResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IUpdatePriceService } from '@household/api/functions/update-price/update-price.service';
 import { castPathParameters, getExpiresInHeader } from '@household/shared/common/aws-utils';
 
@@ -18,8 +18,6 @@ export default (updatePrice: IUpdatePriceService): AWSLambda.APIGatewayProxyHand
       return errorResponse(error);
     }
 
-    return createdResponse({
-      priceId,
-    });
+    return noContentResponse();
   };
 };

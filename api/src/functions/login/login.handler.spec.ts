@@ -1,7 +1,7 @@
 import { default as handler } from '@household/api/functions/login/login.handler';
 import { ILoginService } from '@household/api/functions/login/login.service';
 import { MockBusinessService } from '@household/shared/common/unit-testing';
-import { Auth } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 describe('Login handler', () => {
   let mockLoginService: MockBusinessService<ILoginService>;
@@ -35,7 +35,7 @@ describe('Login handler', () => {
     const handlerEvent = {
       body: '{}',
     } as AWSLambda.APIGatewayProxyEvent;
-    const tokens: Auth.Login.Response = {
+    const tokens: Responses.Login = {
       idToken: 'some.id.token',
       refreshToken: 'some.refresh.token',
     };

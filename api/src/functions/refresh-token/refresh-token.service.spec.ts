@@ -1,7 +1,8 @@
 import { IRefreshTokenService, refreshTokenServiceFactory } from '@household/api/functions/refresh-token/refresh-token.service';
 import { IIdentityService } from '@household/shared/services/identity-service';
 import { MockService, createMockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { Auth } from '@household/shared/types/types';
+import { Requests } from '@household/shared/types/requests';
+import { Responses } from '@household/shared/types/responses';
 
 describe('Refresh token service', () => {
   let service: IRefreshTokenService;
@@ -13,7 +14,7 @@ describe('Refresh token service', () => {
     service = refreshTokenServiceFactory(mockIdentityService.service);
   });
 
-  const body = {} as Auth.RefreshToken.Request;
+  const body = {} as Requests.RefreshToken;
   const idToken = 'some.id.token';
   it('should return with id token', async () => {
 
@@ -23,7 +24,7 @@ describe('Refresh token service', () => {
       },
     });
 
-    const expectedResult: Auth.RefreshToken.Response = {
+    const expectedResult: Responses.RefreshToken = {
       idToken,
     };
 

@@ -1,4 +1,4 @@
-import { default as schema } from '@household/test/schemas/category-response';
+import { response as schema } from '@household/shared/schemas/category';
 import { getCategoryId } from '@household/shared/common/utils';
 import { entries } from '@household/shared/common/utils';
 import { forbidUsers } from '@household/test/utils';
@@ -6,7 +6,8 @@ import { test as categoryApiTest, expect as categoryApiExpect } from '@household
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { CategoryType } from '@household/shared/enums';
-import { Category } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Documents } from '@household/shared/types/documents';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
@@ -17,8 +18,8 @@ const expect = mergeExpects(categoryApiExpect, apiExpect);
 const test = mergeTests(categoryApiTest, categoryDbTest);
 
 test.describe('GET /category/v1/categories/{categoryId}', () => {
-  let categoryDocument: Category.Document;
-  let childCategoryDocument: Category.Document;
+  let categoryDocument: Documents.Category;
+  let childCategoryDocument: Documents.Category;
 
   test.beforeEach(async () => {
     categoryDocument = categoryDataFactory.document({
@@ -73,7 +74,7 @@ test.describe('GET /category/v1/categories/{categoryId}', () => {
 
         test.describe('should return error if categoryId', () => {
           test('is not mongo id', async ({ requestGetCategory }) => {
-            const res = await requestGetCategory('not-valid' as Category.Id);
+            const res = await requestGetCategory('not-valid' as Api.Category.Id);
             expect(res).toBeBadRequestResponse();
             expect(res).toHavePatternValidationError('pathParameters', 'categoryId');
           });

@@ -1,4 +1,4 @@
-import { createDocumentUpdate, testDataFactory } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { addSeconds, getCustomerId, getPriceId } from '@household/shared/common/utils';
 import { customerDocumentConverterFactory, ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
@@ -72,7 +72,7 @@ describe('Customer document converter', () => {
       const body = testDataFactory.customer.request();
 
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             ...body,
@@ -86,7 +86,7 @@ describe('Customer document converter', () => {
       const body = testDataFactory.customer.request({});
       delete body.description;
       const result = converter.update(body, expiresIn);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             ...body,
@@ -105,7 +105,7 @@ describe('Customer document converter', () => {
 
     it('should return update', () => {
       const result = converter.addBlacklistedCustomer(customer);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $addToSet: {
             blacklistedCustomers: customer,
@@ -119,7 +119,7 @@ describe('Customer document converter', () => {
     const customerId = testDataFactory.customer.id();
     it('should return update', () => {
       const result = converter.removeBlacklistedCustomer(customerId);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $pull: {
             blacklistedCustomers: customerId,
@@ -144,7 +144,7 @@ describe('Customer document converter', () => {
 
     it('should return update', () => {
       const result = converter.addJob(job, [priceDocument]);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $push: {
             jobs: {
@@ -178,7 +178,7 @@ describe('Customer document converter', () => {
       });
 
       const result = converter.updateJob(job.name, job, [priceDocument]);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             'jobs.$[job]': {
@@ -211,7 +211,7 @@ describe('Customer document converter', () => {
       });
       delete job.additionalPrice; 
       const result = converter.updateJob(job.name, job, [priceDocument]);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             'jobs.$[job]': {
@@ -241,7 +241,7 @@ describe('Customer document converter', () => {
     it('should return update', () => {
       const jobName = 'job name';
       const result = converter.deleteJob(jobName);
-      expect(result).toEqual(createDocumentUpdate({
+      expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $pull: {
             jobs: {

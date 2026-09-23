@@ -1,7 +1,7 @@
 import { transactionDocumentConverter } from '@household/shared/dependencies/converters/transaction-document-converter';
 import { default as handler } from '@household/api/functions/report-transactions/report-transactions.handler';
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
-import { default as body } from '@household/shared/schemas/report-request';
+import { request as body } from '@household/shared/schemas/report';
 import { reportTransactionsServiceFactory } from '@household/api/functions/report-transactions/report-transactions.service';
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';

@@ -1,5 +1,5 @@
 import { ICreateProjectService, createProjectServiceFactory } from '@household/api/functions/create-project/create-project.service';
-import { createProjectRequest, createProjectDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProjectId } from '@household/shared/common/utils';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
@@ -17,8 +17,8 @@ describe('Create project service', () => {
     service = createProjectServiceFactory(mockProjectService.service, mockProjectDocumentConverter.service);
   });
 
-  const body = createProjectRequest();
-  const convertedProjectDocument = createProjectDocument();
+  const body = testDataFactory.project.request();
+  const convertedProjectDocument = testDataFactory.project.document();
   const projectId = getProjectId(convertedProjectDocument);
 
   it('should return new id', async () => {
@@ -29,7 +29,7 @@ describe('Create project service', () => {
       body,
       expiresIn: undefined,
     });
-    expect(result).toEqual(projectId.toString()),
+    expect(result).toEqual(projectId.toString());
     validateFunctionCall(mockProjectDocumentConverter.functions.create, body, undefined);
     validateFunctionCall(mockProjectService.functions.saveProject, convertedProjectDocument);
     expect.assertions(3);

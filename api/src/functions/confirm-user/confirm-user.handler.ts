@@ -1,5 +1,5 @@
 
-import { errorResponse, okResponse } from '@household/api/common/response-factory';
+import { errorResponse, noContentResponse } from '@household/api/common/response-factory';
 import { IConfirmUserService } from '@household/api/functions/confirm-user/confirm-user.service';
 
 export default (confirmUserService: IConfirmUserService): AWSLambda.APIGatewayProxyHandler =>
@@ -17,5 +17,5 @@ export default (confirmUserService: IConfirmUserService): AWSLambda.APIGatewayPr
       return errorResponse(error);
     }
 
-    return okResponse();
+    return noContentResponse();
   };

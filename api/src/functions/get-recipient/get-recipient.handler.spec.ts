@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/get-recipient/get-recipient.handler';
 import { IGetRecipientService } from '@household/api/functions/get-recipient/get-recipient.service';
-import { createRecipientId, createRecipientResponse } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Get recipient handler', () => {
   let mockGetRecipientService: MockBusinessService<IGetRecipientService>;
@@ -12,8 +12,8 @@ describe('Get recipient handler', () => {
     handlerFunction = handler(mockGetRecipientService);
   });
 
-  const recipientId = createRecipientId();
-  const recipient = createRecipientResponse();
+  const recipientId = testDataFactory.recipient.id();
+  const recipient = testDataFactory.recipient.response();
   const handlerEvent = {
     pathParameters: {
       recipientId,

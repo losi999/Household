@@ -10,15 +10,15 @@ import { IProductService } from '@household/shared/services/product-service';
 import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { DocumentUpdate } from '@household/shared/types/common';
-import { Transaction } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { DocumentUpdate, ExpiresIn } from '@household/shared/types/common';
+import { Documents } from '@household/shared/types/documents';
+import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateToPaymentTransactionService {
   (ctx: {
-    body: Transaction.PaymentRequest;
-    transactionId: Transaction.Id;
-    expiresIn: number;
-  }): Promise<unknown>;
+    body: Requests.PaymentTransaction;
+  } & Api.Transaction.TransactionId & ExpiresIn): Promise<unknown>;
 }
 
 export const updateToPaymentTransactionServiceFactory = (
@@ -113,7 +113,7 @@ export const updateToPaymentTransactionServiceFactory = (
       });
     }
 
-    let update: DocumentUpdate<Transaction.Document>;
+    let update: DocumentUpdate<Documents.Transaction>;
 
     if (!body.loanAccountId) {
       httpErrors.transaction.invalidLoanAccountType(account);

@@ -1,4 +1,5 @@
-import { User } from '@household/shared/types/types';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
 import { userDataFactory } from '@household/test/api/user/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
@@ -15,7 +16,7 @@ const test = mergeTests(identityTest, userApiTest);
 const permissionMap = allowUsers('editor') ;
 
 test.describe('DELETE /user/v1/users/{email}/groups/{group}', () => {
-  let editorUser: User.Request & User.Group;
+  let editorUser: Requests.User & Api.User.Group;
 
   test.beforeEach(async () => {
     editorUser = userDataFactory.confirmedUser({

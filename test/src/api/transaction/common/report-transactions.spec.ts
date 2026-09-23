@@ -1,7 +1,6 @@
-import { Account, Category, Product, Project, Recipient, Transaction } from '@household/shared/types/types';
+import { Documents } from '@household/shared/types/documents';
 import { entries, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
-import { default as schema } from '@household/test/schemas/transaction-report-list';
-import { createAccountId } from '@household/shared/common/test-data-factory';
+import { reportList as schema } from '@household/shared/schemas/transaction';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
@@ -30,7 +29,7 @@ const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = forbidUsers();
 
-const splitTransactionHelper = (doc: Transaction.SplitDocument, split: Transaction.SplitDocumentItem | Transaction.DeferredDocument):(Transaction.SplitDocument & {split?: Transaction.SplitDocumentItem; deferredSplit?: Transaction.DeferredDocument}) => {
+const splitTransactionHelper = (doc: Documents.SplitTransaction, split: Documents.SplitItem | Documents.DeferredTransaction):(Documents.SplitTransaction & {split?: Documents.SplitItem; deferredSplit?: Documents.DeferredTransaction}) => {
   return {
     ...doc,
     split: isDeferredTransaction(split) ? undefined : split,
@@ -63,30 +62,30 @@ test.describe('POST /transaction/v1/transactionReports', () => {
         });
       } else {
         test.describe('should get a list of transaction reports', () => {
-          let accountDocument: Account.Document;
-          let secondaryAccountDocument: Account.Document;
-          let loanAccountDocument: Account.Document;
-          let projectDocument: Project.Document;
-          let secondaryProjectDocument: Project.Document;
-          let recipientDocument: Recipient.Document;
-          let secondaryRecipientDocument: Recipient.Document;
-          let regularCategoryDocument: Category.Document;
-          let inventoryCategoryDocument: Category.Document;
-          let invoiceCategoryDocument: Category.Document;
-          let secondaryCategoryDocument: Category.Document;
-          let productDocument: Product.Document;
-          let secondaryProductDocument: Product.Document;
+          let accountDocument: Documents.Account;
+          let secondaryAccountDocument: Documents.Account;
+          let loanAccountDocument: Documents.Account;
+          let projectDocument: Documents.Project;
+          let secondaryProjectDocument: Documents.Project;
+          let recipientDocument: Documents.Recipient;
+          let secondaryRecipientDocument: Documents.Recipient;
+          let regularCategoryDocument: Documents.Category;
+          let inventoryCategoryDocument: Documents.Category;
+          let invoiceCategoryDocument: Documents.Category;
+          let secondaryCategoryDocument: Documents.Category;
+          let productDocument: Documents.Product;
+          let secondaryProductDocument: Documents.Product;
 
-          let splitTransactionDocument: Transaction.SplitDocument;
-          let includedPaymentTransactionDocument: Transaction.PaymentDocument;
-          let includedDeferredTransactionDocument: Transaction.DeferredDocument;
-          let includedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
-          let excludedPaymentTransactionDocument: Transaction.PaymentDocument;
-          let excludedDeferredTransactionDocument: Transaction.DeferredDocument;
-          let excludedReimbursementTransactionDocument: Transaction.ReimbursementDocument;
-          let deferredSplitTransactionDocument: Transaction.SplitDocument;
-          let transferTransactionDocument: Transaction.TransferDocument;
-          let loanTransferTransactionDocument: Transaction.TransferDocument;
+          let splitTransactionDocument: Documents.SplitTransaction;
+          let includedPaymentTransactionDocument: Documents.PaymentTransaction;
+          let includedDeferredTransactionDocument: Documents.DeferredTransaction;
+          let includedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
+          let excludedPaymentTransactionDocument: Documents.PaymentTransaction;
+          let excludedDeferredTransactionDocument: Documents.DeferredTransaction;
+          let excludedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
+          let deferredSplitTransactionDocument: Documents.SplitTransaction;
+          let transferTransactionDocument: Documents.TransferTransaction;
+          let loanTransferTransactionDocument: Documents.TransferTransaction;
 
           test.beforeEach(async ({ saveAccounts, saveTransactions, saveCategories, saveProjects, saveRecipients, saveProducts }) => {
             accountDocument = accountDataFactory.document();
@@ -766,7 +765,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
               const res = await requestGetTransactionReports([
                 {
                   filterType: 'account',
-                  items: [createAccountId()],
+                  items: [accountDataFactory.id()],
                   include: true,
                   extra: 1, 
                 } as any, 
@@ -795,7 +794,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
               const res = await requestGetTransactionReports([
                 {
                   filterType: 'account',
-                  items: [createAccountId()],
+                  items: [accountDataFactory.id()],
                   include: undefined, 
                 }, 
               ]);
@@ -807,7 +806,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
               const res = await requestGetTransactionReports([
                 {
                   filterType: 'account',
-                  items: [createAccountId()],
+                  items: [accountDataFactory.id()],
                   include: 1 as any, 
                 }, 
               ]);
@@ -821,7 +820,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
               const res = await requestGetTransactionReports([
                 {
                   filterType: undefined,
-                  items: [createAccountId()],
+                  items: [accountDataFactory.id()],
                   include: false, 
                 }, 
               ]);
@@ -832,7 +831,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
               const res = await requestGetTransactionReports([
                 {
                   filterType: 1 as any,
-                  items: [createAccountId()],
+                  items: [accountDataFactory.id()],
                   include: false, 
                 }, 
               ]);
@@ -843,7 +842,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
               const res = await requestGetTransactionReports([
                 {
                   filterType: 'not filter type' as any,
-                  items: [createAccountId()],
+                  items: [accountDataFactory.id()],
                   include: false, 
                 }, 
               ]);

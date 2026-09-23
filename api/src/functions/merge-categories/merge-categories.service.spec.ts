@@ -1,7 +1,8 @@
 import { IMergeCategoriesService, mergeCategoriesServiceFactory } from '@household/api/functions/merge-categories/merge-categories.service';
-import { createCategoryDocument } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId } from '@household/shared/common/utils';
+import { CategoryType } from '@household/shared/enums';
 import { ICategoryService } from '@household/shared/services/category-service';
 
 describe('Merge category service', () => {
@@ -14,8 +15,12 @@ describe('Merge category service', () => {
     service = mergeCategoriesServiceFactory(mockCategoryService.service);
   });
 
-  const targetCategoryDocument = createCategoryDocument();
-  const sourceCategoryDocument = createCategoryDocument();
+  const targetCategoryDocument = testDataFactory.category.document({
+    categoryType: CategoryType.Regular,
+  });
+  const sourceCategoryDocument = testDataFactory.category.document({
+    categoryType: CategoryType.Regular,
+  });
   const sourceCategoryId = getCategoryId(sourceCategoryDocument);
   const categoryId = getCategoryId(targetCategoryDocument);
   const body = [sourceCategoryId];

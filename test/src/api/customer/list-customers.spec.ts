@@ -1,5 +1,4 @@
-import { default as schema } from '@household/test/schemas/customer-response-list';
-import { Customer, Price } from '@household/shared/types/types';
+import { responseList as schema } from '@household/shared/schemas/customer';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
@@ -10,6 +9,7 @@ import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { Documents } from '@household/shared/types/documents';
 
 const expect = mergeExpects(customerApiExpect, apiExpect);
 
@@ -18,10 +18,10 @@ const permissionMap = allowUsers('hairdresser');
 const test = mergeTests(customerApiTest, priceDbTest, customerDbTest);
 
 test.describe('GET /customer/v1/customers', () => {
-  let customerDocument1: Customer.Document;
-  let customerDocument2: Customer.Document;
-  let blacklistedCustomer: Customer.Document;
-  let priceDocument: Price.Document;
+  let customerDocument1: Documents.Customer;
+  let customerDocument2: Documents.Customer;
+  let blacklistedCustomer: Documents.Customer;
+  let priceDocument: Documents.Price;
 
   test.beforeEach(async () => {
     blacklistedCustomer = customerDataFactory.document();

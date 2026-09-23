@@ -3,7 +3,7 @@ import { default as handler } from '@household/api/functions/get-category/get-ca
 import { cors } from '@household/api/dependencies/handlers/cors.handler';
 import { getCategoryServiceFactory } from '@household/api/functions/get-category/get-category.service';
 import { apiRequestValidator } from '@household/api/dependencies/handlers/api-request-validator.handler';
-import { default as pathParameters } from '@household/shared/schemas/category-id';
+import { categoryId as pathParameters } from '@household/shared/schemas/category';
 import { categoryService } from '@household/shared/dependencies/services/category-service';
 import { default as index } from '@household/api/handlers/index.handler';
 import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';

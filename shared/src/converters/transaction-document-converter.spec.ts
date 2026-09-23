@@ -1,4 +1,4 @@
-import { createAccountDocument, createCategoryDocument, createPaymentTransactionDocument, createPaymentTransactionResponse, createProjectDocument, createRecipientDocument, createSplitTransactionDocument, createSplitTransactionResponse, createTransferTransactionDocument, createTransferTransactionResponse, createProductDocument, createTransactionReport, createAccountReport, createCategoryReport, createProjectReport, createProductReport, createRecipientReport, createDeferredTransactionDocument, createDeferredTransactionResponse, createReimbursementTransactionDocument, createReimbursementTransactionResponse, createAccountId, createTransactionRawReport } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { getTransactionId } from '@household/shared/common/utils';
 import { transactionDocumentConverterFactory, ITransactionDocumentConverter } from '@household/shared/converters/transaction-document-converter';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
@@ -25,7 +25,6 @@ describe('Transaction document converter', () => {
   let mockDeferredTransactionDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
   let mockReimbursementTransactionDocumentConverter: MockService<IReimbursementTransactionDocumentConverter>;
   let mockTransferTransactionDocumentConverter: MockService<ITransferTransactionDocumentConverter>;
-  const now = new Date();
 
   beforeEach(() => {
     mockAccountDocumentConverter = createMockService('toResponse', 'toReport');
@@ -39,7 +38,7 @@ describe('Transaction document converter', () => {
     mockReimbursementTransactionDocumentConverter = createMockService('toResponse');
     mockTransferTransactionDocumentConverter = createMockService('toResponse');
     vi.useFakeTimers();
-    vi.setSystemTime(now);
+    vi.setSystemTime(new Date());
     converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockPaymentTransactionDocumentConverter.service, mockSplitTransactionDocumentConverter.service, mockDeferredTransactionDocumentConverter.service, mockReimbursementTransactionDocumentConverter.service, mockTransferTransactionDocumentConverter.service);
   });
 
@@ -47,17 +46,17 @@ describe('Transaction document converter', () => {
     vi.useRealTimers();
   });
 
-  const viewingAccountId = createAccountId();
-  const paymentDocument = createPaymentTransactionDocument();
-  const paymentResponse = createPaymentTransactionResponse();
-  const splitDocument = createSplitTransactionDocument();
-  const splitResponse = createSplitTransactionResponse();
-  const deferredDocument = createDeferredTransactionDocument();
-  const deferredResponse = createDeferredTransactionResponse();
-  const reimbursementDocument = createReimbursementTransactionDocument();
-  const reimbursementResponse = createReimbursementTransactionResponse();
-  const transferDocument = createTransferTransactionDocument();
-  const transferResponse = createTransferTransactionResponse();
+  const viewingAccountId = testDataFactory.account.id();
+  const paymentDocument = testDataFactory.transaction.document.payment();
+  const paymentResponse = testDataFactory.transaction.response.payment();
+  const splitDocument = testDataFactory.transaction.document.split();
+  const splitResponse = testDataFactory.transaction.response.split();
+  const deferredDocument = testDataFactory.transaction.document.deferred();
+  const deferredResponse = testDataFactory.transaction.response.deferred();
+  const reimbursementDocument = testDataFactory.transaction.document.reimbursement();
+  const reimbursementResponse = testDataFactory.transaction.response.reimbursement();
+  const transferDocument = testDataFactory.transaction.document.transfer();
+  const transferResponse = testDataFactory.transaction.response.transfer();
   describe('toResponseList', () => {
     it('should return response list', async () => {
       mockPaymentTransactionDocumentConverter.functions.toResponse.mockReturnValue(paymentResponse);
@@ -151,38 +150,24 @@ describe('Transaction document converter', () => {
   });
 
   describe('toReport', () => {
-    const amount = 12000;
-    const description = 'bevásárlás';
-    const quantity = 100;
-    const invoiceNumber = '2022asdf';
-    const billingStartDate = '2022-03-01';
-    const billingEndDate = '2022-03-10';
+    const account = testDataFactory.account.document();
+    const project = testDataFactory.project.document();
+    const recipient = testDataFactory.recipient.document();
+    const regularCategory = testDataFactory.category.document();
+    const product = testDataFactory.product.document();
 
-    const account = createAccountDocument();
-    const project = createProjectDocument();
-    const recipient = createRecipientDocument();
-    const regularCategory = createCategoryDocument();
-    const product = createProductDocument();
+    const accountReport = testDataFactory.account.report();
+    const categoryReport = testDataFactory.category.report();
+    const projectReport = testDataFactory.project.report();
+    const recipientReport = testDataFactory.recipient.report();
+    const productReport = testDataFactory.product.report();
 
-    const accountReport = createAccountReport();
-    const categoryReport = createCategoryReport();
-    const projectReport = createProjectReport();
-    const recipientReport = createRecipientReport();
-    const productReport = createProductReport();
-
-    const queriedDocument = createTransactionRawReport({
+    const doc = testDataFactory.transaction.document.report({
       account,
-      issuedAt: now,
-      description,
       project,
       category: regularCategory,
       recipient,
-      amount,
       product,
-      quantity,
-      invoiceNumber,
-      billingEndDate: new Date(billingEndDate),
-      billingStartDate: new Date(billingStartDate),
     });
     it('should return report', () => {
       mockAccountDocumentConverter.functions.toReport.mockReturnValue(accountReport);
@@ -191,21 +176,24 @@ describe('Transaction document converter', () => {
       mockRecipientDocumentConverter.functions.toReport.mockReturnValue(recipientReport);
       mockProductDocumentConverter.functions.toReport.mockReturnValue(productReport);
 
-      const result = converter.toReport(queriedDocument);
-      expect(result).toEqual({
-        ...createTransactionReport(),
+      const { amount, description, billingEndDate, billingStartDate, invoiceNumber, quantity, issuedAt } = doc;
+
+      const result = converter.toReport(doc);
+      expect(result).toEqual(testDataFactory.transaction.report({
         amount,
+        issuedAt: issuedAt.toISOString(),
         description,
-        billingEndDate,
-        billingStartDate,
+        billingEndDate: billingEndDate.toISOString().split('T')[0],
+        billingStartDate: billingStartDate.toISOString().split('T')[0],
         invoiceNumber,
-        transactionId: getTransactionId(queriedDocument),
+        quantity,
         account: accountReport,
         category: categoryReport,
         product: productReport,
         project: projectReport,
         recipient: recipientReport,
-      });
+        transactionId: getTransactionId(doc),
+      }));
       validateFunctionCall(mockAccountDocumentConverter.functions.toReport, account);
       validateFunctionCall(mockCategoryDocumentConverter.functions.toReport, regularCategory);
       validateFunctionCall(mockProjectDocumentConverter.functions.toReport, project);

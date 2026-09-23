@@ -1,10 +1,10 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { ISettingDocumentConverter } from '@household/shared/converters/setting-document-converter';
 import { ISettingService } from '@household/shared/services/setting-service';
-import { Setting } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 export interface IListSettingsService {
-  (): Promise<Setting.Response[]>;
+  (): Promise<Responses.Setting[]>;
 }
 
 export const listSettingsServiceFactory = (

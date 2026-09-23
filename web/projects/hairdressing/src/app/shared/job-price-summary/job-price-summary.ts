@@ -1,7 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { MinutesToHourPipe } from '@hairdressing/app/pipes/minutes-to-hour-pipe';
-import { Customer } from '@household/shared/types/types';
+import { Responses } from '@household/shared/types/responses';
 
 @Component({
   selector: 'hairdressing-job-price-summary',
@@ -13,7 +13,7 @@ import { Customer } from '@household/shared/types/types';
   styleUrl: './job-price-summary.scss',
 })
 export class JobPriceSummary {
-  cost = input<Customer.Job.CostResponse>();
+  cost = input<Responses.CustomerJobCost>();
   
   total = computed<number>(() => {
     return this.cost().prices.reduce((accumulator, currentValue) => {

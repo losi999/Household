@@ -1,7 +1,7 @@
 import { MockBusinessService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { default as handler } from '@household/api/functions/delete-recipient/delete-recipient.handler';
 import { IDeleteRecipientService } from '@household/api/functions/delete-recipient/delete-recipient.service';
-import { createRecipientId } from '@household/shared/common/test-data-factory';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
 
 describe('Delete recipient handler', () => {
   let mockDeleteRecipientService: MockBusinessService<IDeleteRecipientService>;
@@ -12,7 +12,7 @@ describe('Delete recipient handler', () => {
     handlerFunction = handler(mockDeleteRecipientService);
   });
 
-  const recipientId = createRecipientId();
+  const recipientId = testDataFactory.recipient.id();
   const handlerEvent = {
     pathParameters: {
       recipientId,
