@@ -3,7 +3,6 @@ import { allowUsers } from '@household/test/utils';
 import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';

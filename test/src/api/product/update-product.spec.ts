@@ -1,6 +1,5 @@
 import { entries, getCategoryId, getProductId } from '@household/shared/common/utils';
 import { CategoryType } from '@household/shared/enums';
-import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Documents } from '@household/shared/types/documents';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';

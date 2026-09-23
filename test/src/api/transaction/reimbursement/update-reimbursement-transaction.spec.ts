@@ -19,7 +19,6 @@ import { test as categoryDbTest } from '@household/test/fixtures/category-db.fix
 import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
 import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
-import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
@@ -312,7 +311,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeNoContentResponse();
-              const transactionId = getTransactionId(originalDocument);
+              const transactionId = getTransactionId(reimbursementDocument);
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -332,7 +331,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeNoContentResponse();
-              const transactionId = getTransactionId(originalDocument);
+              const transactionId = getTransactionId(reimbursementDocument);
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -353,7 +352,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeNoContentResponse();
-              const transactionId = getTransactionId(originalDocument);
+              const transactionId = getTransactionId(reimbursementDocument);
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -383,7 +382,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeNoContentResponse();
-              const transactionId = getTransactionId(originalDocument);
+              const transactionId = getTransactionId(reimbursementDocument);
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -400,7 +399,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeNoContentResponse();
-              const transactionId = getTransactionId(originalDocument);
+              const transactionId = getTransactionId(reimbursementDocument);
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -417,7 +416,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveProject(projectDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeNoContentResponse();
-              const transactionId = getTransactionId(originalDocument);
+              const transactionId = getTransactionId(reimbursementDocument);
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
 
@@ -434,7 +433,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (reimburs
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToPaymentTransaction(getTransactionId(reimbursementDocument), request);
               expect(res).toBeNoContentResponse();
-              const transactionId = getTransactionId(originalDocument);
+              const transactionId = getTransactionId(reimbursementDocument);
               expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
             });
           });

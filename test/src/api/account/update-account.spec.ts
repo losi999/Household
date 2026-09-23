@@ -1,6 +1,5 @@
 import { entries, getAccountId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 import { accountDataFactory } from '@household/test/api/account/data-factory';

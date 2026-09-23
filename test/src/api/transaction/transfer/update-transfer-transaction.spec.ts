@@ -12,7 +12,6 @@ import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
 import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 import { Requests } from '@household/shared/types/requests';
-import { Api } from '@household/shared/types/api';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
@@ -164,7 +163,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(transferDocument), request);
               expect(res).toBeNoContentResponse();
-              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
+              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(transferDocument)));
             });
           });
         });
