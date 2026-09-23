@@ -128,7 +128,8 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "projects/shared/tsconfig.spec.json"
+            "tsConfig": "projects/shared/tsconfig.spec.json",
+            "runnerConfig": "projects/shared/vitest.config.ts"
           }
         }
       }
