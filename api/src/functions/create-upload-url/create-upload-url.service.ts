@@ -3,14 +3,14 @@ import { getFileId } from '@household/shared/common/utils';
 import { IFileDocumentConverter } from '@household/shared/converters/file-document-converter';
 import { IFileService } from '@household/shared/services/file-service';
 import { IStorageService } from '@household/shared/services/storage-service';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 
 export interface ICreateUploadUrlService {
   (ctx: {
     body: Requests.File,
-    expiresIn: number;
-  }): Promise<Responses.FileUploadUrl>;
+  } & ExpiresIn): Promise<Responses.FileUploadUrl>;
 }
 
 export const createUploadUrlServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: IStorageService): ICreateUploadUrlService =>

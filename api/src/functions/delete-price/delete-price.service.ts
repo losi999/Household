@@ -3,9 +3,7 @@ import { IPriceService } from '@household/shared/services/price-service';
 import { Api } from '@household/shared/types/api';
 
 export interface IDeletePriceService {
-  (ctx: {
-    priceId: Api.Price.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Price.PriceId): Promise<unknown>;
 }
 
 export const deletePriceServiceFactory = (

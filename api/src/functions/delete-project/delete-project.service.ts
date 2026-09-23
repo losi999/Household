@@ -3,9 +3,7 @@ import { IProjectService } from '@household/shared/services/project-service';
 import { Api } from '@household/shared/types/api';
 
 export interface IDeleteProjectService {
-  (ctx: {
-    projectId: Api.Project.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Project.ProjectId): Promise<unknown>;
 }
 
 export const deleteProjectServiceFactory = (

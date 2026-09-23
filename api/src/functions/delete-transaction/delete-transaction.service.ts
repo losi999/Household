@@ -3,9 +3,7 @@ import { ITransactionService } from '@household/shared/services/transaction-serv
 import { Api } from '@household/shared/types/api';
 
 export interface IDeleteTransactionService {
-  (ctx: {
-    transactionId: Api.Transaction.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Transaction.TransactionId): Promise<unknown>;
 }
 
 export const deleteTransactionServiceFactory = (

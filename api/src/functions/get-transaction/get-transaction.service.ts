@@ -5,10 +5,7 @@ import { Api } from '@household/shared/types/api';
 import { Responses } from '@household/shared/types/responses';
 
 export interface IGetTransactionService {
-  (ctx: {
-    transactionId: Api.Transaction.Id;
-    accountId: Api.Account.Id;
-  }): Promise<Responses.Transaction>;
+  (ctx: Api.Transaction.TransactionId & Api.Account.AccountId): Promise<Responses.Transaction>;
 }
 
 export const getTransactionServiceFactory = (

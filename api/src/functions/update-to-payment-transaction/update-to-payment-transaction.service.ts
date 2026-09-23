@@ -11,16 +11,14 @@ import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Api } from '@household/shared/types/api';
-import { DocumentUpdate } from '@household/shared/types/common';
+import { DocumentUpdate, ExpiresIn } from '@household/shared/types/common';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateToPaymentTransactionService {
   (ctx: {
     body: Requests.PaymentTransaction;
-    transactionId: Api.Transaction.Id;
-    expiresIn: number;
-  }): Promise<unknown>;
+  } & Api.Transaction.TransactionId & ExpiresIn): Promise<unknown>;
 }
 
 export const updateToPaymentTransactionServiceFactory = (

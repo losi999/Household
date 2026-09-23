@@ -1,14 +1,13 @@
-import { JSONSchema7 } from 'json-schema';
 import { IValidatorService } from '@household/shared/services/validator-service';
 import { badRequestResponse } from '@household/api/common/response-factory';
 import { keys } from '@household/shared/common/utils';
 import { StrictSchema } from '@household/shared/types/schema';
 
-type RequestSchemaTypes = { // TODO: remove JSONSchema7 type when all schemas are converted to StrictSchema
-  body?: JSONSchema7 | StrictSchema<any>;
-  pathParameters?: JSONSchema7 | StrictSchema<any>;
-  queryStringParameters?: JSONSchema7 | StrictSchema<any>;
-  multiValueQueryStringParameters?: JSONSchema7 | StrictSchema<any>;
+type RequestSchemaTypes = {
+  body?: StrictSchema<any>;
+  pathParameters?: StrictSchema<any>;
+  queryStringParameters?: StrictSchema<any>;
+  multiValueQueryStringParameters?: StrictSchema<any>;
 };
 
 export default (validatorService: IValidatorService) => {

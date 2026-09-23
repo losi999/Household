@@ -4,6 +4,7 @@ import { ObjectSchema, StrictSchema } from '@household/shared/types/schema';
 import { Responses } from '@household/shared/types/responses';
 import { Requests } from '@household/shared/types/requests';
 import { priceId, response as priceResponse } from '@household/shared/schemas/price';
+import { MONGO_ID_PATTERN } from '@household/shared/constants';
 
 export const customerId: ObjectSchema<Api.Customer.CustomerId> = {
   type: 'object',
@@ -12,7 +13,7 @@ export const customerId: ObjectSchema<Api.Customer.CustomerId> = {
   properties: {
     customerId: {
       type: 'string',
-      pattern: '^[a-f0-9]{24}$',
+      pattern: MONGO_ID_PATTERN,
     },
   },
 };

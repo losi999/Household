@@ -6,9 +6,7 @@ import { Api } from '@household/shared/types/api';
 import { Responses } from '@household/shared/types/responses';
 
 export interface IListCustomerWorksService {
-  (ctx: {
-    customerId: Api.Customer.Id;
-  }): Promise<Responses.CalendarEntryWorkLean[]>;
+  (ctx: Api.Customer.CustomerId): Promise<Responses.CalendarEntryWorkLean[]>;
 }
 
 export const listCustomerWorksServiceFactory = (

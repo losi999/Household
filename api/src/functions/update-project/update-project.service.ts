@@ -2,14 +2,13 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateProjectService {
   (ctx: {
     body: Requests.Project;
-    projectId: Api.Project.Id;
-    expiresIn: number;
-  }): Promise<unknown>;
+  } & Api.Project.ProjectId & ExpiresIn): Promise<unknown>;
 }
 
 export const updateProjectServiceFactory = (

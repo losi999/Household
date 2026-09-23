@@ -3,9 +3,7 @@ import { IRecipientService } from '@household/shared/services/recipient-service'
 import { Api } from '@household/shared/types/api';
 
 export interface IDeleteRecipientService {
-  (ctx: {
-    recipientId: Api.Recipient.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Recipient.RecipientId): Promise<unknown>;
 }
 
 export const deleteRecipientServiceFactory = (

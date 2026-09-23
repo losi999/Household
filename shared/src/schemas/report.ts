@@ -2,6 +2,7 @@ import { issuedAt } from '@household/shared/schemas/transaction';
 import { Requests } from '@household/shared/types/requests';
 import { StrictSchema } from '@household/shared/types/schema';
 import { Api } from '@household/shared/types/api';
+import { MONGO_ID_PATTERN } from '@household/shared/constants';
 
 const catalogItemFilter: StrictSchema<Api.Report.CatalogItemFilter> = {
   type: 'object',
@@ -30,7 +31,7 @@ const catalogItemFilter: StrictSchema<Api.Report.CatalogItemFilter> = {
       minItems: 1,
       items: {
         type: 'string',
-        pattern: '^[a-f0-9]{24}$',
+        pattern: MONGO_ID_PATTERN,
       },
     },
   },

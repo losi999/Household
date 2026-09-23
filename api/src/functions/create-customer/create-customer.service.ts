@@ -3,13 +3,13 @@ import { getCustomerId } from '@household/shared/common/utils';
 import { ICustomerDocumentConverter } from '@household/shared/converters/customer-document-converter';
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateCustomerService {
   (ctx: {
     body: Requests.Customer;
-    expiresIn: number;
-  }): Promise<Api.Customer.Id>;
+  } & ExpiresIn): Promise<Api.Customer.Id>;
 }
 
 export const createCustomerServiceFactory = (

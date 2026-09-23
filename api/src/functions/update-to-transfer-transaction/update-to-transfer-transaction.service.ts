@@ -4,14 +4,13 @@ import { ITransferTransactionDocumentConverter } from '@household/shared/convert
 import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateToTransferTransactionService {
   (ctx: {
     body: Requests.TransferTransaction;
-    transactionId: Api.Transaction.Id;
-    expiresIn: number;
-  }): Promise<unknown>;
+  } & Api.Transaction.TransactionId & ExpiresIn): Promise<unknown>;
 }
 
 export const updateToTransferTransactionServiceFactory = (

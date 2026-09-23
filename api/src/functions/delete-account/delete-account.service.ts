@@ -3,9 +3,7 @@ import { IAccountService } from '@household/shared/services/account-service';
 import { Api } from '@household/shared/types/api';
 
 export interface IDeleteAccountService {
-  (ctx: {
-    accountId: Api.Account.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Account.AccountId): Promise<unknown>;
 }
 
 export const deleteAccountServiceFactory = (

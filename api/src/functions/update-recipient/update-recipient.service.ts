@@ -2,14 +2,13 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateRecipientService {
   (ctx: {
     body: Requests.Recipient;
-    recipientId: Api.Recipient.Id;
-    expiresIn: number;
-  }): Promise<unknown>;
+  } & Api.Recipient.RecipientId & ExpiresIn): Promise<unknown>;
 }
 
 export const updateRecipientServiceFactory = (

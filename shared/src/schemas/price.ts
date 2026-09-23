@@ -3,7 +3,7 @@ import { combine } from '@household/shared/common/schema-utils';
 import { ObjectSchema, StrictSchema } from '@household/shared/types/schema';
 import { Responses } from '@household/shared/types/responses';
 import { Requests } from '@household/shared/types/requests';
-import { priceUnitsOfMeasurement } from '@household/shared/constants';
+import { MONGO_ID_PATTERN, priceUnitsOfMeasurement } from '@household/shared/constants';
 
 export const priceId: ObjectSchema<Api.Price.PriceId> = {
   type: 'object',
@@ -12,7 +12,7 @@ export const priceId: ObjectSchema<Api.Price.PriceId> = {
   properties: {
     priceId: {
       type: 'string',
-      pattern: '^[a-f0-9]{24}$',
+      pattern: MONGO_ID_PATTERN,
     },
   },
 };

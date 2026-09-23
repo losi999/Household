@@ -4,9 +4,7 @@ import { IStorageService } from '@household/shared/services/storage-service';
 import { Api } from '@household/shared/types/api';
 
 export interface IDeleteFileService {
-  (ctx: {
-    fileId: Api.File.Id;
-  }): Promise<unknown>;
+  (ctx: Api.File.FileId): Promise<unknown>;
 }
 
 export const deleteFileServiceFactory = (

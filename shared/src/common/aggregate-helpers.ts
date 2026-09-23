@@ -1,4 +1,4 @@
-import { AccountType, TransactionType } from '@household/shared/enums';
+import { AccountType } from '@household/shared/enums';
 import { Expression, PipelineStage } from 'mongoose';
 
 export const findById = (idProperty: string, array: string): Expression.First => {
@@ -62,94 +62,6 @@ export const populateAggregate = (localField: string, from: string, pipeline?: P
 ];
 
 export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] = [
-  {
-    $lookup: {
-      from: 'transactions',
-      let: {
-        transactionId: '$_id',
-        deferredSplits: '$deferredSplits',
-      },
-      as: 'repayments',
-      pipeline: [
-        {
-          $unwind: {
-            path: '$payments',
-          },
-        },
-        {
-          $match: {
-            $expr: {
-              $or: [
-                {
-                  $eq: [
-                    '$$transactionId',
-                    '$payments.transaction',
-                  ],
-                },
-                {
-                  $in: [
-                    '$payments.transaction',
-                    {
-                      $map: {
-                        input: {
-                          $ifNull: [
-                            '$$deferredSplits',
-                            [],
-                          ],
-                        },
-                        as: 'split',
-                        in: '$$split._id',
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          },
-        },
-        {
-          $replaceRoot: {
-            newRoot: '$payments',
-          },
-        },
-      ],
-    },
-  },
-  {
-    $set: {
-      remainingAmount: {
-        $cond: {
-          if: {
-            $and: [
-              {
-                $eq: [
-                  '$transactionType',
-                  TransactionType.Deferred,
-                ],
-              },
-              {
-                $eq: [
-                  '$isSettled',
-                  false,
-                ],
-              },
-            ],
-          },
-          then: {
-            $subtract: [
-              {
-                $abs: '$amount',
-              },
-              {
-                $sum: '$repayments.amount',
-              },
-            ],
-          },
-          else: '$$REMOVE',
-        },
-      },
-    },
-  }, 
   ...populateAggregate('recipient', 'recipients'),
   {
     $set: {
@@ -292,45 +204,7 @@ export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] =
               in: {
                 $mergeObjects: [
                   '$$s',
-                  {
-                    remainingAmount: {
-                      $cond: {
-                        if: {
-                          $eq: [
-                            '$$s.isSettled',
-                            false,
-                          ],
-                        },
-                        then: {
-                          $subtract: [
-                            {
-                              $abs: '$$s.amount',
-                            },
-                            {
-                              $sum: {
-                                $map: {
-                                  input: '$repayments',
-                                  as: 'payment',
-                                  in: {
-                                    $cond: {
-                                      if: {
-                                        $eq: [
-                                          '$$payment.transaction',
-                                          '$$s._id',
-                                        ],
-                                      },
-                                      then: '$$payment.amount',
-                                      else: 0,
-                                    },
-                                  },
-                                },
-                              },
-                            },
-                          ],
-                        },
-                        else: '$$REMOVE',
-                      },
-                    },                            
+                  {                  
                     project: findById('$$s.project', '$allProjects'),
                     product: findById('$$s.product', '$allProducts'),
                     category: findById('$$s.category', '$allCategories'),
@@ -353,7 +227,6 @@ export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] =
       'allProducts',
       'allCategories',
       'allSplits',
-      'repayments',
     ],
   },
 ];

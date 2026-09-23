@@ -11,8 +11,7 @@ import { FileProcessingStatus } from '@household/shared/enums';
 export interface IBulkTransactionImporterService {
   (ctx: {
     bucketName: string;
-    fileId: Api.File.Id;
-  }): Promise<unknown>;
+  } & Api.File.FileId): Promise<unknown>;
 }
 
 export const bulkTransactionImporterServiceFactory = (fileService: IFileService, fileDocumentConverter: IFileDocumentConverter, storageService: (bucketName: string) => IStorageService, excelParser: IExcelParserService, draftTransactionDocumentConverter: IDraftTransactionDocumentConverter, transactionService: ITransactionService): IBulkTransactionImporterService =>

@@ -5,9 +5,7 @@ import { Api } from '@household/shared/types/api';
 import { Responses } from '@household/shared/types/responses';
 
 export interface IGetProjectService {
-  (ctx: {
-    projectId: Api.Project.Id;
-  }): Promise<Responses.Project>;
+  (ctx: Api.Project.ProjectId): Promise<Responses.Project>;
 }
 
 export const getProjectServiceFactory = (

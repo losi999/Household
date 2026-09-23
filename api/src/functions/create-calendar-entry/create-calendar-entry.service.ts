@@ -6,14 +6,14 @@ import { ICalendarEntryService } from '@household/shared/services/calendar-entry
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateCalendarEntryService {
   (ctx: {
     body: Requests.CalendarEntry;
-    expiresIn: number;
-  }): Promise<Api.Calendar.Entry.Id>;
+  } & ExpiresIn): Promise<Api.Calendar.Entry.Id>;
 }
 
 export const createCalendarEntryServiceFactory = (

@@ -3,13 +3,13 @@ import { getCategoryId } from '@household/shared/common/utils';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateCategoryService {
   (ctx: {
     body: Requests.Category;
-    expiresIn: number;
-  }): Promise<Api.Category.Id>;
+  } & ExpiresIn): Promise<Api.Category.Id>;
 }
 
 export const createCategoryServiceFactory = (

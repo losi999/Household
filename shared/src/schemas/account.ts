@@ -4,6 +4,7 @@ import { combine } from '@household/shared/common/schema-utils';
 import { ObjectSchema, StrictSchema } from '@household/shared/types/schema';
 import { Responses } from '@household/shared/types/responses';
 import { Requests } from '@household/shared/types/requests';
+import { MONGO_ID_PATTERN } from '@household/shared/constants';
 
 export const accountId: ObjectSchema<Api.Account.AccountId> = {
   type: 'object',
@@ -12,7 +13,7 @@ export const accountId: ObjectSchema<Api.Account.AccountId> = {
   properties: {
     accountId: {
       type: 'string',
-      pattern: '^[a-f0-9]{24}$',
+      pattern: MONGO_ID_PATTERN,
     },
   },
 };

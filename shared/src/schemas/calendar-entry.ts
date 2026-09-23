@@ -2,7 +2,7 @@ import { Api } from '@household/shared/types/api';
 import { combine } from '@household/shared/common/schema-utils';
 import { ObjectSchema, StrictSchema } from '@household/shared/types/schema';
 import { Requests } from '@household/shared/types/requests';
-import { DAY_END, DAY_START } from '@household/shared/constants';
+import { DAY_END, DAY_START, MONGO_ID_PATTERN } from '@household/shared/constants';
 import { CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { customerId, customerJobQuantity, responseCustomerJobCost } from '@household/shared/schemas/customer';
 import { priceId } from '@household/shared/schemas/price';
@@ -18,7 +18,7 @@ export const calendarEntryId: ObjectSchema<Api.Calendar.Entry.CalendarEntryId> =
   properties: {
     calendarEntryId: {
       type: 'string',
-      pattern: '^[a-f0-9]{24}$',
+      pattern: MONGO_ID_PATTERN,
     },
   },
 };

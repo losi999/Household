@@ -9,6 +9,7 @@ import { productId, response as productResponse, report as productReport } from 
 import { recipientId, response as recipientResponse, report as recipientReport } from '@household/shared/schemas/recipient';
 import { projectId, response as projectResponse, report as projectReport } from '@household/shared/schemas/project';
 import { categoryId, response as categoryResponse, report as categoryReport } from '@household/shared/schemas/category';
+import { MONGO_ID_PATTERN } from '@household/shared/constants';
 
 export const transactionId: ObjectSchema<Api.Transaction.TransactionId> = {
   type: 'object',
@@ -17,7 +18,7 @@ export const transactionId: ObjectSchema<Api.Transaction.TransactionId> = {
   properties: {
     transactionId: {
       type: 'string',
-      pattern: '^[a-f0-9]{24}$',
+      pattern: MONGO_ID_PATTERN,
     },
   },
 };

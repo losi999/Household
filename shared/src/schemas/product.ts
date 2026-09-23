@@ -1,5 +1,5 @@
 import { Api } from '@household/shared/types/api';
-import { unitsOfMeasurement } from '@household/shared/constants';
+import { MONGO_ID_PATTERN, unitsOfMeasurement } from '@household/shared/constants';
 import { combine } from '@household/shared/common/schema-utils';
 import { ObjectSchema, StrictSchema } from '@household/shared/types/schema';
 import { Responses } from '@household/shared/types/responses';
@@ -13,7 +13,7 @@ export const productId: ObjectSchema<Api.Product.ProductId> = {
   properties: {
     productId: {
       type: 'string',
-      pattern: '^[a-f0-9]{24}$',
+      pattern: MONGO_ID_PATTERN,
     },
   },
 };

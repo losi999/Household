@@ -11,14 +11,14 @@ import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreatePaymentTransactionService {
   (ctx: {
     body: Requests.PaymentTransaction;
-    expiresIn: number;
-  }): Promise<Api.Transaction.Id>;
+  } & ExpiresIn): Promise<Api.Transaction.Id>;
 }
 
 export const createPaymentTransactionServiceFactory = (

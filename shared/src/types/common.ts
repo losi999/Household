@@ -35,6 +35,10 @@ export type Searchable<T = object> = T & {
   searchTerms?: string[];
 };
 
+export type ExpiresIn = {
+  expiresIn: number;
+};
+
 export namespace Import {
   export type Revolut = {
     Amount: number;

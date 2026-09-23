@@ -3,9 +3,7 @@ import { ICalendarEntryService } from '@household/shared/services/calendar-entry
 import { Api } from '@household/shared/types/api';
 
 export interface IDeleteCalendarEntryService {
-  (ctx: {
-    calendarEntryId: Api.Calendar.Entry.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Calendar.Entry.CalendarEntryId): Promise<unknown>;
 }
 
 export const deleteCalendarEntryServiceFactory = (

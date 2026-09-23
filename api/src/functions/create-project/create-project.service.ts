@@ -3,13 +3,13 @@ import { getProjectId } from '@household/shared/common/utils';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IProjectService } from '@household/shared/services/project-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateProjectService {
   (ctx: {
     body: Requests.Project;
-    expiresIn: number;
-  }): Promise<Api.Project.Id>;
+  } & ExpiresIn): Promise<Api.Project.Id>;
 }
 
 export const createProjectServiceFactory = (

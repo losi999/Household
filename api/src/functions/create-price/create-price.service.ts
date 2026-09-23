@@ -3,13 +3,13 @@ import { getPriceId } from '@household/shared/common/utils';
 import { IPriceDocumentConverter } from '@household/shared/converters/price-document-converter';
 import { IPriceService } from '@household/shared/services/price-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreatePriceService {
   (ctx: {
     body: Requests.Price;
-    expiresIn: number;
-  }): Promise<Api.Price.Id>;
+  } & ExpiresIn): Promise<Api.Price.Id>;
 }
 
 export const createPriceServiceFactory = (

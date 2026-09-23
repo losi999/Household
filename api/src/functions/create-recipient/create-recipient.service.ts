@@ -3,13 +3,13 @@ import { getRecipientId } from '@household/shared/common/utils';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateRecipientService {
   (ctx: {
     body: Requests.Recipient;
-    expiresIn: number;
-  }): Promise<Api.Recipient.Id>;
+  } & ExpiresIn): Promise<Api.Recipient.Id>;
 }
 
 export const createRecipientServiceFactory = (

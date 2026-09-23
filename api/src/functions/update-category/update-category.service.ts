@@ -2,13 +2,13 @@ import { httpErrors } from '@household/api/common/error-handlers';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateCategoryService {
   (ctx: {
     body: Requests.Category;
-    expiresIn: number;
-  } & Api.Category.CategoryId): Promise<unknown>;
+  } & Api.Category.CategoryId & ExpiresIn): Promise<unknown>;
 }
 
 export const updateCategoryServiceFactory = (

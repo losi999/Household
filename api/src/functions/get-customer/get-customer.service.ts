@@ -5,9 +5,7 @@ import { Api } from '@household/shared/types/api';
 import { Responses } from '@household/shared/types/responses';
 
 export interface IGetCustomerService {
-  (ctx: {
-    customerId: Api.Customer.Id;
-  }): Promise<Responses.Customer>;
+  (ctx: Api.Customer.CustomerId): Promise<Responses.Customer>;
 }
 
 export const getCustomerServiceFactory = (

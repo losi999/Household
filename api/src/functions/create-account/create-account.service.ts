@@ -3,13 +3,13 @@ import { getAccountId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { IAccountService } from '@household/shared/services/account-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateAccountService {
   (ctx: {
     body: Requests.Account;
-    expiresIn: number;
-  }): Promise<Api.Account.Id>;
+  } & ExpiresIn): Promise<Api.Account.Id>;
 }
 
 export const createAccountServiceFactory = (

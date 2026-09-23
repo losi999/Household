@@ -9,13 +9,13 @@ import { IProjectService } from '@household/shared/services/project-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateSplitTransactionService {
   (ctx: {
     body: Requests.SplitTransaction;
-    expiresIn: number;
-  }): Promise<Api.Transaction.Id>;
+  } & ExpiresIn): Promise<Api.Transaction.Id>;
 }
 
 export const createSplitTransactionServiceFactory = (

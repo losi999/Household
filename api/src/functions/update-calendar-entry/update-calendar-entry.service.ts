@@ -5,16 +5,14 @@ import { ICalendarEntryService } from '@household/shared/services/calendar-entry
 import { ICustomerService } from '@household/shared/services/customer-service';
 import { IPriceService } from '@household/shared/services/price-service';
 import { Api } from '@household/shared/types/api';
-import { DocumentUpdate } from '@household/shared/types/common';
+import { DocumentUpdate, ExpiresIn } from '@household/shared/types/common';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 
 export interface IUpdateCalendarEntryService {
   (ctx: {
     body: Requests.CalendarEntry;
-    calendarEntryId: Api.Calendar.Entry.Id;
-    expiresIn: number;
-  }): Promise<unknown>;
+  } & Api.Calendar.Entry.CalendarEntryId & ExpiresIn): Promise<unknown>;
 }
 
 export const updateCalendarEntryServiceFactory = (

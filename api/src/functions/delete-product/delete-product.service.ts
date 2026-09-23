@@ -3,9 +3,7 @@ import { IProductService } from '@household/shared/services/product-service';
 import { Api } from '@household/shared/types/api';
 
 export interface IDeleteProductService {
-  (ctx: {
-    productId: Api.Product.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Product.ProductId): Promise<unknown>;
 }
 
 export const deleteProductServiceFactory = (

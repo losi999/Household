@@ -4,13 +4,13 @@ import { IProductDocumentConverter } from '@household/shared/converters/product-
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateProductService {
   (ctx: {
     body: Requests.Product;
-    expiresIn: number;
-  } & Api.Category.CategoryId): Promise<Api.Product.Id>;
+  } & Api.Category.CategoryId & ExpiresIn): Promise<Api.Product.Id>;
 }
 
 export const createProductServiceFactory = (

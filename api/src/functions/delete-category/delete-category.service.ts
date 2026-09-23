@@ -3,9 +3,7 @@ import { ICategoryService } from '@household/shared/services/category-service';
 import { Api } from '@household/shared/types/api';
 
 export interface IDeleteCategoryService {
-  (ctx: {
-    categoryId: Api.Category.Id;
-  }): Promise<unknown>;
+  (ctx: Api.Category.CategoryId): Promise<unknown>;
 }
 
 export const deleteCategoryServiceFactory = (

@@ -20,7 +20,9 @@ describe('API request validator handler', () => {
 
     try {
       handler(mockValidatorService.service)({
-        body: {},
+        body: {
+          type: 'object',
+        },
       })(handlerEvent);
     } catch (error) {
       expect(error.statusCode).toEqual(400);
@@ -39,7 +41,9 @@ describe('API request validator handler', () => {
     mockValidatorService.functions.validate.mockReturnValue(undefined);
 
     const result = handler(mockValidatorService.service)({
-      body: {},
+      body: {
+        type: 'object',
+      },
     })(handlerEvent);
 
     expect(result).toEqual(handlerEvent);

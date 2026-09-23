@@ -5,12 +5,12 @@ import { IAccountService } from '@household/shared/services/account-service';
 import { ITransactionService } from '@household/shared/services/transaction-service';
 import { Requests } from '@household/shared/types/requests';
 import { Api } from '@household/shared/types/api';
+import { ExpiresIn } from '@household/shared/types/common';
 
 export interface ICreateTransferTransactionService {
   (ctx: {
     body: Requests.TransferTransaction;
-    expiresIn: number;
-  }): Promise<Api.Transaction.Id>;
+  } & ExpiresIn): Promise<Api.Transaction.Id>;
 }
 
 export const createTransferTransactionServiceFactory = (
