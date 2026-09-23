@@ -7,7 +7,7 @@ import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 
 export const calendarDayDataFactory = (() => {
-  const createCalendarWorkdayDocument = (ctx?: Partial<Api.Calendar.Day> & Partial<Requests.CalendarDayWorkday>): Documents.CalendarDay => {
+  const createCalendarWorkdayDocument = (ctx?: Partial<Api.Calendar.Day> & Partial<Requests.CalendarDayWork>): Documents.CalendarDay => {
     const { day, ...body } = ctx ?? {};
     const expiresAt = addSeconds(Number(process.env.EXPIRES_IN));
     return {

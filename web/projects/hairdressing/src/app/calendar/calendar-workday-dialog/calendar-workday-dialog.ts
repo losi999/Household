@@ -43,7 +43,7 @@ export class CalendarWorkdayDialog {
   shiftType = model(ShiftType.Custom);
   start = model<number>();
   end = model<number>();
-  dayType = model<CalendarDayType>(this.day.dayType !== CalendarDayType.Weekend ? this.day.dayType : CalendarDayType.Workday);
+  dayType = model<CalendarDayType>(this.day.dayType);
 
   constructor() {
     effect(() => {
@@ -72,9 +72,9 @@ export class CalendarWorkdayDialog {
       });     
     }
 
-    if (this.dayType() === CalendarDayType.Workday) {
+    if (this.dayType() === CalendarDayType.Regular) {
       this.dialogRef.close({
-        dayType: CalendarDayType.Workday,
+        dayType: CalendarDayType.Regular,
         day: this.day.day,
         start: this.start(),
         end: this.end(),

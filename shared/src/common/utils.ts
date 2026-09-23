@@ -1,4 +1,4 @@
-import { WORKDAY_LENGTH } from '@household/shared/constants';
+import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Dictionary } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
@@ -91,19 +91,29 @@ export const getFileId = (doc: Documents.File | Types.ObjectId): Api.File.Id => 
 export const getPriceId = (doc: Documents.Price | Types.ObjectId): Api.Price.Id => getId(doc) as Api.Price.Id;
 export const getCalendarEntryId = (doc: Documents.CalendarEntry | Types.ObjectId): Api.Calendar.Entry.Id => getId(doc) as Api.Calendar.Entry.Id;
 
+export const isWeekend = (date: Date | string): boolean => {
+  return [
+    0,
+    6,
+  ].includes((typeof date === 'string' ? createDate(date) : date).getDay());
+};
+
 export const calculateWorkdayLimits = (day: Responses.CalendarDay): Api.Calendar.TimeInterval => {
-  if (day.dayType === CalendarDayType.Holiday || day.dayType === CalendarDayType.Vacation || !day.start || !day.end) {
+  if (day.dayType === CalendarDayType.Holiday || day.dayType === CalendarDayType.Vacation || (isWeekend(day.day) && (!day.start || !day.end))) {
     return {
       start: undefined,
       end: undefined,
     };
   }
 
+  const dayStart = day.start ?? WORKDAY_START;
+  const dayEnd = day.end ?? WORKDAY_END;
+
   const workEntries = day.entries.filter(e => e.entryType === CalendarEntryType.Work);
   if (workEntries.length === 0) {
     return {
-      start: day.start,
-      end: day.end,
+      start: dayStart,
+      end: dayEnd,
     };
   }
 
@@ -120,8 +130,8 @@ export const calculateWorkdayLimits = (day: Responses.CalendarDay): Api.Calendar
   const calculatedStart = latestEnd - WORKDAY_LENGTH;
   const calculatedEnd = earliestStart + WORKDAY_LENGTH;
 
-  const start = Math.max(calculatedStart, day.start);
-  const end = Math.min(calculatedEnd, day.end);
+  const start = Math.max(calculatedStart, dayStart);
+  const end = Math.min(calculatedEnd, dayEnd);
 
   if (start <= end) {
     return {

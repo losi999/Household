@@ -35,7 +35,7 @@ export class CalendarService {
   }
 
   updateCalendarEntry(calendarEntryId: Api.Calendar.Entry.Id, body: Requests.CalendarEntry) {
-    return this.httpClient.put<Api.Calendar.Entry.CalendarEntryId>(`${this.apiUrl}/calendar/v1/entries/${calendarEntryId}`, body);
+    return this.httpClient.put(`${this.apiUrl}/calendar/v1/entries/${calendarEntryId}`, body);
   }
 
   deleteCalendarEntry(calendarEntryId: Api.Calendar.Entry.Id) {

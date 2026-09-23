@@ -1,5 +1,5 @@
 @switch (day().dayType) {
-@case ('weekend') {
+@case ('regular') {
 @if (day().calculatedStart && day().calculatedEnd) {
 <div class="no-work" [style.grid-row]="1 + '/ ' + (day().calculatedStart + 1)" [style.grid-column]="column()"></div>
 <div class="no-work" [style.grid-row]="(day().calculatedEnd + 1) + '/ 97'" [style.grid-column]="column()"></div>
@@ -12,10 +12,6 @@
 }
 @case ('holiday') {
 <div class="holiday" [style.grid-row]="'1 / 97'" [style.grid-column]="column()"></div>
-}
-@default {
-<div class="no-work" [style.grid-row]="1 + '/ ' + (day().calculatedStart + 1)" [style.grid-column]="column()"></div>
-<div class="no-work" [style.grid-row]="(day().calculatedEnd + 1) + '/ 97'" [style.grid-column]="column()"></div>
 }
 }
 @for (p of proposedTimeIntervals(); track $index) {

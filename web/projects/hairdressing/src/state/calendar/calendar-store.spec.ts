@@ -137,7 +137,7 @@ describe('Calendar store', () => {
 
   describe('dispatching setWorkDay', () => {
     it('should open dialog and reset calendar day if submitted', () => {
-      const dayResponse = testDataFactory.calendar.day.response.workday(); 
+      const dayResponse = testDataFactory.calendar.day.response.regular(); 
 
       mockMatDialog.functions.open.mockReturnValue({
         afterClosed: () => of({
@@ -159,7 +159,7 @@ describe('Calendar store', () => {
     });
 
     it('should open dialog and update calendar day to vacation if submitted', () => {
-      const dayResponse = testDataFactory.calendar.day.response.workday(); 
+      const dayResponse = testDataFactory.calendar.day.response.regular(); 
 
       const request = testDataFactory.calendar.day.request.vacation();
 
@@ -185,7 +185,7 @@ describe('Calendar store', () => {
     });
 
     it('should open dialog and update calendar day to workday if submitted', () => {
-      const dayResponse = testDataFactory.calendar.day.response.workday(); 
+      const dayResponse = testDataFactory.calendar.day.response.regular(); 
 
       const request = testDataFactory.calendar.day.request.workday();
 
@@ -211,7 +211,7 @@ describe('Calendar store', () => {
     });
     
     it('should open dialog and not dispatch anything if cancelled', () => {   
-      const dayResponse = testDataFactory.calendar.day.response.workday(); 
+      const dayResponse = testDataFactory.calendar.day.response.regular(); 
 
       mockMatDialog.functions.open.mockReturnValue({
         afterClosed: () => of(undefined),
@@ -666,7 +666,7 @@ describe('Calendar store', () => {
     const dateFrom = testDataFactory.calendar.day.pastDay();
     const dateTo = testDataFactory.calendar.day.futureDay();
     it('should call API and dispatch response', () => {
-      const calendarList = [testDataFactory.calendar.day.response.workday()];
+      const calendarList = [testDataFactory.calendar.day.response.regular()];
       mockCalendarService.functions.listCalendarDays.mockReturnValue(of(calendarList));
     
       dispatcher.dispatch(calendarApiEvents.listCalendarDaysInitiated({
@@ -1053,7 +1053,7 @@ describe('Calendar store', () => {
       });
       
       it('with workday with planned work', () => {
-        const dayResponse = testDataFactory.calendar.day.response.workday({
+        const dayResponse = testDataFactory.calendar.day.response.regular({
           day,
           entries: [
             personalEntry,
@@ -1077,7 +1077,7 @@ describe('Calendar store', () => {
       describe('with work entry', () => {
         dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`should calculate day limits #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
-            const dayResponse = testDataFactory.calendar.day.response.workday({
+            const dayResponse = testDataFactory.calendar.day.response.regular({
               day,
               start: plannedStart,
               end: plannedEnd,
@@ -1138,7 +1138,7 @@ describe('Calendar store', () => {
         setup({
           days: {
             [day]: {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day,
                 entries: [
                   workEntry,
@@ -1262,7 +1262,7 @@ describe('Calendar store', () => {
       describe('with work entry', () => {
         dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`should calculate day limits #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
-            const originalDay = testDataFactory.calendar.day.response.workday({
+            const originalDay = testDataFactory.calendar.day.response.regular({
               day,
               start: WORKDAY_START,
               end: WORKDAY_END,
@@ -1420,7 +1420,7 @@ describe('Calendar store', () => {
         setup({
           days: {
             [day]: {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day,
                 entries: [
                   issueEntry,
@@ -1460,7 +1460,7 @@ describe('Calendar store', () => {
         defaultDayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`should recalculate limits of workday #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
             const day = testDataFactory.calendar.day.futureDay();
-            const originalDay = testDataFactory.calendar.day.response.workday({
+            const originalDay = testDataFactory.calendar.day.response.regular({
               day,
               entries: [
                 issueEntry,
@@ -1692,7 +1692,7 @@ describe('Calendar store', () => {
       describe('on a workday', () => {
         beforeEach(() => {
           originalDay = {
-            ...testDataFactory.calendar.day.response.workday({
+            ...testDataFactory.calendar.day.response.regular({
               day,
               start: WORKDAY_START,
               end: WORKDAY_END,
@@ -1714,7 +1714,7 @@ describe('Calendar store', () => {
         dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`with a work entry with limits recalculated #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
             originalDay = {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day,
                 start: plannedStart,
                 end: plannedEnd,
@@ -2029,7 +2029,7 @@ describe('Calendar store', () => {
             });
 
             originalDay = {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day,
                 entries: [
                   originalEntry,
@@ -2351,7 +2351,7 @@ describe('Calendar store', () => {
       describe('workday', () => {
         beforeEach(() => {
           originalDayFrom = {
-            ...testDataFactory.calendar.day.response.workday({
+            ...testDataFactory.calendar.day.response.regular({
               day: dayFrom,
               start: WORKDAY_START,
               end: WORKDAY_END,
@@ -2361,7 +2361,7 @@ describe('Calendar store', () => {
           };
 
           originalDayTo = {
-            ...testDataFactory.calendar.day.response.workday({
+            ...testDataFactory.calendar.day.response.regular({
               day: dayTo,
               start: WORKDAY_START,
               end: WORKDAY_END,
@@ -2388,7 +2388,7 @@ describe('Calendar store', () => {
             });
 
             originalDayFrom = {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day: dayFrom,
                 start: plannedStart,
                 end: plannedEnd,
@@ -2399,7 +2399,7 @@ describe('Calendar store', () => {
             };
 
             originalDayTo = {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day: dayTo,
                 start: plannedStart,
                 end: plannedEnd,
@@ -2634,7 +2634,7 @@ describe('Calendar store', () => {
     describe('from a workday', () => {
       beforeEach(() => {
         originalDay = {
-          ...testDataFactory.calendar.day.response.workday({
+          ...testDataFactory.calendar.day.response.regular({
             day,
             start: WORKDAY_START,
             end: WORKDAY_END,
@@ -2667,7 +2667,7 @@ describe('Calendar store', () => {
           });
 
           originalDay = {
-            ...testDataFactory.calendar.day.response.workday({
+            ...testDataFactory.calendar.day.response.regular({
               day,
               start: plannedStart,
               end: plannedEnd,
@@ -2724,7 +2724,7 @@ describe('Calendar store', () => {
         day,
       });
       originalDay = {
-        ...testDataFactory.calendar.day.response.workday({
+        ...testDataFactory.calendar.day.response.regular({
           day,
           entries: [originalEntry],
           start: WORKDAY_START,

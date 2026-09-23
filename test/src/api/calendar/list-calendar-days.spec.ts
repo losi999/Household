@@ -105,7 +105,7 @@ test.describe('GET /calendar/v1/days', () => {
         });
       } else {
         test.describe.serial('should return', () => {
-          test.describe('workday', () => {
+          test.describe('regular', () => {
             test.beforeEach(() => {
               day = calendarDayDataFactory.futureWorkday();
 

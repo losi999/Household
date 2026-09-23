@@ -65,7 +65,7 @@ export const withCustomerApiEvents = () => {
           mergeMap((value) => {
             return value.pipe(exhaustMap(({ payload: { customerId, ...request } }) => {
               return customerService.updateCustomer(customerId, request).pipe(
-                map(({ customerId }) => customerApiEvents.updateCustomerCompleted({
+                map(() => customerApiEvents.updateCustomerCompleted({
                   customerId,
                   ...request,
                 })),

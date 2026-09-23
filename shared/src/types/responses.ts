@@ -210,12 +210,11 @@ export namespace Responses {
     entries: CalendarEntry[];
   };
 
-  export type CalendarDayWorkday = Api.Calendar.DayType<Enum.CalendarDayType.Workday> & Api.Calendar.TimeInterval & CalendarDayLean;
-  export type CalendarDayWeekend = Api.Calendar.DayType<Enum.CalendarDayType.Weekend> & Api.Calendar.TimeInterval & CalendarDayLean;
+  export type CalendarDayRegular = Api.Calendar.DayType<Enum.CalendarDayType.Regular> & Api.Calendar.TimeInterval & CalendarDayLean;
   export type CalendarDayVacation = Api.Calendar.DayType<Enum.CalendarDayType.Vacation> & CalendarDayLean;
   export type CalendarDayHoliday = Api.Calendar.DayType<Enum.CalendarDayType.Holiday> & CalendarDayLean;
 
-  export type CalendarDay = CalendarDayWorkday | CalendarDayWeekend | CalendarDayVacation | CalendarDayHoliday;
+  export type CalendarDay = CalendarDayRegular | CalendarDayVacation | CalendarDayHoliday;
 
   export type CalendarEntryLean = Api.Calendar.Entry.Base
     & Api.Calendar.Day

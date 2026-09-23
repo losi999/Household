@@ -79,7 +79,7 @@ export const withCalendarReducer = () => {
 
           const newDay: LimitedCalendarDay = {
             ...storedDay,
-            dayType: storedDay.dayType === CalendarDayType.Weekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
+            dayType: storedDay.dayType,
             start: request.start,
             end: request.end,
           };
@@ -103,10 +103,10 @@ export const withCalendarReducer = () => {
           const storedDay = state.days[day];
           switch(storedDay.dayType) {
             case CalendarDayType.Vacation: 
-            case CalendarDayType.Workday: {
+            case CalendarDayType.Regular: {
               const newDay: LimitedCalendarDay = {
                 ...storedDay,
-                dayType: CalendarDayType.Workday,
+                dayType: CalendarDayType.Regular,
                 end: WORKDAY_END,
                 start: WORKDAY_START,
               };
@@ -120,20 +120,6 @@ export const withCalendarReducer = () => {
                     ...newDay,
                     calculatedStart: start,
                     calculatedEnd: end,
-                  },
-                },
-              };
-            }
-            case CalendarDayType.Weekend: {
-              return {
-                days: {
-                  ...state.days,
-                  [day]: {
-                    ...storedDay,
-                    start: undefined,
-                    end: undefined,
-                    calculatedStart: undefined,
-                    calculatedEnd: undefined,
                   },
                 },
               };

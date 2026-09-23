@@ -525,14 +525,14 @@ const createCalendarEntryResolutionRequest: DataFactoryFunction<Requests.Calenda
   };
 };
 
-const createCalendarWorkdayRequest: DataFactoryFunction<Requests.CalendarDayWorkday> = (req) => {
+const createCalendarWorkRequest: DataFactoryFunction<Requests.CalendarDayWork> = (req) => {
   const start = faker.number.int({
     min: WORKDAY_START,
     max: WORKDAY_END - 1,
   });
 
   return {
-    dayType: CalendarDayType.Workday,
+    dayType: CalendarDayType.Regular,
     start,
     end: faker.number.int({
       min: start + 1,
@@ -550,27 +550,17 @@ const createCalendarVacationRequest = (): Requests.CalendarDayVacation => {
 
 const createCalendarDayDocument: DataFactoryFunction<Documents.CalendarDay> = (data) => {
   return {
-    ...createCalendarWorkdayRequest(),
+    ...createCalendarWorkRequest(),
     day: createFutureCalendarDay(),
     expiresAt: undefined,
     ...data,
   };
 };
 
-const createCalendarWorkdayResponse: DataFactoryFunction<Responses.CalendarDayWorkday> = (data) => {
+const createCalendarRegularResponse: DataFactoryFunction<Responses.CalendarDayRegular> = (data) => {
   return {
-    ...createCalendarWorkdayRequest(),
+    ...createCalendarWorkRequest(),
     day: createPastCalendarDay(),
-    entries: [],
-    ...data,
-  };
-};
-
-const createCalendarWeekendResponse: DataFactoryFunction<Responses.CalendarDayWeekend> = (data) => {
-  return {
-    ...createCalendarWorkdayRequest(),
-    day: createPastCalendarDay(),
-    dayType: CalendarDayType.Weekend,
     entries: [],
     ...data,
   };
@@ -1527,15 +1517,14 @@ export const testDataFactory = {
       futureWorkday: createFutureWorkday,
       futureWeekend: createFutureWeekend,
       request: {
-        workday: createCalendarWorkdayRequest,
+        workday: createCalendarWorkRequest,
         vacation: createCalendarVacationRequest,
       },
       document: createCalendarDayDocument,
       response: {
         vacation: createCalendarVacationResponse,
         holiday: createCalendarHolidayResponse,
-        workday: createCalendarWorkdayResponse,
-        weekend: createCalendarWeekendResponse,
+        regular: createCalendarRegularResponse,
       },
     },
     entry: {
