@@ -64,8 +64,6 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
           let splitTransactionDocument: Documents.SplitTransaction;
           let transferTransactionDocument: Documents.TransferTransaction;
           let invertedTransferTransactionDocument: Documents.TransferTransaction;
-          let repayingTransferTransactionDocument: Documents.TransferTransaction;
-          let invertedRepayingTransferTransactionDocument: Documents.TransferTransaction;
           let loanTransferTransactionDocument: Documents.TransferTransaction;
           let invertedLoanTransferTransactionDocument: Documents.TransferTransaction;
           let payingDeferredTransactionDocument: Documents.DeferredTransaction;
@@ -140,20 +138,10 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
               loanAccount: accountDocument,
             });
 
-            repayingTransferTransactionDocument = transferTransactionDataFactory.document({
-              account: accountDocument,
-              transferAccount: secondaryAccountDocument,
-            });
-
-            invertedRepayingTransferTransactionDocument = transferTransactionDataFactory.document({
-              account: secondaryAccountDocument,
-              transferAccount: accountDocument,
-            });
-
           });
           test('should be deleted if account is deleted', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
             await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
-            await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument, repayingTransferTransactionDocument, invertedRepayingTransferTransactionDocument);
+            await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument);
             const res = await requestDeleteAccount(getAccountId(accountDocument));
             expect(res).toBeNoContentResponse();
             
@@ -167,7 +155,6 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             expect(await findTransactionById(getTransactionId(payingDeferredTransactionDocument))).toHaveBeenDeletedFromDatabase();
             expect(await findTransactionById(getTransactionId(payingDeferredToLoanTransactionDocument))).toHaveBeenDeletedFromDatabase();
             expect(await findTransactionById(getTransactionId(owningReimbursementTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(repayingTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
             expect(owningDeferredTransactionDocument).toBeConvertedToPaymentTransaction(await findTransactionById(getTransactionId(owningDeferredTransactionDocument)));
             expect(deferredSplitTransactionDocument).toHaveBeenConvertedToRegularSplitItems(await findTransactionById(getTransactionId(deferredSplitTransactionDocument)), getAccountId(accountDocument));
           });

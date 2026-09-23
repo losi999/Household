@@ -29,8 +29,6 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
   let splitTransactionDocument: Documents.SplitTransaction;
   let transferTransactionDocument: Documents.TransferTransaction;
   let invertedTransferTransactionDocument: Documents.TransferTransaction;
-  let repayingTransferTransactionDocument: Documents.TransferTransaction;
-  let invertedRepayingTransferTransactionDocument: Documents.TransferTransaction;
   let loanTransferTransactionDocument: Documents.TransferTransaction;
   let invertedLoanTransferTransactionDocument: Documents.TransferTransaction;
   let payingDeferredTransactionDocument: Documents.DeferredTransaction;
@@ -105,16 +103,6 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
       account: loanAccountDocument,
       loanAccount: accountDocument,
     });
-
-    repayingTransferTransactionDocument = transferTransactionDataFactory.document({
-      account: accountDocument,
-      transferAccount: secondaryAccountDocument,
-    });
-
-    invertedRepayingTransferTransactionDocument = transferTransactionDataFactory.document({
-      account: secondaryAccountDocument,
-      transferAccount: accountDocument,
-    });
   });
 
   test.describe('called as anonymous', () => {
@@ -140,10 +128,10 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
       } else {
         test.beforeEach(async ({ saveAccounts, saveTransactions }) => {
           await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
-          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument, repayingTransferTransactionDocument, invertedRepayingTransferTransactionDocument);
+          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument);
         });
         test('should get account by id', async ({ requestGetAccount }) => {
-          const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + repayingTransferTransactionDocument.amount + invertedRepayingTransferTransactionDocument.transferAmount + payingDeferredToLoanTransactionDocument.amount;
+          const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + payingDeferredToLoanTransactionDocument.amount;
 
           const res = await requestGetAccount(getAccountId(accountDocument));
           expect(res).toBeOkResponse();

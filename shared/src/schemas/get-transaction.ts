@@ -11,7 +11,7 @@ const schema: ObjectSchema<Api.Account.AccountId & Api.Transaction.TransactionId
     ...accountId.required,
   ],
   properties: {
-    ...transactionId.properties as any,
+    ...transactionId.properties,
     ...accountId.properties,
   },
 };
