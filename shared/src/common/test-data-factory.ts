@@ -308,6 +308,37 @@ const createPastCalendarDay = () => {
   }));
 };
 
+const createPastWorkday = () => {
+  const date = faker.date.recent({
+    days: 50,
+  });
+
+  if (date.getDay() === 6) {
+    return dateToISODateString(addDays(-1, date));
+  }
+
+  if (date.getDay() === 0) {
+    return dateToISODateString(addDays(-2, date));
+  }
+
+  return dateToISODateString(date);
+};
+
+const createPastWeekend = () => {
+  const date = faker.date.recent({
+    days: 50,
+  });
+
+  const day = date.getDay();
+
+  if (day === 0 || day === 6) {
+    return dateToISODateString(date);
+  }
+
+  const distanceToPreviousSunday = day;
+  return dateToISODateString(addDays(-distanceToPreviousSunday, date));
+};
+
 const createFutureCalendarDay = () => {
   return dateToISODateString(faker.date.soon({
     days: 50,
@@ -322,7 +353,7 @@ const createFutureWorkday = () => {
   });
 
   if (date.getDay() === 6) {
-    return dateToISODateString(addDays(-1, date));
+    return dateToISODateString(addDays(2, date));
   }
 
   if (date.getDay() === 0) {
@@ -344,11 +375,8 @@ const createFutureWeekend = () => {
     return dateToISODateString(date);
   }
 
-  const distanceToPreviousSunday = day;
   const distanceToNextSaturday = 6 - day;
-  const nearestWeekendOffset = distanceToPreviousSunday <= distanceToNextSaturday ? -distanceToPreviousSunday : distanceToNextSaturday;
-
-  return dateToISODateString(addDays(nearestWeekendOffset, date));
+  return dateToISODateString(addDays(distanceToNextSaturday, date));
 };
 
 const createCalendarEntryId = (id?: string): Api.Calendar.Entry.Id => {
@@ -1513,6 +1541,8 @@ export const testDataFactory = {
   calendar: {
     day: {
       pastDay: createPastCalendarDay,
+      pastWorkday: createPastWorkday,
+      pastWeekend: createPastWeekend,
       futureDay: createFutureCalendarDay,
       futureWorkday: createFutureWorkday,
       futureWeekend: createFutureWeekend,

@@ -2,7 +2,6 @@ import { calendarApiEvents } from '@hairdressing/state/calendar/calendar-events'
 import { CalendarState } from '@hairdressing/state/calendar/calendar-store';
 import { LimitedCalendarDay } from '@hairdressing/types';
 import { calculateWorkdayLimits } from '@household/shared/common/utils';
-import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
@@ -79,7 +78,7 @@ export const withCalendarReducer = () => {
 
           const newDay: LimitedCalendarDay = {
             ...storedDay,
-            dayType: storedDay.dayType,
+            dayType: request.dayType,
             start: request.start,
             end: request.end,
           };
@@ -107,8 +106,8 @@ export const withCalendarReducer = () => {
               const newDay: LimitedCalendarDay = {
                 ...storedDay,
                 dayType: CalendarDayType.Regular,
-                end: WORKDAY_END,
-                start: WORKDAY_START,
+                end: undefined,
+                start: undefined,
               };
           
               const { start, end } = calculateWorkdayLimits(newDay);

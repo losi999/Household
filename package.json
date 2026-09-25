@@ -30,6 +30,7 @@
     "build:hairdressing": "rimraf ./dist/hairdressing && cd web && yarn build hairdressing",
     "start:hairdressing": "cd web && yarn start hairdressing",
     "test:hairdressing": "cd web && yarn test hairdressing --no-watch",
+    "test:hairdressing:dev": "cd web && yarn test hairdressing",
     "build:household": "rimraf ./dist/household && cd web && yarn build household",
     "start:household": "cd web && yarn start household",
     "test:household": "echo 'TODO'",

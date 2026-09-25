@@ -1,7 +1,6 @@
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { addSeconds } from '@household/shared/common/utils';
-import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { calendarDayDocumentConverterFactory, ICalendarDayDocumentConverter } from '@household/shared/converters/calendar-day-document-converter';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
@@ -96,8 +95,8 @@ describe('Calendar day document converter', () => {
       expect(result).toEqual([
         testDataFactory.calendar.day.response.regular({
           day,
-          start: WORKDAY_START,
-          end: WORKDAY_END,
+          start: undefined,
+          end: undefined,
         }),
       ]);
       validateFunctionCall(mockCalendarEntryDocumentConverter.functions.toResponseList, [
