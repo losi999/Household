@@ -21,7 +21,7 @@ export class PriceService {
   }
   
   updatePrice(priceId: Api.Price.Id, body: Requests.Price) {
-    return this.httpClient.put<Api.Price.PriceId>(`${this.apiUrl}/price/v1/prices/${priceId}`, body);
+    return this.httpClient.put(`${this.apiUrl}/price/v1/prices/${priceId}`, body);
   }
   
   deletePrice(priceId: Api.Price.Id) {

@@ -19,7 +19,7 @@ describe('Update calendar day service', () => {
   });
   
   const queriedDocument = testDataFactory.calendar.day.document({
-    dayType: CalendarDayType.Workday,
+    dayType: CalendarDayType.Regular,
   });
   const body = testDataFactory.calendar.day.request.workday();
   const day = '2025-10-11';

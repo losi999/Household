@@ -308,6 +308,37 @@ const createPastCalendarDay = () => {
   }));
 };
 
+const createPastWorkday = () => {
+  const date = faker.date.recent({
+    days: 50,
+  });
+
+  if (date.getDay() === 6) {
+    return dateToISODateString(addDays(-1, date));
+  }
+
+  if (date.getDay() === 0) {
+    return dateToISODateString(addDays(-2, date));
+  }
+
+  return dateToISODateString(date);
+};
+
+const createPastWeekend = () => {
+  const date = faker.date.recent({
+    days: 50,
+  });
+
+  const day = date.getDay();
+
+  if (day === 0 || day === 6) {
+    return dateToISODateString(date);
+  }
+
+  const distanceToPreviousSunday = day;
+  return dateToISODateString(addDays(-distanceToPreviousSunday, date));
+};
+
 const createFutureCalendarDay = () => {
   return dateToISODateString(faker.date.soon({
     days: 50,
@@ -322,7 +353,7 @@ const createFutureWorkday = () => {
   });
 
   if (date.getDay() === 6) {
-    return dateToISODateString(addDays(-1, date));
+    return dateToISODateString(addDays(2, date));
   }
 
   if (date.getDay() === 0) {
@@ -344,11 +375,8 @@ const createFutureWeekend = () => {
     return dateToISODateString(date);
   }
 
-  const distanceToPreviousSunday = day;
   const distanceToNextSaturday = 6 - day;
-  const nearestWeekendOffset = distanceToPreviousSunday <= distanceToNextSaturday ? -distanceToPreviousSunday : distanceToNextSaturday;
-
-  return dateToISODateString(addDays(nearestWeekendOffset, date));
+  return dateToISODateString(addDays(distanceToNextSaturday, date));
 };
 
 const createCalendarEntryId = (id?: string): Api.Calendar.Entry.Id => {
@@ -525,14 +553,14 @@ const createCalendarEntryResolutionRequest: DataFactoryFunction<Requests.Calenda
   };
 };
 
-const createCalendarWorkdayRequest: DataFactoryFunction<Requests.CalendarDayWorkday> = (req) => {
+const createCalendarWorkRequest: DataFactoryFunction<Requests.CalendarDayWork> = (req) => {
   const start = faker.number.int({
     min: WORKDAY_START,
     max: WORKDAY_END - 1,
   });
 
   return {
-    dayType: CalendarDayType.Workday,
+    dayType: CalendarDayType.Regular,
     start,
     end: faker.number.int({
       min: start + 1,
@@ -550,27 +578,17 @@ const createCalendarVacationRequest = (): Requests.CalendarDayVacation => {
 
 const createCalendarDayDocument: DataFactoryFunction<Documents.CalendarDay> = (data) => {
   return {
-    ...createCalendarWorkdayRequest(),
+    ...createCalendarWorkRequest(),
     day: createFutureCalendarDay(),
     expiresAt: undefined,
     ...data,
   };
 };
 
-const createCalendarWorkdayResponse: DataFactoryFunction<Responses.CalendarDayWorkday> = (data) => {
+const createCalendarRegularResponse: DataFactoryFunction<Responses.CalendarDayRegular> = (data) => {
   return {
-    ...createCalendarWorkdayRequest(),
+    ...createCalendarWorkRequest(),
     day: createPastCalendarDay(),
-    entries: [],
-    ...data,
-  };
-};
-
-const createCalendarWeekendResponse: DataFactoryFunction<Responses.CalendarDayWeekend> = (data) => {
-  return {
-    ...createCalendarWorkdayRequest(),
-    day: createPastCalendarDay(),
-    dayType: CalendarDayType.Weekend,
     entries: [],
     ...data,
   };
@@ -1523,19 +1541,20 @@ export const testDataFactory = {
   calendar: {
     day: {
       pastDay: createPastCalendarDay,
+      pastWorkday: createPastWorkday,
+      pastWeekend: createPastWeekend,
       futureDay: createFutureCalendarDay,
       futureWorkday: createFutureWorkday,
       futureWeekend: createFutureWeekend,
       request: {
-        workday: createCalendarWorkdayRequest,
+        workday: createCalendarWorkRequest,
         vacation: createCalendarVacationRequest,
       },
       document: createCalendarDayDocument,
       response: {
         vacation: createCalendarVacationResponse,
         holiday: createCalendarHolidayResponse,
-        workday: createCalendarWorkdayResponse,
-        weekend: createCalendarWeekendResponse,
+        regular: createCalendarRegularResponse,
       },
     },
     entry: {

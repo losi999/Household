@@ -137,7 +137,7 @@ describe('Calendar store', () => {
 
   describe('dispatching setWorkDay', () => {
     it('should open dialog and reset calendar day if submitted', () => {
-      const dayResponse = testDataFactory.calendar.day.response.workday(); 
+      const dayResponse = testDataFactory.calendar.day.response.regular(); 
 
       mockMatDialog.functions.open.mockReturnValue({
         afterClosed: () => of({
@@ -159,7 +159,7 @@ describe('Calendar store', () => {
     });
 
     it('should open dialog and update calendar day to vacation if submitted', () => {
-      const dayResponse = testDataFactory.calendar.day.response.workday(); 
+      const dayResponse = testDataFactory.calendar.day.response.regular(); 
 
       const request = testDataFactory.calendar.day.request.vacation();
 
@@ -185,7 +185,7 @@ describe('Calendar store', () => {
     });
 
     it('should open dialog and update calendar day to workday if submitted', () => {
-      const dayResponse = testDataFactory.calendar.day.response.workday(); 
+      const dayResponse = testDataFactory.calendar.day.response.regular(); 
 
       const request = testDataFactory.calendar.day.request.workday();
 
@@ -211,7 +211,7 @@ describe('Calendar store', () => {
     });
     
     it('should open dialog and not dispatch anything if cancelled', () => {   
-      const dayResponse = testDataFactory.calendar.day.response.workday(); 
+      const dayResponse = testDataFactory.calendar.day.response.regular(); 
 
       mockMatDialog.functions.open.mockReturnValue({
         afterClosed: () => of(undefined),
@@ -666,7 +666,7 @@ describe('Calendar store', () => {
     const dateFrom = testDataFactory.calendar.day.pastDay();
     const dateTo = testDataFactory.calendar.day.futureDay();
     it('should call API and dispatch response', () => {
-      const calendarList = [testDataFactory.calendar.day.response.workday()];
+      const calendarList = [testDataFactory.calendar.day.response.regular()];
       mockCalendarService.functions.listCalendarDays.mockReturnValue(of(calendarList));
     
       dispatcher.dispatch(calendarApiEvents.listCalendarDaysInitiated({
@@ -946,7 +946,7 @@ describe('Calendar store', () => {
     let personalEntry: Responses.CalendarEntryPersonal;
 
     beforeEach(() => {
-      day = testDataFactory.calendar.day.futureDay();
+      day = testDataFactory.calendar.day.futureWorkday();
       workEntry = testDataFactory.calendar.entry.response.work({
         day,
       });
@@ -1006,7 +1006,8 @@ describe('Calendar store', () => {
       });
       
       it('with weekend without planned work', () => {
-        const dayResponse = testDataFactory.calendar.day.response.weekend({
+        day = testDataFactory.calendar.day.futureWeekend();
+        const dayResponse = testDataFactory.calendar.day.response.regular({
           day,
           entries: [
             workEntry,
@@ -1031,7 +1032,8 @@ describe('Calendar store', () => {
       });
       
       it('with weekend with planned work', () => {
-        const dayResponse = testDataFactory.calendar.day.response.weekend({
+        day = testDataFactory.calendar.day.futureWeekend();
+        const dayResponse = testDataFactory.calendar.day.response.regular({
           day,
           entries: [
             personalEntry,
@@ -1053,7 +1055,7 @@ describe('Calendar store', () => {
       });
       
       it('with workday with planned work', () => {
-        const dayResponse = testDataFactory.calendar.day.response.workday({
+        const dayResponse = testDataFactory.calendar.day.response.regular({
           day,
           entries: [
             personalEntry,
@@ -1077,7 +1079,7 @@ describe('Calendar store', () => {
       describe('with work entry', () => {
         dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`should calculate day limits #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
-            const dayResponse = testDataFactory.calendar.day.response.workday({
+            const dayResponse = testDataFactory.calendar.day.response.regular({
               day,
               start: plannedStart,
               end: plannedEnd,
@@ -1121,7 +1123,7 @@ describe('Calendar store', () => {
     let personalEntry: Responses.CalendarEntryPersonal;
 
     beforeEach(() => {
-      day = testDataFactory.calendar.day.futureDay();
+      day = testDataFactory.calendar.day.futureWorkday();
       workEntry = testDataFactory.calendar.entry.response.work({
         day,
       });
@@ -1138,7 +1140,7 @@ describe('Calendar store', () => {
         setup({
           days: {
             [day]: {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day,
                 entries: [
                   workEntry,
@@ -1204,7 +1206,7 @@ describe('Calendar store', () => {
             [day]: {
               calculatedStart: request.start,
               calculatedEnd: request.end,
-              dayType: CalendarDayType.Workday,
+              dayType: CalendarDayType.Regular,
               start: request.start,
               end: request.end,
               entries: [
@@ -1219,10 +1221,12 @@ describe('Calendar store', () => {
       });
 
       it('weekend to workday', () => {
+        day = testDataFactory.calendar.day.futureWeekend();
+
         setup({
           days: {
             [day]: {
-              ...testDataFactory.calendar.day.response.weekend({
+              ...testDataFactory.calendar.day.response.regular({
                 day,
                 entries: [
                   personalEntry,
@@ -1245,7 +1249,7 @@ describe('Calendar store', () => {
             [day]: {
               calculatedStart: request.start,
               calculatedEnd: request.end,
-              dayType: CalendarDayType.Weekend,
+              dayType: CalendarDayType.Regular,
               start: request.start,
               end: request.end,
               entries: [
@@ -1262,7 +1266,7 @@ describe('Calendar store', () => {
       describe('with work entry', () => {
         dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`should calculate day limits #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
-            const originalDay = testDataFactory.calendar.day.response.workday({
+            const originalDay = testDataFactory.calendar.day.response.regular({
               day,
               start: WORKDAY_START,
               end: WORKDAY_END,
@@ -1307,7 +1311,7 @@ describe('Calendar store', () => {
                   ...originalDay,
                   calculatedStart: calculatedStart,
                   calculatedEnd: calculatedEnd,
-                  dayType: CalendarDayType.Workday,
+                  dayType: CalendarDayType.Regular,
                   start: request.start,
                   end: request.end,
                 },
@@ -1326,7 +1330,7 @@ describe('Calendar store', () => {
     let personalEntry: Responses.CalendarEntryPersonal;
 
     beforeEach(() => {
-      day = testDataFactory.calendar.day.futureDay();
+      day = testDataFactory.calendar.day.futureWorkday();
       issueEntry = testDataFactory.calendar.entry.response.issue({
         day,
       });
@@ -1362,9 +1366,9 @@ describe('Calendar store', () => {
             [day]: {
               calculatedStart: WORKDAY_START,
               calculatedEnd: WORKDAY_END,
-              dayType: CalendarDayType.Workday,
-              start: WORKDAY_START,
-              end: WORKDAY_END,
+              dayType: CalendarDayType.Regular,
+              start: undefined,
+              end: undefined,
               entries: [
                 issueEntry,
                 personalEntry,
@@ -1377,10 +1381,11 @@ describe('Calendar store', () => {
       });
 
       it('with planned work deleted from weekend', () => {
+        day = testDataFactory.calendar.day.futureWeekend();
         setup({
           days: {
             [day]: {
-              ...testDataFactory.calendar.day.response.weekend({
+              ...testDataFactory.calendar.day.response.regular({
                 day,
                 entries: [
                   issueEntry,
@@ -1402,7 +1407,7 @@ describe('Calendar store', () => {
             [day]: {
               calculatedStart: undefined,
               calculatedEnd: undefined,
-              dayType: CalendarDayType.Weekend,
+              dayType: CalendarDayType.Regular,
               start: undefined,
               end: undefined,
               entries: [
@@ -1420,7 +1425,7 @@ describe('Calendar store', () => {
         setup({
           days: {
             [day]: {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day,
                 entries: [
                   issueEntry,
@@ -1442,9 +1447,9 @@ describe('Calendar store', () => {
             [day]: {
               calculatedStart: WORKDAY_START,
               calculatedEnd: WORKDAY_END,
-              dayType: CalendarDayType.Workday,
-              start: WORKDAY_START,
-              end: WORKDAY_END,
+              dayType: CalendarDayType.Regular,
+              start: undefined,
+              end: undefined,
               entries: [
                 issueEntry,
                 personalEntry,
@@ -1459,8 +1464,8 @@ describe('Calendar store', () => {
       describe('with work entry', () => {
         defaultDayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`should recalculate limits of workday #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
-            const day = testDataFactory.calendar.day.futureDay();
-            const originalDay = testDataFactory.calendar.day.response.workday({
+            const day = testDataFactory.calendar.day.futureWorkday();
+            const originalDay = testDataFactory.calendar.day.response.regular({
               day,
               entries: [
                 issueEntry,
@@ -1498,9 +1503,9 @@ describe('Calendar store', () => {
                   ...originalDay,
                   calculatedStart: calculatedStart,
                   calculatedEnd: calculatedEnd,
-                  dayType: CalendarDayType.Workday,
-                  start: WORKDAY_START,
-                  end: WORKDAY_END,
+                  dayType: CalendarDayType.Regular,
+                  start: undefined,
+                  end: undefined,
                 },
               },
             });
@@ -1517,7 +1522,7 @@ describe('Calendar store', () => {
     let calendarEntryId: Api.Calendar.Entry.Id;
 
     beforeEach(() => {
-      day = testDataFactory.calendar.day.futureDay();
+      day = testDataFactory.calendar.day.futureWorkday();
       calendarEntryId = testDataFactory.calendar.entry.id();
     });
 
@@ -1667,8 +1672,10 @@ describe('Calendar store', () => {
 
       describe('on a weekend without planned work', () => {
         beforeEach(() => {
+          day = testDataFactory.calendar.day.futureWeekend();
+
           originalDay = {
-            ...testDataFactory.calendar.day.response.weekend({
+            ...testDataFactory.calendar.day.response.regular({
               day,
               start: undefined,
               end: undefined,
@@ -1692,7 +1699,7 @@ describe('Calendar store', () => {
       describe('on a workday', () => {
         beforeEach(() => {
           originalDay = {
-            ...testDataFactory.calendar.day.response.workday({
+            ...testDataFactory.calendar.day.response.regular({
               day,
               start: WORKDAY_START,
               end: WORKDAY_END,
@@ -1714,7 +1721,7 @@ describe('Calendar store', () => {
         dayLimitTestCases.forEach(({ earliestStart, latestEnd, plannedStart, plannedEnd, calculatedStart, calculatedEnd }, index) => {
           it(`with a work entry with limits recalculated #${index + 1}: ${earliestStart}-${latestEnd} ${plannedStart}-${plannedEnd} -> ${calculatedStart}-${calculatedEnd}`, () => {
             originalDay = {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day,
                 start: plannedStart,
                 end: plannedEnd,
@@ -1797,7 +1804,7 @@ describe('Calendar store', () => {
       let originalEntry: Responses.CalendarEntry;
 
       beforeEach(() => {
-        day = testDataFactory.calendar.day.futureDay();
+        day = testDataFactory.calendar.day.futureWorkday();
       });
 
       const updatePersonalEntryTest = () => {
@@ -1983,8 +1990,10 @@ describe('Calendar store', () => {
 
       describe('weekend without planned work', () => {
         beforeEach(() => {
+          day = testDataFactory.calendar.day.futureWeekend();
+
           originalDay = {
-            ...testDataFactory.calendar.day.response.weekend({
+            ...testDataFactory.calendar.day.response.regular({
               day,
               start: undefined,
               end: undefined,
@@ -2002,7 +2011,7 @@ describe('Calendar store', () => {
       describe('workday', () => {
         beforeEach(() => {
           originalDay = {
-            ...testDataFactory.calendar.day.response.weekend({
+            ...testDataFactory.calendar.day.response.regular({
               day,
               start: WORKDAY_START,
               end: WORKDAY_END,
@@ -2029,7 +2038,7 @@ describe('Calendar store', () => {
             });
 
             originalDay = {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day,
                 entries: [
                   originalEntry,
@@ -2107,8 +2116,8 @@ describe('Calendar store', () => {
       let originalEntry: Responses.CalendarEntry;
 
       beforeEach(() => {
-        dayFrom = testDataFactory.calendar.day.pastDay();
-        dayTo = testDataFactory.calendar.day.futureDay();
+        dayFrom = testDataFactory.calendar.day.pastWorkday();
+        dayTo = testDataFactory.calendar.day.futureWorkday();
       });
 
       const updatePersonalEntryTest = () => {
@@ -2322,8 +2331,11 @@ describe('Calendar store', () => {
 
       describe('weekend without planned work', () => {
         beforeEach(() => {
+          dayFrom = testDataFactory.calendar.day.pastWeekend();
+          dayTo = testDataFactory.calendar.day.futureWeekend();
+
           originalDayFrom = {
-            ...testDataFactory.calendar.day.response.weekend({
+            ...testDataFactory.calendar.day.response.regular({
               day: dayFrom,
               start: undefined,
               end: undefined,
@@ -2333,7 +2345,7 @@ describe('Calendar store', () => {
           };
 
           originalDayTo = {
-            ...testDataFactory.calendar.day.response.weekend({
+            ...testDataFactory.calendar.day.response.regular({
               day: dayTo,
               start: undefined,
               end: undefined,
@@ -2351,7 +2363,7 @@ describe('Calendar store', () => {
       describe('workday', () => {
         beforeEach(() => {
           originalDayFrom = {
-            ...testDataFactory.calendar.day.response.workday({
+            ...testDataFactory.calendar.day.response.regular({
               day: dayFrom,
               start: WORKDAY_START,
               end: WORKDAY_END,
@@ -2361,7 +2373,7 @@ describe('Calendar store', () => {
           };
 
           originalDayTo = {
-            ...testDataFactory.calendar.day.response.workday({
+            ...testDataFactory.calendar.day.response.regular({
               day: dayTo,
               start: WORKDAY_START,
               end: WORKDAY_END,
@@ -2388,7 +2400,7 @@ describe('Calendar store', () => {
             });
 
             originalDayFrom = {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day: dayFrom,
                 start: plannedStart,
                 end: plannedEnd,
@@ -2399,7 +2411,7 @@ describe('Calendar store', () => {
             };
 
             originalDayTo = {
-              ...testDataFactory.calendar.day.response.workday({
+              ...testDataFactory.calendar.day.response.regular({
                 day: dayTo,
                 start: plannedStart,
                 end: plannedEnd,
@@ -2481,7 +2493,7 @@ describe('Calendar store', () => {
     let originalEntry: Responses.CalendarEntry;
 
     beforeEach(() => {
-      day = testDataFactory.calendar.day.futureDay();
+      day = testDataFactory.calendar.day.futureWorkday();
       calendarEntryId = testDataFactory.calendar.entry.id();
     });
 
@@ -2615,8 +2627,10 @@ describe('Calendar store', () => {
 
     describe('from a weekend without planned work', () => {
       beforeEach(() => {
+        day = testDataFactory.calendar.day.futureWeekend();
+
         originalDay = {
-          ...testDataFactory.calendar.day.response.weekend({
+          ...testDataFactory.calendar.day.response.regular({
             day,
             start: undefined,
             end: undefined,
@@ -2634,7 +2648,7 @@ describe('Calendar store', () => {
     describe('from a workday', () => {
       beforeEach(() => {
         originalDay = {
-          ...testDataFactory.calendar.day.response.workday({
+          ...testDataFactory.calendar.day.response.regular({
             day,
             start: WORKDAY_START,
             end: WORKDAY_END,
@@ -2667,7 +2681,7 @@ describe('Calendar store', () => {
           });
 
           originalDay = {
-            ...testDataFactory.calendar.day.response.workday({
+            ...testDataFactory.calendar.day.response.regular({
               day,
               start: plannedStart,
               end: plannedEnd,
@@ -2724,7 +2738,7 @@ describe('Calendar store', () => {
         day,
       });
       originalDay = {
-        ...testDataFactory.calendar.day.response.workday({
+        ...testDataFactory.calendar.day.response.regular({
           day,
           entries: [originalEntry],
           start: WORKDAY_START,

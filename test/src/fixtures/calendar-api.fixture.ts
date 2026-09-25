@@ -1,5 +1,5 @@
 import { getCalendarEntryId, getCustomerId, getPriceId, getTransactionId } from '@household/shared/common/utils';
-import { headerExpiresIn, WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
+import { headerExpiresIn } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
@@ -206,8 +206,8 @@ export const expect = baseExpect.extend({
   toHaveBeenSavedAsCalendarDayDocument(req: Requests.CalendarDay, document: Documents.CalendarDay) {
     const comparer = new Comparer(document, {
       dayType: req.dayType,
-      start: req.dayType === CalendarDayType.Workday ? req.start : undefined,
-      end: req.dayType === CalendarDayType.Workday ? req.end : undefined,
+      start: req.dayType === CalendarDayType.Regular ? req.start : undefined,
+      end: req.dayType === CalendarDayType.Regular ? req.end : undefined,
     }, '_id', 'createdAt', 'updatedAt', 'expiresAt', 'day');
 
     const errors = comparer.validate();
@@ -332,8 +332,8 @@ export const expect = baseExpect.extend({
     const comparer = new Comparer(matchingResponse, {
       day: dayInput,
       entries: [entryResponse].map(entry => validateCalendarEntryResponse(entry, calendarEntryDocument)),
-      start: calendarDayDocument?.start ?? (matchingResponse.dayType === CalendarDayType.Workday ? WORKDAY_START : undefined),
-      end: calendarDayDocument?.end ?? (matchingResponse.dayType === CalendarDayType.Workday ? WORKDAY_END : undefined),
+      start: calendarDayDocument?.start,
+      end: calendarDayDocument?.end,
     }, 'dayType');
 
     const errors = comparer.validate();  

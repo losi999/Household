@@ -50,7 +50,7 @@ export const withPriceApiEvents = () => {
           mergeMap((value) => {
             return value.pipe(exhaustMap(({ payload: { priceId, ...request } }) => {
               return priceService.updatePrice(priceId, request).pipe(
-                map(({ priceId }) => priceApiEvents.updatePriceCompleted({
+                map(() => priceApiEvents.updatePriceCompleted({
                   priceId,
                   ...request,
                 })),

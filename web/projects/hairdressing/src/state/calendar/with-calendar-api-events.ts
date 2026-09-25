@@ -69,7 +69,7 @@ export const withCalendarApiEvents = () => {
         updateCalendarEntry: events.on(calendarApiEvents.updateCalendarEntryInitiated).pipe(
           mergeMap(({ payload: { calendarEntryId, ...request } }) => {
             return calendarService.updateCalendarEntry(calendarEntryId, request).pipe(
-              map(({ calendarEntryId }) => calendarApiEvents.updateCalendarEntryCompleted({
+              map(() => calendarApiEvents.updateCalendarEntryCompleted({
                 calendarEntryId,
                 ...request,
                 customer: request.entryType === CalendarEntryType.Work ? customerStore.customerList().find(c => c.customerId === request.customerId) : undefined,

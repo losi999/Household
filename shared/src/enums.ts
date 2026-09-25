@@ -38,8 +38,7 @@ export enum UserType {
 }
 
 export enum CalendarDayType {
-  Workday = 'workday',
-  Weekend = 'weekend',
+  Regular = 'regular',
   Vacation = 'vacation',
   Holiday = 'holiday',
 }

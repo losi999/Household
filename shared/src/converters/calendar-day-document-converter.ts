@@ -1,5 +1,4 @@
 import { addSeconds, dateToISODateString } from '@household/shared/common/utils';
-import { WORKDAY_START, WORKDAY_END } from '@household/shared/constants';
 import { ICalendarEntryDocumentConverter } from '@household/shared/converters/calendar-entry-document-converter';
 import { CalendarDayType } from '@household/shared/enums';
 import { Api } from '@household/shared/types/api';
@@ -35,7 +34,7 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
             ...body,
             expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
           },
-          ...(body.dayType !== CalendarDayType.Workday ? {
+          ...(body.dayType !== CalendarDayType.Regular ? {
             $unset: {
               start: true,
               end: true,
@@ -49,10 +48,6 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
         dateFrom,
         dateTo,
       }).map<Responses.CalendarDay>(date => {
-        const isWeekend = [
-          0,
-          6,
-        ].includes(date.getDay());
         const dateString = dateToISODateString(date);
         const day = days.find(x => x.day === dateString);
         const entriesForDay = entries.filter(e => e.day === dateString);
@@ -65,32 +60,12 @@ export const calendarDayDocumentConverterFactory = (calendarEntryDocumentConvert
           };
         }
 
-        if (day?.dayType === CalendarDayType.Workday) {
-          return {
-            day: dateString,
-            dayType: isWeekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
-            entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
-            start: day.start,
-            end: day.end,
-          };
-        }
-
-        if (isWeekend) {
-          return {
-            day: dateString,
-            dayType: CalendarDayType.Weekend,
-            entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
-            start: undefined,
-            end: undefined,
-          };
-        }
-
         return {
           day: dateString,
-          dayType: CalendarDayType.Workday,
+          dayType: CalendarDayType.Regular,
           entries: calendarEntryDocumentConverter.toResponseList(entriesForDay),
-          end: WORKDAY_END,
-          start: WORKDAY_START,
+          start: day?.start,
+          end: day?.end,
         };
       });
 

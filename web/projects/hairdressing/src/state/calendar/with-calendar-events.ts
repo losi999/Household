@@ -63,9 +63,9 @@ export const withCalendarEvents = () => {
                   day: value.day,
                 });
               }
-              case CalendarDayType.Workday: {
+              case CalendarDayType.Regular: {
                 return calendarApiEvents.updateCalendarDayInitiated({
-                  dayType: CalendarDayType.Workday,
+                  dayType: CalendarDayType.Regular,
                   day: value.day,
                   start: value.start,
                   end: value.end,

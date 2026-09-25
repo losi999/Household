@@ -19,7 +19,7 @@ const vacationRequest: StrictSchema<Requests.CalendarDayVacation> = {
   },
 };
 
-const workdayRequest: StrictSchema<Requests.CalendarDayWorkday> = {
+const workdayRequest: StrictSchema<Requests.CalendarDayWork> = {
   type: 'object',
   additionalProperties: false,
   required: [
@@ -30,7 +30,7 @@ const workdayRequest: StrictSchema<Requests.CalendarDayWorkday> = {
   properties: {
     dayType: {
       type: 'string',
-      enum: [CalendarDayType.Workday],
+      enum: [CalendarDayType.Regular],
     },
     start: {
       type: 'integer',
@@ -67,11 +67,16 @@ const entries: StrictSchema<Pick<Responses.CalendarDay, 'entries'>> = {
   },
 };
 
-const workdayResponse = combine<Responses.CalendarDayWorkday>([
+const regularResponse = combine<Responses.CalendarDayRegular>([
   day,
   workdayRequest,
   entries,
-]);
+], {
+  optional: [
+    'start',
+    'end',
+  ],
+});
 
 const vacationResponse = combine<Responses.CalendarDayVacation>([
   day,
@@ -94,41 +99,12 @@ const holidayResponse = combine<Responses.CalendarDayHoliday>([
   },
 ]);
 
-const weekendResponse = combine<Responses.CalendarDayWeekend>([
-  day,
-  entries,
-  {
-    type: 'object',
-    required: ['dayType'],
-    properties: {
-      start: {
-        type: 'integer',
-        minimum: DAY_START,
-        maximum: DAY_END,
-      },
-      end: {
-        type: 'integer',
-        minimum: DAY_START,
-        maximum: DAY_END,
-        exclusiveMinimum: {
-          $data: '1/start',
-        },
-      },
-      dayType: {
-        type: 'string',
-        enum: [CalendarDayType.Weekend],
-      },
-    },
-  },
-]);
-
 export const response: StrictSchema<Responses.CalendarDay> = {
   type: 'object',
   oneOf: [
-    workdayResponse,
+    regularResponse,
     vacationResponse,
     holidayResponse,
-    weekendResponse,
   ],
 };
 

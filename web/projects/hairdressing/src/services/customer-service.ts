@@ -25,7 +25,7 @@ export class CustomerService {
   }
 
   updateCustomer(customerId: Api.Customer.Id, body: Requests.Customer) {
-    return this.httpClient.put<Api.Customer.CustomerId>(`${this.apiUrl}/customer/v1/customers/${customerId}`, body);
+    return this.httpClient.put(`${this.apiUrl}/customer/v1/customers/${customerId}`, body);
   }
 
   deleteCustomer(customerId: Api.Customer.Id) {

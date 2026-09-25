@@ -11,7 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { form, FormField, required } from '@angular/forms/signals';
 import { MatInputModule } from '@angular/material/input';
-import { calculateWorkdayLimits, createDate, dateToISODateString, dateToTimeSlot, toUndefined } from '@household/shared/common/utils';
+import { calculateWorkdayLimits, createDate, dateToISODateString, dateToTimeSlot, isWeekend, toUndefined } from '@household/shared/common/utils';
 import { TimeSlotToTimePipe } from '@hairdressing/app/pipes/time-slot-to-time-pipe';
 import { CustomerAutocompleteInput } from '@hairdressing/app/customer/customer-autocomplete-input/customer-autocomplete-input';
 import { MatSelectModule } from '@angular/material/select';
@@ -151,6 +151,10 @@ export class CalendarEntryEditDialog {
       if (this.entryForm.duration().value() < this.entryForm.job().value()?.duration) {
         errors.push('Időtartam kevesebb, mint a munkához rögzített');
       }
+
+      if (isWeekend(this.calendarDay().day)) {
+        errors.push('Hétvége');
+      }
       
       switch (this.calendarDay()?.dayType) {
         case CalendarDayType.Vacation: {
@@ -159,10 +163,7 @@ export class CalendarEntryEditDialog {
         case CalendarDayType.Holiday: {
           errors.push('Munkaszüneti nap');
         } break;
-        case CalendarDayType.Weekend: {
-          errors.push('Hétvége');
-        } break;
-        case CalendarDayType.Workday: {
+        case CalendarDayType.Regular: {
           if (this.entryForm.start().value() < this.calendarDay().calculatedStart || this.end() > this.calendarDay().calculatedEnd) {
             errors.push('Túlóra');
           }

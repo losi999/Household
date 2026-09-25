@@ -14,7 +14,7 @@ describe('Delete calendar day service', () => {
   });
 
   const queriedDocument = testDataFactory.calendar.day.document({
-    dayType: CalendarDayType.Workday,
+    dayType: CalendarDayType.Regular,
   });
 
   const day = '2025-10-11';

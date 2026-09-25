@@ -2,7 +2,6 @@ import { calendarApiEvents } from '@hairdressing/state/calendar/calendar-events'
 import { CalendarState } from '@hairdressing/state/calendar/calendar-store';
 import { LimitedCalendarDay } from '@hairdressing/types';
 import { calculateWorkdayLimits } from '@household/shared/common/utils';
-import { WORKDAY_END, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType } from '@household/shared/enums';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
@@ -79,7 +78,7 @@ export const withCalendarReducer = () => {
 
           const newDay: LimitedCalendarDay = {
             ...storedDay,
-            dayType: storedDay.dayType === CalendarDayType.Weekend ? CalendarDayType.Weekend : CalendarDayType.Workday,
+            dayType: request.dayType,
             start: request.start,
             end: request.end,
           };
@@ -103,12 +102,12 @@ export const withCalendarReducer = () => {
           const storedDay = state.days[day];
           switch(storedDay.dayType) {
             case CalendarDayType.Vacation: 
-            case CalendarDayType.Workday: {
+            case CalendarDayType.Regular: {
               const newDay: LimitedCalendarDay = {
                 ...storedDay,
-                dayType: CalendarDayType.Workday,
-                end: WORKDAY_END,
-                start: WORKDAY_START,
+                dayType: CalendarDayType.Regular,
+                end: undefined,
+                start: undefined,
               };
           
               const { start, end } = calculateWorkdayLimits(newDay);
@@ -120,20 +119,6 @@ export const withCalendarReducer = () => {
                     ...newDay,
                     calculatedStart: start,
                     calculatedEnd: end,
-                  },
-                },
-              };
-            }
-            case CalendarDayType.Weekend: {
-              return {
-                days: {
-                  ...state.days,
-                  [day]: {
-                    ...storedDay,
-                    start: undefined,
-                    end: undefined,
-                    calculatedStart: undefined,
-                    calculatedEnd: undefined,
                   },
                 },
               };

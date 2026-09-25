@@ -3,11 +3,11 @@
 </div>
 <div mat-dialog-content>
   <mat-button-toggle-group [(ngModel)]="dayType">
-    <mat-button-toggle value="workday">Munkanap</mat-button-toggle>
-    <mat-button-toggle [disabled]="day.dayType === 'weekend'" value="vacation">Szabadság</mat-button-toggle>
+    <mat-button-toggle value="regular">Munkanap</mat-button-toggle>
+    <mat-button-toggle value="vacation">Szabadság</mat-button-toggle>
   </mat-button-toggle-group>
   <mat-divider />
-  @if (dayType() === 'workday') {
+  @if (dayType() === 'regular') {
   <mat-radio-group [(ngModel)]="shiftType">
     <mat-radio-button value="morning">Délelőtt</mat-radio-button>
     <mat-radio-button value="afternoon">Délután</mat-radio-button>

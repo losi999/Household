@@ -78,9 +78,9 @@ export namespace Requests {
   export type Customer = Api.Customer.Base;
 
   export type CalendarDayVacation = Api.Calendar.DayType<Enum.CalendarDayType.Vacation>;
-  export type CalendarDayWorkday = Api.Calendar.DayType<Enum.CalendarDayType.Workday> & Api.Calendar.TimeInterval;
+  export type CalendarDayWork = Api.Calendar.DayType<Enum.CalendarDayType.Regular> & Api.Calendar.TimeInterval;
 
-  export type CalendarDay = CalendarDayVacation | CalendarDayWorkday;
+  export type CalendarDay = CalendarDayVacation | CalendarDayWork;
 
   export type CalendarEntryIssue = Api.Calendar.Entry.Base
     & Api.Calendar.Day
