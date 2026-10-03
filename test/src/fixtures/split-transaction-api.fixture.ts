@@ -125,7 +125,7 @@ export const expect = baseExpect.extend({
       description: originalDocument.description,
       account: getAccountId(originalDocument.account),
       transactionType: originalDocument.transactionType,
-      recipient: reassignments.recipient?.from === getRecipientId(originalDocument.recipient) ? reassignments.recipient?.to : getRecipientId(originalDocument.recipient),
+      recipient: reassignments.recipient?.from ? reassignments.recipient?.to : getRecipientId(originalDocument.recipient),
       splits: currentDocument.splits.map((splitDocument, index) => {
         const originalSplit = originalDocument.splits[index];
         let expectedQuantity: number;
@@ -135,7 +135,7 @@ export const expect = baseExpect.extend({
         let expectedProduct: Api.Product.Id;
         let expectedCategory: Api.Category.Id;
 
-        if (reassignments.category && getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from)) {
+        if (reassignments.category?.from) {
           expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.invoiceNumber : undefined;
           expectedBillingStartDate = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.billingStartDate?.toISOString() : undefined;
           expectedBillingEndDate = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.billingEndDate?.toISOString() : undefined;
@@ -146,15 +146,15 @@ export const expect = baseExpect.extend({
           expectedInvoiceNumber = originalSplit.invoiceNumber;
           expectedBillingStartDate = originalSplit.billingStartDate?.toISOString();
           expectedBillingEndDate = originalSplit.billingEndDate?.toISOString();
-          expectedQuantity = getProductId(originalSplit.product) === reassignments.product?.from && !reassignments.product?.to ? undefined : originalSplit.quantity;
-          expectedProduct = getProductId(originalSplit.product) === reassignments.product?.from ? reassignments.product?.to : getProductId(originalSplit.product);
+          expectedQuantity = reassignments.product?.from && !reassignments.product?.to ? undefined : originalSplit.quantity;
+          expectedProduct = reassignments.product?.from ? reassignments.product?.to : getProductId(originalSplit.product);
           expectedCategory = getCategoryId(originalSplit.category);
         }
 
         return new Comparer(splitDocument, {
           amount: originalSplit.amount,
           description: originalSplit.description,
-          project: reassignments.project?.from === getProjectId(originalSplit.project) ? reassignments.project?.to : getProjectId(originalSplit.project),
+          project: reassignments.project?.from ? reassignments.project?.to : getProjectId(originalSplit.project),
           category: expectedCategory,
           product: expectedProduct,
           quantity: expectedQuantity,
@@ -172,7 +172,7 @@ export const expect = baseExpect.extend({
         let expectedProduct: Api.Product.Id;
         let expectedCategory: Api.Category.Id;
 
-        if (reassignments.category && getCategoryId(originalSplit.category) === getCategoryId(reassignments.category.from)) {
+        if (reassignments.category?.from) {
           expectedInvoiceNumber = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.invoiceNumber : undefined;
           expectedBillingStartDate = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.billingStartDate?.toISOString() : undefined;
           expectedBillingEndDate = reassignments.category.from.categoryType === reassignments.category.to?.categoryType ? originalSplit.billingEndDate?.toISOString() : undefined;
@@ -183,8 +183,8 @@ export const expect = baseExpect.extend({
           expectedInvoiceNumber = originalSplit.invoiceNumber;
           expectedBillingStartDate = originalSplit.billingStartDate?.toISOString();
           expectedBillingEndDate = originalSplit.billingEndDate?.toISOString();
-          expectedQuantity = getProductId(originalSplit.product) === reassignments.product?.from && !reassignments.product?.to ? undefined : originalSplit.quantity;
-          expectedProduct = getProductId(originalSplit.product) === reassignments.product?.from ? reassignments.product?.to : getProductId(originalSplit.product);
+          expectedQuantity = reassignments.product?.from && !reassignments.product?.to ? undefined : originalSplit.quantity;
+          expectedProduct = reassignments.product?.from ? reassignments.product?.to : getProductId(originalSplit.product);
           expectedCategory = getCategoryId(originalSplit.category);
         }
 
@@ -195,7 +195,7 @@ export const expect = baseExpect.extend({
           payingAccount: getAccountId(originalSplit.payingAccount),
           ownerAccount: getAccountId(originalSplit.ownerAccount),
           description: originalSplit.description,
-          project: reassignments.project?.from === getProjectId(originalSplit.project) ? reassignments.project?.to : getProjectId(originalSplit.project),
+          project: reassignments.project?.from ? reassignments.project?.to : getProjectId(originalSplit.project),
           category: expectedCategory,
           product: expectedProduct,
           quantity: expectedQuantity,

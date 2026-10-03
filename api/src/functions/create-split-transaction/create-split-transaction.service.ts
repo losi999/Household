@@ -111,11 +111,6 @@ export const createSplitTransactionServiceFactory = (
           productId,
           product: product,
         }, 400);
-
-        httpErrors.product.categoryRelation({
-          categoryId,
-          product,
-        });
       }
     });
 

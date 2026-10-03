@@ -2,19 +2,22 @@ import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
+import { Types } from 'mongoose';
+import { ProductType } from '@household/shared/enums';
 
 export interface IProductService {
   saveProduct(doc: Documents.Product): Promise<Documents.Product>;
   saveProducts(...docs: Documents.Product[]): Promise<unknown>;
   findProductById(productId: Api.Product.Id): Promise<Documents.Product>;
+  listProductsByParentId(parentProductId: Api.Product.Id): Promise<Documents.Product[]>;
   listProductsByIds(productIds: Api.Product.Id[]): Promise<Documents.Product[]>;
   deleteProduct(productId: Api.Product.Id): Promise<unknown>;
   updateProduct(productId: Api.Product.Id, updateQuery: DocumentUpdate<Documents.Product>): Promise<unknown>;
   mergeProducts(ctx: {
     targetProductId: Api.Product.Id;
     sourceProductIds: Api.Product.Id[];
-  }): Promise<unknown>;
-  listProducts(): Promise<Documents.Category[]>;
+  } & Api.Product.ProductType<ProductType>): Promise<unknown>;
+  listProducts(): Promise<Documents.Product[]>;
 }
 
 export const productServiceFactory = (mongodbService: IMongodbService): IProductService => {
@@ -22,65 +25,35 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
   const instance: IProductService = {
     listProducts: () => {
       return mongodbService.products((model, session) => {
-        return model.aggregate([
-          {
-            $sort: {
-              fullName: 1,
-            },
-          },
-          {
-            $group: {
-              _id: '$category',
-              products: {
-                $push: '$$ROOT',
-              },
-            },
-          },
-          {
-            $lookup: {
-              from: 'categories',
-              localField: '_id',
-              foreignField: '_id',
-              as: 'category',
-              pipeline: [
-                {
-                  $lookup: {
-                    from: 'categories',
-                    localField: 'ancestors',
-                    foreignField: '_id',
-                    as: 'ancestors',
-                  },
-                },
-              ],
-            },
-          },
-          {
-            $unwind: {
-              path: '$category',
-            },
-          },
-          {
-            $replaceRoot: {
-              newRoot: {
-                $mergeObjects: [
-                  '$$ROOT',
-                  '$category',
-                ],
-              },
-            },
-          },
-          {
-            $unset: [
-              'category',
-              'products.category',
-            ],
-          },
-        ], {
+        return model.find({}, undefined, {
           session,
+          sort: {
+            productType: 1,
+            name: 1,
+          },
+          lean: true,
           collation: {
             locale: 'hu',
           },
         });
+      });
+    },
+    listProductsByParentId: (parentProductId) => {
+      const parent = new Types.ObjectId(parentProductId);
+
+      console.log(parent);
+      return mongodbService.products((model, session) => {
+        return model.find({
+          $or: [
+            {
+              genericProduct: parentProductId,
+            },
+            {
+              specificProduct: parentProductId,
+            },
+          ],
+        }).session(session)
+          .lean();
       });
     },
     saveProduct: async (doc) => {
@@ -121,7 +94,6 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
             $in: productIds,
           },
         })
-          .populate('category')
           .setOptions({
             session,
             lean: true,
@@ -193,7 +165,7 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         });
       });
     },
-    mergeProducts: ({ targetProductId, sourceProductIds }) => {
+    mergeProducts: ({ targetProductId, sourceProductIds, productType }) => {
       return mongodbService.inTransaction(async (models, session) => {
         await models.products.deleteMany({
           _id: {
@@ -202,6 +174,37 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         }, {
           session,
         });
+
+        switch(productType) {
+          case ProductType.Generic: {
+            await models.products.updateMany({
+              genericProduct: {
+                $in: sourceProductIds,
+              },
+            }, {
+              $set: {
+                genericProduct: targetProductId,
+              },
+            }, {
+              session,
+            });
+            break;
+          }
+          case ProductType.Specific: {
+            await models.products.updateMany({
+              specificProduct: {
+                $in: sourceProductIds,
+              },
+            }, {
+              $set: {
+                specificProduct: targetProductId,
+              },
+            }, {
+              session,
+            });
+            break;
+          }
+        }
 
         await models.transactions.updateMany({
           product: {

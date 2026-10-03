@@ -66,9 +66,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
       },
     });
 
-    productDocument = productDataFactory.document({
-      category: inventoryCategoryDocument,
-    });
+    productDocument = productDataFactory.document.generic();
 
     originalDocument = paymentTransactionDataFactory.document({
       account: accountDocument,

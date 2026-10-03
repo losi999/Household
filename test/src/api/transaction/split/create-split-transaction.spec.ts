@@ -63,9 +63,7 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
       },
     });
 
-    productDocument = productDataFactory.document({
-      category: inventoryCategoryDocument,
-    });
+    productDocument = productDataFactory.document.generic();
 
     request = splitTransactionDataFactory.request({
       accountId: getAccountId(accountDocument),

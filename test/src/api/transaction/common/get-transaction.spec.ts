@@ -71,9 +71,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
       },
     });
 
-    productDocument = productDataFactory.document({
-      category: inventoryCategoryDocument,
-    });
+    productDocument = productDataFactory.document.generic();
   });
 
   test.describe('called as anonymous', () => {

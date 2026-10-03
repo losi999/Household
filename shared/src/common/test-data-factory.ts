@@ -1,5 +1,5 @@
 import { addDays, addSeconds, createDate, dateToISODateString } from '@household/shared/common/utils';
-import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
+import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, ProductType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DataFactoryFunction, DocumentUpdate, RecursivePartial } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
@@ -748,59 +748,125 @@ const createProductId = (id?: string): Api.Product.Id => {
   return (id ?? createId().toString()) as Api.Product.Id;
 };
 
-const createProductRequest: DataFactoryFunction<Requests.Product> = (req) => {
+const createGenericProductRequest: DataFactoryFunction<Requests.GenericProduct> = (req) => {
   return {
-    brand: faker.commerce.productName(),
+    name: `${faker.commerce.productName()} ${faker.string.uuid()}`,
+    productType: ProductType.Generic,
+    ...req,
+  };
+};
+
+const createSpecificProductRequest: DataFactoryFunction<Requests.SpecificProduct> = (req) => {
+  return {
+    name: `${faker.commerce.productName()} ${faker.string.uuid()}`,
     measurement: faker.number.float({
       min: 0,
       max: 10000,
     }),
     unitOfMeasurement: faker.helpers.arrayElement(unitsOfMeasurement),
+    productType: ProductType.Specific,
+    parentProductId: createProductId(),
     ...req,
   };
 };
 
-const createProductDocument: DataFactoryFunction<Documents.Product> = (doc) => {
-  const base = createProductRequest();
+const createVariantProductRequest: DataFactoryFunction<Requests.VariantProduct> = (req) => {
+  return {
+    name: `${faker.commerce.productName()} ${faker.string.uuid()}`,
+    productType: ProductType.Variant,
+    parentProductId: createProductId(),
+    ...req,
+  };
+};
+
+const createGenericProductDocument: DataFactoryFunction<Documents.GenericProduct> = (doc) => {
+  const base = createGenericProductRequest();
 
   return {
     _id: createId(),
     ...base,
     expiresAt: undefined,
-    fullName: `${doc?.brand ?? base.brand} ${doc?.measurement ?? base.measurement} ${doc?.unitOfMeasurement ?? base.unitOfMeasurement}`,
-    category: createCategoryDocument(),
     ...doc,
   };
 };
 
-const createProductResponse: DataFactoryFunction<Responses.Product> = (resp) => {
-  const base = createProductRequest();
+const createSpecificProductDocument: DataFactoryFunction<Documents.SpecificProduct> = (doc) => {
+  const { parentProductId, ...base } = createSpecificProductRequest();
+
+  return {
+    _id: createId(),
+    ...base,
+    expiresAt: undefined,
+    fullName: `${doc?.name ?? base.name} ${doc?.measurement ?? base.measurement} ${doc?.unitOfMeasurement ?? base.unitOfMeasurement}`,
+    genericProduct: createGenericProductDocument(),
+    ...doc,
+  };
+};
+
+const createVariantProductDocument: DataFactoryFunction<Documents.VariantProduct> = (doc) => {
+  const { parentProductId, ...base } = createVariantProductRequest();
+
+  return {
+    _id: createId(),
+    ...base,
+    expiresAt: undefined,
+    genericProduct: createGenericProductDocument(),
+    specificProduct: createSpecificProductDocument(),
+    ...doc,
+  };
+};
+
+const createGenericProductResponse: DataFactoryFunction<Responses.GenericProduct> = (resp) => {
+  const base = createGenericProductRequest();
   
   return {
     productId: createProductId(),
     ...base,
-    fullName: `${resp?.brand ?? base.brand} ${resp?.measurement ?? base.measurement} ${resp?.unitOfMeasurement ?? base.unitOfMeasurement}`,
+    ...resp,
+  };
+};
+
+const createSpecificProductResponse: DataFactoryFunction<Responses.SpecificProduct> = (resp) => {
+  const { parentProductId, ...base } = createSpecificProductRequest();
+  
+  return {
+    productId: createProductId(),
+    ...base,
+    fullName: `${resp?.name ?? base.name} ${resp?.measurement ?? base.measurement} ${resp?.unitOfMeasurement ?? base.unitOfMeasurement}`,
+    genericProduct: createGenericProductResponse(),
+    ...resp,
+  };
+};
+
+const createVariantProductResponse: DataFactoryFunction<Responses.VariantProduct> = (resp) => {
+  const { parentProductId, ...base } = createVariantProductRequest();
+  
+  return {
+    productId: createProductId(),
+    ...base,
+    genericProduct: createGenericProductResponse(),
+    specificProduct: createSpecificProductResponse(),
     ...resp,
   };
 };
 
 const createProductGroupedResponse: DataFactoryFunction<Responses.ProductGroupedResponse> = (resp) => {
-  const { name } = createCategoryRequest();
+  const genericBase = createGenericProductRequest();
 
   return {
-    fullName: name,
-    categoryId: createCategoryId(),
-    products: [createProductResponse()],
+    productId: createProductId(),
+    ...genericBase,
+    children: [],
     ...resp,
   };
 };
 
 const createProductReport: DataFactoryFunction<Responses.ProductReport> = (rep) => {
-  const base = createProductRequest();
+  const base = createSpecificProductRequest();
 
   return {
     productId: createProductId(),
-    fullName: `${base.brand} ${base.measurement} ${base.unitOfMeasurement}`,
+    fullName: `${base.name} ${base.measurement} ${base.unitOfMeasurement}`,
     ...rep,
   };
 };
@@ -899,7 +965,7 @@ const createPaymentTransactionDocument: DataFactoryFunction<Documents.PaymentTra
     billingEndDate: createDate(billingEndDate),
     billingStartDate: createDate(billingStartDate),
     issuedAt: createDate(issuedAt),
-    product: createProductDocument(),
+    product: createGenericProductDocument(),
     account: createAccountDocument(),
     category: createCategoryDocument(),
     project: createProjectDocument(),
@@ -922,7 +988,7 @@ const createPaymentTransactionResponse: DataFactoryFunction<Responses.PaymentTra
     billingEndDate,
     billingStartDate,
     issuedAt,
-    product: createProductResponse(),
+    product: createGenericProductResponse(),
     account: createAccountResponse(),
     category: createCategoryResponse(),
     project: createProjectResponse(),
@@ -947,7 +1013,7 @@ const createDeferredTransactionDocument: DataFactoryFunction<Documents.DeferredT
     billingEndDate: createDate(billingEndDate),
     billingStartDate: createDate(billingStartDate),
     issuedAt: createDate(issuedAt),
-    product: createProductDocument(),
+    product: createGenericProductDocument(),
     payingAccount: createAccountDocument(),
     category: createCategoryDocument(),
     project: createProjectDocument(),
@@ -974,7 +1040,7 @@ const createDeferredTransactionResponse: DataFactoryFunction<Responses.DeferredT
     billingEndDate,
     billingStartDate,
     issuedAt,
-    product: createProductResponse(),
+    product: createGenericProductResponse(),
     ownerAccount: createAccountResponse(),
     payingAccount: createAccountResponse(),
     category: createCategoryResponse(),
@@ -1000,7 +1066,7 @@ const createReimbursementTransactionDocument: DataFactoryFunction<Documents.Reim
     billingEndDate: createDate(billingEndDate),
     billingStartDate: createDate(billingStartDate),
     issuedAt: createDate(issuedAt),
-    product: createProductDocument(),
+    product: createGenericProductDocument(),
     expiresAt: undefined,
     payingAccount: createAccountDocument(),
     category: createCategoryDocument(),
@@ -1027,7 +1093,7 @@ const createReimbursementTransactionResponse: DataFactoryFunction<Responses.Reim
     billingEndDate,
     billingStartDate,
     issuedAt,
-    product: createProductResponse(),
+    product: createGenericProductResponse(),
     ownerAccount: createAccountResponse(),
     payingAccount: createAccountResponse(),
     category: createCategoryResponse(),
@@ -1134,7 +1200,7 @@ const createSplitDocumentItem: DataFactoryFunction<Documents.SplitItem> = (doc) 
     quantity,
     category: createCategoryDocument(),
     project: createProjectDocument(),
-    product: createProductDocument(),
+    product: createGenericProductDocument(),
     ...doc,
   };
 };
@@ -1183,7 +1249,7 @@ const createSplitResponseItem: DataFactoryFunction<Responses.SplitItem> = (resp)
     quantity,
     category: createCategoryResponse(),
     project: createProjectResponse(),
-    product: createProductResponse(),
+    product: createGenericProductResponse(),
     ...resp,
   };
 };
@@ -1330,7 +1396,7 @@ const createTransactionRawReport: DataFactoryFunction<Documents.RawTransaction> 
     billingEndDate: createDate(billingEndDate),
     billingStartDate: createDate(billingStartDate),
     issuedAt: createDate(issuedAt),
-    product: createProductDocument(),
+    product: createGenericProductDocument(),
     account: createAccountDocument(),
     category: createCategoryDocument(),
     project: createProjectDocument(),
@@ -1453,9 +1519,21 @@ export const testDataFactory = {
   },
   product: {
     id: createProductId,
-    request: createProductRequest,
-    document: createProductDocument,
-    response: createProductResponse,
+    request: {
+      generic: createGenericProductRequest,
+      specific: createSpecificProductRequest,
+      variant: createVariantProductRequest,
+    },
+    document: {
+      generic: createGenericProductDocument,
+      specific: createSpecificProductDocument,
+      variant: createVariantProductDocument,
+    },
+    response: {
+      generic: createGenericProductResponse,
+      specific: createSpecificProductResponse,
+      variant: createVariantProductResponse,
+    },
     groupedResponse: createProductGroupedResponse,
     report: createProductReport,
   },

@@ -63,16 +63,7 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
           expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
         });
 
-        test.describe('in related transactions source recipient', () => {
-          let unrelatedRecipientDocument: Documents.Recipient;
-          let paymentTransactionDocument: Documents.PaymentTransaction;
-          let deferredTransactionDocument: Documents.DeferredTransaction;
-          let reimbursementTransactionDocument: Documents.ReimbursementTransaction;
-          let splitTransactionDocument: Documents.SplitTransaction;
-          let unrelatedPaymentTransactionDocument: Documents.PaymentTransaction;
-          let unrelatedDeferredTransactionDocument: Documents.DeferredTransaction;
-          let unrelatedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
-          let unrelatedSplitTransactionDocument: Documents.SplitTransaction;
+        test.describe('should reassign recipient in related', () => {
           let accountDocument: Documents.Account;
           let loanAccountDocument: Documents.Account;
 
@@ -81,71 +72,20 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
             loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
-
-            unrelatedRecipientDocument = recipientDataFactory.document();
-
-            paymentTransactionDocument = paymentTransactionDataFactory.document({
-              account: accountDocument,
-              recipient: sourceRecipientDocument,
-            });
-
-            deferredTransactionDocument = deferredTransactionDataFactory.document({
-              account: accountDocument,
-              recipient: sourceRecipientDocument,
-              loanAccount: loanAccountDocument,
-            });
-
-            reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-              account: loanAccountDocument,
-              recipient: sourceRecipientDocument,
-              loanAccount: accountDocument,
-            });
-
-            unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-              account: accountDocument,
-              recipient: unrelatedRecipientDocument,
-            });
-
-            unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-              account: accountDocument,
-              recipient: unrelatedRecipientDocument,
-              loanAccount: loanAccountDocument,
-            });
-
-            unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-              account: loanAccountDocument,
-              recipient: unrelatedRecipientDocument,
-              loanAccount: accountDocument,
-            });
-
-            splitTransactionDocument = splitTransactionDataFactory.document({
-              account: accountDocument,
-              recipient: sourceRecipientDocument,
-            });
-
-            unrelatedSplitTransactionDocument = splitTransactionDataFactory.document({
-              account: accountDocument,
-              recipient: unrelatedRecipientDocument,
-            });
           });
 
-          test('should be replaced if recipient is merged into another recipient', async ({ requestMergeRecipients, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
+          test('payment transaction', async ({ requestMergeRecipients, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
+
+            const paymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              recipient: sourceRecipientDocument,
+            });
             await saveAccounts(accountDocument, loanAccountDocument);
             await saveRecipients(
               sourceRecipientDocument,
               targetRecipientDocument,
-              unrelatedRecipientDocument,
             );
-            await saveTransactions(
-              paymentTransactionDocument,
-              deferredTransactionDocument,
-              reimbursementTransactionDocument,
-              unrelatedPaymentTransactionDocument,
-              unrelatedDeferredTransactionDocument,
-              unrelatedReimbursementTransactionDocument,
-              splitTransactionDocument,
-              unrelatedSplitTransactionDocument,
-            );
+            await saveTransactions(paymentTransactionDocument);
 
             const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
             expect(res).toBeNoContentResponse();
@@ -158,43 +98,79 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
                 to: getRecipientId(targetRecipientDocument),
               },
             });
+          });
+
+          test('deferred transaction', async ({ requestMergeRecipients, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
+
+            const deferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
+              recipient: sourceRecipientDocument,
+              loanAccount: loanAccountDocument,
+            });
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveRecipients(
+              sourceRecipientDocument,
+              targetRecipientDocument,
+            );
+            await saveTransactions(deferredTransactionDocument);
+
+            const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
+            expect(res).toBeNoContentResponse();
+
+            expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
+
             expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
               },
             });
+          });
+
+          test('reimbursement transaction', async ({ requestMergeRecipients, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
+            const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              recipient: sourceRecipientDocument,
+              loanAccount: accountDocument,
+            });
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveRecipients(
+              sourceRecipientDocument,
+              targetRecipientDocument,
+            );
+            await saveTransactions(reimbursementTransactionDocument);
+
+            const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
+            expect(res).toBeNoContentResponse();
+
+            expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
+
             expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
               },
             });
-            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
-              recipient: {
-                from: getRecipientId(sourceRecipientDocument),
-                to: getRecipientId(targetRecipientDocument),
-              },
+          });
+
+          test('split transaction', async ({ requestMergeRecipients, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
+            const splitTransactionDocument = splitTransactionDataFactory.document({
+              account: accountDocument,
+              recipient: sourceRecipientDocument,
             });
-            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
-              recipient: {
-                from: getRecipientId(sourceRecipientDocument),
-                to: getRecipientId(targetRecipientDocument),
-              },
-            });
-            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
-              recipient: {
-                from: getRecipientId(sourceRecipientDocument),
-                to: getRecipientId(targetRecipientDocument),
-              },
-            });
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveRecipients(
+              sourceRecipientDocument,
+              targetRecipientDocument,
+            );
+            await saveTransactions(splitTransactionDocument);
+
+            const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
+            expect(res).toBeNoContentResponse();
+
+            expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
+
             expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
-              recipient: {
-                from: getRecipientId(sourceRecipientDocument),
-                to: getRecipientId(targetRecipientDocument),
-              },
-            });
-            expect(unrelatedSplitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(unrelatedSplitTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),

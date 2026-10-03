@@ -6,7 +6,20 @@ export namespace Requests {
   export type Project = Api.Project.Base;
   export type Recipient = Api.Recipient.Base;
   export type Category = Api.Category.Base & Api.Category.ParentCategoryId;
-  export type Product = Api.Product.Base;
+  
+  export type GenericProduct = Api.Product.ProductType<Enum.ProductType.Generic> 
+    & Api.Product.Name;
+  export type SpecificProduct = Api.Product.ProductType<Enum.ProductType.Specific> 
+    & Api.Product.ParentProductId
+    & Api.Product.UnitOfMeasurement
+    & Api.Product.Measurement
+    & Api.Product.Name;
+  export type VariantProduct = Api.Product.ProductType<Enum.ProductType.Variant> 
+    & Api.Product.ParentProductId
+    & Api.Product.Name;
+
+  export type Product = GenericProduct | SpecificProduct | VariantProduct;
+  
   export type PaymentTransaction = Api.Account.AccountId
   & Api.Category.CategoryId
   & Api.Project.ProjectId

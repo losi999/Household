@@ -97,11 +97,6 @@ export const createPaymentTransactionServiceFactory = (
         product: product,
         productId,
       }, 400);
-
-      httpErrors.product.categoryRelation({
-        product,
-        categoryId,
-      });
     }
 
     let document: Documents.PaymentTransaction | Documents.DeferredTransaction | Documents.ReimbursementTransaction;

@@ -1,4 +1,4 @@
-import { CategoryType } from '@household/shared/enums';
+import { CategoryType, ProductType } from '@household/shared/enums';
 import { Api } from '@household/shared/types/api';
 import { Responses } from '@household/shared/types/responses';
 import { Documents } from '@household/shared/types/documents';
@@ -33,4 +33,16 @@ export const isInventoryCategory = (category: Responses.Category): boolean => {
 
 export const hasPriceId = (price: {price: Documents.Price;} | Api.Price.PriceId): price is Api.Price.PriceId => {
   return !!(price as Api.Price.PriceId).priceId;
+};
+
+export const isGenericProduct = (product: Documents.Product): product is Documents.GenericProduct => {
+  return product.productType === ProductType.Generic;
+};
+
+export const isSpecificProduct = (product: Documents.Product): product is Documents.SpecificProduct => {
+  return product.productType === ProductType.Specific;
+};
+
+export const isVariantProduct = (product: Documents.Product): product is Documents.VariantProduct => {
+  return product.productType === ProductType.Variant;
 };

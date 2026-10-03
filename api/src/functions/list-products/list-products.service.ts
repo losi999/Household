@@ -11,7 +11,6 @@ export const listProductsServiceFactory = (
   productService: IProductService,
   productDocumentConverter: IProductDocumentConverter): IListProductsService => {
   return async () => {
-
     const documents = await productService.listProducts().catch(httpErrors.product.list());
 
     return productDocumentConverter.toGroupedResponseList(documents);

@@ -26,17 +26,9 @@ const test = mergeTests(productApiTest, accountDbTest, transactionDbTest, catego
 
 test.describe('DELETE /product/v1/products/{productId}', () => {
   let productDocument: Documents.Product;
-  let categoryDocument: Documents.Category;
 
   test.beforeEach(async () => {
-    categoryDocument = categoryDataFactory.document({
-      body: {
-        categoryType: CategoryType.Inventory,
-      },
-    });
-    productDocument = productDataFactory.document({
-      category: categoryDocument,
-    });
+    productDocument = productDataFactory.document.generic();
   });
 
   test.describe('called as anonymous', () => {
@@ -68,99 +60,34 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
           expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
         });
 
-        test.describe('in related transactions inventory', () => {
-          let unrelatedProductDocument: Documents.Product;
-          let paymentTransactionDocument: Documents.PaymentTransaction;
-          let deferredTransactionDocument: Documents.DeferredTransaction;
-          let reimbursementTransactionDocument: Documents.ReimbursementTransaction;
-          let splitTransactionDocument: Documents.SplitTransaction;
-          let unrelatedPaymentTransactionDocument: Documents.PaymentTransaction;
-          let unrelatedDeferredTransactionDocument: Documents.DeferredTransaction;
-          let unrelatedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
+        test.describe('should unset inventory in related', () => {
+          let categoryDocument: Documents.Category;
           let accountDocument: Documents.Account;
           let loanAccountDocument: Documents.Account;
 
           test.beforeEach(async () => {
             accountDocument = accountDataFactory.document();
+            categoryDocument = categoryDataFactory.document({
+              body: {
+                categoryType: CategoryType.Inventory,
+              },
+            });
             loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
-
-            unrelatedProductDocument = productDataFactory.document({
-              category: categoryDocument,
-            });
-
-            paymentTransactionDocument = paymentTransactionDataFactory.document({
-              account: accountDocument,
-              category: categoryDocument,
-              product: productDocument,
-            });
-
-            unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-              account: accountDocument,
-              category: categoryDocument,
-              product: unrelatedProductDocument,
-            });
-
-            deferredTransactionDocument = deferredTransactionDataFactory.document({
-              account: accountDocument,
-              category: categoryDocument,
-              product: productDocument,
-              loanAccount: loanAccountDocument,
-            });
-
-            unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-              account: accountDocument,
-              category: categoryDocument,
-              product: unrelatedProductDocument,
-              loanAccount: loanAccountDocument,
-            });
-
-            reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-              account: loanAccountDocument,
-              category: categoryDocument,
-              product: productDocument,
-              loanAccount: accountDocument,
-            });
-
-            unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-              account: loanAccountDocument,
-              category: categoryDocument,
-              product: unrelatedProductDocument,
-              loanAccount: accountDocument,
-            });
-
-            splitTransactionDocument = splitTransactionDataFactory.document({
-              account: accountDocument,
-              splits: [
-                {
-                  product: unrelatedProductDocument,
-                  category: categoryDocument,
-                },
-                {
-                  product: productDocument,
-                  category: categoryDocument,
-                },
-              ],
-              loans: [
-                {
-                  product: unrelatedProductDocument,
-                  category: categoryDocument,
-                  loanAccount: loanAccountDocument,
-                },
-                {
-                  product: productDocument,
-                  category: categoryDocument,
-                  loanAccount: loanAccountDocument,
-                },
-              ],
-            });
           });
-          test('should be unset if product is deleted', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
-            await saveAccounts(accountDocument, loanAccountDocument);
+
+          test('payment transaction', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const paymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              category: categoryDocument,
+              product: productDocument,
+            });
+
+            await saveAccounts(accountDocument);
             await saveCategory(categoryDocument);
-            await saveProducts(productDocument, unrelatedProductDocument);
-            await saveTransactions(paymentTransactionDocument, splitTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument);
+            await saveProducts(productDocument);
+            await saveTransactions(paymentTransactionDocument);
             const res = await requestDeleteProduct(getProductId(productDocument));
             expect(res).toBeNoContentResponse();
             
@@ -170,31 +97,80 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
                 from: getProductId(productDocument),
               },
             });
-            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
-              product: {
-                from: getProductId(productDocument),
-              },
+          });
+
+          test('deferred transaction', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const deferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
+              category: categoryDocument,
+              product: productDocument,
+              loanAccount: loanAccountDocument,
             });
+
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveCategory(categoryDocument);
+            await saveProducts(productDocument);
+            await saveTransactions(deferredTransactionDocument);
+            const res = await requestDeleteProduct(getProductId(productDocument));
+            expect(res).toBeNoContentResponse();
+            
+            expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
             expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
             });
-            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
-              product: {
-                from: getProductId(productDocument),
-              },
+          });
+
+          test('reimbursement transaction', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              category: categoryDocument,
+              product: productDocument,
+              loanAccount: accountDocument,
             });
+
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveCategory(categoryDocument);
+            await saveProducts(productDocument);
+            await saveTransactions(reimbursementTransactionDocument);
+            const res = await requestDeleteProduct(getProductId(productDocument));
+            expect(res).toBeNoContentResponse();
+            
+            expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
             expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
             });
-            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
-              product: {
-                from: getProductId(productDocument),
-              },
+          });
+
+          test('split transaction', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const splitTransactionDocument = splitTransactionDataFactory.document({
+              account: accountDocument,
+              splits: [
+                {
+                  product: productDocument,
+                  category: categoryDocument,
+                },
+              ],
+              loans: [
+                {
+                  product: productDocument,
+                  category: categoryDocument,
+                  loanAccount: loanAccountDocument,
+                },
+              ],
             });
+
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveCategory(categoryDocument);
+            await saveProducts(productDocument);
+            await saveTransactions(splitTransactionDocument);
+            const res = await requestDeleteProduct(getProductId(productDocument));
+            expect(res).toBeNoContentResponse();
+            
+            expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
             expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
@@ -204,6 +180,34 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
         });
 
         test.describe('should return error', () => {
+          test('if generic product has child product', async({ requestDeleteProduct, saveProducts }) => {
+            const genericProduct = productDataFactory.document.generic();
+            const specificProduct = productDataFactory.document.specific({
+              genericProduct,
+            });
+
+            await saveProducts(genericProduct, specificProduct);
+            const res = await requestDeleteProduct(getProductId(genericProduct));
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Product cannot be deleted if there are child products');
+          });
+
+          test('if specific product has child product', async({ requestDeleteProduct, saveProducts }) => {
+            const genericProduct = productDataFactory.document.generic();
+            const specificProduct = productDataFactory.document.specific({
+              genericProduct,
+            });
+            const variandProduct = productDataFactory.document.variant({
+              genericProduct,
+              specificProduct,
+            });
+
+            await saveProducts(genericProduct, specificProduct, variandProduct);
+            const res = await requestDeleteProduct(getProductId(specificProduct));
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Product cannot be deleted if there are child products');
+          });
+
           test.describe('if productId', () => {
             test('is not mongo id', async ({ requestDeleteProduct }) => {
               const res = await requestDeleteProduct(productDataFactory.id('not-valid'));

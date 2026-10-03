@@ -29,11 +29,14 @@ export const mergeProductsServiceFactory = (
       productIds,
     });
 
-    httpErrors.product.notSameCategory(products);
+    httpErrors.product.notSameProductType(products);
+
+    httpErrors.product.notSameParent(products);
 
     return productService.mergeProducts({
       sourceProductIds: body,
       targetProductId: productId,
+      productType: products[0].productType,
     }).catch(httpErrors.product.merge({
       sourceProductIds: body,
       targetProductId: productId,

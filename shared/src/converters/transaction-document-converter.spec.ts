@@ -154,7 +154,7 @@ describe('Transaction document converter', () => {
     const project = testDataFactory.project.document();
     const recipient = testDataFactory.recipient.document();
     const regularCategory = testDataFactory.category.document();
-    const product = testDataFactory.product.document();
+    const product = testDataFactory.product.document.generic();
 
     const accountReport = testDataFactory.account.report();
     const categoryReport = testDataFactory.category.report();

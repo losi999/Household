@@ -16,20 +16,17 @@ describe('List products service', () => {
     service = listProductsServiceFactory(mockProductService.service, mockProductDocumentConverter.service);
   });
 
-  const queriedProductDocument = testDataFactory.product.document();
-  const queriedCategoryDocument = testDataFactory.category.document({
-    products: [queriedProductDocument],
-  });
+  const queriedProductDocument = testDataFactory.product.document.generic();
   const convertedResponse = testDataFactory.product.groupedResponse();
 
   it('should return documents', async () => {
-    mockProductService.functions.listProducts.mockResolvedValue([queriedCategoryDocument]);
+    mockProductService.functions.listProducts.mockResolvedValue([queriedProductDocument]);
     mockProductDocumentConverter.functions.toGroupedResponseList.mockReturnValue([convertedResponse]);
 
     const result = await service();
     expect(result).toEqual([convertedResponse]);
     expect(mockProductService.functions.listProducts).toHaveBeenCalled();
-    validateFunctionCall(mockProductDocumentConverter.functions.toGroupedResponseList, [queriedCategoryDocument]);
+    validateFunctionCall(mockProductDocumentConverter.functions.toGroupedResponseList, [queriedProductDocument]);
     expect.assertions(3);
   });
 

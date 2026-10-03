@@ -13,14 +13,10 @@ describe('Create product handler', () => {
     handlerFunction = handler(mockCreateProductService);
   });
 
-  const categoryId = testDataFactory.category.id();
-  const body = testDataFactory.product.request();
+  const body = testDataFactory.product.request.generic();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),
-    pathParameters: {
-      categoryId,
-    } as AWSLambda.APIGatewayProxyEventPathParameters,
     headers: {
       [headerExpiresIn]: `${expiresIn}`,
     } as AWSLambda.APIGatewayProxyEventHeaders,
@@ -38,7 +34,6 @@ describe('Create product handler', () => {
     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
     validateFunctionCall(mockCreateProductService, {
       body,
-      categoryId,
       expiresIn,
     });
     expect(response.statusCode).toEqual(statusCode);
@@ -54,7 +49,6 @@ describe('Create product handler', () => {
     const response = await handlerFunction(handlerEvent, undefined, undefined) as AWSLambda.APIGatewayProxyResult;
     validateFunctionCall(mockCreateProductService, {
       body,
-      categoryId,
       expiresIn,
     });
     expect(response.statusCode).toEqual(201);

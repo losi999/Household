@@ -37,7 +37,7 @@ describe('Reimbursement transaction document converter', () => {
   const categoryResponse = testDataFactory.category.response();
   const projectResponse = testDataFactory.project.response();
   const recipientResponse = testDataFactory.recipient.response();
-  const productResponse = testDataFactory.product.response();
+  const productResponse = testDataFactory.product.response.generic();
 
   const payingAccount = testDataFactory.account.document();
   const ownerAccount = testDataFactory.account.document();
@@ -52,7 +52,7 @@ describe('Reimbursement transaction document converter', () => {
   const inventoryCategory = testDataFactory.category.document({
     categoryType: CategoryType.Inventory,
   });
-  const product = testDataFactory.product.document();
+  const product = testDataFactory.product.document.generic();
 
   describe('create', () => {
     const expiresIn = 3600;

@@ -1,4 +1,4 @@
-import { getCategoryId, getProductId, getTransactionId } from '@household/shared/common/utils';
+import { getCategoryId, getTransactionId } from '@household/shared/common/utils';
 import { entries } from '@household/shared/common/utils';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { allowUsers } from '@household/test/utils';
@@ -80,44 +80,15 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
             
             expect(childOfSourceCategoryDocument).toHaveItsParentReassigned(await findCategoryById(getCategoryId(childOfSourceCategoryDocument)), targetCategoryDocument);
           });
-
-          test('a category and reassign its products', async ({ requestMergeCategories, saveCategories, findCategoryById, saveProduct, findProductById }) => {
-            sourceCategoryDocument = categoryDataFactory.document({
-              body: {
-                categoryType: CategoryType.Inventory,
-              },
-            });
-
-            targetCategoryDocument = categoryDataFactory.document({
-              body: {
-                categoryType: CategoryType.Inventory,
-              },
-            });
-
-            const productDocument = productDataFactory.document({
-              category: sourceCategoryDocument,
-            });
-
-            await saveCategories(sourceCategoryDocument, targetCategoryDocument);
-            await saveProduct(productDocument);
-
-            const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
-            expect(res).toBeNoContentResponse();
-
-            expect(await findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
-            
-            expect(productDocument).toHaveItsCategoryReassigned(await findProductById(getProductId(productDocument)), targetCategoryDocument);
-          });
         });
 
-        test.describe('in related transactions', () => {
-          Object.values(CategoryType).forEach((categoryType) => {
-            test(`should reassign category if merging ${categoryType} categories`, async ({ requestMergeCategories, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
-              const accountDocument = accountDataFactory.document();
-              const loanAccountDocument = accountDataFactory.document({
-                accountType: AccountType.Loan,
-              });
+        Object.values(CategoryType).forEach((categoryType) => {
+          test.describe(`should reassign ${categoryType} category in related`, () => {
+            let productDocument: Documents.Product;
+            let accountDocument: Documents.Account;
+            let loanAccountDocument: Documents.Account;
 
+            test.beforeEach(() => {
               sourceCategoryDocument = categoryDataFactory.document({
                 body: {
                   categoryType,
@@ -128,100 +99,31 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
                   categoryType,
                 },
               });
-
-              const unrelatedCategoryDocument = categoryDataFactory.document({
-                body: {
-                  categoryType,
-                },
+            
+              accountDocument = accountDataFactory.document();
+              loanAccountDocument = accountDataFactory.document({
+                accountType: AccountType.Loan,
               });
-              let productOfSourceCategoryDocument: Documents.Product;
-              let productOfTargetCategoryDocument: Documents.Product;
-              let unrelatedProductDocument: Documents.Product;
-
+            
               if (categoryType === CategoryType.Inventory) {
-                productOfSourceCategoryDocument = productDataFactory.document({
-                  category: sourceCategoryDocument,
-                });
-                productOfTargetCategoryDocument = productDataFactory.document({
-                  category: targetCategoryDocument,
-                });
+                productDocument = productDataFactory.document.generic();
+              }
+            });
 
-                unrelatedProductDocument = productDataFactory.document({
-                  category: unrelatedCategoryDocument,
-                });
-
-                await saveProducts(productOfSourceCategoryDocument, productOfTargetCategoryDocument, unrelatedProductDocument);
+            test('payment transaction', async ({ requestMergeCategories, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+              if (categoryType === CategoryType.Inventory) {
+                await saveProducts(productDocument);
               }
 
               const paymentTransactionDocument = paymentTransactionDataFactory.document({
                 account: accountDocument,
                 category: sourceCategoryDocument,
-                product: productOfSourceCategoryDocument,
+                product: productDocument,
               });
 
-              const deferredTransactionDocument = deferredTransactionDataFactory.document({
-                account: accountDocument,
-                category: sourceCategoryDocument,
-                loanAccount: loanAccountDocument,
-                product: productOfSourceCategoryDocument,
-              });
-
-              const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-                account: loanAccountDocument,
-                category: sourceCategoryDocument,
-                loanAccount: accountDocument,
-                product: productOfSourceCategoryDocument,
-              });
-
-              const unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-                account: accountDocument,
-                category: unrelatedCategoryDocument,
-                product: unrelatedProductDocument,
-              });
-
-              const unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-                account: accountDocument,
-                category: unrelatedCategoryDocument,
-                product: unrelatedProductDocument,
-                loanAccount: loanAccountDocument,
-              });
-
-              const unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-                account: loanAccountDocument,
-                category: unrelatedCategoryDocument,
-                product: unrelatedProductDocument,
-                loanAccount: accountDocument,
-              });
-
-              const splitTransactionDocument = splitTransactionDataFactory.document({
-                account: accountDocument,
-                splits: [
-                  {
-                    category: sourceCategoryDocument,
-                    product: productOfSourceCategoryDocument,
-                  },
-                  {
-                    category: unrelatedCategoryDocument,
-                    product: unrelatedProductDocument,
-                  },
-                ],
-                loans: [
-                  {
-                    category: sourceCategoryDocument,
-                    product: productOfSourceCategoryDocument,
-                    loanAccount: loanAccountDocument,
-                  },
-                  {
-                    category: unrelatedCategoryDocument,
-                    loanAccount: loanAccountDocument,
-                    product: unrelatedProductDocument,
-                  },
-                ],
-              });
-
-              await saveCategories(sourceCategoryDocument, targetCategoryDocument, unrelatedCategoryDocument);
-              await saveAccounts(accountDocument, loanAccountDocument);
-              await saveTransactions(paymentTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument, splitTransactionDocument);
+              await saveCategories(sourceCategoryDocument, targetCategoryDocument);
+              await saveAccounts(accountDocument);
+              await saveTransactions(paymentTransactionDocument);
 
               const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
               expect(res).toBeNoContentResponse();
@@ -233,37 +135,95 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
                   to: targetCategoryDocument,
                 },
               });
+            });
+
+            test('deferred transaction', async ({ requestMergeCategories, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+              if (categoryType === CategoryType.Inventory) {
+                await saveProducts(productDocument);
+              }
+
+              const deferredTransactionDocument = deferredTransactionDataFactory.document({
+                account: accountDocument,
+                category: sourceCategoryDocument,
+                loanAccount: loanAccountDocument,
+                product: productDocument,
+              });
+
+              await saveCategories(sourceCategoryDocument, targetCategoryDocument);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveTransactions(deferredTransactionDocument);
+
+              const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
+              expect(res).toBeNoContentResponse();
+
+              expect(await findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
               expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
                 category: {
                   from: sourceCategoryDocument,
                   to: targetCategoryDocument,
                 },
               });
+            });
+
+            test('reimbursement transaction', async ({ requestMergeCategories, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+              if (categoryType === CategoryType.Inventory) {
+                await saveProducts(productDocument);
+              }
+
+              const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+                account: loanAccountDocument,
+                category: sourceCategoryDocument,
+                loanAccount: accountDocument,
+                product: productDocument,
+              });
+
+              await saveCategories(sourceCategoryDocument, targetCategoryDocument);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveTransactions(reimbursementTransactionDocument);
+
+              const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
+              expect(res).toBeNoContentResponse();
+
+              expect(await findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
               expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
                 category: {
                   from: sourceCategoryDocument,
                   to: targetCategoryDocument,
                 },
               });
+            });
+
+            test('split transaction', async ({ requestMergeCategories, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+              if (categoryType === CategoryType.Inventory) {
+                await saveProducts(productDocument);
+              }
+
+              const splitTransactionDocument = splitTransactionDataFactory.document({
+                account: accountDocument,
+                splits: [
+                  {
+                    category: sourceCategoryDocument,
+                    product: productDocument,
+                  },
+                ],
+                loans: [
+                  {
+                    category: sourceCategoryDocument,
+                    product: productDocument,
+                    loanAccount: loanAccountDocument,
+                  },
+                ],
+              });
+
+              await saveCategories(sourceCategoryDocument, targetCategoryDocument);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveTransactions(splitTransactionDocument);
+
+              const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
+              expect(res).toBeNoContentResponse();
+
+              expect(await findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
               expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
-                category: {
-                  from: sourceCategoryDocument,
-                  to: targetCategoryDocument,
-                },
-              });
-              expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
-                category: {
-                  from: sourceCategoryDocument,
-                  to: targetCategoryDocument,
-                },
-              });
-              expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
-                category: {
-                  from: sourceCategoryDocument,
-                  to: targetCategoryDocument,
-                },
-              });
-              expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
                 category: {
                   from: sourceCategoryDocument,
                   to: targetCategoryDocument,

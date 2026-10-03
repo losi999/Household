@@ -61,15 +61,7 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
           expect(await findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
         });
 
-        test.describe('in related transactions project', () => {
-          let unrelatedProjectDocument: Documents.Project;
-          let paymentTransactionDocument: Documents.PaymentTransaction;
-          let deferredTransactionDocument: Documents.DeferredTransaction;
-          let reimbursementTransactionDocument: Documents.ReimbursementTransaction;
-          let splitTransactionDocument: Documents.SplitTransaction;
-          let unrelatedPaymentTransactionDocument: Documents.PaymentTransaction;
-          let unrelatedDeferredTransactionDocument: Documents.DeferredTransaction;
-          let unrelatedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
+        test.describe('should unset project in related', () => {
           let accountDocument: Documents.Account;
           let loanAccountDocument: Documents.Account;
 
@@ -78,78 +70,18 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
             loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
-
-            unrelatedProjectDocument = projectDataFactory.document();
-
-            paymentTransactionDocument = paymentTransactionDataFactory.document({
-              account: accountDocument,
-              project: projectDocument,
-            });
-
-            deferredTransactionDocument = deferredTransactionDataFactory.document({
-              account: accountDocument,
-              project: projectDocument,
-              loanAccount: loanAccountDocument,
-            });
-
-            reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-              account: loanAccountDocument,
-              project: projectDocument,
-              loanAccount: accountDocument,
-            });
-
-            unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-              account: accountDocument,
-              project: unrelatedProjectDocument,
-            });
-
-            unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-              account: accountDocument,
-              project: unrelatedProjectDocument,
-              loanAccount: loanAccountDocument,
-            });
-
-            unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-              account: loanAccountDocument,
-              project: unrelatedProjectDocument,
-              loanAccount: accountDocument,
-            });
-
-            splitTransactionDocument = splitTransactionDataFactory.document({
-              account: accountDocument,
-              splits: [
-                {
-                  project: unrelatedProjectDocument,
-                },
-                {
-                  project: projectDocument,
-                },
-              ],
-              loans: [
-                {
-                  project: unrelatedProjectDocument,
-                  loanAccount: loanAccountDocument,
-                },
-                {
-                  project: projectDocument,
-                  loanAccount: loanAccountDocument,
-                },
-              ],
-            });
+            
           });
           
-          test('should be unset if project is deleted', async ({ requestDeleteProject, saveAccounts, saveTransactions, findTransactionById, saveProjects, findProjectById }) => {
+          test('payment transaction', async ({ requestDeleteProject, saveAccounts, saveTransactions, findTransactionById, saveProjects, findProjectById }) => {
+            const paymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              project: projectDocument,
+            });
+
             await saveAccounts(accountDocument, loanAccountDocument);
-            await saveTransactions(
-              paymentTransactionDocument,
-              deferredTransactionDocument,
-              reimbursementTransactionDocument,
-              unrelatedPaymentTransactionDocument,
-              unrelatedDeferredTransactionDocument,
-              unrelatedReimbursementTransactionDocument,
-              splitTransactionDocument,
-            );
-            await saveProjects(projectDocument, unrelatedProjectDocument);
+            await saveTransactions(paymentTransactionDocument);
+            await saveProjects(projectDocument);
 
             const res = await requestDeleteProject(getProjectId(projectDocument));
             expect(res).toBeNoContentResponse();
@@ -161,37 +93,84 @@ test.describe('DELETE /project/v1/projects/{projectId}', () => {
                 from: getProjectId(projectDocument),
               },
             });
+          });
+          
+          test('deferred transaction', async ({ requestDeleteProject, saveAccounts, saveTransactions, findTransactionById, saveProjects, findProjectById }) => {
+            const deferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
+              project: projectDocument,
+              loanAccount: loanAccountDocument,
+            });
+            
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransactions(deferredTransactionDocument);
+            await saveProjects(projectDocument);
+
+            const res = await requestDeleteProject(getProjectId(projectDocument));
+            expect(res).toBeNoContentResponse();
+          
+            expect(await findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
+
             expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
               project: {
                 from: getProjectId(projectDocument),
               },
             });
+          });
+          
+          test('reimbursement transaction', async ({ requestDeleteProject, saveAccounts, saveTransactions, findTransactionById, saveProjects, findProjectById }) => {
+            const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              project: projectDocument,
+              loanAccount: accountDocument,
+            });
+            
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransactions(reimbursementTransactionDocument);
+            await saveProjects(projectDocument);
+
+            const res = await requestDeleteProject(getProjectId(projectDocument));
+            expect(res).toBeNoContentResponse();
+          
+            expect(await findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
+
             expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
               project: {
                 from: getProjectId(projectDocument),
               },
             });
-            expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
-              project: {
-                from: getProjectId(projectDocument),
-              },
+          });
+          
+          test('split transaction', async ({ requestDeleteProject, saveAccounts, saveTransactions, findTransactionById, saveProjects, findProjectById }) => {
+            const splitTransactionDocument = splitTransactionDataFactory.document({
+              account: accountDocument,
+              splits: [
+                {
+                  project: projectDocument,
+                },
+              ],
+              loans: [
+                {
+                  project: projectDocument,
+                  loanAccount: loanAccountDocument,
+                },
+              ],
             });
-            expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
-              project: {
-                from: getProjectId(projectDocument),
-              },
-            });
-            expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
-              project: {
-                from: getProjectId(projectDocument),
-              },
-            });
+            
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveTransactions(splitTransactionDocument);
+            await saveProjects(projectDocument);
+
+            const res = await requestDeleteProject(getProjectId(projectDocument));
+            expect(res).toBeNoContentResponse();
+          
+            expect(await findProjectById(getProjectId(projectDocument))).toHaveBeenDeletedFromDatabase();
+
             expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
               project: {
                 from: getProjectId(projectDocument),
               },
             });
-
           });
         });
 

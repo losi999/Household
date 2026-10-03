@@ -116,12 +116,20 @@ export namespace Api {
       productId: Id;
     };
 
-    export type FullName = {
-      fullName: string;
+    export type Name = {
+      name: string;
     };
 
-    export type Brand = {
-      brand: string;
+    export type ProductType<T extends Enum.ProductType> = {
+      productType: T;
+    };
+
+    export type ParentProductId = {
+      parentProductId: Id;
+    };
+
+    export type FullName = {
+      fullName: string;
     };
 
     export type Measurement = {
@@ -131,8 +139,6 @@ export namespace Api {
     export type UnitOfMeasurement = {
       unitOfMeasurement: typeof unitsOfMeasurement[number];
     };
-
-    export type Base = Brand & Measurement & UnitOfMeasurement;
   }
 
   export namespace Transaction {

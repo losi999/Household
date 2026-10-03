@@ -30,14 +30,6 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
   let categoryDocument: Documents.Category;
   let targetProductDocument: Documents.Product;
   let sourceProductDocument: Documents.Product;
-  let unrelatedProductDocument: Documents.Product;
-  let paymentTransactionDocument: Documents.PaymentTransaction;
-  let deferredTransactionDocument: Documents.DeferredTransaction;
-  let reimbursementTransactionDocument: Documents.ReimbursementTransaction;
-  let splitTransactionDocument: Documents.SplitTransaction;
-  let unrelatedPaymentTransactionDocument: Documents.PaymentTransaction;
-  let unrelatedDeferredTransactionDocument: Documents.DeferredTransaction;
-  let unrelatedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
@@ -51,81 +43,9 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
       },
     });
 
-    targetProductDocument = productDataFactory.document({
-      category: categoryDocument,
-    });
-    sourceProductDocument = productDataFactory.document({
-      category: categoryDocument,
-    });
-    unrelatedProductDocument = productDataFactory.document({
-      category: categoryDocument,
-    });
-
-    paymentTransactionDocument = paymentTransactionDataFactory.document({
-      account: accountDocument,
-      category: categoryDocument,
-      product: sourceProductDocument,
-    });
-
-    unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-      account: accountDocument,
-      category: categoryDocument,
-      product: unrelatedProductDocument,
-    });
-
-    deferredTransactionDocument = deferredTransactionDataFactory.document({
-      account: accountDocument,
-      category: categoryDocument,
-      product: sourceProductDocument,
-      loanAccount: loanAccountDocument,
-    });
-
-    unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-      account: accountDocument,
-      category: categoryDocument,
-      product: unrelatedProductDocument,
-      loanAccount: loanAccountDocument,
-    });
-
-    reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-      account: loanAccountDocument,
-      category: categoryDocument,
-      product: sourceProductDocument,
-      loanAccount: accountDocument,
-    });
-
-    unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-      account: loanAccountDocument,
-      category: categoryDocument,
-      product: unrelatedProductDocument,
-      loanAccount: accountDocument,
-    });
-
-    splitTransactionDocument = splitTransactionDataFactory.document({
-      account: accountDocument,
-      splits: [
-        {
-          product: unrelatedProductDocument,
-          category: categoryDocument,
-        },
-        {
-          product: sourceProductDocument,
-          category: categoryDocument,
-        },
-      ],
-      loans: [
-        {
-          product: unrelatedProductDocument,
-          category: categoryDocument,
-          loanAccount: loanAccountDocument,
-        },
-        {
-          product: sourceProductDocument,
-          category: categoryDocument,
-          loanAccount: loanAccountDocument,
-        },
-      ],
-    });
+    targetProductDocument = productDataFactory.document.generic();
+    sourceProductDocument = productDataFactory.document.generic();
+    
   });
 
   test.describe('called as anonymous', () => {
@@ -149,79 +69,220 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should merge products', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
-          await saveAccounts(accountDocument, loanAccountDocument);
-          await saveCategory(categoryDocument);
-          await saveProducts(sourceProductDocument, targetProductDocument, unrelatedProductDocument);
-          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument);
+        test('should merge products', async ({ requestMergeProducts, saveProducts, findProductById }) => {
+          await saveProducts(sourceProductDocument, targetProductDocument);
 
           const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
           expect(res).toBeNoContentResponse();
 
           expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
-          expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
-            product: {
-              from: getProductId(sourceProductDocument),
-              to: getProductId(targetProductDocument),
-            },
+        });
+
+        test.describe('children should be reassigned', () => {
+          test('of a generic product', async ({ requestMergeProducts, saveProducts, findProductById }) => {
+            const specificProduct = productDataFactory.document.specific({
+              genericProduct: sourceProductDocument as Documents.GenericProduct,
+            });
+            const variantProduct = productDataFactory.document.variant({
+              genericProduct: sourceProductDocument as Documents.GenericProduct,
+              specificProduct,
+            });
+
+            await saveProducts(sourceProductDocument, targetProductDocument, specificProduct, variantProduct);
+            const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
+            expect(res).toBeNoContentResponse();
+
+            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            expect(specificProduct).toHaveItsGenericProductReassigned(await findProductById(getProductId(specificProduct)), targetProductDocument);
+            expect(variantProduct).toHaveItsGenericProductReassigned(await findProductById(getProductId(variantProduct)), targetProductDocument);
+
           });
-          expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
-            product: {
-              from: getProductId(sourceProductDocument),
-              to: getProductId(targetProductDocument),
-            },
+
+          test('of a specific product', async ({ requestMergeProducts, saveProducts, findProductById }) => {
+            const genericProduct = productDataFactory.document.generic();
+            sourceProductDocument = productDataFactory.document.specific({
+              genericProduct,
+            });
+
+            targetProductDocument = productDataFactory.document.specific({
+              genericProduct,
+            });
+            const variantProduct = productDataFactory.document.variant({
+              genericProduct,
+              specificProduct: sourceProductDocument,
+            });
+
+            await saveProducts(sourceProductDocument, targetProductDocument, genericProduct, variantProduct);
+            const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
+            expect(res).toBeNoContentResponse();
+
+            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            expect(variantProduct).toHaveItsSpecificProductReassigned(await findProductById(getProductId(variantProduct)), targetProductDocument);
+
           });
-          expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
-            product: {
-              from: getProductId(sourceProductDocument),
-              to: getProductId(targetProductDocument),
-            },
+        });
+
+        test.describe('product should be reassigned in related', () => {
+          test('payment transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const paymentTransactionDocument = paymentTransactionDataFactory.document({
+              account: accountDocument,
+              category: categoryDocument,
+              product: sourceProductDocument,
+            });
+
+            await saveAccounts(accountDocument);
+            await saveCategory(categoryDocument);
+            await saveProducts(sourceProductDocument, targetProductDocument);
+            await saveTransactions(paymentTransactionDocument);
+
+            const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
+            expect(res).toBeNoContentResponse();
+
+            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            });
           });
-          expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
-            product: {
-              from: getProductId(sourceProductDocument),
-              to: getProductId(targetProductDocument),
-            },
+
+          test('deferred transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const deferredTransactionDocument = deferredTransactionDataFactory.document({
+              account: accountDocument,
+              category: categoryDocument,
+              product: sourceProductDocument,
+              loanAccount: loanAccountDocument,
+            });
+    
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveCategory(categoryDocument);
+            await saveProducts(sourceProductDocument, targetProductDocument);
+            await saveTransactions(deferredTransactionDocument);
+
+            const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
+            expect(res).toBeNoContentResponse();
+
+            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            });
           });
-          expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
-            product: {
-              from: getProductId(sourceProductDocument),
-              to: getProductId(targetProductDocument),
-            },
+
+          test('reimbursement transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              account: loanAccountDocument,
+              category: categoryDocument,
+              product: sourceProductDocument,
+              loanAccount: accountDocument,
+            });
+
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveCategory(categoryDocument);
+            await saveProducts(sourceProductDocument, targetProductDocument);
+            await saveTransactions(reimbursementTransactionDocument);
+
+            const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
+            expect(res).toBeNoContentResponse();
+
+            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            });
           });
-          expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
-            product: {
-              from: getProductId(sourceProductDocument),
-              to: getProductId(targetProductDocument),
-            },
-          });
-          expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
-            product: {
-              from: getProductId(sourceProductDocument),
-              to: getProductId(targetProductDocument),
-            },
+
+          test('split transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const splitTransactionDocument = splitTransactionDataFactory.document({
+              account: accountDocument,
+              splits: [
+                {
+                  product: sourceProductDocument,
+                  category: categoryDocument,
+                },
+              ],
+              loans: [
+                {
+                  product: sourceProductDocument,
+                  category: categoryDocument,
+                  loanAccount: loanAccountDocument,
+                },
+              ],
+            });
+    
+            await saveAccounts(accountDocument, loanAccountDocument);
+            await saveCategory(categoryDocument);
+            await saveProducts(sourceProductDocument, targetProductDocument);
+            await saveTransactions(splitTransactionDocument);
+
+            const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
+            expect(res).toBeNoContentResponse();
+
+            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
+              product: {
+                from: getProductId(sourceProductDocument),
+                to: getProductId(targetProductDocument),
+              },
+            });
           });
         });
 
         test.describe('should return error', () => {
-          test('if products do not belong to the same category', async ({ requestMergeProducts, saveCategory, saveProduct }) => {
-            const otherCategory = categoryDataFactory.document({
-              body: {
-                categoryType: CategoryType.Inventory,
-              },
+          test('if products do not belong to the same type', async ({ requestMergeProducts, saveProducts }) => {
+            const genericProductDocument = productDataFactory.document.generic();
+            sourceProductDocument = productDataFactory.document.specific({
+              genericProduct: genericProductDocument,
             });
 
-            sourceProductDocument = productDataFactory.document({
-              category: otherCategory,
+            await saveProducts(genericProductDocument, sourceProductDocument);
+            const res = await requestMergeProducts(getProductId(genericProductDocument), [getProductId(sourceProductDocument)]);
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Not all products are of the same type');
+          });
+
+          test('if specific products do not belong to the same parent', async ({ requestMergeProducts, saveProducts }) => {
+            const parentOfSource = productDataFactory.document.generic();
+            sourceProductDocument = productDataFactory.document.specific({
+              genericProduct: parentOfSource,
+            });
+            const parentOfTarget = productDataFactory.document.generic();
+            targetProductDocument = productDataFactory.document.specific({
+              genericProduct: parentOfTarget,
             });
 
-            await saveCategory(categoryDocument);
-            await saveCategory(otherCategory);
-            await saveProduct(targetProductDocument);
-            await saveProduct(sourceProductDocument);
+            await saveProducts(targetProductDocument, sourceProductDocument, parentOfSource, parentOfTarget);
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
             expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Not all products belong to the same category');
+            expect(res).toHaveMessage('Not all products are siblings');
+          });
+
+          test('if variant products do not belong to the same parent', async ({ requestMergeProducts, saveProducts }) => {
+            const genericProduct = productDataFactory.document.generic();
+            const parentOfSource = productDataFactory.document.specific({
+              genericProduct,
+            });
+            sourceProductDocument = productDataFactory.document.variant({
+              genericProduct,
+              specificProduct: parentOfSource,
+            });
+            const parentOfTarget = productDataFactory.document.specific({
+              genericProduct,
+            });
+            targetProductDocument = productDataFactory.document.variant({
+              genericProduct,
+              specificProduct: parentOfTarget,
+            });
+
+            await saveProducts(targetProductDocument, sourceProductDocument, parentOfSource, parentOfTarget, genericProduct);
+            const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
+            expect(res).toBeBadRequestResponse();
+            expect(res).toHaveMessage('Not all products are siblings');
           });
 
           test('if a source product does not exist', async ({ requestMergeProducts, saveCategory, saveProduct }) => {

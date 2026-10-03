@@ -1,8 +1,13 @@
 import { unitsOfMeasurement } from '@household/shared/constants';
+import { ProductType } from '@household/shared/enums';
 import { Documents } from '@household/shared/types/documents';
 import { Schema } from 'mongoose';
 
 export const productSchema = new Schema<Documents.Product>({
+  productType: {
+    type: String,
+    enum: ProductType,
+  },
   unitOfMeasurement: {
     type: String,
     enum: [...unitsOfMeasurement],
@@ -10,19 +15,21 @@ export const productSchema = new Schema<Documents.Product>({
   measurement: {
     type: Number,
   },
-  brand: {
+  name: {
     type: String,
     minlength: 1,
   },
   fullName: {
     type: String,
-    required: true,
     minlength: 1,
   },
-  category: {
+  genericProduct: {
     type: Schema.Types.ObjectId,
-    ref: 'categories',
-    required: true,
+    ref: 'products',
+  },
+  specificProduct: {
+    type: Schema.Types.ObjectId,
+    ref: 'products',
   },
   expiresAt: {
     type: Schema.Types.Date,
@@ -39,8 +46,10 @@ export const productSchema = new Schema<Documents.Product>({
 });
 
 productSchema.index({
+  name: 1,
   fullName: 1,
-  category: 1,
+  genericProduct: 1,
+  specificProduct: 1,
 }, {
   unique: true,
 });
