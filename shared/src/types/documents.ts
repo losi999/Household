@@ -24,9 +24,32 @@ export namespace Documents {
     products?: Product[];
   };
 
-  export type Product = Id & Timestamps & Api.Product.Base & Api.Product.FullName & {
-    category: Category;
+  export type GenericProduct = Id
+  & Timestamps 
+  & Api.Product.ProductType<Enum.ProductType.Generic> 
+  & Api.Product.Name;
+
+  export type SpecificProduct = Id
+  & Timestamps 
+  & Api.Product.ProductType<Enum.ProductType.Specific> 
+  & Api.Product.UnitOfMeasurement
+  & Api.Product.Measurement
+  & Api.Product.FullName
+  & Api.Product.Name
+  & {
+    genericProduct: GenericProduct;
   };
+
+  export type VariantProduct = Id
+  & Timestamps 
+  & Api.Product.ProductType<Enum.ProductType.Variant> 
+  & Api.Product.Name
+  & {
+    genericProduct: GenericProduct;
+    specificProduct: SpecificProduct;
+  };
+
+  export type Product = GenericProduct | SpecificProduct | VariantProduct;
   
   export type PaymentTransaction = Id
     & Timestamps

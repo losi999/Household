@@ -64,9 +64,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
       },
     });
 
-    productDocument = productDataFactory.document({
-      category: inventoryCategoryDocument,
-    });
+    productDocument = productDataFactory.document.generic();
 
     relatedDocumentIds = {
       accountId: getAccountId(accountDocument),

@@ -1,7 +1,13 @@
 export enum CategoryType {
   Regular = 'regular',
   Invoice = 'invoice',
-  Inventory = 'inventory',
+  Inventory = 'inventory', // TODO
+}
+
+export enum ProductType {
+  Generic = 'generic',
+  Specific = 'specific',
+  Variant = 'variant',
 }
 
 export enum AccountType {
@@ -58,4 +64,5 @@ export enum CalendarEntryResolutionStatus {
 export enum SettingKey {
   HairdressingIncomeAccount = 'hairdressingIncomeAccount',
   HairdressingIncomeCategory = 'hairdressingIncomeCategory',
+  InventoryCategory = 'inventoryCategory',
 }

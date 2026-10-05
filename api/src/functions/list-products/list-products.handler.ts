@@ -5,7 +5,7 @@ import { Responses } from '@household/shared/types/responses';
 
 export default (listProducts: IListProductsService): AWSLambda.APIGatewayProxyHandler => {
   return async () => {
-    let products: Responses.ProductGroupedResponse[];
+    let products: Responses.ProductTree[];
     try {
       products = await listProducts();
     } catch (error) {

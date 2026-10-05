@@ -37,9 +37,7 @@ describe('Create split transaction service', () => {
   const category = testDataFactory.category.document({
     categoryType: CategoryType.Inventory,
   });
-  const product = testDataFactory.product.document({
-    category,
-  });
+  const product = testDataFactory.product.document.generic();
   const project = testDataFactory.project.document();
   const loanAccount = testDataFactory.account.document({
     accountType: AccountType.Loan,
@@ -404,49 +402,6 @@ describe('Create split transaction service', () => {
       validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.listProductsByIds, [productId]);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      expect.assertions(9);
-    });
-
-    it('if product belongs to different category', async () => {
-      const otherProduct = testDataFactory.product.document();
-      const otherProductId = getProductId(otherProduct);
-
-      body = testDataFactory.transaction.request.split({
-        accountId: getAccountId(queriedAccount),
-        recipientId: getRecipientId(queriedRecipient),
-        splits: [],
-        loans: [
-          {
-            categoryId,
-            projectId,
-            productId: otherProductId,
-            loanAccountId,
-          },
-        ],
-      });
-      mockAccountService.functions.findAccountsByIds.mockResolvedValue([
-        queriedAccount,
-        loanAccount,
-      ]);
-      mockCategoryService.functions.findCategoriesByIds.mockResolvedValue([category]);
-      mockProjectService.functions.findProjectsByIds.mockResolvedValue([project]);
-      mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.listProductsByIds.mockResolvedValue([otherProduct]);
-
-      await service({
-        body,
-        expiresIn: undefined,
-      }).catch(validateError('Product belongs to different category', 400));
-      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
-        body.accountId,
-        loanAccountId,
-      ]);
-      validateFunctionCall(mockCategoryService.functions.findCategoriesByIds, [categoryId]);
-      validateFunctionCall(mockProjectService.functions.findProjectsByIds, [projectId]);
-      validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
-      validateFunctionCall(mockProductService.functions.listProductsByIds, [otherProductId]);
       validateFunctionCall(mockSplitTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       expect.assertions(9);

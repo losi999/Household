@@ -1,17 +1,9 @@
-import * as Category from '@household/shared/schemas/category';
 import * as Product from '@household/shared/schemas/product';
 import { createPath } from '@household/shared/common/schema-utils';
 
 export const createProduct = createPath({
   method: 'post',
   tags: ['Product'],
-  parameters: [
-    {
-      in: 'path',
-      name: 'categoryId',
-      schema: Category.categoryId.properties.categoryId,
-    },
-  ],
   requestBodySchema: Product.request,
   response: {
     statusCode: 201,

@@ -4,16 +4,15 @@ import { IProductService } from '@household/shared/services/product-service';
 import { Responses } from '@household/shared/types/responses';
 
 export interface IListProductsService {
-  (): Promise<Responses.ProductGroupedResponse[]>;
+  (): Promise<Responses.ProductTree[]>;
 }
 
 export const listProductsServiceFactory = (
   productService: IProductService,
   productDocumentConverter: IProductDocumentConverter): IListProductsService => {
   return async () => {
-
     const documents = await productService.listProducts().catch(httpErrors.product.list());
 
-    return productDocumentConverter.toGroupedResponseList(documents);
+    return productDocumentConverter.toResponseTreeList(documents);
   };
 };

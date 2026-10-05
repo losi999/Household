@@ -1,10 +1,7 @@
 import { groupedResponseList as schema } from '@household/shared/schemas/product';
-import { Documents } from '@household/shared/types/documents';
 import { productDataFactory } from '@household/test/api/product/data-factory';
-import { categoryDataFactory } from '@household/test/api/category/data-factory';
-import { CategoryType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
-import { entries, getCategoryId } from '@household/shared/common/utils';
+import { entries } from '@household/shared/common/utils';
 
 import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
@@ -19,31 +16,6 @@ const permissionMap = forbidUsers();
 const test = mergeTests(productApiTest, categoryDbTest, productDbTest);
 
 test.describe('GET /product/v1/products', () => {
-  let productDocument1: Documents.Product;
-  let productDocument2: Documents.Product;
-  let categoryDocument1: Documents.Category;
-  let categoryDocument2: Documents.Category;
-
-  test.beforeEach(async () => {
-    categoryDocument1 = categoryDataFactory.document({
-      body: {
-        categoryType: CategoryType.Inventory,
-      },
-    });
-    categoryDocument2 = categoryDataFactory.document({
-      body: {
-        categoryType: CategoryType.Inventory,
-      },
-    });
-
-    productDocument1 = productDataFactory.document({
-      category: categoryDocument1,
-    });
-    productDocument2 = productDataFactory.document({
-      category: categoryDocument2,
-    });
-  });
-
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestListProducts }) => {
       const res = await requestListProducts();
@@ -65,15 +37,29 @@ test.describe('GET /product/v1/products', () => {
           expect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of products', async ({ requestListProducts, saveCategories, saveProducts }) => {
-          await saveProducts(productDocument1, productDocument2);
-          await saveCategories(categoryDocument1, categoryDocument2);
+        test('should get a list of products', async ({ requestListProducts, saveProducts }) => {
+          const genericProduct = productDataFactory.document.generic();
+          const specificProduct = productDataFactory.document.specific({
+            genericProduct,
+          });
+          const variantProduct = productDataFactory.document.variant({
+            genericProduct,
+            specificProduct,
+          });
+          await saveProducts(genericProduct);
           const res = await requestListProducts();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
 
-          expect(res).toContainMatchingProductDocument(productDocument1, getCategoryId(categoryDocument1));
-          expect(res).toContainMatchingProductDocument(productDocument2, getCategoryId(categoryDocument2));
+          expect(res).toContainProductTree({
+            product: genericProduct,
+            children: [
+              {
+                product: specificProduct,
+                children: [variantProduct],
+              },
+            ],
+          });
         });
       }
     });

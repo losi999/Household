@@ -129,11 +129,9 @@ const document = new OpenApiBuilder()
   .addPath('/category/v1/categories/{categoryId}/merge', {
     ...mergeCategories,
   })
-  .addPath('/product/v1/categories/{categoryId}/products', {
-    ...createProduct,
-  })
   .addPath('/product/v1/products', {
     ...listProducts,
+    ...createProduct,
   })
   .addPath('/product/v1/products/{productId}', {
     ...updateProduct,

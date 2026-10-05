@@ -1,11 +1,12 @@
 import { GroupType } from '@aws-sdk/client-cognito-identity-provider';
 import { getCategoryId, getProductId } from '@household/shared/common/utils';
-import { AccountType, CalendarDayType, CalendarEntryType, CategoryType, SettingKey, UserType } from '@household/shared/enums';
+import { AccountType, CalendarDayType, CalendarEntryType, ProductType, SettingKey, UserType } from '@household/shared/enums';
 import { HttpError } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
 import { Requests } from '@household/shared/types/requests';
+import { isGenericProduct, isVariantProduct } from '@household/shared/common/type-guards';
 
 type CatchAndThrow = (error: any) => never;
 type CatchAndLog = (error: any) => void;
@@ -216,10 +217,6 @@ export const httpErrors = {
       log('Get category', ctx, error);
       throw httpError(statusCode, 'Error while getting category');
     },
-    getByProductIds: (ctx: Api.Product.Id[], statusCode = 500): CatchAndThrow => (error) => {
-      log('Get category by product Ids', ctx, error);
-      throw httpError(statusCode, 'Error while getting category by product Ids');
-    },
     list: (statusCode = 500): CatchAndThrow => (error) => {
       log('List categories', undefined, error);
       throw httpError(statusCode, 'Error while listing categories');
@@ -237,12 +234,6 @@ export const httpErrors = {
     delete: (ctx: Api.Category.CategoryId, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete category', ctx, error);
       throw httpError(statusCode, 'Error while deleting category');
-    },
-    notInventoryType: (ctx: Documents.Category, statusCode = 400) => {
-      if(ctx.categoryType !== CategoryType.Inventory) {
-        log('Category must be "inventory" type', ctx);
-        throw httpError(statusCode, 'Category must be "inventory" type');
-      }
     },
     notSameType: (ctx: Documents.Category[], statusCode = 400) => {
       const categoryType = ctx[0].categoryType;
@@ -394,10 +385,36 @@ export const httpErrors = {
       log('List products by ids', ctx, error);
       throw httpError(statusCode, 'Error while listing products by ids');
     },
+    listByParentId: (ctx: Api.Product.ProductId, statusCode = 500): CatchAndThrow => (error) => {
+      log('List products by parent Id', ctx, error);
+      throw httpError(statusCode, 'Error while listing products by parent Id');
+    },
     notFound: (ctx: Api.Product.ProductId & {product: Documents.Product}, statusCode = 404) => {
       if (ctx.productId && !ctx.product) {
         log('No product found', ctx);
         throw httpError(statusCode, 'No product found');
+      }
+    },
+    invalidParentProductType: (ctx: {body: Requests.Product, parent: Documents.Product}, statusCode = 400) => {
+      if (ctx.body.productType === ProductType.Specific && ctx.parent.productType !== ProductType.Generic) {
+        log('Product type of parent must be "generic" when creating "specific" product', ctx);
+        throw httpError(statusCode, 'Product type of parent must be "generic" when creating "specific" product');
+      }
+      if (ctx.body.productType === ProductType.Variant && ctx.parent.productType !== ProductType.Specific) {
+        log('Product type of parent must be "specific" when creating "variant" product', ctx);
+        throw httpError(statusCode, 'Product type of parent must be "specific" when creating "variant" product');
+      }
+    },
+    productTypeNotUpdatable: (ctx: Documents.Product[], statusCode = 400) => {
+      if (ctx.length > 0) {
+        log('Product type cannot be updated if there are child products', undefined);
+        throw httpError(statusCode, 'Product type cannot be updated if there are child products');
+      }
+    },
+    hasChildren: (ctx: Documents.Product[], statusCode = 400) => {
+      if (ctx.length > 0) {
+        log('Product cannot be deleted if there are child products', undefined);
+        throw httpError(statusCode, 'Product cannot be deleted if there are child products');
       }
     },
     multipleNotFound: (ctx: { productIds: Api.Product.Id[]; products: Documents.Product[] }, statusCode = 400) => {
@@ -409,12 +426,6 @@ export const httpErrors = {
     delete: (ctx: Api.Product.ProductId, statusCode = 500): CatchAndThrow => (error) => {
       log('Delete product', ctx, error);
       throw httpError(statusCode, 'Error while deleting product');
-    },
-    categoryRelation: (ctx: Api.Category.CategoryId & {product: Documents.Product}, statusCode = 400) => {
-      if (getCategoryId(ctx.product.category) !== ctx.categoryId) {
-        log('Product belongs to different category', ctx);
-        throw httpError(statusCode, 'Product belongs to different category');
-      }
     },
     update: (ctx: Api.Product.ProductId & {update: UpdateQuery<Documents.Product>}, statusCode = 500): CatchAndThrow => (error) => {
       if (error.code === 11000) {
@@ -431,12 +442,23 @@ export const httpErrors = {
         throw httpError(statusCode, 'Target product is among the source product Ids');
       }
     },
-    notSameCategory: (products: Documents.Product[], statusCode = 400) => {
-      const categoryId = getCategoryId(products[0].category);
+    notSameParent: (products: Documents.Product[], statusCode = 400) => {
+      const genericProductId = !isGenericProduct(products[0]) ? getProductId(products[0].genericProduct) : undefined;
+      const specificProductId = isVariantProduct(products[0]) ? getProductId(products[0].specificProduct) : undefined;
 
-      if (!products.every(p => getCategoryId(p.category) === categoryId)) {
-        log('Not all products belong to the same category', products.map(p => getProductId(p)));
-        throw httpError(statusCode, 'Not all products belong to the same category');
+      if (!products.every((p: Documents.VariantProduct) => {
+        return getProductId(p.genericProduct) === genericProductId && getProductId(p.specificProduct) === specificProductId;
+      })) {
+        log('Not all products are siblings', products.map(p => getProductId(p)));
+        throw httpError(statusCode, 'Not all products are siblings');
+      }
+    },
+    notSameProductType: (products: Documents.Product[], statusCode = 400) => {
+      const productType = products[0].productType;
+
+      if (!products.every(p => p.productType === productType)) {
+        log('Not all products are of the same type', products.map(p => getProductId(p)));
+        throw httpError(statusCode, 'Not all products are of the same type');
       }
     },
     merge: (ctx: {

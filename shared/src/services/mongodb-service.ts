@@ -106,7 +106,9 @@ export const mongodbServiceFactory = async (mongodbConnectionString: string): Pr
       session.endSession();
       return result;
     },
-    syncIndexes: () => mongoose.connection.syncIndexes(),
+    syncIndexes: () => {
+      return Promise.all(Object.values(models()).map(model => model.syncIndexes()));
+    },
     dump: async () => {
       await connectDb();
       const session = await mongoose.connection.startSession();

@@ -106,11 +106,6 @@ export const updateToPaymentTransactionServiceFactory = (
         productId,
         product,
       }, 400);
-
-      httpErrors.product.categoryRelation({
-        product,
-        categoryId,
-      });
     }
 
     let update: DocumentUpdate<Documents.Transaction>;

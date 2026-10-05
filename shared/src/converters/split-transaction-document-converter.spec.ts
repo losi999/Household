@@ -50,14 +50,14 @@ describe('Split transaction document converter', () => {
   const inventoryCategory = testDataFactory.category.document({
     categoryType: CategoryType.Inventory,
   });
-  const product = testDataFactory.product.document();
+  const product = testDataFactory.product.document.generic();
   const productId = getProductId(product);
 
   const accountResponse = testDataFactory.account.response();
   const categoryResponse = testDataFactory.category.response();
   const projectResponse = testDataFactory.project.response();
   const recipientResponse = testDataFactory.recipient.response();
-  const productResponse = testDataFactory.product.response();
+  const productResponse = testDataFactory.product.response.generic();
 
   describe('create', () => {
     it('should return document', () => {

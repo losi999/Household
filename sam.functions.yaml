@@ -91,8 +91,17 @@ Resources:
       CodeUri: dist/api/store-public-holidays
       Role: !Ref LambdaRoleArn
 
+  MigrateProducts:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub Household-${Env}-MigrateProducts
+      CodeUri: dist/api/migrate-products
+      Role: !Ref LambdaRoleArn
+
 Outputs:
   PostDeployCreateTestUsers:
     Value: !If [ShouldCreateTestUsers, !GetAtt CreateTestUsers.Arn, ""]
   PostDeployStorePublicHolidays:
     Value: !GetAtt StorePublicHolidays.Arn
+  PostDeployMigrateProducts:
+    Value: !GetAtt MigrateProducts.Arn

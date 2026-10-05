@@ -81,9 +81,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 categoryType: CategoryType.Invoice,
               },
             });
-            const productDocument = productDataFactory.document({
-              category: inventoryCategoryDocument,
-            });
+            const productDocument = productDataFactory.document.generic();
 
             const paymentTransactionDocument = paymentTransactionDataFactory.document({
               account: accountDocument,
@@ -236,9 +234,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 categoryType: CategoryType.Invoice,
               },
             });
-            const productDocument = productDataFactory.document({
-              category: inventoryCategoryDocument,
-            });
+            const productDocument = productDataFactory.document.generic();
 
             const owningSplitTransactionDocument = splitTransactionDataFactory.document({
               account: accountDocument,

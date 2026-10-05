@@ -1,37 +1,44 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getProductId } from '@household/shared/common/utils';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
-import { ICategoryService } from '@household/shared/services/category-service';
+import { ProductType } from '@household/shared/enums';
 import { IProductService } from '@household/shared/services/product-service';
 import { Api } from '@household/shared/types/api';
 import { ExpiresIn } from '@household/shared/types/common';
+import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 
 export interface ICreateProductService {
   (ctx: {
     body: Requests.Product;
-  } & Api.Category.CategoryId & ExpiresIn): Promise<Api.Product.Id>;
+  } & ExpiresIn): Promise<Api.Product.Id>;
 }
 
 export const createProductServiceFactory = (
   productService: IProductService,
-  categoryService: ICategoryService,
   productDocumentConverter: IProductDocumentConverter): ICreateProductService => {
-  return async ({ body, expiresIn, categoryId }) => {
-    const category = await categoryService.findCategoryById(categoryId).catch(httpErrors.category.getById({
-      categoryId,
-    }));
+  return async ({ body, expiresIn }) => {
+    let parentProductDocument: Documents.Product;
+    if (body.productType !== ProductType.Generic) {
+      parentProductDocument = await productService.findProductById(body.parentProductId).catch(httpErrors.product.getById({
+        productId: body.parentProductId,
+      }));
+      
+      httpErrors.product.notFound({
+        productId: body.parentProductId,
+        product: parentProductDocument,
+      }, 400);
+    }
 
-    httpErrors.category.notFound({
-      categoryId,
-      category,
-    }, 400);
-
-    httpErrors.category.notInventoryType(category);
+    httpErrors.product.invalidParentProductType({
+      body,
+      parent: parentProductDocument,
+    });
 
     const document = productDocumentConverter.create({
       body,
-      category,
+      genericProduct: parentProductDocument?.productType === ProductType.Generic ? parentProductDocument : parentProductDocument?.genericProduct,
+      specificProduct: parentProductDocument?.productType === ProductType.Specific ? parentProductDocument : undefined,
     }, expiresIn);
 
     const saved = await productService.saveProduct(document).catch(httpErrors.product.save(document));

@@ -57,9 +57,7 @@ describe('Update to payment transaction service', () => {
     queriedCategory = testDataFactory.category.document({
       categoryType: CategoryType.Inventory,
     });
-    queriedProduct = testDataFactory.product.document({
-      category: queriedCategory,
-    });
+    queriedProduct = testDataFactory.product.document.generic();
     queriedProject = testDataFactory.project.document();
     queriedRecipient = testDataFactory.recipient.document();
 
@@ -439,37 +437,6 @@ describe('Update to payment transaction service', () => {
         transactionId,
         expiresIn: undefined,
       }).catch(validateError('No product found', 400));
-      validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
-      validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
-        body.accountId,
-        undefined,
-      ]);
-      validateFunctionCall(mockCategoryService.functions.findCategoryById, body.categoryId);
-      validateFunctionCall(mockProjectService.functions.findProjectById, body.projectId);
-      validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
-      validateFunctionCall(mockProductService.functions.findProductById, body.productId);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
-    });
-
-    it('if product belongs to different category', async () => {
-      body.productId = testDataFactory.product.id();
-
-      mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
-      mockAccountService.functions.findAccountsByIds.mockResolvedValue([queriedAccount]);
-      mockCategoryService.functions.findCategoryById.mockResolvedValue(queriedCategory);
-      mockProjectService.functions.findProjectById.mockResolvedValue(queriedProject);
-      mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
-      mockProductService.functions.findProductById.mockResolvedValue(testDataFactory.product.document());
-
-      await service({
-        body,
-        transactionId,
-        expiresIn: undefined,
-      }).catch(validateError('Product belongs to different category', 400));
       validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,

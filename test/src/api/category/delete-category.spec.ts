@@ -1,4 +1,4 @@
-import { getCategoryId, getProductId, getTransactionId } from '@household/shared/common/utils';
+import { getCategoryId, getTransactionId } from '@household/shared/common/utils';
 import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
 import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
@@ -101,60 +101,34 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
           });
         });
 
-        test.describe('in related transactions', () => {
-          Object.values(CategoryType).forEach((categoryType) => {
-            test(`should category be unset if ${categoryType} category is deleted`, async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
-              categoryDocument = categoryDataFactory.document({
-                body: {
-                  categoryType: CategoryType.Inventory,
-                },
-              });
+        Object.values(CategoryType).forEach((categoryType) => {
+          test.describe(`should unset ${categoryType} category in related`, () => {
+            let productDocument: Documents.Product;
+            let accountDocument: Documents.Account;
+            let loanAccountDocument: Documents.Account;
 
-              const unrelatedCategoryDocument = categoryDataFactory.document({
+            test.beforeEach(() => {
+              categoryDocument = categoryDataFactory.document({
                 body: {
                   categoryType,
                 },
               });
 
-              let productDocument: Documents.Product;
-              let unrelatedProductDocument: Documents.Product;
-
-              if (categoryType === CategoryType.Inventory) {
-                productDocument = productDataFactory.document({
-                  category: categoryDocument,
-                });
-
-                unrelatedProductDocument = productDataFactory.document({
-                  category: unrelatedCategoryDocument,
-                });
-
-                await saveProducts(productDocument, unrelatedProductDocument);
-              }
-
-              const accountDocument = accountDataFactory.document();
-              const loanAccountDocument = accountDataFactory.document({
+              accountDocument = accountDataFactory.document();
+              loanAccountDocument = accountDataFactory.document({
                 accountType: AccountType.Loan,
               });
 
-              const unrelatedPaymentTransactionDocument = paymentTransactionDataFactory.document({
-                account: accountDocument,
-                category: unrelatedCategoryDocument,
-                product: unrelatedProductDocument,
-              });
+              if (categoryType === CategoryType.Inventory) {
+                productDocument = productDataFactory.document.generic();
+              }
+            });
 
-              const unrelatedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-                account: accountDocument,
-                category: unrelatedCategoryDocument,
-                product: unrelatedProductDocument,
-                loanAccount: loanAccountDocument,
-              });
+            test('payment transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
 
-              const unrelatedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-                account: loanAccountDocument,
-                category: unrelatedCategoryDocument,
-                product: unrelatedProductDocument,
-                loanAccount: accountDocument,
-              });
+              if (categoryType === CategoryType.Inventory) {
+                await saveProducts(productDocument);
+              }
 
               const paymentTransactionDocument = paymentTransactionDataFactory.document({
                 account: accountDocument,
@@ -162,49 +136,9 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
                 product: productDocument,
               });
 
-              const deferredTransactionDocument = deferredTransactionDataFactory.document({
-                account: accountDocument,
-                category: categoryDocument,
-                loanAccount: loanAccountDocument,
-                product: productDocument,
-              });
-
-              const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
-                account: loanAccountDocument,
-                category: categoryDocument,
-                loanAccount: accountDocument,
-                product: productDocument,
-              });
-
-              const splitTransactionDocument = splitTransactionDataFactory.document({
-                account: accountDocument,
-                splits: [
-                  {
-                    category: categoryDocument,
-                    product: productDocument,
-                  },
-                  {
-                    category: unrelatedCategoryDocument,
-                    product: unrelatedProductDocument,
-                  },
-                ],
-                loans: [
-                  {
-                    category: categoryDocument,
-                    product: productDocument,
-                    loanAccount: loanAccountDocument,
-                  },
-                  {
-                    category: unrelatedCategoryDocument,
-                    product: unrelatedProductDocument,
-                    loanAccount: loanAccountDocument,
-                  },
-                ],
-              });
-
-              await saveCategories(categoryDocument, unrelatedCategoryDocument);
-              await saveAccounts(accountDocument, loanAccountDocument);
-              await saveTransactions(paymentTransactionDocument, deferredTransactionDocument, reimbursementTransactionDocument, splitTransactionDocument, unrelatedPaymentTransactionDocument, unrelatedDeferredTransactionDocument, unrelatedReimbursementTransactionDocument);
+              await saveCategories(categoryDocument);
+              await saveAccounts(accountDocument);
+              await saveTransactions(paymentTransactionDocument);
 
               const res = await requestDeleteCategory(getCategoryId(categoryDocument));
               expect(res).toBeNoContentResponse();
@@ -215,59 +149,101 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
                   from: categoryDocument,
                 },
               });
+            });
+
+            test('deferred transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+
+              if (categoryType === CategoryType.Inventory) {
+                await saveProducts(productDocument);
+              }
+
+              const deferredTransactionDocument = deferredTransactionDataFactory.document({
+                account: accountDocument,
+                category: categoryDocument,
+                loanAccount: loanAccountDocument,
+                product: productDocument,
+              });
+
+              await saveCategories(categoryDocument);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveTransactions(deferredTransactionDocument);
+
+              const res = await requestDeleteCategory(getCategoryId(categoryDocument));
+              expect(res).toBeNoContentResponse();
+
+              expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
               expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
                 category: {
                   from: categoryDocument,
                 },
               });
+            });
+
+            test('reimbursement transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+
+              if (categoryType === CategoryType.Inventory) {
+                await saveProducts(productDocument);
+              }
+
+              const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+                account: loanAccountDocument,
+                category: categoryDocument,
+                loanAccount: accountDocument,
+                product: productDocument,
+              });
+
+              await saveCategories(categoryDocument);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveTransactions(reimbursementTransactionDocument);
+
+              const res = await requestDeleteCategory(getCategoryId(categoryDocument));
+              expect(res).toBeNoContentResponse();
+
+              expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
               expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
                 category: {
                   from: categoryDocument,
                 },
               });
+            });
+
+            test('split transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+
+              if (categoryType === CategoryType.Inventory) {
+                await saveProducts(productDocument);
+              }
+
+              const splitTransactionDocument = splitTransactionDataFactory.document({
+                account: accountDocument,
+                splits: [
+                  {
+                    category: categoryDocument,
+                    product: productDocument,
+                  },
+                ],
+                loans: [
+                  {
+                    category: categoryDocument,
+                    product: productDocument,
+                    loanAccount: loanAccountDocument,
+                  },
+                ],
+              });
+
+              await saveCategories(categoryDocument);
+              await saveAccounts(accountDocument, loanAccountDocument);
+              await saveTransactions(splitTransactionDocument);
+
+              const res = await requestDeleteCategory(getCategoryId(categoryDocument));
+              expect(res).toBeNoContentResponse();
+
+              expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
               expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
                 category: {
                   from: categoryDocument,
                 },
               });
-              expect(unrelatedPaymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(unrelatedPaymentTransactionDocument)), {
-                category: {
-                  from: categoryDocument,
-                },
-              });
-              expect(unrelatedDeferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(unrelatedDeferredTransactionDocument)), {
-                category: {
-                  from: categoryDocument,
-                },
-              });
-              expect(unrelatedReimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(unrelatedReimbursementTransactionDocument)), {
-                category: {
-                  from: categoryDocument,
-                },  
-              });
             });
-          });
-        });
-
-        test.describe('related products', () => {
-          test('should be deleted', async ({ requestDeleteCategory, saveCategories, findCategoryById, saveProducts, findProductById }) => {
-            categoryDocument = categoryDataFactory.document({
-              body: {
-                categoryType: CategoryType.Inventory,
-              },
-            });
-            const productDocument = productDataFactory.document({
-              category: categoryDocument,
-            });
-
-            await saveCategories(categoryDocument);
-            await saveProducts(productDocument);
-
-            const res = await requestDeleteCategory(getCategoryId(categoryDocument));
-            expect(res).toBeNoContentResponse();
-
-            expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
           });
         });
 

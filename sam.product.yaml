@@ -77,7 +77,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ProductApi
-            Path: /v1/categories/{categoryId}/products
+            Path: /v1/products
             Method: POST
             Auth:
               Authorizer: CognitoAuthorizer

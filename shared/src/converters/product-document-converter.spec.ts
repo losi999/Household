@@ -1,18 +1,15 @@
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { addSeconds, getProductId } from '@household/shared/common/utils';
-import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { productDocumentConverterFactory, IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
+import { Types } from 'mongoose';
 
 describe('Product document converter', () => {
   let converter: IProductDocumentConverter;
-  let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
 
   beforeEach(() => {
-    mockCategoryDocumentConverter = createMockService('toResponse');
-
     vi.useFakeTimers().setSystemTime(new Date());
-    converter = productDocumentConverterFactory(mockCategoryDocumentConverter.service);
+
+    converter = productDocumentConverterFactory();
   });
 
   afterEach(() => {
@@ -20,179 +17,423 @@ describe('Product document converter', () => {
   });
 
   const expiresIn = 3600;
-  const category = testDataFactory.category.document();
 
-  describe('create', () => {
+  const genericProductDocument = testDataFactory.product.document.generic();
+  const specificProductDocument = testDataFactory.product.document.specific({
+    genericProduct: genericProductDocument,
+  });
+  const variantProductDocument = testDataFactory.product.document.variant({
+    genericProduct: genericProductDocument,
+    specificProduct: specificProductDocument,
+  });
+
+  const genericProductResponse = testDataFactory.product.response.generic({
+    productId: getProductId(genericProductDocument),
+    name: genericProductDocument.name,
+  });
+  const specificProductResponse = testDataFactory.product.response.specific({
+    productId: getProductId(specificProductDocument),
+    name: specificProductDocument.name,
+    measurement: specificProductDocument.measurement,
+    unitOfMeasurement: specificProductDocument.unitOfMeasurement,
+    fullName: specificProductDocument.fullName,
+    genericProduct: genericProductResponse,
+  });
+  const variantProductResponse = testDataFactory.product.response.variant({
+    productId: getProductId(variantProductDocument),
+    name: variantProductDocument.name,
+    genericProduct: genericProductResponse,
+    specificProduct: specificProductResponse,
+  });
+
+  describe('createGeneric', () => {
     it('should return document', () => {
-      const body = testDataFactory.product.request();
+      const body = testDataFactory.product.request.generic();
 
-      const { unitOfMeasurement, brand, measurement } = body;
-
-      const result = converter.create({
+      const result = converter.createGeneric({
         body,
-        category,
       }, undefined);
-      expect(result).toEqual(testDataFactory.product.document({
-        unitOfMeasurement,
-        brand,
-        measurement,
-        category,
-        expiresAt: undefined,
+      expect(result).toEqual(testDataFactory.product.document.generic({
+        ...body,
         _id: undefined,
+        expiresAt: undefined,
       }));
     });
 
     it('should return expiring document', () => {
-      const body = testDataFactory.product.request();
+      const body = testDataFactory.product.request.generic();
 
-      const { unitOfMeasurement, brand, measurement } = body;
-
-      const result = converter.create({
+      const result = converter.createGeneric({
         body,
-        category,
       }, expiresIn);
-      expect(result).toEqual(testDataFactory.product.document({
-        unitOfMeasurement,
-        brand,
-        measurement,
-        category,
-        expiresAt: addSeconds(expiresIn),
+      expect(result).toEqual(testDataFactory.product.document.generic({
+        ...body,
         _id: undefined,
+        expiresAt: addSeconds(expiresIn),
       }));
     });
 
+    it('should return document with generated id', () => {
+      const body = testDataFactory.product.request.generic();
+
+      const result = converter.createGeneric({
+        body,
+      }, undefined, true);
+      expect(result).toEqual(testDataFactory.product.document.generic({
+        ...body,
+        _id: expect.any(Types.ObjectId),
+        expiresAt: undefined,
+      }));
+    });
+  });
+
+  describe('createSpecific', () => {
+    it('should return document', () => {
+      const body = testDataFactory.product.request.specific();
+
+      const { parentProductId, ...restOfBody } = body;
+
+      const result = converter.createSpecific({
+        body,
+        genericProduct: genericProductDocument,
+      }, undefined);
+      expect(result).toEqual(testDataFactory.product.document.specific({
+        ...restOfBody,
+        fullName: `${body.name} ${body.measurement} ${body.unitOfMeasurement}`,
+        genericProduct: genericProductDocument,
+        _id: undefined,
+        expiresAt: undefined,
+      }));
+    });
+
+    it('should return expiring document', () => {
+      const body = testDataFactory.product.request.specific();
+
+      const { parentProductId, ...restOfBody } = body;
+
+      const result = converter.createSpecific({
+        body,
+        genericProduct: genericProductDocument,
+      }, expiresIn);
+      expect(result).toEqual(testDataFactory.product.document.specific({
+        ...restOfBody,
+        fullName: `${body.name} ${body.measurement} ${body.unitOfMeasurement}`,
+        genericProduct: genericProductDocument,
+        _id: undefined,
+        expiresAt: addSeconds(expiresIn),
+      }));
+    });
+
+    it('should return document with generated id', () => {
+      const body = testDataFactory.product.request.specific();
+
+      const { parentProductId, ...restOfBody } = body;
+
+      const result = converter.createSpecific({
+        body,
+        genericProduct: genericProductDocument,
+      }, undefined, true);
+      expect(result).toEqual(testDataFactory.product.document.specific({
+        ...restOfBody,
+        fullName: `${body.name} ${body.measurement} ${body.unitOfMeasurement}`,
+        genericProduct: genericProductDocument,
+        _id: expect.any(Types.ObjectId),
+        expiresAt: undefined,
+      }));
+    });
+  });
+
+  describe('createVariant', () => {
+    it('should return document', () => {
+      const body = testDataFactory.product.request.variant();
+
+      const { parentProductId, ...restOfBody } = body;
+
+      const result = converter.createVariant({
+        body,
+        genericProduct: genericProductDocument,
+        specificProduct: specificProductDocument,
+      }, undefined);
+      expect(result).toEqual(testDataFactory.product.document.variant({
+        ...restOfBody,
+        genericProduct: genericProductDocument,
+        specificProduct: specificProductDocument,
+        _id: undefined,
+        expiresAt: undefined,
+      }));
+    });
+
+    it('should return expiring document', () => {
+      const body = testDataFactory.product.request.variant();
+
+      const { parentProductId, ...restOfBody } = body;
+
+      const result = converter.createVariant({
+        body,
+        genericProduct: genericProductDocument,
+        specificProduct: specificProductDocument,
+      }, expiresIn);
+      expect(result).toEqual(testDataFactory.product.document.variant({
+        ...restOfBody,
+        genericProduct: genericProductDocument,
+        specificProduct: specificProductDocument,
+        _id: undefined,
+        expiresAt: addSeconds(expiresIn),
+      }));
+    });
+
+    it('should return document with generated id', () => {
+      const body = testDataFactory.product.request.variant();
+
+      const { parentProductId, ...restOfBody } = body;
+
+      const result = converter.createVariant({
+        body,
+        genericProduct: genericProductDocument,
+        specificProduct: specificProductDocument,
+      }, undefined, true);
+      expect(result).toEqual(testDataFactory.product.document.variant({
+        ...restOfBody,
+        genericProduct: genericProductDocument,
+        specificProduct: specificProductDocument,
+        _id: expect.any(Types.ObjectId),
+        expiresAt: undefined,
+      }));
+    });
+  });
+
+  describe('create', () => {
+    it('should return generic document', () => {
+      const body = testDataFactory.product.request.generic();
+
+      const result = converter.create({
+        body,
+        genericProduct: undefined,
+        specificProduct: undefined,
+      }, undefined);
+      expect(result).toEqual(testDataFactory.product.document.generic({
+        ...body,
+        _id: undefined,
+        expiresAt: undefined,
+      }));
+    });
+
+    it('should return specific document', () => {
+      const body = testDataFactory.product.request.specific();
+
+      const { parentProductId, ...restOfBody } = body;
+
+      const result = converter.create({
+        body,
+        genericProduct: genericProductDocument,
+        specificProduct: undefined,
+      }, undefined);
+      expect(result).toEqual(testDataFactory.product.document.specific({
+        ...restOfBody,
+        fullName: `${body.name} ${body.measurement} ${body.unitOfMeasurement}`,
+        genericProduct: genericProductDocument,
+        _id: undefined,
+        expiresAt: undefined,
+      }));
+    });
+
+    it('should return variant document', () => {
+      const body = testDataFactory.product.request.variant();
+
+      const { parentProductId, ...restOfBody } = body;
+
+      const result = converter.create({
+        body,
+        genericProduct: genericProductDocument,
+        specificProduct: specificProductDocument,
+      }, undefined);
+      expect(result).toEqual(testDataFactory.product.document.variant({
+        ...restOfBody,
+        genericProduct: genericProductDocument,
+        specificProduct: specificProductDocument,
+        _id: undefined,
+        expiresAt: undefined,
+      }));
+    });
   });
 
   describe('update', () => {
-    it('should update document', () => {
-      const body = testDataFactory.product.request();
-      
-      const result = converter.update(body, expiresIn);
+    it('should update to generic product', () => {
+      const body = testDataFactory.product.request.generic();
+
+      const result = converter.update({
+        body,
+        genericProduct: undefined,
+        specificProduct: undefined,
+      }, expiresIn);
       expect(result).toEqual(testDataFactory.documentUpdate({
         update: {
           $set: {
             ...body,
-            fullName: `${body.brand} ${body.measurement} ${body.unitOfMeasurement}`,
             expiresAt: addSeconds(expiresIn),
+          },
+          $unset: {
+            fullName: true,
+            genericProduct: true,
+            measurement: true,
+            specificProduct: true,
+            unitOfMeasurement: true,
+          },
+        },
+      }));
+    });
+
+    it('should update to specific product', () => {
+      const body = testDataFactory.product.request.specific();
+
+      const { parentProductId, ...restOfBody } = body;
+
+      const result = converter.update({
+        body,
+        genericProduct: genericProductDocument,
+        specificProduct: undefined,
+      }, expiresIn);
+      expect(result).toEqual(testDataFactory.documentUpdate({
+        update: {
+          $set: {
+            ...restOfBody,
+            genericProduct: genericProductDocument,
+            fullName: `${body.name} ${body.measurement} ${body.unitOfMeasurement}`,
+            expiresAt: addSeconds(expiresIn),
+          },
+          $unset: {
+            specificProduct: true,
+          },
+        },
+      }));
+    });
+
+    it('should update to variant product', () => {
+      const body = testDataFactory.product.request.variant();
+
+      const { parentProductId, ...restOfBody } = body;
+
+      const result = converter.update({
+        body,
+        genericProduct: genericProductDocument,
+        specificProduct: specificProductDocument,
+      }, expiresIn);
+      expect(result).toEqual(testDataFactory.documentUpdate({
+        update: {
+          $set: {
+            ...restOfBody,
+            genericProduct: genericProductDocument,
+            specificProduct: specificProductDocument,
+            expiresAt: addSeconds(expiresIn),
+          },
+          $unset: {
+            fullName: true,
+            measurement: true,
+            unitOfMeasurement: true,
           },
         },
       }));
     });
   });
 
-  describe('toGroupedResponse', () => {
+  describe('toGenericResponse', () => {
     it('should return response', () => {
-      const doc = testDataFactory.product.document();
-
-      const { unitOfMeasurement, brand, measurement } = doc;
-
-      const categoryDocument = testDataFactory.category.document({
-        products: [doc],
-      });
-
-      const categoryResponse = testDataFactory.category.response({
-        fullName: 'category:full:name',
-      });
-
-      mockCategoryDocumentConverter.functions.toResponse.mockReturnValue(categoryResponse);
-
-      const result = converter.toGroupedResponse(categoryDocument);
-      expect(result).toEqual(
-        testDataFactory.product.groupedResponse({
-          fullName: categoryResponse.fullName,
-          categoryId: categoryResponse.categoryId,
-          products: [
-            testDataFactory.product.response({
-              productId: getProductId(doc),
-              unitOfMeasurement,
-              brand,
-              measurement,
-            }),
-          ],
-        }),
-      );
+      const result = converter.toGenericResponse(genericProductDocument);
+      expect(result).toEqual(genericProductResponse);
     });
   });
 
-  describe('toGroupedResponseList', () => {
+  describe('toSpecificResponse', () => {
     it('should return response', () => {
-      const doc = testDataFactory.product.document();
+      const result = converter.toSpecificResponse(specificProductDocument);
+      expect(result).toEqual(specificProductResponse);
+    });
+  });
 
-      const { unitOfMeasurement, brand, measurement } = doc;
-
-      const categoryDocument = testDataFactory.category.document({
-        products: [doc],
-      });
-
-      const categoryResponse = testDataFactory.category.response({
-        fullName: 'category:full:name',
-      });
-
-      mockCategoryDocumentConverter.functions.toResponse.mockReturnValue(categoryResponse);
-
-      const result = converter.toGroupedResponseList([categoryDocument ]);
-      expect(result).toEqual([
-        testDataFactory.product.groupedResponse({
-          fullName: categoryResponse.fullName,
-          categoryId: categoryResponse.categoryId,
-          products: [
-            testDataFactory.product.response({
-              productId: getProductId(doc),
-              unitOfMeasurement,
-              brand,
-              measurement,
-            }),
-          ],
-        }),
-      ]);
+  describe('toVariantResponse', () => {
+    it('should return response', () => {
+      const result = converter.toVariantResponse(variantProductDocument);
+      expect(result).toEqual(variantProductResponse);
     });
   });
 
   describe('toResponse', () => {
-    it('should return response', () => {
-      const doc = testDataFactory.product.document();
+    it('should return generic response', () => {
+      const result = converter.toResponse(genericProductDocument);
+      expect(result).toEqual(genericProductResponse);
+    });
 
-      const { unitOfMeasurement, brand, measurement } = doc;
+    it('should return specific response', () => {
+      const result = converter.toResponse(specificProductDocument);
+      expect(result).toEqual(specificProductResponse);
+    });
 
-      const result = converter.toResponse(doc);
-      expect(result).toEqual(testDataFactory.product.response({
-        productId: getProductId(doc),
-        unitOfMeasurement,
-        brand,
-        measurement,
-      }));
+    it('should return variant response', () => {
+      const result = converter.toResponse(variantProductDocument);
+      expect(result).toEqual(variantProductResponse);
     });
   });
 
   describe('toResponseList', () => {
     it('should return response list', () => {
-      const doc = testDataFactory.product.document();
-
-      const { unitOfMeasurement, brand, measurement } = doc;
-
-      const result = converter.toResponseList([doc]);
+      const result = converter.toResponseList([
+        genericProductDocument,
+        specificProductDocument,
+        variantProductDocument,
+      ]);
       expect(result).toEqual([
-        testDataFactory.product.response({
-          productId: getProductId(doc),
-          unitOfMeasurement,
-          brand,
-          measurement,
-        }),
+        genericProductResponse,
+        specificProductResponse,
+        variantProductResponse,
       ]);
     });
   });
 
-  describe('toReport', () => {
-    it('should return response', () => {
-      const doc = testDataFactory.product.document();
-
-      const { fullName } = doc;
-
-      const result = converter.toReport(doc);
-      expect(result).toEqual(testDataFactory.product.report({
-        productId: getProductId(doc),
-        fullName,
-      }));
+  describe('toGroupedResponseList', () => {
+    it('should return generic products with their descendants nested', () => {
+      const result = converter.toResponseTreeList([
+        genericProductDocument,
+        specificProductDocument,
+        variantProductDocument,
+      ]);
+      expect(result).toEqual([
+        testDataFactory.product.groupedResponse({
+          productId: getProductId(genericProductDocument),
+          name: genericProductDocument.name,
+          children: [
+            {
+              productId: getProductId(specificProductDocument),
+              productType: specificProductDocument.productType,
+              name: specificProductDocument.name,
+              fullName: specificProductDocument.fullName,
+              measurement: specificProductDocument.measurement,
+              unitOfMeasurement: specificProductDocument.unitOfMeasurement,
+              children: [
+                {
+                  productId: getProductId(variantProductDocument),
+                  productType: variantProductDocument.productType,
+                  name: variantProductDocument.name,
+                },
+              ],
+            },
+          ],
+        }),
+      ]);
     });
+
+    it('should omit products whose parent is not among the documents', () => {
+      const result = converter.toResponseTreeList([
+        specificProductDocument,
+        variantProductDocument,
+      ]);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('toReport', () => {
+    // The converter still hardcodes `fullName: 'document.fullName'` (marked TODO in
+    // product-document-converter.ts): `fullName` only exists on specific products, so what it
+    // should resolve to for generic and variant products is still undecided.
+    it.todo('should return report');
   });
 });

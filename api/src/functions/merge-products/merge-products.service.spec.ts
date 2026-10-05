@@ -2,6 +2,7 @@ import { IMergeProductsService, mergeProductsServiceFactory } from '@household/a
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getProductId } from '@household/shared/common/utils';
+import { ProductType } from '@household/shared/enums';
 import { IProductService } from '@household/shared/services/product-service';
 
 describe('Merge product service', () => {
@@ -14,13 +15,8 @@ describe('Merge product service', () => {
     service = mergeProductsServiceFactory(mockProductService.service);
   });
 
-  const categoryDocument = testDataFactory.category.document();
-  const targetProductDocument = testDataFactory.product.document({
-    category: categoryDocument,
-  });
-  const sourceProductDocument = testDataFactory.product.document({
-    category: categoryDocument,
-  });
+  const targetProductDocument = testDataFactory.product.document.generic();
+  const sourceProductDocument = testDataFactory.product.document.generic();
   const sourceProductId = getProductId(sourceProductDocument);
   const productId = getProductId(targetProductDocument);
   const body = [sourceProductId];
@@ -43,6 +39,7 @@ describe('Merge product service', () => {
     validateFunctionCall(mockProductService.functions.mergeProducts, {
       sourceProductIds: body,
       targetProductId: productId,
+      productType: ProductType.Generic,
     });
     expect.assertions(2);
   });
@@ -78,7 +75,6 @@ describe('Merge product service', () => {
 
     it('if some of the products not found', async () => {
       mockProductService.functions.listProductsByIds.mockResolvedValue([sourceProductDocument]);
-      mockProductService.functions.mergeProducts.mockResolvedValue(undefined);
 
       await service({
         body,
@@ -92,27 +88,42 @@ describe('Merge product service', () => {
       expect.assertions(4);
     });
 
-    it('if products belong to different categories', async () => {
-      const differentCategoryProductdocument = testDataFactory.product.document({
-        category: testDataFactory.category.document(),
-      });
+    it('if products are of different product types', async () => {
+      const differentProductTypeDocument = testDataFactory.product.document.specific();
+
       mockProductService.functions.listProductsByIds.mockResolvedValue([
         targetProductDocument,
-        sourceProductDocument,
-        differentCategoryProductdocument,
+        differentProductTypeDocument,
       ]);
 
       await service({
-        body: [
-          ...body,
-          getProductId(differentCategoryProductdocument),
-        ],
+        body: [getProductId(differentProductTypeDocument)],
         productId,
-      }).catch(validateError('Not all products belong to the same category', 400));
+      }).catch(validateError('Not all products are of the same type', 400));
       validateFunctionCall(mockProductService.functions.listProductsByIds, [
         productId,
-        sourceProductId,
-        getProductId(differentCategoryProductdocument),
+        getProductId(differentProductTypeDocument),
+      ]);
+      validateFunctionCall(mockProductService.functions.mergeProducts);
+      expect.assertions(4);
+    });
+
+    it('if products are not siblings', async () => {
+      const targetSpecificProductDocument = testDataFactory.product.document.specific();
+      const sourceSpecificProductDocument = testDataFactory.product.document.specific();
+
+      mockProductService.functions.listProductsByIds.mockResolvedValue([
+        targetSpecificProductDocument,
+        sourceSpecificProductDocument,
+      ]);
+
+      await service({
+        body: [getProductId(sourceSpecificProductDocument)],
+        productId: getProductId(targetSpecificProductDocument),
+      }).catch(validateError('Not all products are siblings', 400));
+      validateFunctionCall(mockProductService.functions.listProductsByIds, [
+        getProductId(targetSpecificProductDocument),
+        getProductId(sourceSpecificProductDocument),
       ]);
       validateFunctionCall(mockProductService.functions.mergeProducts);
       expect.assertions(4);
@@ -136,6 +147,7 @@ describe('Merge product service', () => {
       validateFunctionCall(mockProductService.functions.mergeProducts, {
         sourceProductIds: body,
         targetProductId: productId,
+        productType: ProductType.Generic,
       });
       expect.assertions(4);
     });

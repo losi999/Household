@@ -120,12 +120,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
 
             secondaryCategoryDocument = categoryDataFactory.document();
 
-            productDocument = productDataFactory.document({
-              category: inventoryCategoryDocument,
-            });
-            secondaryProductDocument = productDataFactory.document({
-              category: inventoryCategoryDocument,
-            });
+            productDocument = productDataFactory.document.generic();
+            secondaryProductDocument = productDataFactory.document.generic();
 
             transferTransactionDocument = transferTransactionDataFactory.document({
               account: accountDocument,

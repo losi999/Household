@@ -14,7 +14,7 @@ describe('Update product handler', () => {
   });
 
   const productId = testDataFactory.product.id();
-  const body = testDataFactory.product.request();
+  const body = testDataFactory.product.request.generic();
   const expiresIn = 3600;
   const handlerEvent = {
     body: JSON.stringify(body),

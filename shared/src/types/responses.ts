@@ -45,17 +45,36 @@ export namespace Responses {
   export type CategoryReport = Api.Category.CategoryId &
     Api.Category.FullName;
 
-  export type Product = Api.Product.Base &
-    Api.Product.ProductId &
-    Api.Product.FullName;
+  export type GenericProduct = Api.Product.ProductId
+    & Api.Product.ProductType<Enum.ProductType.Generic> 
+    & Api.Product.Name;
+  export type SpecificProduct = Api.Product.ProductId
+    & Api.Product.ProductType<Enum.ProductType.Specific> 
+    & Api.Product.UnitOfMeasurement
+    & Api.Product.Measurement
+    & Api.Product.Name
+    & Api.Product.FullName
+    & {
+      genericProduct: GenericProduct;
+    };
+  export type VariantProduct = Api.Product.ProductId
+    & Api.Product.ProductType<Enum.ProductType.Variant> 
+    & Api.Product.Name
+    & {
+      genericProduct: GenericProduct;
+      specificProduct: SpecificProduct;
+    };    
+
+  export type Product = GenericProduct | SpecificProduct | VariantProduct;
 
   export type ProductReport = Api.Product.ProductId &
     Api.Product.FullName;
 
-  export type ProductGroupedResponse = Api.Category.CategoryId &
-    Api.Category.FullName & {
-      products: Product[];
-    };
+  export type ProductTree = (GenericProduct & {
+    children: (Omit<SpecificProduct, 'genericProduct'> & {
+      children: Omit<VariantProduct, 'genericProduct' | 'specificProduct'>[];
+    })[];
+  });
 
   export type PaymentTransaction = Api.Transaction.TransactionId
     & Api.Transaction.Amount
