@@ -9,9 +9,11 @@ export interface IDeleteProductService {
 export const deleteProductServiceFactory = (
   productService: IProductService): IDeleteProductService => {
   return async ({ productId }) => {
-    await httpErrors.product.hasChildren(productService.listProductsByParentId(productId).catch(httpErrors.product.listByParentId({
+    const childProducts = await productService.listProductsByParentId(productId).catch(httpErrors.product.listByParentId({
       productId,
-    })));  
+    }));
+
+    httpErrors.product.hasChildren(childProducts);  
 
     return productService.deleteProduct(productId).catch(httpErrors.product.delete({
       productId,

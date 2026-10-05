@@ -30,7 +30,6 @@ describe('Update product service', () => {
       const body = testDataFactory.product.request.generic();
 
       mockProductService.functions.findProductById.mockResolvedValue(queriedGenericProduct);
-      mockProductService.functions.listProductsByParentId.mockResolvedValue([]);
       mockProductDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockProductService.functions.updateProduct.mockResolvedValue(undefined);
 
@@ -40,7 +39,7 @@ describe('Update product service', () => {
         expiresIn: undefined,
       });
       validateFunctionCall(mockProductService.functions.findProductById, productId);
-      validateFunctionCall(mockProductService.functions.listProductsByParentId, productId);
+      validateFunctionCall(mockProductService.functions.listProductsByParentId);
       validateFunctionCall(mockProductDocumentConverter.functions.update, {
         body,
         genericProduct: undefined,
@@ -59,7 +58,6 @@ describe('Update product service', () => {
 
       mockProductService.functions.findProductById.mockResolvedValueOnce(queriedSpecificProduct)
         .mockResolvedValueOnce(parentGenericProduct);
-      mockProductService.functions.listProductsByParentId.mockResolvedValue([]);
       mockProductDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockProductService.functions.updateProduct.mockResolvedValue(undefined);
 
@@ -70,7 +68,7 @@ describe('Update product service', () => {
       });
       validateNthFunctionCall(mockProductService.functions.findProductById, 1, productId);
       validateNthFunctionCall(mockProductService.functions.findProductById, 2, parentProductId);
-      validateFunctionCall(mockProductService.functions.listProductsByParentId, productId);
+      validateFunctionCall(mockProductService.functions.listProductsByParentId);
       validateFunctionCall(mockProductDocumentConverter.functions.update, {
         body,
         genericProduct: parentGenericProduct,
@@ -89,7 +87,6 @@ describe('Update product service', () => {
 
       mockProductService.functions.findProductById.mockResolvedValueOnce(queriedVariantProduct)
         .mockResolvedValueOnce(parentSpecificProduct);
-      mockProductService.functions.listProductsByParentId.mockResolvedValue([]);
       mockProductDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockProductService.functions.updateProduct.mockResolvedValue(undefined);
 
@@ -100,7 +97,7 @@ describe('Update product service', () => {
       });
       validateNthFunctionCall(mockProductService.functions.findProductById, 1, productId);
       validateNthFunctionCall(mockProductService.functions.findProductById, 2, parentProductId);
-      validateFunctionCall(mockProductService.functions.listProductsByParentId, productId);
+      validateFunctionCall(mockProductService.functions.listProductsByParentId);
       validateFunctionCall(mockProductDocumentConverter.functions.update, {
         body,
         genericProduct: parentSpecificProduct.genericProduct,
@@ -117,7 +114,6 @@ describe('Update product service', () => {
       const body = testDataFactory.product.request.generic();
 
       mockProductService.functions.findProductById.mockRejectedValue('this is a mongo error');
-      mockProductService.functions.listProductsByParentId.mockResolvedValue([]);
 
       await service({
         body,
@@ -136,7 +132,6 @@ describe('Update product service', () => {
       const body = testDataFactory.product.request.generic();
 
       mockProductService.functions.findProductById.mockResolvedValue(undefined);
-      mockProductService.functions.listProductsByParentId.mockResolvedValue([]);
 
       await service({
         body,
@@ -201,7 +196,6 @@ describe('Update product service', () => {
 
       mockProductService.functions.findProductById.mockResolvedValueOnce(queriedSpecificProduct)
         .mockRejectedValueOnce('this is a mongo error');
-      mockProductService.functions.listProductsByParentId.mockResolvedValue([]);
 
       await service({
         body,
@@ -210,7 +204,7 @@ describe('Update product service', () => {
       }).catch(validateError('Error while getting product', 500));
       validateNthFunctionCall(mockProductService.functions.findProductById, 1, productId);
       validateNthFunctionCall(mockProductService.functions.findProductById, 2, parentProductId);
-      validateFunctionCall(mockProductService.functions.listProductsByParentId, productId);
+      validateFunctionCall(mockProductService.functions.listProductsByParentId);
       validateFunctionCall(mockProductDocumentConverter.functions.update);
       validateFunctionCall(mockProductService.functions.updateProduct);
       expect.assertions(7);
@@ -225,7 +219,6 @@ describe('Update product service', () => {
 
       mockProductService.functions.findProductById.mockResolvedValueOnce(queriedSpecificProduct)
         .mockResolvedValueOnce(undefined);
-      mockProductService.functions.listProductsByParentId.mockResolvedValue([]);
 
       await service({
         body,
@@ -234,7 +227,7 @@ describe('Update product service', () => {
       }).catch(validateError('No product found', 400));
       validateNthFunctionCall(mockProductService.functions.findProductById, 1, productId);
       validateNthFunctionCall(mockProductService.functions.findProductById, 2, parentProductId);
-      validateFunctionCall(mockProductService.functions.listProductsByParentId, productId);
+      validateFunctionCall(mockProductService.functions.listProductsByParentId);
       validateFunctionCall(mockProductDocumentConverter.functions.update);
       validateFunctionCall(mockProductService.functions.updateProduct);
       expect.assertions(7);
@@ -249,7 +242,6 @@ describe('Update product service', () => {
 
       mockProductService.functions.findProductById.mockResolvedValueOnce(queriedSpecificProduct)
         .mockResolvedValueOnce(parentSpecificProduct);
-      mockProductService.functions.listProductsByParentId.mockResolvedValue([]);
 
       await service({
         body,
@@ -258,7 +250,7 @@ describe('Update product service', () => {
       }).catch(validateError('Product type of parent must be "generic" when creating "specific" product', 400));
       validateNthFunctionCall(mockProductService.functions.findProductById, 1, productId);
       validateNthFunctionCall(mockProductService.functions.findProductById, 2, parentProductId);
-      validateFunctionCall(mockProductService.functions.listProductsByParentId, productId);
+      validateFunctionCall(mockProductService.functions.listProductsByParentId);
       validateFunctionCall(mockProductDocumentConverter.functions.update);
       validateFunctionCall(mockProductService.functions.updateProduct);
       expect.assertions(7);
@@ -273,7 +265,6 @@ describe('Update product service', () => {
 
       mockProductService.functions.findProductById.mockResolvedValueOnce(queriedVariantProduct)
         .mockResolvedValueOnce(parentGenericProduct);
-      mockProductService.functions.listProductsByParentId.mockResolvedValue([]);
 
       await service({
         body,
@@ -282,7 +273,7 @@ describe('Update product service', () => {
       }).catch(validateError('Product type of parent must be "specific" when creating "variant" product', 400));
       validateNthFunctionCall(mockProductService.functions.findProductById, 1, productId);
       validateNthFunctionCall(mockProductService.functions.findProductById, 2, parentProductId);
-      validateFunctionCall(mockProductService.functions.listProductsByParentId, productId);
+      validateFunctionCall(mockProductService.functions.listProductsByParentId);
       validateFunctionCall(mockProductDocumentConverter.functions.update);
       validateFunctionCall(mockProductService.functions.updateProduct);
       expect.assertions(7);
@@ -293,7 +284,6 @@ describe('Update product service', () => {
       const body = testDataFactory.product.request.generic();
 
       mockProductService.functions.findProductById.mockResolvedValue(queriedGenericProduct);
-      mockProductService.functions.listProductsByParentId.mockResolvedValue([]);
       mockProductDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockProductService.functions.updateProduct.mockRejectedValue('this is a mongo error');
 
@@ -303,7 +293,7 @@ describe('Update product service', () => {
         expiresIn: undefined,
       }).catch(validateError('Error while updating product', 500));
       validateFunctionCall(mockProductService.functions.findProductById, productId);
-      validateFunctionCall(mockProductService.functions.listProductsByParentId, productId);
+      validateFunctionCall(mockProductService.functions.listProductsByParentId);
       validateFunctionCall(mockProductDocumentConverter.functions.update, {
         body,
         genericProduct: undefined,

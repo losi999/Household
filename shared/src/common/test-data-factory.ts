@@ -850,7 +850,7 @@ const createVariantProductResponse: DataFactoryFunction<Responses.VariantProduct
   };
 };
 
-const createProductGroupedResponse: DataFactoryFunction<Responses.ProductGroupedResponse> = (resp) => {
+const createProductGroupedResponse: DataFactoryFunction<Responses.ProductTree> = (resp) => {
   const genericBase = createGenericProductRequest();
 
   return {

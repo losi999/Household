@@ -70,7 +70,7 @@ export namespace Responses {
   export type ProductReport = Api.Product.ProductId &
     Api.Product.FullName;
 
-  export type ProductGroupedResponse = (GenericProduct & {
+  export type ProductTree = (GenericProduct & {
     children: (Omit<SpecificProduct, 'genericProduct'> & {
       children: Omit<VariantProduct, 'genericProduct' | 'specificProduct'>[];
     })[];

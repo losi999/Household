@@ -391,7 +391,7 @@ describe('Product document converter', () => {
 
   describe('toGroupedResponseList', () => {
     it('should return generic products with their descendants nested', () => {
-      const result = converter.toGroupedResponseList([
+      const result = converter.toResponseTreeList([
         genericProductDocument,
         specificProductDocument,
         variantProductDocument,
@@ -422,7 +422,7 @@ describe('Product document converter', () => {
     });
 
     it('should omit products whose parent is not among the documents', () => {
-      const result = converter.toGroupedResponseList([
+      const result = converter.toResponseTreeList([
         specificProductDocument,
         variantProductDocument,
       ]);

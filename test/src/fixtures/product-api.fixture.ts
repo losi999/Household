@@ -180,7 +180,7 @@ export const expect = baseExpect.extend({
       children: Documents.VariantProduct[];
     }[]
   }) {
-    const response = await received.json() as Responses.ProductGroupedResponse[];
+    const response = await received.json() as Responses.ProductTree[];
     const genericResponse = response.find(r => r.productId === getProductId(tree.product));
   
     if (!genericResponse) {

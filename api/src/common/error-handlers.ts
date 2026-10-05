@@ -405,20 +405,14 @@ export const httpErrors = {
         throw httpError(statusCode, 'Product type of parent must be "specific" when creating "variant" product');
       }
     },
-    productTypeNotUpdatable: async (ctx: {
-      originalProductType: ProductType;
-      updatedProductType: ProductType;
-      childProducts: Promise<Documents.Product[]>
-    }, statusCode = 400) => {
-      const { childProducts, ...restOfCtx } = ctx;    
-
-      if (ctx.originalProductType !== ctx.updatedProductType && (await childProducts).length > 0) {
-        log('Product type cannot be updated if there are child products', restOfCtx);
+    productTypeNotUpdatable: (ctx: Documents.Product[], statusCode = 400) => {
+      if (ctx.length > 0) {
+        log('Product type cannot be updated if there are child products', undefined);
         throw httpError(statusCode, 'Product type cannot be updated if there are child products');
       }
     },
-    hasChildren: async (ctx: Promise<Documents.Product[]>, statusCode = 400) => {
-      if ((await ctx).length > 0) {
+    hasChildren: (ctx: Documents.Product[], statusCode = 400) => {
+      if (ctx.length > 0) {
         log('Product cannot be deleted if there are child products', undefined);
         throw httpError(statusCode, 'Product cannot be deleted if there are child products');
       }

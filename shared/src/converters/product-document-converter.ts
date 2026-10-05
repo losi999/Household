@@ -30,7 +30,7 @@ export interface IProductDocumentConverter {
     genericProduct: Documents.GenericProduct;
     specificProduct: Documents.SpecificProduct;
   }, expiresIn: number): DocumentUpdate<Documents.Product>;
-  toGroupedResponseList(products: Documents.Product[]): Responses.ProductGroupedResponse[];
+  toResponseTreeList(products: Documents.Product[]): Responses.ProductTree[];
   toGenericResponse(document: Documents.GenericProduct): Responses.GenericProduct;
   toSpecificResponse(document: Documents.SpecificProduct): Responses.SpecificProduct;
   toVariantResponse(document: Documents.VariantProduct): Responses.VariantProduct;
@@ -153,9 +153,9 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
         fullName: 'document.fullName', // TODO
       } : undefined;
     },
-    toGroupedResponseList: (products) => {
-      const genericProducts = new Map<Api.Product.Id, Responses.ProductGroupedResponse>();
-      const specificProducts = new Map<Api.Product.Id, Responses.ProductGroupedResponse['children'][number]>();
+    toResponseTreeList: (products) => {
+      const genericProducts = new Map<Api.Product.Id, Responses.ProductTree>();
+      const specificProducts = new Map<Api.Product.Id, Responses.ProductTree['children'][number]>();
 
       products.forEach((doc) => {
         if (doc.productType === ProductType.Generic) {
@@ -169,7 +169,7 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
 
         if (doc.productType === ProductType.Specific) {
           const { name, productType, fullName, measurement, unitOfMeasurement } = doc;
-          const child: Responses.ProductGroupedResponse['children'][number] = {
+          const child: Responses.ProductTree['children'][number] = {
             productType,
             name,
             fullName,

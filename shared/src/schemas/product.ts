@@ -191,14 +191,14 @@ export const report = combine<Responses.ProductReport>([
   fullName,
 ]);
 
-export const groupedResponse = combine<Responses.ProductGroupedResponse>([
+export const groupedResponse = combine<Responses.ProductTree>([
   genericResponse,
   {
     type: 'object',
     properties: {
       children: {
         type: 'array',
-        items: combine<Responses.ProductGroupedResponse['children'][number]>([
+        items: combine<Responses.ProductTree['children'][number]>([
           productId,
           name,
           unitOfMeasurement,
@@ -210,7 +210,7 @@ export const groupedResponse = combine<Responses.ProductGroupedResponse>([
             properties: {
               children: {
                 type: 'array',
-                items: combine<Responses.ProductGroupedResponse['children'][number]['children'][number]>([
+                items: combine<Responses.ProductTree['children'][number]['children'][number]>([
                   productId,
                   name,
                   variantProductType,
@@ -224,7 +224,7 @@ export const groupedResponse = combine<Responses.ProductGroupedResponse>([
   },
 ]);
 
-export const groupedResponseList: StrictSchema<Responses.ProductGroupedResponse[]> = {
+export const groupedResponseList: StrictSchema<Responses.ProductTree[]> = {
   type: 'array',
   items: groupedResponse,
 };

@@ -27,13 +27,13 @@ export const updateProductServiceFactory = (
       productId,
     });
 
-    await httpErrors.product.productTypeNotUpdatable({
-      originalProductType: queried.productType,
-      updatedProductType: body.productType,
-      childProducts: productService.listProductsByParentId(productId).catch(httpErrors.product.listByParentId({
+    if (queried.productType !== body.productType) {
+      const childProducts = await productService.listProductsByParentId(productId).catch(httpErrors.product.listByParentId({
         productId,
-      })),
-    });  
+      }));
+      
+      httpErrors.product.productTypeNotUpdatable(childProducts);  
+    }
 
     let parentProductDocument: Documents.Product;
     if (body.productType !== ProductType.Generic) {

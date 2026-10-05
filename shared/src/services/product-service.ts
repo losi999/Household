@@ -25,17 +25,16 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
   const instance: IProductService = {
     listProducts: () => {
       return mongodbService.products((model, session) => {
-        return model.find({}, undefined, {
-          session,
-          sort: {
+        return model.find({})
+          .session(session)
+          .sort({
             productType: 1,
             name: 1,
-          },
-          lean: true,
-          collation: {
+          })
+          .lean()
+          .collation({
             locale: 'hu',
-          },
-        });
+          });
       });
     },
     listProductsByParentId: (parentProductId) => {
