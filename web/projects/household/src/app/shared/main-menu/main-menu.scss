@@ -1,0 +1,10 @@
+@use '@angular/material' as mat;
+
+button {
+  @include mat.menu-overrides(
+    (
+      item-label-text-size: 16px,
+      item-label-text-weight: 400,
+    )
+  );
+}

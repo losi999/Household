@@ -350,7 +350,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
 
         await models.products.updateMany({
           category: {
-            $in: sourceCategoryIds as any,
+            $in: sourceCategoryIds,
           },
         }, {
           $set: {

@@ -63,7 +63,6 @@ export class PriceDialog {
         unitOfMeasurement: this.priceForm.unitOfMeasurement().value(),
       });
     }
-
   }
 }
 
