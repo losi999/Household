@@ -123,13 +123,6 @@ export const validateCategoryResponse = (response: Responses.Category, document:
       categoryType: parentCategoryDocument?.categoryType,
       fullName: expectedParentFullName, 
     }),
-    ancestors: response?.ancestors.map((ancestor, index) => {
-      return new Comparer(ancestor, {
-        categoryId: getCategoryId(ancestorDocuments[index]),
-        name: ancestorDocuments[index]?.name,
-        categoryType: ancestorDocuments[index]?.categoryType,
-      });
-    }),
   });
 };
 

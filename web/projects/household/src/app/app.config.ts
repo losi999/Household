@@ -12,6 +12,7 @@ import { provideProjectStoreInitialState } from '@household/state/project/projec
 import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
 import { provideRecipientStoreInitialState } from '@household/state/recipient/recipient-store';
+import { provideCategoryStoreInitialState } from '@household/state/category/category-store';
 
 registerLocaleData(localeHu);
 
@@ -42,7 +43,7 @@ export const appConfig: ApplicationConfig = {
     },
     provideProjectStoreInitialState(),
     provideRecipientStoreInitialState(),
-    // provideCalendarStoreInitialState(),
+    provideCategoryStoreInitialState(),
     provideHttpClient(withInterceptors([
       authInterceptor,
       progressInterceptor,

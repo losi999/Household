@@ -78,29 +78,20 @@ export const request = combine<Requests.Category>([
   optional: ['parentCategoryId'],
 });
 
-const categoryAncestor = combine<Responses.CategoryAncestor>([
+export const response = combine<Responses.Category>([
   categoryId,
   name,
   categoryType,
-]);
-
-const categoryParent = combine<Responses.CategoryParent>([
-  categoryAncestor,
-  fullName,
-]);
-
-export const response = combine<Responses.Category>([
-  categoryAncestor,
   fullName,
   {
     type: 'object',
-    required: ['ancestors'],
     properties: {
-      ancestors: {
-        type: 'array',
-        items: categoryAncestor,
-      },
-      parentCategory: categoryParent,
+      parentCategory: combine<Responses.Category['parentCategory']>([
+        categoryId,
+        name,
+        categoryType,
+        fullName,
+      ]),
     },
   },
 ]);

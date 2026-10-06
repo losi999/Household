@@ -1,0 +1,5 @@
+<mat-action-list>
+  @for (p of categories(); track $index) {
+  <household-category-list-item [category]="p" />
+  }
+</mat-action-list>

@@ -24,6 +24,8 @@ html {
     )
   );
 
+  @include mat.system-classes();
+
   @include mat.dialog-overrides(
     (
       container-max-width: var(--content-max-width),

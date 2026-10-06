@@ -147,13 +147,6 @@ describe('Category document converter', () => {
         name,
         categoryType,
         fullName: `${parentCategory.name}:${name}`,
-        ancestors: [
-          {
-            categoryId: getCategoryId(parentCategory),
-            name: parentCategory.name,
-            categoryType: parentCategory.categoryType,
-          },
-        ],
         parentCategory: {
           categoryId: getCategoryId(parentCategory),
           name: parentCategory.name,
