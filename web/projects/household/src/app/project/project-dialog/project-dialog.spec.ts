@@ -94,6 +94,12 @@ describe('ProjectDialog', () => {
 
       expect(getNameInput().componentInstance.value()).toBe(project.name);
     });
+
+    it('should be required', async () => {
+      await render();
+
+      expect(getNameInput().componentInstance.errors().map(error => error.message)).toEqual(['Kötelező']);
+    });
   });
 
   describe('description input', () => {
@@ -112,7 +118,13 @@ describe('ProjectDialog', () => {
   });
 
   describe('save button', () => {
-    it('should not close the dialog and should display an error if the name is empty', async () => {
+    it('should be disabled if form is invalid', async () => {
+      await render();
+
+      expect(getSaveButton().nativeElement.disabled).toBe(true);
+    });
+
+    it('should not close the dialog if the name is empty', async () => {
       await render();
 
       getSaveButton().nativeElement.click();
@@ -120,8 +132,6 @@ describe('ProjectDialog', () => {
       await fixture.whenStable();
 
       validateFunctionCall(mockDialogRef.functions.close);
-      expect(getNameInput().componentInstance.touched()).toBe(true);
-      expect(getNameInput().componentInstance.errors().map(e => e.message)).toEqual(['Kötelező']);
     });
 
     it('should close the dialog with the entered values', async () => {

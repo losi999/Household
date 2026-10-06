@@ -370,7 +370,7 @@ describe('Project store', () => {
       dispatcher.dispatch(projectApiEvents.createProjectInitiated(projectRequest));
 
       validateFunctionCall(mockProjectService.functions.createProject, projectRequest);
-      validateDispatcher(dispatchSpy, notificationEvents.showMessage(`Árlista elem (${projectRequest.name}) már létezik!`));
+      validateDispatcher(dispatchSpy, notificationEvents.showMessage(`Projekt (${projectRequest.name}) már létezik!`));
       validateState();
     });
 
@@ -467,7 +467,7 @@ describe('Project store', () => {
       
       validateDispatcher(dispatchSpy, projectApiEvents.updateProjectFailed({
         projectId,
-      }), notificationEvents.showMessage(`Árlista elem (${projectRequest.name}) már létezik!`));
+      }), notificationEvents.showMessage(`Projekt (${projectRequest.name}) már létezik!`));
       validateState({
         isInProgress: [projectId],
       });
