@@ -1,13 +1,13 @@
 <div mat-dialog-title>{{project ? 'Projekt szerkesztése' : 'Új projekt'}}</div>
 <div mat-dialog-content>
   <div>
-    <shared-clearable-input label="Név" [formField]="projectForm.name" />
+    <shared-clearable-input data-testId="name" label="Név" [formField]="projectForm.name" />
   </div>
   <div>
-    <shared-clearable-input label="Leírás" [formField]="projectForm.description" />
+    <shared-clearable-input data-testId="description" label="Leírás" [formField]="projectForm.description" />
   </div>
 </div>
 <div mat-dialog-actions>
-  <button matButton="filled" cdkFocusInitial (click)="onSave()">Mentés</button>
+  <button matButton="filled" cdkFocusInitial data-testId="save-button" (click)="onSave()">Mentés</button>
   <button matButton="text" type="button" mat-dialog-close>Mégse</button>
 </div>

@@ -17,6 +17,6 @@
   </mat-action-list>
 </div>
 <div mat-dialog-actions>
-  <button mat-button cdkFocusInitial [disabled]="selectedProjects().length === 0" (click)="onSave()">Mentés</button>
+  <button mat-button cdkFocusInitial data-testId="save-button" [disabled]="selectedProjects().length === 0" (click)="onSave()">Mentés</button>
   <button mat-button mat-dialog-close>Mégse</button>
 </div>
