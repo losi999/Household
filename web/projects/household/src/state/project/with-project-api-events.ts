@@ -58,7 +58,7 @@ export const withProjectApiEvents = () => {
                   let errorMessage: string;
                   switch(error.error?.message) {
                     case 'Duplicate project name': {
-                      errorMessage = `Árlista elem (${request.name}) már létezik!`;
+                      errorMessage = `Projekt (${request.name}) már létezik!`;
                     } break;
                     default: {
                       errorMessage = 'Hiba történt';

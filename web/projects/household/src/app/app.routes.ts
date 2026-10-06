@@ -9,6 +9,12 @@ export const routes: Routes = [
     canActivate: [unauthenticatedGuard],
   },
   {
+    path: 'recipients',
+    title: 'Partnerek',
+    loadComponent: () => import('@household/app/recipient/recipient-home/recipient-home').then(m => m.RecipientHome),
+    canMatch: [authenticatedGuard],
+  },
+  {
     path: 'projects',
     title: 'Projektek',
     loadComponent: () => import('@household/app/project/project-home/project-home').then(m => m.ProjectHome),

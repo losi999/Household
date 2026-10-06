@@ -11,6 +11,7 @@ import { jwtDecode } from 'jwt-decode';
 import { provideProjectStoreInitialState } from '@household/state/project/project-store';
 import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
+import { provideRecipientStoreInitialState } from '@household/state/recipient/recipient-store';
 
 registerLocaleData(localeHu);
 
@@ -40,7 +41,7 @@ export const appConfig: ApplicationConfig = {
       },
     },
     provideProjectStoreInitialState(),
-    // provideCustomerStoreInitialState(),
+    provideRecipientStoreInitialState(),
     // provideCalendarStoreInitialState(),
     provideHttpClient(withInterceptors([
       authInterceptor,
