@@ -78,7 +78,7 @@ describe('CategoryHome', () => {
     it('should be rendered with the title', async () => {
       await render();
 
-      expect(selector.getComponent<Toolbar>(ToolbarStub).componentInstance.title()).toBe('Partnerek');
+      expect(selector.getComponent<Toolbar>(ToolbarStub).componentInstance.title()).toBe('Kategóriák');
     });
   });
 

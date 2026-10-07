@@ -731,6 +731,7 @@ const createCategoryResponse: DataFactoryFunction<Responses.Category> = (resp) =
     categoryType,
     fullName: name,
     parentCategory: undefined,
+    ancestors: [],
     ...resp,
   };
 };

@@ -166,7 +166,7 @@ describe('Category store', () => {
       dispatcher.dispatch(categoryEvents.deleteCategory(categoryResponse)); 
 
       validateFunctionCall(mockDialogService.functions.openConfirmationDialog, {
-        title: 'Törölni akarod ezt a partnert?',
+        title: 'Törölni akarod ezt a kategóriát?',
         content: categoryResponse.name,
       });
       validateDispatcher(dispatchSpy, categoryApiEvents.deleteCategoryInitiated({
@@ -181,7 +181,7 @@ describe('Category store', () => {
       dispatcher.dispatch(categoryEvents.deleteCategory(categoryResponse)); 
 
       validateFunctionCall(mockDialogService.functions.openConfirmationDialog, {
-        title: 'Törölni akarod ezt a partnert?',
+        title: 'Törölni akarod ezt a kategóriát?',
         content: categoryResponse.name,
       });
       validateDispatcher(dispatchSpy);
@@ -367,7 +367,7 @@ describe('Category store', () => {
       dispatcher.dispatch(categoryApiEvents.createCategoryInitiated(categoryRequest));
 
       validateFunctionCall(mockCategoryService.functions.createCategory, categoryRequest);
-      validateDispatcher(dispatchSpy, notificationEvents.showMessage(`Partner (${categoryRequest.name}) már létezik!`));
+      validateDispatcher(dispatchSpy, notificationEvents.showMessage(`Kategória (${categoryRequest.name}) már létezik!`));
       validateState();
     });
 
@@ -472,7 +472,7 @@ describe('Category store', () => {
       
       validateDispatcher(dispatchSpy, categoryApiEvents.updateCategoryFailed({
         categoryId,
-      }), notificationEvents.showMessage(`Partner (${categoryRequest.name}) már létezik!`));
+      }), notificationEvents.showMessage(`Kategória (${categoryRequest.name}) már létezik!`));
       validateState({
         isInProgress: [categoryId],
       });

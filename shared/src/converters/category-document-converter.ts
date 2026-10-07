@@ -21,6 +21,14 @@ export interface ICategoryDocumentConverter {
 }
 
 export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter => {
+  const toResponseBase = ({ name, categoryType, _id }: Documents.Category): Responses.CategoryAncestor => {
+    return {
+      categoryType,
+      name,
+      categoryId: getCategoryId(_id),
+    };
+  };
+
   const instance: ICategoryDocumentConverter = {
     create: ({ body: { categoryType, name }, parentCategory }, expiresIn, generateId) => {
       return {
@@ -52,18 +60,14 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
     },
     toResponse: (doc) => {
       const parentFullName = doc.ancestors.map(d => d.name).join(':');
-      const parent = doc.ancestors.at(-1);
 
       return {
-        categoryType: doc.categoryType,
-        name: doc.name,
+        ...toResponseBase(doc),
+        ancestors: doc.ancestors.map(d => toResponseBase(d)),
         fullName: parentFullName ? `${parentFullName}:${doc.name}` : doc.name,
-        categoryId: getCategoryId(doc._id),
-        parentCategory: parent ? {
-          categoryId: getCategoryId(parent._id),
-          categoryType: parent.categoryType,
+        parentCategory: parentFullName ? {
+          ...toResponseBase(doc.ancestors.at(-1)),
           fullName: parentFullName,
-          name: parent.name,
         } : undefined,
       };
     },

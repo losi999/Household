@@ -51,6 +51,10 @@ export const withCategoryReducer = () => {
                   fullName: parentCategory.fullName,
                   name: parentCategory.name,
                 } : undefined,
+                ancestors: parentCategory ? [
+                  ...parentCategory.ancestors,
+                  parentCategory,
+                ] : [],
                 searchTerms: toSearchTerms(name),
               })
               .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
