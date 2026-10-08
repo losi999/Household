@@ -6,8 +6,10 @@ import { CategoryStore } from '@household/state/category/category-store';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { validateFunctionCall } from '@household/shared/common/unit-testing';
 import { Dispatcher } from '@ngrx/signals/events';
-import { MatListItem, MatListItemTitle } from '@angular/material/list';
+import { MatListItem, MatListItemIcon, MatListItemTitle } from '@angular/material/list';
 import { Api } from '@household/shared/types/api';
+import { CategoryType } from '@household/shared/enums';
+import { Responses } from '@household/shared/types/responses';
 
 describe('CategoryListItem', () => {
   let fixture: ComponentFixture<CategoryListItem>;
@@ -17,11 +19,14 @@ describe('CategoryListItem', () => {
 
   const category = testDataFactory.category.response();
 
-  const render = async (isInProgress: Api.Category.Id[] = []) => {
-    mockCategoryStore.isInProgress.set(isInProgress);
+  const render = async (params?: {
+    isInProgress?: Api.Category.Id[];
+    category?: Responses.Category;
+  }) => {
+    mockCategoryStore.isInProgress.set(params?.isInProgress ?? []);
 
     fixture = TestBed.createComponent(CategoryListItem);
-    fixture.componentRef.setInput('category', category);
+    fixture.componentRef.setInput('category', params?.category ?? category);
 
     selector = elementSelectorFactory(fixture.debugElement);
 
@@ -54,13 +59,17 @@ describe('CategoryListItem', () => {
     });
 
     it('should be enabled if category is not in progress', async () => {
-      await render([testDataFactory.category.id()]);
+      await render({
+        isInProgress: [testDataFactory.category.id()], 
+      });
 
       expect(getElement().nativeElement.disabled).toBe(false);
     });
 
     it('should be disabled if category is in progress', async () => {
-      await render([category.categoryId]);
+      await render({
+        isInProgress: [category.categoryId], 
+      });
 
       expect(getElement().nativeElement.disabled).toBe(true);
     });
@@ -77,7 +86,9 @@ describe('CategoryListItem', () => {
       });
 
       it('should not dispatch anything if disabled', async () => {
-        await render([category.categoryId]);
+        await render({
+          isInProgress: [category.categoryId], 
+        });
 
         getElement().nativeElement.click();
 
@@ -91,6 +102,38 @@ describe('CategoryListItem', () => {
       await render();
 
       expect(selector.getComponent(MatListItemTitle, MatListItem).nativeElement.textContent).toBe(category.name);
+    });
+  });
+
+  describe('icon', () => {
+    it('should be rendered for regular category', async () => {
+      await render({
+        category: testDataFactory.category.response({
+          categoryType: CategoryType.Regular,
+        }),
+      });
+
+      expect(selector.getComponent(MatListItemIcon, MatListItem).nativeElement.textContent).toBe('category');
+    });
+
+    it('should be rendered for inventory category', async () => {
+      await render({
+        category: testDataFactory.category.response({
+          categoryType: CategoryType.Inventory,
+        }),
+      });
+
+      expect(selector.getComponent(MatListItemIcon, MatListItem).nativeElement.textContent).toBe('inventory_2');
+    });
+
+    it('should be rendered for invoice category', async () => {
+      await render({
+        category: testDataFactory.category.response({
+          categoryType: CategoryType.Invoice,
+        }),
+      });
+
+      expect(selector.getComponent(MatListItemIcon, MatListItem).nativeElement.textContent).toBe('receipt_long');
     });
   });
 });

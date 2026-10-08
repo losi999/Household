@@ -1,5 +1,6 @@
 
 import { Api } from '@household/shared/types/api';
+import { AtLeastOne } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { type } from '@ngrx/signals';
@@ -13,7 +14,14 @@ export const categoryEvents = eventGroup({
     deleteCategory: type<Responses.Category>(),
     mergeCategories: type<Responses.Category>(),
     openCategoryListItemSubmenu: type<Responses.Category>(),
-    editParentCategory: type<Responses.Category>(),
+    selectCategory: type<{
+      selectedCategory?: Responses.Category;
+      exclude?: AtLeastOne<{
+        self: boolean;
+        children: boolean;
+      }>
+    }>(),
+    categorySelected: type<Responses.Category>(),
   },
 });
 

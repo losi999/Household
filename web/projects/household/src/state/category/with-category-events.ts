@@ -7,6 +7,7 @@ import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
 import { exhaustMap, filter, map } from 'rxjs';
 import { CategoryMergeDialog, CategoryMergeDialogData, CategoryMergeDialogResult } from '@household/app/category/category-merge-dialog/category-merge-dialog';
+import { CategorySelectDialog, CategorySelectDialogData, CategorySelectDialogResult } from '@household/app/category/category-select-dialog/category-select-dialog';
 
 export const withCategoryEvents = () => {
   return signalStoreFeature(
@@ -87,6 +88,21 @@ export const withCategoryEvents = () => {
             filter(req => !!req),
             map((request) => {
               return categoryApiEvents.mergeCategoriesInitiated(request);
+            }),
+          ),
+        openCategorySelectDialog: events.on(categoryEvents.selectCategory)
+          .pipe(
+            exhaustMap(({ payload }) => {
+              return dialog.open<CategorySelectDialog, CategorySelectDialogData, CategorySelectDialogResult>(CategorySelectDialog, {
+                disableClose: true,
+                data: payload,
+                width: '90vw',
+                height: '80vh',
+              }).afterClosed();
+            }),
+            filter(res => !!res),
+            map((response) => {
+              return categoryEvents.categorySelected(response);
             }),
           ),
       };

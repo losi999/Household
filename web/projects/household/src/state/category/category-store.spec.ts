@@ -15,6 +15,7 @@ import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { CategoryMergeDialog } from '@household/app/category/category-merge-dialog/category-merge-dialog';
+import { CategorySelectDialog } from '@household/app/category/category-select-dialog/category-select-dialog';
 
 describe('Category store', () => {
   let initialState: CategoryState; 
@@ -27,8 +28,9 @@ describe('Category store', () => {
   let mockBottomSheetService: MockService<BottomSheetService>;
 
   const validateState = (currentValue?: Partial<CategoryState>) => {
-    expect(store.isInProgress(), 'isInProgress').toEqual(currentValue?.isInProgress ?? initialState.isInProgress);
-    expect(store.categoryList(), 'categoryList').toEqual(currentValue?.categoryList ?? initialState.categoryList);
+    expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
+    expect(store.categoryList(), 'categoryList').toEqual(Object.hasOwn(currentValue ?? {}, 'categoryList') ? currentValue.categoryList : initialState.categoryList);
+    expect(store.pendingParentCategory(), 'pendingParentCategory').toEqual(Object.hasOwn(currentValue ?? {}, 'pendingParentCategory') ? currentValue.pendingParentCategory : initialState.pendingParentCategory);
   };
 
   const setup = (initial?: Partial<CategoryState>) => {
@@ -36,6 +38,7 @@ describe('Category store', () => {
     initialState = {
       isInProgress: [],
       categoryList: [],
+      pendingParentCategory: undefined,
       ...initial,
     };
 
@@ -80,6 +83,12 @@ describe('Category store', () => {
   });
 
   describe('dispatching createCategory', () => {
+    beforeEach(() => {
+      setup({
+        pendingParentCategory: testDataFactory.category.response(),
+      });
+    });
+
     it('should open dialog and dispatch if submitted', () => {
       const categoryRequest = testDataFactory.category.request();
       
@@ -93,7 +102,9 @@ describe('Category store', () => {
         disableClose: true,
       });
       validateDispatcher(dispatchSpy, categoryApiEvents.createCategoryInitiated(categoryRequest));
-      validateState();
+      validateState({
+        pendingParentCategory: undefined,
+      });
     });
 
     it('should open dialog and not dispatch anything if cancelled', () => {    
@@ -107,7 +118,9 @@ describe('Category store', () => {
         disableClose: true,
       });
       validateDispatcher(dispatchSpy);
-      validateState();
+      validateState({
+        pendingParentCategory: undefined,
+      });
     });
   });
 
@@ -117,8 +130,13 @@ describe('Category store', () => {
     const categoryResponse = testDataFactory.category.response({
       categoryId,
     });
-    it('should open dialog and dispatch if submitted', () => {
-      
+
+    beforeEach(() => {
+      setup({
+        pendingParentCategory: testDataFactory.category.response(),
+      });
+    });
+    it('should open dialog and dispatch if submitted', () => {      
       mockMatDialog.functions.open.mockReturnValue({
         afterClosed: () => of(categoryRequest),
       } as MatDialogRef<any>);
@@ -127,16 +145,15 @@ describe('Category store', () => {
 
       validateFunctionCall(mockMatDialog.functions.open, CategoryDialog, {
         disableClose: true,
-        data: {
-          categoryId,
-          ...categoryRequest,
-        },
+        data: categoryResponse,
       });
       validateDispatcher(dispatchSpy, categoryApiEvents.updateCategoryInitiated({
         ...categoryRequest,
         categoryId,
       }));
-      validateState();
+      validateState({
+        pendingParentCategory: undefined,
+      });
     });
 
     it('should open dialog and not dispatch anything if cancelled', () => {    
@@ -148,13 +165,12 @@ describe('Category store', () => {
 
       validateFunctionCall(mockMatDialog.functions.open, CategoryDialog, {
         disableClose: true,
-        data: {
-          categoryId,
-          ...categoryRequest,
-        },
+        data: categoryResponse,
       });
       validateDispatcher(dispatchSpy);
-      validateState();
+      validateState({
+        pendingParentCategory: undefined,
+      });
     });
   });
 
@@ -284,7 +300,93 @@ describe('Category store', () => {
       validateState();
     });
   });
-  
+
+  describe('dispatching selectCategory', () => {    
+    const categoryResponse = testDataFactory.category.response();
+
+    beforeEach(() => {
+      setup({
+        pendingParentCategory: testDataFactory.category.response(),
+      });
+    });
+
+    it('should open dialog and dispatch if submitted', () => {
+      
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(categoryResponse),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(categoryEvents.selectCategory({
+        selectedCategory: categoryResponse,
+        exclude: {
+          self: true,
+          children: true,
+        },
+      }));  
+
+      validateFunctionCall(mockMatDialog.functions.open, CategorySelectDialog, {
+        disableClose: true,
+        data: {
+          selectedCategory: categoryResponse,
+          exclude: {
+            self: true,
+            children: true,
+          },
+        },
+        height: '80vh',
+        width: '90vw',
+      });
+      validateDispatcher(dispatchSpy, categoryEvents.categorySelected(categoryResponse));
+      validateState({
+        pendingParentCategory: undefined,
+      });
+    });
+
+    it('should open dialog and not dispatch anything if cancelled', () => {    
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(categoryEvents.selectCategory({
+        selectedCategory: categoryResponse,
+        exclude: {
+          self: true,
+          children: true,
+        },
+      })); 
+
+      validateFunctionCall(mockMatDialog.functions.open, CategorySelectDialog, {
+        disableClose: true,
+        data: {
+          selectedCategory: categoryResponse,
+          exclude: {
+            self: true,
+            children: true,
+          },
+        },
+        height: '80vh',
+        width: '90vw',
+      });
+      validateDispatcher(dispatchSpy);
+      validateState({
+        pendingParentCategory: undefined,
+      });
+    });
+  });
+
+  describe('dispatching categorySelected', () => {
+    it('should update store', () => {
+      const categoryResponse = testDataFactory.category.response();
+
+      dispatcher.dispatch(categoryEvents.categorySelected(categoryResponse)); 
+
+      validateDispatcher(dispatchSpy);
+      validateState({
+        pendingParentCategory: categoryResponse,
+      });
+    });
+  });
+
   describe('dispatching listCategoriesInitiated', () => {
     it('should call API and dispatch response', () => {
       const categoryList = [testDataFactory.category.response()];
@@ -408,11 +510,22 @@ describe('Category store', () => {
       validateDispatcher(dispatchSpy);
       validateState({
         categoryList: [
+          parentCategory,
           {
             categoryId,
-            ...categoryRequest,
-            parentCategory,
+            categoryType: categoryRequest.categoryType,
+            name: categoryRequest.name,
+            parentCategory: {
+              categoryId: parentCategory.categoryId,
+              name: parentCategory.name,
+              categoryType: parentCategory.categoryType,
+              fullName: parentCategory.fullName,
+            },
             fullName: `${parentCategory.fullName}:${categoryRequest.name}`,
+            ancestors: [
+              ...parentCategory.ancestors,
+              parentCategory,
+            ],
             searchTerms: expect.arrayContaining([
               'ekezetes',
               'nev',
@@ -429,14 +542,21 @@ describe('Category store', () => {
     let categoryRequest: Requests.Category;
     let categoryId: Api.Category.Id;
     let originalCategory: Responses.Category;
+    let childCategory: Responses.Category;
 
     beforeEach(() => {
       categoryRequest = testDataFactory.category.request();
       originalCategory = testDataFactory.category.response();
       categoryId = originalCategory.categoryId;
+      childCategory = testDataFactory.category.response({
+        ancestors: [originalCategory],
+      });
 
       setup({
-        categoryList: [originalCategory],
+        categoryList: [
+          originalCategory,
+          childCategory,
+        ],
       });
     });
 
@@ -454,7 +574,10 @@ describe('Category store', () => {
         ...categoryRequest, 
       }));
       validateState({
-        isInProgress: [categoryId],
+        isInProgress: expect.arrayContaining([
+          categoryId,
+          childCategory.categoryId,
+        ]),
       });
     });
 
@@ -474,7 +597,10 @@ describe('Category store', () => {
         categoryId,
       }), notificationEvents.showMessage(`Kategória (${categoryRequest.name}) már létezik!`));
       validateState({
-        isInProgress: [categoryId],
+        isInProgress: expect.arrayContaining([
+          categoryId,
+          childCategory.categoryId,
+        ]),
       });
 
     });
@@ -496,7 +622,10 @@ describe('Category store', () => {
         categoryId,
       }), notificationEvents.showMessage('Hiba történt'));
       validateState({
-        isInProgress: [categoryId],
+        isInProgress: expect.arrayContaining([
+          categoryId,
+          childCategory.categoryId,
+        ]),
       });
     });
   });
@@ -504,12 +633,26 @@ describe('Category store', () => {
   describe('dispatching updateCategoryCompleted', () => {
     it('should update store', () => {
       const originalCategory = testDataFactory.category.response();
-      const parentCategory = testDataFactory.category.response();
-      setup({
-        isInProgress: [originalCategory.categoryId],
-        categoryList: [
-          originalCategory,
+      const parentCategory = testDataFactory.category.response({
+        fullName: 'aaa',
+        name: 'aaa',
+      });
+      const childCategory = testDataFactory.category.response({
+        parentCategory: originalCategory,
+        ancestors: [
           parentCategory,
+          originalCategory,
+        ],
+      });
+      setup({
+        isInProgress: [
+          originalCategory.categoryId,
+          childCategory.categoryId,
+        ],
+        categoryList: [
+          parentCategory,
+          originalCategory,
+          childCategory,
         ],
       });
 
@@ -528,17 +671,54 @@ describe('Category store', () => {
       validateState({
         isInProgress: [],
         categoryList: [
+          parentCategory,
           {
             categoryId: originalCategory.categoryId,
-            ...categoryRequest,
-            parentCategory,
+            categoryType: categoryRequest.categoryType,
+            name: categoryRequest.name,
+            parentCategory: {
+              categoryId: parentCategory.categoryId,
+              name: parentCategory.name,
+              categoryType: parentCategory.categoryType,
+              fullName: parentCategory.fullName,
+            },
             fullName: `${parentCategory.fullName}:${categoryRequest.name}`,
+            ancestors: [
+              ...parentCategory.ancestors,
+              {
+                categoryId: parentCategory.categoryId,
+                categoryType: parentCategory.categoryType,
+                name: parentCategory.name,
+              },
+            ],
             searchTerms: expect.arrayContaining([
               'ekezetes',
               'nev',
               'ékezetes',
               'név',
             ]),
+          },
+          {
+            ...childCategory,
+            fullName: `${parentCategory.fullName}:${categoryRequest.name}:${childCategory.name}`,
+            ancestors: [
+              {
+                categoryId: parentCategory.categoryId,
+                categoryType: parentCategory.categoryType,
+                name: parentCategory.name,
+              },
+              {
+                categoryId: originalCategory.categoryId,
+                categoryType: categoryRequest.categoryType,
+                name: categoryRequest.name,
+              },
+            ],
+            parentCategory: {
+              categoryId: originalCategory.categoryId,
+              categoryType: categoryRequest.categoryType,
+              name: categoryRequest.name,
+              fullName: `${parentCategory.fullName}:${categoryRequest.name}`,
+            },
           },
         ],
       });
@@ -548,9 +728,18 @@ describe('Category store', () => {
   describe('dispatching updateCategoryFailed', () => {
     it('should update store', () => {
       const originalCategory = testDataFactory.category.response();
+      const childCategory = testDataFactory.category.response({
+        ancestors: [originalCategory],
+      });
       setup({
-        isInProgress: [originalCategory.categoryId],
-        categoryList: [originalCategory],
+        isInProgress: [
+          originalCategory.categoryId,
+          childCategory.categoryId,
+        ],
+        categoryList: [
+          originalCategory,
+          childCategory,
+        ],
       });
 
       dispatcher.dispatch(categoryApiEvents.updateCategoryFailed({
@@ -567,13 +756,20 @@ describe('Category store', () => {
   describe('dispatching deleteCategoryInitiated', () => {
     let originalCategory: Responses.Category;
     let categoryId: Api.Category.Id;
+    let childCategory: Responses.Category;
     
     beforeEach(() => {
       originalCategory = testDataFactory.category.response();
       categoryId = originalCategory.categoryId;
+      childCategory = testDataFactory.category.response({
+        ancestors: [originalCategory],
+      });
 
       setup({
-        categoryList: [originalCategory],
+        categoryList: [
+          originalCategory,
+          childCategory,
+        ],
       });
     });
 
@@ -589,7 +785,10 @@ describe('Category store', () => {
         categoryId,
       }));
       validateState({
-        isInProgress: [categoryId],
+        isInProgress: expect.arrayContaining([
+          categoryId,
+          childCategory.categoryId,
+        ]),
       });
     });
 
@@ -609,7 +808,10 @@ describe('Category store', () => {
         categoryId,
       }), notificationEvents.showMessage('Hiba történt'));
       validateState({
-        isInProgress: [categoryId],
+        isInProgress: expect.arrayContaining([
+          categoryId,
+          childCategory.categoryId,
+        ]),
       });
     });
   });
@@ -617,9 +819,18 @@ describe('Category store', () => {
   describe('dispatching deleteCategoryCompleted', () => {
     it('should update store', () => {
       const originalCategory = testDataFactory.category.response();
+      const childCategory = testDataFactory.category.response({
+        ancestors: [originalCategory],
+      });
       setup({
-        isInProgress: [originalCategory.categoryId],
-        categoryList: [originalCategory],
+        isInProgress: [
+          originalCategory.categoryId,
+          childCategory.categoryId,
+        ],
+        categoryList: [
+          originalCategory,
+          childCategory,
+        ],
       });
       const categoryRequest = testDataFactory.category.request();
 
@@ -631,7 +842,13 @@ describe('Category store', () => {
       validateDispatcher(dispatchSpy);
       validateState({
         isInProgress: [],
-        categoryList: [],
+        categoryList: [
+          {
+            ...childCategory,
+            ancestors: [],
+            parentCategory: undefined,
+          },
+        ],
       });
     });
   });
@@ -639,9 +856,18 @@ describe('Category store', () => {
   describe('dispatching deleteCategoryFailed', () => {
     it('should update store', () => {
       const originalCategory = testDataFactory.category.response();
+      const childCategory = testDataFactory.category.response({
+        ancestors: [originalCategory],
+      });
       setup({
-        isInProgress: [originalCategory.categoryId],
-        categoryList: [originalCategory],
+        isInProgress: [
+          originalCategory.categoryId,
+          childCategory.categoryId,
+        ],
+        categoryList: [
+          originalCategory,
+          childCategory,
+        ],
       });
 
       dispatcher.dispatch(categoryApiEvents.deleteCategoryFailed({

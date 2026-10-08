@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -12,6 +12,7 @@ import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { categoryEvents } from '@household/state/category/category-events';
+import { CategoryStore } from '@household/state/category/category-store';
 import { injectDispatch } from '@ngrx/signals/events';
 
 export type CategoryDialogData = Responses.Category;
@@ -36,13 +37,21 @@ export class CategoryDialog {
   private dialogRef = inject<MatDialogRef<CategoryDialog, CategoryDialogResult>>(MatDialogRef);
   public category = inject<CategoryDialogData>(MAT_DIALOG_DATA);
   private readonly categoryEvents = injectDispatch(categoryEvents);
+  readonly categoryStore = inject(CategoryStore);
 
-  categoryModel = signal<Api.Category.Name & Api.Category.CategoryType & {
-    parentCategory: Responses.Category
-  }>({
+  constructor () {
+    effect(() => {
+      if (this.categoryStore.pendingParentCategory()) {
+        this.parentCategory.set(this.categoryStore.pendingParentCategory());
+      }
+    });
+  }
+
+  parentCategory = signal(this.category?.parentCategory ?? undefined);
+
+  categoryModel = signal<Api.Category.Name & Api.Category.CategoryType>({
     name: this.category?.name ?? '',
     categoryType: this.category?.categoryType ?? CategoryType.Regular,
-    parentCategory: this.category?.parentCategory as Responses.Category,
   });
   
   categoryForm = form(this.categoryModel, (schemaPath) => {
@@ -52,26 +61,30 @@ export class CategoryDialog {
   });
 
   onEditParent() {
-    this.categoryEvents.editParentCategory(this.category);
+    this.categoryEvents.selectCategory({
+      selectedCategory: this.category,
+      exclude: {
+        self: true,
+        children: true,
+      },
+    });
   }
 
   onRemoveParent() {
-    this.categoryForm.parentCategory().value.set(undefined);
+    this.parentCategory.set(undefined);
   }
 
   onSave() {
-    console.log(this.categoryForm().value());
+    Object.values(this.categoryForm).forEach(field => {
+      field().markAsTouched();
+    });
 
-    // Object.values(this.categoryForm).forEach(field => {
-    //   field().markAsTouched();
-    // });
-
-    // if (this.categoryForm().valid()) {
-    //   this.dialogRef.close({
-    //     name: this.categoryForm.name().value(),
-    //     categoryType: this.categoryForm.categoryType().value(),
-    //     parentCategoryId: undefined,
-    //   });
-    // }
+    if (this.categoryForm().valid()) {
+      this.dialogRef.close({
+        name: this.categoryForm.name().value(),
+        categoryType: this.categoryForm.categoryType().value(),
+        parentCategoryId: this.parentCategory()?.categoryId,
+      });
+    }
   }
 }

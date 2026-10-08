@@ -12,7 +12,7 @@
 <div mat-dialog-content>
   <mat-action-list>
     @for (category of categories(); track category) {
-    <button mat-list-item (click)="onAddCategory(category)"> {{category.name}} </button>
+    <button mat-list-item (click)="onAddCategory(category)"> {{category.fullName}} </button>
     }
   </mat-action-list>
 </div>
