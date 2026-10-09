@@ -23,17 +23,8 @@ describe('CategoryListItem', () => {
     isInProgress?: Api.Category.Id[];
     category?: Responses.Category;
   }) => {
-    mockCategoryStore.isInProgress.set(params?.isInProgress ?? []);
+    TestBed.resetTestingModule();
 
-    fixture = TestBed.createComponent(CategoryListItem);
-    fixture.componentRef.setInput('category', params?.category ?? category);
-
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CategoryListItem],
       providers: [
@@ -45,7 +36,16 @@ describe('CategoryListItem', () => {
 
     mockCategoryStore = TestBed.inject<MockSignalStore<typeof CategoryStore>>(CategoryStore);
     mockDispatcher = TestBed.inject(Dispatcher);
-  });
+
+    mockCategoryStore.isInProgress.set(params?.isInProgress ?? []);
+
+    fixture = TestBed.createComponent(CategoryListItem);
+    fixture.componentRef.setInput('category', params?.category ?? category);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('list item button', () => {
     const getElement = () => {

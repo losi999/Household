@@ -27,16 +27,8 @@ describe('CategoryHome', () => {
   ];
 
   const render = async (categoryList: Responses.Category[] = categories) => {
-    mockCategoryStore.categoryList.set(categoryList);
+    TestBed.resetTestingModule();
 
-    fixture = TestBed.createComponent(CategoryHome);
-
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CategoryHome],
       providers: [
@@ -62,7 +54,15 @@ describe('CategoryHome', () => {
 
     mockCategoryStore = TestBed.inject<MockSignalStore<typeof CategoryStore>>(CategoryStore);
     mockDispatcher = TestBed.inject(Dispatcher);
-  });
+
+    mockCategoryStore.categoryList.set(categoryList);
+
+    fixture = TestBed.createComponent(CategoryHome);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('on init', () => {
     it('should dispatch listCategoriesInitiated', async () => {

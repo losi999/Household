@@ -1,9 +1,9 @@
 import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
-import { Dictionary } from '@household/shared/types/common';
+import { Dictionary, Searchable } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
-import { PopulateOptions, Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import { Responses } from '@household/shared/types/responses';
 
 export const keys = <O extends object>(obj: O): (keyof O)[] => {
@@ -12,14 +12,6 @@ export const keys = <O extends object>(obj: O): (keyof O)[] => {
 
 export const entries = <O extends object>(obj: O): [keyof O, O[keyof O]][] => {
   return Object.entries(obj) as [keyof O, O[keyof O]][];
-};
-
-export const populate = (...populateOptions: (string | PopulateOptions)[]): PopulateOptions[] => {
-  return populateOptions.map(p => {
-    return typeof p === 'string' ? {
-      path: p,
-    } : p;
-  });
 };
 
 export const addSeconds = (seconds: number, dateFrom?: Date): Date => {
@@ -157,4 +149,15 @@ export const toSearchTerms = (input: string): string[] => {
       ];
     })),
   ];
+};
+
+export const search = (item: Searchable, searchValue: string): boolean => {
+  if (!searchValue) {
+    return true;
+  }
+
+  const terms = searchValue.toLowerCase()
+    .split(' ');
+
+  return item.searchTerms?.some(s => terms.every(t => s.includes(t)));
 };

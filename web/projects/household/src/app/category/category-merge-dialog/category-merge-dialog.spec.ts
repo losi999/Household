@@ -7,6 +7,8 @@ import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { MatActionList, MatListItem } from '@angular/material/list';
 import { MatChip, MatChipSet } from '@angular/material/chips';
+import { CategoryType } from '@household/shared/enums';
+import { Responses } from '@household/shared/types/responses';
 
 describe('CategoryMergeDialog', () => {
   let fixture: ComponentFixture<CategoryMergeDialog>;
@@ -14,9 +16,15 @@ describe('CategoryMergeDialog', () => {
   let mockCategoryStore: MockSignalStore<typeof CategoryStore>;
   let mockDialogRef: MockService<MatDialogRef<CategoryMergeDialog>>;
 
-  const targetCategory: CategoryMergeDialogData = testDataFactory.category.response();
-  const sourceCategory1 = testDataFactory.category.response();
-  const sourceCategory2 = testDataFactory.category.response();
+  const targetCategory: CategoryMergeDialogData = testDataFactory.category.response({
+    categoryType: CategoryType.Regular,
+  });
+  const sourceCategory1 = testDataFactory.category.response({
+    categoryType: CategoryType.Regular,
+  });
+  const sourceCategory2 = testDataFactory.category.response({
+    categoryType: CategoryType.Regular,
+  });
 
   const getListItems = () => {
     return selector.listComponents<MatListItem, HTMLButtonElement>(MatListItem, MatActionList);
@@ -30,15 +38,12 @@ describe('CategoryMergeDialog', () => {
     return selector.getElementByTestId<HTMLButtonElement>('save-button', MatDialogActions);
   };
 
-  const render = async () => {
-    fixture = TestBed.createComponent(CategoryMergeDialog);
+  const render = async (params?: {
+    dialogData?: CategoryMergeDialogData;
+    categoryList?: Responses.Category[];
+  }) => {
+    TestBed.resetTestingModule();
 
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
     mockDialogRef = createMockService('close');
 
     await TestBed.configureTestingModule({
@@ -47,7 +52,7 @@ describe('CategoryMergeDialog', () => {
         provideMockSignalStore(CategoryStore, 'categoryList'),
         {
           provide: MAT_DIALOG_DATA,
-          useValue: targetCategory,
+          useValue: params?.dialogData ?? targetCategory,
         },
         {
           provide: MatDialogRef,
@@ -58,12 +63,18 @@ describe('CategoryMergeDialog', () => {
       .compileComponents();
 
     mockCategoryStore = TestBed.inject<MockSignalStore<typeof CategoryStore>>(CategoryStore);
-    mockCategoryStore.categoryList.set([
+    mockCategoryStore.categoryList.set(params?.categoryList ?? [
       targetCategory,
       sourceCategory1,
       sourceCategory2,
     ]);
-  });
+
+    fixture = TestBed.createComponent(CategoryMergeDialog);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('dialog title', () => {
     it('should display the name of the merge target category', async () => {
@@ -74,7 +85,7 @@ describe('CategoryMergeDialog', () => {
   });
 
   describe('selectable category list', () => {
-    it('should display every category except the merge target', async () => {
+    it('should display every category of the same type that are not children or the target itself', async () => {
       await render();
 
       const listItems = getListItems();
@@ -84,12 +95,45 @@ describe('CategoryMergeDialog', () => {
       expect(listItems[1].nativeElement.textContent.trim()).toBe(sourceCategory2.name);
     });
 
-    it('should display nothing if the merge target is the only category', async () => {
-      mockCategoryStore.categoryList.set([targetCategory]);
+    describe('should display nothing', () => {
+      it('if the source target is a different type', async () => {
+        const invoiceCategory = testDataFactory.category.response({
+          categoryType: CategoryType.Invoice,
+        });    
 
-      await render();
+        await render({
+          categoryList: [
+            targetCategory,
+            invoiceCategory,
+          ],
+        });
+        
+        expect(getListItems().length).toBe(0);
+      });
 
-      expect(getListItems().length).toBe(0);
+      it('if the source target is a child of target', async () => {
+        const invoiceCategory = testDataFactory.category.response({
+          categoryType: CategoryType.Regular,
+          ancestors: [targetCategory],
+        });
+        
+        await render({
+          categoryList: [
+            targetCategory,
+            invoiceCategory,
+          ],
+        });
+        
+        expect(getListItems().length).toBe(0);
+      });
+
+      it('if the merge target is the only category', async () => {      
+        await render({
+          categoryList: [targetCategory],
+        });
+        
+        expect(getListItems().length).toBe(0);
+      });
     });
 
     describe('on click', () => {

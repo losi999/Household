@@ -18,15 +18,8 @@ describe('ProjectList', () => {
   ];
 
   const render = async (projectList: Responses.Project[]) => {
-    fixture = TestBed.createComponent(ProjectList);
-    fixture.componentRef.setInput('projects', projectList);
-
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
+    TestBed.resetTestingModule();
+    
     await TestBed.configureTestingModule({
       imports: [ProjectList],
     })
@@ -39,7 +32,14 @@ describe('ProjectList', () => {
         },
       })
       .compileComponents();
-  });
+
+    fixture = TestBed.createComponent(ProjectList);
+    fixture.componentRef.setInput('projects', projectList);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('action list', () => {
     it('should be rendered', async () => {

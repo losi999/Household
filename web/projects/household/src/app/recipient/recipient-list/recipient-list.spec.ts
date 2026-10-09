@@ -18,15 +18,8 @@ describe('RecipientList', () => {
   ];
 
   const render = async (recipientList: Responses.Recipient[]) => {
-    fixture = TestBed.createComponent(RecipientList);
-    fixture.componentRef.setInput('recipients', recipientList);
+    TestBed.resetTestingModule();
 
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RecipientList],
     })
@@ -39,7 +32,14 @@ describe('RecipientList', () => {
         },
       })
       .compileComponents();
-  });
+
+    fixture = TestBed.createComponent(RecipientList);
+    fixture.componentRef.setInput('recipients', recipientList);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('action list', () => {
     it('should be rendered', async () => {

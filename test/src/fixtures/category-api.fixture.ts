@@ -1,5 +1,5 @@
 import { getCategoryId } from '@household/shared/common/utils';
-import { headerExpiresIn } from '@household/shared/constants';
+import { CATEGORY_FULL_NAME_SEPARATOR, headerExpiresIn } from '@household/shared/constants';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
@@ -108,9 +108,9 @@ export const validateCategoryResponse = (response: Responses.Category, document:
     ...ancestorDocuments,
     document,
   ].filter(c => !!c).map(c => c.name)
-    .join(':');
+    .join(CATEGORY_FULL_NAME_SEPARATOR);
   const parentCategoryDocument = ancestorDocuments.at(-1);
-  const expectedParentFullName = parentCategoryDocument ? ancestorDocuments.map(a => a.name).join(':') : undefined;
+  const expectedParentFullName = parentCategoryDocument ? ancestorDocuments.map(c => c.name).join(CATEGORY_FULL_NAME_SEPARATOR) : undefined;
   
   return new Comparer(response, {
     categoryId: getCategoryId(document),

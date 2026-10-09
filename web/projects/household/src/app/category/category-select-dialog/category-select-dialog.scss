@@ -2,3 +2,11 @@
   font-size: var(--mat-sys-title-large-size);
   background-color: var(--mat-sys-primary-container);
 }
+
+.search {
+  position: sticky;
+  padding-top: 10px;
+  top: 0px;
+  z-index: 10;
+  background-color: var(--mat-sys-surface);
+}

@@ -7,6 +7,7 @@ import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { MatActionList, MatListItem } from '@angular/material/list';
 import { MatChip, MatChipSet } from '@angular/material/chips';
+import { Responses } from '@household/shared/types/responses';
 
 describe('ProjectMergeDialog', () => {
   let fixture: ComponentFixture<ProjectMergeDialog>;
@@ -30,15 +31,12 @@ describe('ProjectMergeDialog', () => {
     return selector.getElementByTestId<HTMLButtonElement>('save-button', MatDialogActions);
   };
 
-  const render = async () => {
-    fixture = TestBed.createComponent(ProjectMergeDialog);
+  const render = async (params?: {
+    dialogData?: ProjectMergeDialogData;
+    projectList?: Responses.Project[];
+  }) => {
+    TestBed.resetTestingModule();
 
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
     mockDialogRef = createMockService('close');
 
     await TestBed.configureTestingModule({
@@ -47,7 +45,7 @@ describe('ProjectMergeDialog', () => {
         provideMockSignalStore(ProjectStore, 'projectList'),
         {
           provide: MAT_DIALOG_DATA,
-          useValue: targetProject,
+          useValue: params?.dialogData ?? targetProject,
         },
         {
           provide: MatDialogRef,
@@ -58,12 +56,18 @@ describe('ProjectMergeDialog', () => {
       .compileComponents();
 
     mockProjectStore = TestBed.inject<MockSignalStore<typeof ProjectStore>>(ProjectStore);
-    mockProjectStore.projectList.set([
+    mockProjectStore.projectList.set(params?.projectList ?? [
       targetProject,
       sourceProject1,
       sourceProject2,
     ]);
-  });
+
+    fixture = TestBed.createComponent(ProjectMergeDialog);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('dialog title', () => {
     it('should display the name of the merge target project', async () => {
@@ -85,9 +89,9 @@ describe('ProjectMergeDialog', () => {
     });
 
     it('should display nothing if the merge target is the only project', async () => {
-      mockProjectStore.projectList.set([targetProject]);
-
-      await render();
+      await render({
+        projectList: [targetProject],
+      });
 
       expect(getListItems().length).toBe(0);
     });

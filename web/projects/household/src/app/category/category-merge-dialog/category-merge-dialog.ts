@@ -36,7 +36,14 @@ export class CategoryMergeDialog {
   });
 
   categories = computed(() => {
-    return this.categoryStore.categoryList().filter(p => p.categoryId !== this.category.categoryId && !this.selectedCategoryIds().includes(p.categoryId));
+    return this.categoryStore.categoryList().filter((p) => {
+      const isItself = p.categoryId === this.category.categoryId;
+      const isAlreadySelected = this.selectedCategoryIds().includes(p.categoryId); 
+      const isSameCategoryType = p.categoryType === this.category.categoryType;
+      const isAChildCategory = p.ancestors.some(a => a.categoryId === this.category.categoryId);
+
+      return !isItself && !isAlreadySelected && isSameCategoryType && !isAChildCategory;
+    });
   });
 
   onAddCategory(category: Responses.Category) {

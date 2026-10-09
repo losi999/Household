@@ -5,6 +5,7 @@ import { signalStoreFeature } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
 import { Responses } from '@household/shared/types/responses';
 import { Searchable } from '@household/shared/types/common';
+import { CATEGORY_FULL_NAME_SEPARATOR } from '@household/shared/constants';
 
 export const withCategoryReducer = () => {
   return signalStoreFeature(
@@ -24,7 +25,7 @@ export const withCategoryReducer = () => {
           categoryList: payload.map(p => {
             return {
               ...p,
-              searchTerms: toSearchTerms(p.name),
+              searchTerms: toSearchTerms(p.fullName.replaceAll(CATEGORY_FULL_NAME_SEPARATOR, ' ')),
             };
           }),
         };
@@ -57,13 +58,14 @@ export const withCategoryReducer = () => {
       on(categoryApiEvents.createCategoryCompleted, ({ payload: { categoryId, name, categoryType, parentCategoryId } }) => {
         return (state) => {
           const parentCategory = state.categoryList.find(c => c.categoryId === parentCategoryId);
+          const fullName = parentCategory ? `${parentCategory.fullName}${CATEGORY_FULL_NAME_SEPARATOR}${name}` : name;
 
           return {
             categoryList: state.categoryList.concat({
               categoryId,
               name,
               categoryType,
-              fullName: parentCategory ? `${parentCategory.fullName}:${name}` : name,
+              fullName,
               parentCategory: parentCategory ? {
                 categoryId: parentCategory.categoryId,
                 categoryType: parentCategory.categoryType,
@@ -74,7 +76,7 @@ export const withCategoryReducer = () => {
                 ...parentCategory.ancestors,
                 parentCategory,
               ] : [],
-              searchTerms: toSearchTerms(name),
+              searchTerms: toSearchTerms(fullName.replaceAll(CATEGORY_FULL_NAME_SEPARATOR, ' ')),
             })
               .toSorted((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
                 sensitivity: 'base',
@@ -86,11 +88,12 @@ export const withCategoryReducer = () => {
         return (state) => {
           const childCategoriesIds = state.categoryList.filter(c => c.ancestors.some(a => a.categoryId === categoryId)).map(c => c.categoryId);
           const parentCategory = state.categoryList.find(c => c.categoryId === parentCategoryId);
+          const fullName = parentCategory ? `${parentCategory.fullName}${CATEGORY_FULL_NAME_SEPARATOR}${name}` : name;
           const updatedCategory: Searchable<Responses.Category> = {
             categoryId,
             name,
             categoryType,
-            fullName: parentCategory ? `${parentCategory.fullName}:${name}` : name,
+            fullName,
             parentCategory: parentCategory ? {
               categoryId: parentCategory.categoryId,
               categoryType: parentCategory.categoryType,
@@ -105,7 +108,7 @@ export const withCategoryReducer = () => {
                 name: parentCategory.name,
               },
             ] : [],
-            searchTerms: toSearchTerms(name),
+            searchTerms: toSearchTerms(fullName.replaceAll(CATEGORY_FULL_NAME_SEPARATOR, ' ')),
           };
 
           return {
@@ -133,14 +136,14 @@ export const withCategoryReducer = () => {
                   },
                   ...remainingAncestors,
                 ];
-                const parentFullName = updatedAncestors.map(a => a.name).join(':');
+                const parentFullName = updatedAncestors.map(c => c.name).join(CATEGORY_FULL_NAME_SEPARATOR);
                 const newParent = updatedAncestors.at(-1);
                 return [
                   ...accumulator,
                   {
                     ...currentValue,
                     ancestors: updatedAncestors,
-                    fullName: `${parentFullName}:${ currentValue.name}`,
+                    fullName: `${parentFullName}${CATEGORY_FULL_NAME_SEPARATOR}${ currentValue.name}`,
                     parentCategory: {
                       categoryId: newParent.categoryId,
                       categoryType: newParent.categoryType,
@@ -177,7 +180,7 @@ export const withCategoryReducer = () => {
 
               if (childCategoriesIds.includes(currentValue.categoryId)) {
                 const ancestors = currentValue.ancestors.filter(a => a.categoryId !== categoryId);
-                const parentFullName = ancestors.map(a => a.name).join(':');
+                const parentFullName = ancestors.map(c => c.name).join(CATEGORY_FULL_NAME_SEPARATOR);
                 const parentCategory = ancestors.at(-1);
 
                 return [
@@ -185,7 +188,7 @@ export const withCategoryReducer = () => {
                   {
                     ...currentValue,
                     ancestors,
-                    fullName: parentFullName ? `${parentFullName}:${currentValue.name}` : currentValue.name,
+                    fullName: parentFullName ? `${parentFullName}${CATEGORY_FULL_NAME_SEPARATOR}${currentValue.name}` : currentValue.name,
                     parentCategory: parentCategory ? {
                       ...parentCategory,
                       fullName: parentFullName,

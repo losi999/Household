@@ -27,16 +27,8 @@ describe('ProjectHome', () => {
   ];
 
   const render = async (projectList: Responses.Project[] = projects) => {
-    mockProjectStore.projectList.set(projectList);
+    TestBed.resetTestingModule();
 
-    fixture = TestBed.createComponent(ProjectHome);
-
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProjectHome],
       providers: [
@@ -62,7 +54,15 @@ describe('ProjectHome', () => {
 
     mockProjectStore = TestBed.inject<MockSignalStore<typeof ProjectStore>>(ProjectStore);
     mockDispatcher = TestBed.inject(Dispatcher);
-  });
+
+    mockProjectStore.projectList.set(projectList);
+
+    fixture = TestBed.createComponent(ProjectHome);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('on init', () => {
     it('should dispatch listProjectsInitiated', async () => {

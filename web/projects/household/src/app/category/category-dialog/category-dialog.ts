@@ -62,11 +62,7 @@ export class CategoryDialog {
 
   onEditParent() {
     this.categoryEvents.selectCategory({
-      selectedCategory: this.category,
-      exclude: {
-        self: true,
-        children: true,
-      },
+      excludedCategory: this.category,
     });
   }
 

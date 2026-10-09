@@ -4,7 +4,7 @@
       @if (authStore.isLoggedIn()) {
       <household-main-menu />
       }
-      <span>{{title()}}</span>
+      <span data-testId="title">{{title()}}</span>
       <span class="spacer"></span>
       <ng-content></ng-content>
     </div>

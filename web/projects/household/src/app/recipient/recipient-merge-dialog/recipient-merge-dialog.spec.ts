@@ -7,6 +7,7 @@ import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { MatActionList, MatListItem } from '@angular/material/list';
 import { MatChip, MatChipSet } from '@angular/material/chips';
+import { Responses } from '@household/shared/types/responses';
 
 describe('RecipientMergeDialog', () => {
   let fixture: ComponentFixture<RecipientMergeDialog>;
@@ -30,15 +31,11 @@ describe('RecipientMergeDialog', () => {
     return selector.getElementByTestId<HTMLButtonElement>('save-button', MatDialogActions);
   };
 
-  const render = async () => {
-    fixture = TestBed.createComponent(RecipientMergeDialog);
-
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
+  const render = async (params?: {
+    dialogData?: RecipientMergeDialogData;
+    recipientList?: Responses.Recipient[];
+  }) => {
+    TestBed.resetTestingModule();
     mockDialogRef = createMockService('close');
 
     await TestBed.configureTestingModule({
@@ -47,7 +44,7 @@ describe('RecipientMergeDialog', () => {
         provideMockSignalStore(RecipientStore, 'recipientList'),
         {
           provide: MAT_DIALOG_DATA,
-          useValue: targetRecipient,
+          useValue: params?.dialogData ?? targetRecipient,
         },
         {
           provide: MatDialogRef,
@@ -58,12 +55,18 @@ describe('RecipientMergeDialog', () => {
       .compileComponents();
 
     mockRecipientStore = TestBed.inject<MockSignalStore<typeof RecipientStore>>(RecipientStore);
-    mockRecipientStore.recipientList.set([
+    mockRecipientStore.recipientList.set(params?.recipientList ?? [
       targetRecipient,
       sourceRecipient1,
       sourceRecipient2,
     ]);
-  });
+
+    fixture = TestBed.createComponent(RecipientMergeDialog);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('dialog title', () => {
     it('should display the name of the merge target recipient', async () => {
@@ -85,9 +88,9 @@ describe('RecipientMergeDialog', () => {
     });
 
     it('should display nothing if the merge target is the only recipient', async () => {
-      mockRecipientStore.recipientList.set([targetRecipient]);
-
-      await render();
+      await render({
+        recipientList: [targetRecipient],
+      });
 
       expect(getListItems().length).toBe(0);
     });

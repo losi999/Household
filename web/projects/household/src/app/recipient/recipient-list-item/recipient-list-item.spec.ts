@@ -18,17 +18,8 @@ describe('RecipientListItem', () => {
   const recipient = testDataFactory.recipient.response();
 
   const render = async (isInProgress: Api.Recipient.Id[] = []) => {
-    mockRecipientStore.isInProgress.set(isInProgress);
+    TestBed.resetTestingModule();
 
-    fixture = TestBed.createComponent(RecipientListItem);
-    fixture.componentRef.setInput('recipient', recipient);
-
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RecipientListItem],
       providers: [
@@ -40,7 +31,16 @@ describe('RecipientListItem', () => {
 
     mockRecipientStore = TestBed.inject<MockSignalStore<typeof RecipientStore>>(RecipientStore);
     mockDispatcher = TestBed.inject(Dispatcher);
-  });
+
+    mockRecipientStore.isInProgress.set(isInProgress);
+
+    fixture = TestBed.createComponent(RecipientListItem);
+    fixture.componentRef.setInput('recipient', recipient);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('list item button', () => {
     const getElement = () => {

@@ -18,17 +18,8 @@ describe('ProjectListItem', () => {
   const project = testDataFactory.project.response();
 
   const render = async (isInProgress: Api.Project.Id[] = []) => {
-    mockProjectStore.isInProgress.set(isInProgress);
+    TestBed.resetTestingModule();
 
-    fixture = TestBed.createComponent(ProjectListItem);
-    fixture.componentRef.setInput('project', project);
-
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProjectListItem],
       providers: [
@@ -40,7 +31,16 @@ describe('ProjectListItem', () => {
 
     mockProjectStore = TestBed.inject<MockSignalStore<typeof ProjectStore>>(ProjectStore);
     mockDispatcher = TestBed.inject(Dispatcher);
-  });
+
+    mockProjectStore.isInProgress.set(isInProgress);
+
+    fixture = TestBed.createComponent(ProjectListItem);
+    fixture.componentRef.setInput('project', project);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('list item button', () => {
     const getElement = () => {

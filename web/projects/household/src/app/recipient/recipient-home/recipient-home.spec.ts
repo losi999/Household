@@ -27,16 +27,8 @@ describe('RecipientHome', () => {
   ];
 
   const render = async (recipientList: Responses.Recipient[] = recipients) => {
-    mockRecipientStore.recipientList.set(recipientList);
+    TestBed.resetTestingModule();
 
-    fixture = TestBed.createComponent(RecipientHome);
-
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RecipientHome],
       providers: [
@@ -62,7 +54,15 @@ describe('RecipientHome', () => {
 
     mockRecipientStore = TestBed.inject<MockSignalStore<typeof RecipientStore>>(RecipientStore);
     mockDispatcher = TestBed.inject(Dispatcher);
-  });
+
+    mockRecipientStore.recipientList.set(recipientList);
+
+    fixture = TestBed.createComponent(RecipientHome);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('on init', () => {
     it('should dispatch listRecipientsInitiated', async () => {

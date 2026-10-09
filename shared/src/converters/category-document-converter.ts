@@ -5,6 +5,7 @@ import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { Documents } from '@household/shared/types/documents';
 import { UpdateQuery } from 'mongoose';
+import { CATEGORY_FULL_NAME_SEPARATOR } from '@household/shared/constants';
 
 export interface ICategoryDocumentConverter {
   create(data: {
@@ -59,12 +60,12 @@ export const categoryDocumentConverterFactory = (): ICategoryDocumentConverter =
       };
     },
     toResponse: (doc) => {
-      const parentFullName = doc.ancestors.map(d => d.name).join(':');
+      const parentFullName = doc.ancestors.map(c => c.name).join(CATEGORY_FULL_NAME_SEPARATOR);
 
       return {
         ...toResponseBase(doc),
         ancestors: doc.ancestors.map(d => toResponseBase(d)),
-        fullName: parentFullName ? `${parentFullName}:${doc.name}` : doc.name,
+        fullName: parentFullName ? `${parentFullName}${CATEGORY_FULL_NAME_SEPARATOR}${doc.name}` : doc.name,
         parentCategory: parentFullName ? {
           ...toResponseBase(doc.ancestors.at(-1)),
           fullName: parentFullName,

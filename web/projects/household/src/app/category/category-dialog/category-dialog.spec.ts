@@ -254,11 +254,7 @@ describe('CategoryDialog', () => {
       await fixture.whenStable();
 
       validateFunctionCall(mockDispatcher.dispatch, categoryEvents.selectCategory({
-        selectedCategory: category,
-        exclude: {
-          self: true,
-          children: true,
-        },
+        excludedCategory: category,
       }), {
         scope: 'self',
       });
@@ -274,11 +270,7 @@ describe('CategoryDialog', () => {
       await fixture.whenStable();
 
       validateFunctionCall(mockDispatcher.dispatch, categoryEvents.selectCategory({
-        selectedCategory: undefined,
-        exclude: {
-          self: true,
-          children: true,
-        },
+        excludedCategory: undefined,
       }), {
         scope: 'self',
       });

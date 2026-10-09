@@ -18,15 +18,8 @@ describe('CategoryList', () => {
   ];
 
   const render = async (categoryList: Responses.Category[]) => {
-    fixture = TestBed.createComponent(CategoryList);
-    fixture.componentRef.setInput('categories', categoryList);
+    TestBed.resetTestingModule();
 
-    selector = elementSelectorFactory(fixture.debugElement);
-
-    await fixture.whenStable();
-  };
-
-  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CategoryList],
     })
@@ -39,7 +32,14 @@ describe('CategoryList', () => {
         },
       })
       .compileComponents();
-  });
+
+    fixture = TestBed.createComponent(CategoryList);
+    fixture.componentRef.setInput('categories', categoryList);
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
+    await fixture.whenStable();
+  };
 
   describe('action list', () => {
     it('should be rendered', async () => {
