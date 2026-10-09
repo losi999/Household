@@ -6,7 +6,6 @@ import { test as priceApiTest, expect as priceApiExpect } from '@household/test/
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
-import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 

@@ -1,0 +1,18 @@
+<button matIconButton data-testId="menu" type="button" tabindex="-1" [matMenuTriggerFor]="main">
+  <mat-icon>menu</mat-icon>
+</button>
+<mat-menu #main="matMenu">
+  <button mat-menu-item data-testId="home" [routerLink]="['/']">Kezdőlap</button>
+  <button mat-menu-item data-testId="catalog" *householdIsEditor [matMenuTriggerFor]="catalog">Katalógus</button>
+  <button mat-menu-item data-testId="imports" *householdIsEditor [routerLink]="['/','imports']">Importálás</button>
+  <mat-divider />
+  <button mat-menu-item data-testId="settings" [routerLink]="['/','settings']">Beállítások</button>
+  <button mat-menu-item data-testId="log-out" (click)="logOut()">Kijelentkezés</button>
+</mat-menu>
+
+<mat-menu #catalog="matMenu">
+  <button mat-menu-item data-testId="projects" [routerLink]="['/','projects']">Projektek</button>
+  <button mat-menu-item data-testId="categories" [routerLink]="['/','categories']">Kategóriák</button>
+  <button mat-menu-item data-testId="products" [routerLink]="['/','products']">Termékek</button>
+  <button mat-menu-item data-testId="recipients" [routerLink]="['/','recipients']">Partnerek</button>
+</mat-menu>

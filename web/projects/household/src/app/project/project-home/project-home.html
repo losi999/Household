@@ -1,0 +1,6 @@
+<household-toolbar title="Projektek">
+  <button matIconButton (click)="create()" type="button">
+    <mat-icon>add</mat-icon>
+  </button>
+</household-toolbar>
+<household-project-list [projects]="projectStore.projectList()" />

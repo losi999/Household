@@ -1,0 +1,10 @@
+<div mat-dialog-title>{{recipient ? 'Partner szerkesztése' : 'Új partner'}}</div>
+<div mat-dialog-content>
+  <div>
+    <shared-clearable-input data-testId="name" label="Név" [formField]="recipientForm.name" />
+  </div>
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial data-testId="save-button" [disabled]="recipientForm().invalid()" (click)="onSave()">Mentés</button>
+  <button matButton="text" type="button" mat-dialog-close>Mégse</button>
+</div>

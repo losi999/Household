@@ -1,0 +1,22 @@
+<div mat-dialog-title>
+  {{category.name}}
+  <mat-chip-set>
+    @for (category of selectedCategories(); track $index) {
+    <mat-chip (click)="onRemoveCategory(category)">
+      {{category.name}}
+      <mat-icon matChipTrailingIcon>cancel</mat-icon>
+    </mat-chip>
+    }
+  </mat-chip-set>
+</div>
+<div mat-dialog-content>
+  <mat-action-list>
+    @for (category of categories(); track category) {
+    <button mat-list-item (click)="onAddCategory(category)"> {{category.fullName}} </button>
+    }
+  </mat-action-list>
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial data-testId="save-button" [disabled]="selectedCategories().length === 0" (click)="onSave()">Mentés</button>
+  <button matButton="text" mat-dialog-close>Mégse</button>
+</div>

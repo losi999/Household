@@ -1,0 +1,22 @@
+<div mat-dialog-title>
+  {{project.name}}
+  <mat-chip-set>
+    @for (project of selectedProjects(); track $index) {
+    <mat-chip (click)="onRemoveProject(project)">
+      {{project.name}}
+      <mat-icon matChipTrailingIcon>cancel</mat-icon>
+    </mat-chip>
+    }
+  </mat-chip-set>
+</div>
+<div mat-dialog-content>
+  <mat-action-list>
+    @for (project of projects(); track project) {
+    <button mat-list-item (click)="onAddProject(project)"> {{project.name}} </button>
+    }
+  </mat-action-list>
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial data-testId="save-button" [disabled]="selectedProjects().length === 0" (click)="onSave()">Mentés</button>
+  <button matButton="text" mat-dialog-close>Mégse</button>
+</div>

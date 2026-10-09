@@ -1,5 +1,6 @@
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { addSeconds, getCategoryId } from '@household/shared/common/utils';
+import { CATEGORY_FULL_NAME_SEPARATOR } from '@household/shared/constants';
 import { categoryDocumentConverterFactory, ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 
 describe('Category document converter', () => {
@@ -146,7 +147,7 @@ describe('Category document converter', () => {
         categoryId: getCategoryId(doc),
         name,
         categoryType,
-        fullName: `${parentCategory.name}:${name}`,
+        fullName: `${parentCategory.name}${CATEGORY_FULL_NAME_SEPARATOR}${name}`,
         ancestors: [
           {
             categoryId: getCategoryId(parentCategory),

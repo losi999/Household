@@ -1,6 +1,6 @@
-import { addDays, addSeconds, createDate, dateToISODateString } from '@household/shared/common/utils';
+import { addDays, addSeconds, createDate, dateToISODateString, toSearchTerms } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, ProductType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
-import { DataFactoryFunction, DocumentUpdate, RecursivePartial } from '@household/shared/types/common';
+import { DataFactoryFunction, DocumentUpdate, RecursivePartial, Searchable } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -729,10 +729,21 @@ const createCategoryResponse: DataFactoryFunction<Responses.Category> = (resp) =
     categoryId: createCategoryId(),
     name,
     categoryType,
-    fullName: name,
+    fullName: resp?.fullName ?? resp?.name ?? name,
     parentCategory: undefined,
     ancestors: [],
     ...resp,
+  };
+};
+
+const createCategorySearchableResponse: DataFactoryFunction<Searchable<Responses.Category>> = (resp) => {
+  const { searchTerms, ...restOfResponse } = resp ?? {};
+
+  const response = createCategoryResponse(restOfResponse);
+  
+  return {
+    ...response,
+    searchTerms: searchTerms ?? toSearchTerms(response.fullName),
   };
 };
 
@@ -1515,6 +1526,7 @@ export const testDataFactory = {
     request: createCategoryRequest,
     document: createCategoryDocument,
     response: createCategoryResponse,
+    searchableResponse: createCategorySearchableResponse,
     report: createCategoryReport,
   },
   product: {

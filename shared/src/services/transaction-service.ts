@@ -1,5 +1,5 @@
 import { matchAnyProperty, populateAggregate, transactionAggregate } from '@household/shared/common/aggregate-helpers';
-import { populate } from '@household/shared/common/utils';
+import { populate } from '@household/shared/common/mongoose-utils';
 import { TransactionType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';

@@ -1,0 +1,22 @@
+<div mat-dialog-title>
+  {{recipient.name}}
+  <mat-chip-set>
+    @for (recipient of selectedRecipients(); track $index) {
+    <mat-chip (click)="onRemoveRecipient(recipient)">
+      {{recipient.name}}
+      <mat-icon matChipTrailingIcon>cancel</mat-icon>
+    </mat-chip>
+    }
+  </mat-chip-set>
+</div>
+<div mat-dialog-content>
+  <mat-action-list>
+    @for (recipient of recipients(); track recipient) {
+    <button mat-list-item (click)="onAddRecipient(recipient)"> {{recipient.name}} </button>
+    }
+  </mat-action-list>
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial data-testId="save-button" [disabled]="selectedRecipients().length === 0" (click)="onSave()">Mentés</button>
+  <button matButton="text" mat-dialog-close>Mégse</button>
+</div>

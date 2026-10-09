@@ -1,12 +1,17 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { MatIconRegistry } from '@angular/material/icon';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
   imports: [RouterOutlet],
-  selector: 'app-root',
+  selector: 'household-root',
   styleUrl: './app.scss',
   templateUrl: './app.html',
 })
-export class App {
-  protected readonly title = signal('household');
+export class App implements OnInit {
+  private matIconReg = inject(MatIconRegistry);
+
+  ngOnInit() {
+    this.matIconReg.setDefaultFontSetClass('material-symbols-outlined');
+  }
 }

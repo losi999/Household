@@ -1,0 +1,5 @@
+<mat-action-list>
+  @for (p of projects(); track $index) {
+  <household-project-list-item [project]="p" />
+  }
+</mat-action-list>
