@@ -155,7 +155,7 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
     },
     toResponseTreeList: (products) => {
       const genericProducts = new Map<Api.Product.Id, Responses.ProductTree>();
-      const specificProducts = new Map<Api.Product.Id, Responses.ProductTree['children'][number]>();
+      const specificProducts = new Map<Api.Product.Id, Responses.SpecificProductTreeItem>();
 
       products.forEach((doc) => {
         if (doc.productType === ProductType.Generic) {
@@ -169,7 +169,7 @@ export const productDocumentConverterFactory = (): IProductDocumentConverter => 
 
         if (doc.productType === ProductType.Specific) {
           const { name, productType, fullName, measurement, unitOfMeasurement } = doc;
-          const child: Responses.ProductTree['children'][number] = {
+          const child: Responses.SpecificProductTreeItem = {
             productType,
             name,
             fullName,

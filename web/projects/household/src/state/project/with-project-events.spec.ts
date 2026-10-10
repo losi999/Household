@@ -54,6 +54,12 @@ describe('withProjectEvents', () => {
     dispatchSpy = createDispatcherSpy(dispatcher);
   };
 
+  const dismissWith = (value: 'edit' | 'merge' | 'delete' | undefined) => {
+    mockBottomSheetService.functions.openBottomSubmenu.mockReturnValue({
+      afterDismissed: () => of(value),
+    } as MatBottomSheetRef);
+  };
+
   beforeEach(() => {
     setup();
   });
@@ -204,9 +210,7 @@ describe('withProjectEvents', () => {
     const projectResponse = testDataFactory.project.response();
 
     it('should open bottom sheet and dispatch if edit is selected', () => {
-      mockBottomSheetService.functions.openBottomSubmenu.mockReturnValue({
-        afterDismissed: () => of('edit'),
-      } as MatBottomSheetRef);
+      dismissWith('edit');
 
       dispatcher.dispatch(projectEvents.openProjectListItemSubmenu(projectResponse));
 
@@ -215,9 +219,7 @@ describe('withProjectEvents', () => {
     });
 
     it('should open bottom sheet and dispatch if merge is selected', () => {
-      mockBottomSheetService.functions.openBottomSubmenu.mockReturnValue({
-        afterDismissed: () => of('merge'),
-      } as MatBottomSheetRef);
+      dismissWith('merge');
 
       dispatcher.dispatch(projectEvents.openProjectListItemSubmenu(projectResponse));
 
@@ -226,9 +228,7 @@ describe('withProjectEvents', () => {
     });
 
     it('should open bottom sheet and dispatch if delete is selected', () => {
-      mockBottomSheetService.functions.openBottomSubmenu.mockReturnValue({
-        afterDismissed: () => of('delete'),
-      } as MatBottomSheetRef);
+      dismissWith('delete');
 
       dispatcher.dispatch(projectEvents.openProjectListItemSubmenu(projectResponse));
 
@@ -237,9 +237,7 @@ describe('withProjectEvents', () => {
     });
 
     it('should open bottom sheet and not dispatch anything if cancelled', () => {
-      mockBottomSheetService.functions.openBottomSubmenu.mockReturnValue({
-        afterDismissed: () => of(undefined),
-      } as MatBottomSheetRef);
+      dismissWith(undefined);
 
       dispatcher.dispatch(projectEvents.openProjectListItemSubmenu(projectResponse));
 

@@ -21,6 +21,12 @@ export const routes: Routes = [
     canMatch: [authenticatedGuard],
   },
   {
+    path: 'products',
+    title: 'Termékek',
+    loadComponent: () => import('@household/app/product/product-home/product-home').then(m => m.ProductHome),
+    canMatch: [authenticatedGuard],
+  },
+  {
     path: 'projects',
     title: 'Projektek',
     loadComponent: () => import('@household/app/project/project-home/project-home').then(m => m.ProjectHome),

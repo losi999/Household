@@ -70,11 +70,13 @@ export namespace Responses {
   export type ProductReport = Api.Product.ProductId &
     Api.Product.FullName;
 
-  export type ProductTree = (GenericProduct & {
-    children: (Omit<SpecificProduct, 'genericProduct'> & {
-      children: Omit<VariantProduct, 'genericProduct' | 'specificProduct'>[];
-    })[];
-  });
+  export type VariantProductTreeItem = Omit<VariantProduct, 'genericProduct' | 'specificProduct'>;
+  export type SpecificProductTreeItem = Omit<SpecificProduct, 'genericProduct'> & {
+    children: VariantProductTreeItem[];
+  };
+  export type ProductTree = GenericProduct & {
+    children: SpecificProductTreeItem[];
+  };
 
   export type PaymentTransaction = Api.Transaction.TransactionId
     & Api.Transaction.Amount

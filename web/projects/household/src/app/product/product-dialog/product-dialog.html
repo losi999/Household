@@ -1,0 +1,41 @@
+<div mat-dialog-title>{{product ? 'Termék szerkesztése' : 'Új termék'}}</div>
+<div mat-dialog-content>
+  <div>
+    <shared-clearable-input data-testId="name" label="Név" [formField]="productForm.name" />
+  </div>
+  @if (canHaveParent) {
+  <div class="parent">
+    @if (parentProduct()) {
+    <shared-icon-text [text]="getName(parentProduct())" icon="account_tree" size="small" />
+    <button matIconButton [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
+    <mat-menu #menu="matMenu" yPosition="above" xPosition="before">
+      <button mat-menu-item data-testId="edit-parent-button" (click)="onEditParent()"><mat-icon>edit</mat-icon>Módosítás</button>
+      @if (canRemoveParent) {
+      <button mat-menu-item data-testId="remove-parent-button" (click)="onRemoveParent()"><mat-icon>close</mat-icon>Eltávolítás</button>
+      }
+    </mat-menu>
+    } @else {
+    <button matButton="tonal" data-testId="add-parent-button" (click)="onEditParent()"><mat-icon>account_tree</mat-icon>Szülő hozzáadása</button>
+    }
+  </div>
+  }
+  @if (isSpecific()) {
+  <div>
+    <shared-clearable-input data-testId="measurement" type="number" label="Mennyiség" [formField]="productForm.measurement" />
+  </div>
+  <mat-form-field appearance="fill">
+    <mat-label>Mértékegység</mat-label>
+    <mat-select data-testId="unit-of-measurement" [formField]="productForm.unitOfMeasurement">
+      @for (u of unitsOfMeasurement; track u) {
+      <mat-option [value]="u">
+        {{u}}
+      </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  }
+</div>
+<div mat-dialog-actions>
+  <button matButton="filled" cdkFocusInitial data-testId="save-button" [disabled]="productForm().invalid()" (click)="onSave()">Mentés</button>
+  <button matButton="text" type="button" mat-dialog-close>Mégse</button>
+</div>

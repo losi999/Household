@@ -17,7 +17,7 @@ describe('List products service', () => {
   });
 
   const queriedProductDocument = testDataFactory.product.document.generic();
-  const convertedResponse = testDataFactory.product.groupedResponse();
+  const convertedResponse = testDataFactory.product.tree();
 
   it('should return documents', async () => {
     mockProductService.functions.listProducts.mockResolvedValue([queriedProductDocument]);

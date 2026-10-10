@@ -7,7 +7,7 @@ import { withCategoryEvents } from '@household/state/category/with-category-even
 import { withCategoryReducer } from '@household/state/category/with-category-reducer';
 import { inject, ValueProvider, InjectionToken } from '@angular/core';
 
-const PROJECT_STORE_INITIAL_STATE = new InjectionToken<CategoryState>('PROJECT_STORE_INITIAL_STATE');
+const CATEGORY_STORE_INITIAL_STATE = new InjectionToken<CategoryState>('CATEGORY_STORE_INITIAL_STATE');
 
 export type CategoryState = {
   categoryList: Searchable<Responses.Category>[];
@@ -21,7 +21,7 @@ export const provideCategoryStoreInitialState = (state: CategoryState = {
   pendingParentCategory: undefined,
 }): ValueProvider => {
   return {
-    provide: PROJECT_STORE_INITIAL_STATE,
+    provide: CATEGORY_STORE_INITIAL_STATE,
     useValue: state,
   };
 };
@@ -30,7 +30,7 @@ export const CategoryStore = signalStore({
   providedIn: 'root',
 }, 
 withState<CategoryState>(() => {
-  const initialState = inject(PROJECT_STORE_INITIAL_STATE);
+  const initialState = inject(CATEGORY_STORE_INITIAL_STATE);
 
   return initialState;
 }),

@@ -13,6 +13,7 @@ import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
 import { provideRecipientStoreInitialState } from '@household/state/recipient/recipient-store';
 import { provideCategoryStoreInitialState } from '@household/state/category/category-store';
+import { provideProductStoreInitialState } from '@household/state/product/product-store';
 
 registerLocaleData(localeHu);
 
@@ -44,6 +45,7 @@ export const appConfig: ApplicationConfig = {
     provideProjectStoreInitialState(),
     provideRecipientStoreInitialState(),
     provideCategoryStoreInitialState(),
+    provideProductStoreInitialState(),
     provideHttpClient(withInterceptors([
       authInterceptor,
       progressInterceptor,

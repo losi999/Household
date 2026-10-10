@@ -397,11 +397,11 @@ describe('Product document converter', () => {
         variantProductDocument,
       ]);
       expect(result).toEqual([
-        testDataFactory.product.groupedResponse({
+        testDataFactory.product.tree({
           productId: getProductId(genericProductDocument),
           name: genericProductDocument.name,
           children: [
-            {
+            testDataFactory.product.treeItem.specific({
               productId: getProductId(specificProductDocument),
               productType: specificProductDocument.productType,
               name: specificProductDocument.name,
@@ -409,13 +409,13 @@ describe('Product document converter', () => {
               measurement: specificProductDocument.measurement,
               unitOfMeasurement: specificProductDocument.unitOfMeasurement,
               children: [
-                {
+                testDataFactory.product.treeItem.variant({
                   productId: getProductId(variantProductDocument),
                   productType: variantProductDocument.productType,
                   name: variantProductDocument.name,
-                },
+                }),
               ],
-            },
+            }),
           ],
         }),
       ]);

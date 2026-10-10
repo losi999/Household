@@ -1,0 +1,17 @@
+<button mat-list-item (click)="onShowMenu()" [disabled]="isDisabled()">
+  @switch (product().productType) {
+  @case ('generic') {
+  <mat-icon matListItemIcon>sell</mat-icon>
+  }
+  @case ('specific') {
+  <mat-icon matListItemIcon>scale</mat-icon>
+  }
+  @case ('variant') {
+  <mat-icon matListItemIcon>label</mat-icon>
+  }
+  }
+  <div matListItemTitle>{{product().name}}</div>
+  @if (measurement()) {
+  <div matListItemLine>{{measurement()}}</div>
+  }
+</button>

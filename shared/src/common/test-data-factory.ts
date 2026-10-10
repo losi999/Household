@@ -861,14 +861,33 @@ const createVariantProductResponse: DataFactoryFunction<Responses.VariantProduct
   };
 };
 
-const createProductGroupedResponse: DataFactoryFunction<Responses.ProductTree> = (resp) => {
-  const genericBase = createGenericProductRequest();
+const createVariantProductTreeItem: DataFactoryFunction<Responses.VariantProductTreeItem> = (resp) => {
+  const { genericProduct, specificProduct, ...restOfResp } = createVariantProductResponse(resp);
 
   return {
-    productId: createProductId(),
+    ...restOfResp,
+  };
+};
+
+const createSpecificProductTreeItem: DataFactoryFunction<Responses.SpecificProductTreeItem> = (resp) => {
+  const { children, ...restOfResp } = resp ?? {};
+
+  const { genericProduct, ...specificBase } = createSpecificProductResponse(restOfResp);
+
+  return {
+    ...specificBase,
+    children: children ?? [],
+  };
+};
+
+const createProductTreeResponse: DataFactoryFunction<Responses.ProductTree> = (resp) => {
+  const { children, ...restOfResp } = resp ?? {};
+
+  const genericBase = createGenericProductResponse(restOfResp);
+
+  return {
     ...genericBase,
-    children: [],
-    ...resp,
+    children: children ?? [],
   };
 };
 
@@ -1546,7 +1565,11 @@ export const testDataFactory = {
       specific: createSpecificProductResponse,
       variant: createVariantProductResponse,
     },
-    groupedResponse: createProductGroupedResponse,
+    tree: createProductTreeResponse,
+    treeItem: {
+      specific: createSpecificProductTreeItem,
+      variant: createVariantProductTreeItem,
+    },
     report: createProductReport,
   },
   transaction: {

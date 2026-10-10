@@ -1,0 +1,5 @@
+<mat-action-list>
+  @for (p of items(); track p.productId) {
+  <household-product-list-item [product]="p" />
+  }
+</mat-action-list>

@@ -198,7 +198,7 @@ export const groupedResponse = combine<Responses.ProductTree>([
     properties: {
       children: {
         type: 'array',
-        items: combine<Responses.ProductTree['children'][number]>([
+        items: combine<Responses.SpecificProductTreeItem>([
           productId,
           name,
           unitOfMeasurement,
@@ -210,7 +210,7 @@ export const groupedResponse = combine<Responses.ProductTree>([
             properties: {
               children: {
                 type: 'array',
-                items: combine<Responses.ProductTree['children'][number]['children'][number]>([
+                items: combine<Responses.VariantProductTreeItem>([
                   productId,
                   name,
                   variantProductType,
