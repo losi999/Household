@@ -1,9 +1,9 @@
 <div mat-dialog-title>
-  {{getName(product)}}
+  {{product.fullName}}
   <mat-chip-set>
     @for (product of selectedProducts(); track product.productId) {
     <mat-chip (click)="onRemoveProduct(product)">
-      {{getName(product)}}
+      {{product.fullName}}
       <mat-icon matChipTrailingIcon>cancel</mat-icon>
     </mat-chip>
     }
@@ -12,7 +12,7 @@
 <div mat-dialog-content>
   <mat-action-list>
     @for (product of products(); track product.productId) {
-    <button mat-list-item (click)="onAddProduct(product)"> {{getName(product)}} </button>
+    <button mat-list-item (click)="onAddProduct(product)"> {{product.fullName}} </button>
     }
   </mat-action-list>
 </div>

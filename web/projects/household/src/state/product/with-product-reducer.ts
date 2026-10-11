@@ -1,112 +1,104 @@
+import { getSpecificProductFullName, getVariantProductFullName, sortProductsByFullName } from '@household/shared/common/utils';
 import { ProductType } from '@household/shared/enums';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
-import { productApiEvents, productEvents, ProductTreeNode } from '@household/state/product/product-events';
+import { productApiEvents, productEvents } from '@household/state/product/product-events';
 import { ProductState } from '@household/state/product/product-store';
 import { signalStoreFeature } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
 
-const sortByName = <T extends { name: string }>(items: T[]) => {
-  return items.toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
-    sensitivity: 'base',
-  }));
+const findGeneric = (productList: Responses.Product[], productId: Api.Product.Id) => {
+  return productList.find((product): product is Responses.GenericProduct => product.productType === ProductType.Generic && product.productId === productId);
 };
 
-const findProduct = (productList: Responses.ProductTree[], productId: Api.Product.Id): ProductTreeNode => {
-  const specifics = productList.flatMap(generic => generic.children);
-  const variants = specifics.flatMap(specific => specific.children);
-
-  return [
-    ...productList,
-    ...specifics,
-    ...variants,
-  ].find(product => product.productId === productId);
+const findSpecific = (productList: Responses.Product[], productId: Api.Product.Id) => {
+  return productList.find((product): product is Responses.SpecificProduct => product.productType === ProductType.Specific && product.productId === productId);
 };
 
-const removeProduct = (productList: Responses.ProductTree[], productId: Api.Product.Id): Responses.ProductTree[] => {
-  return productList
-    .filter(generic => generic.productId !== productId)
-    .map((generic) => {
-      return {
-        ...generic,
-        children: generic.children
-          .filter(specific => specific.productId !== productId)
-          .map((specific) => {
-            return {
-              ...specific,
-              children: specific.children.filter(variant => variant.productId !== productId),
-            };
-          }),
-      };
-    });
-};
-
-// Puts the product to the place determined by its parent, keeping the children of the previous version of the product
-// as long as its type does not change
-const addProduct = (productList: Responses.ProductTree[], request: Api.Product.ProductId & Requests.Product, previous?: ProductTreeNode): Responses.ProductTree[] => {
+// The full name and the ids of the parents are built the same way as the API builds them
+const toProduct = (request: Api.Product.ProductId & Requests.Product, productList: Responses.Product[]): Responses.Product => {
   switch (request.productType) {
     case ProductType.Generic: {
-      return sortByName([
-        ...productList,
-        {
-          productId: request.productId,
-          productType: request.productType,
-          name: request.name,
-          children: previous?.productType === ProductType.Generic ? previous.children : [],
-        },
-      ]);
+      return {
+        productId: request.productId,
+        productType: request.productType,
+        name: request.name,
+        fullName: request.name,
+      };
     }
     case ProductType.Specific: {
-      const specific: Responses.SpecificProductTreeItem = {
+      const generic = findGeneric(productList, request.parentProductId);
+
+      return {
         productId: request.productId,
         productType: request.productType,
         name: request.name,
-        fullName: `${request.name} ${request.measurement} ${request.unitOfMeasurement}`,
+        fullName: getSpecificProductFullName(generic?.fullName ?? '', request),
         measurement: request.measurement,
         unitOfMeasurement: request.unitOfMeasurement,
-        children: previous?.productType === ProductType.Specific ? previous.children : [],
+        genericProductId: request.parentProductId,
       };
-
-      return productList.map((generic) => {
-        if (generic.productId !== request.parentProductId) {
-          return generic;
-        }
-
-        return {
-          ...generic,
-          children: sortByName([
-            ...generic.children,
-            specific,
-          ]),
-        };
-      });
     }
     case ProductType.Variant: {
-      const variant: Responses.VariantProductTreeItem = {
+      const specific = findSpecific(productList, request.parentProductId);
+
+      return {
         productId: request.productId,
         productType: request.productType,
         name: request.name,
+        fullName: getVariantProductFullName(specific?.fullName ?? '', request.name),
+        genericProductId: specific?.genericProductId,
+        specificProductId: request.parentProductId,
       };
+    }
+  }
+};
 
-      return productList.map((generic) => {
-        return {
-          ...generic,
-          children: generic.children.map((specific) => {
-            if (specific.productId !== request.parentProductId) {
-              return specific;
-            }
+// The full names of the descendants of an updated product are built from its full name
+const refreshDescendants = (productList: Responses.Product[], updated: Responses.Product): Responses.Product[] => {
+  switch (updated.productType) {
+    case ProductType.Generic: {
+      const specifics = new Map(productList
+        .filter((product): product is Responses.SpecificProduct => product.productType === ProductType.Specific && product.genericProductId === updated.productId)
+        .map(specific => [
+          specific.productId,
+          {
+            ...specific,
+            fullName: getSpecificProductFullName(updated.fullName, specific),
+          },
+        ] as const));
 
-            return {
-              ...specific,
-              children: sortByName([
-                ...specific.children,
-                variant,
-              ]),
-            };
-          }),
-        };
+      return productList.map((product): Responses.Product => {
+        if (product.productType === ProductType.Specific && specifics.has(product.productId)) {
+          return specifics.get(product.productId);
+        }
+
+        if (product.productType === ProductType.Variant && product.genericProductId === updated.productId) {
+          return {
+            ...product,
+            fullName: getVariantProductFullName(specifics.get(product.specificProductId)?.fullName ?? '', product.name),
+          };
+        }
+
+        return product;
       });
+    }
+    case ProductType.Specific: {
+      return productList.map((product): Responses.Product => {
+        if (product.productType === ProductType.Variant && product.specificProductId === updated.productId) {
+          return {
+            ...product,
+            genericProductId: updated.genericProductId,
+            fullName: getVariantProductFullName(updated.fullName, product.name),
+          };
+        }
+
+        return product;
+      });
+    }
+    default: {
+      return productList;
     }
   }
 };
@@ -132,7 +124,10 @@ export const withProductReducer = () => {
       on(productApiEvents.createProductCompleted, ({ payload }) => {
         return (state) => {
           return {
-            productList: addProduct(state.productList, payload),
+            productList: sortProductsByFullName([
+              ...state.productList,
+              toProduct(payload, state.productList),
+            ]),
           };
         };
       }),
@@ -155,11 +150,12 @@ export const withProductReducer = () => {
       }),
       on(productApiEvents.updateProductCompleted, ({ payload }) => {
         return (state) => {
-          const previous = findProduct(state.productList, payload.productId);
+          const updated = toProduct(payload, state.productList);
+          const productList = state.productList.map(product => product.productId === payload.productId ? updated : product);
 
           return {
             isInProgress: state.isInProgress.filter(id => id !== payload.productId),
-            productList: addProduct(removeProduct(state.productList, payload.productId), payload, previous),
+            productList: sortProductsByFullName(refreshDescendants(productList, updated)),
           };
         };
       }),
@@ -167,7 +163,7 @@ export const withProductReducer = () => {
         return (state) => {
           return {
             isInProgress: state.isInProgress.filter(id => id !== productId),
-            productList: removeProduct(state.productList, productId),
+            productList: state.productList.filter(product => product.productId !== productId),
           };
         };
       }),
@@ -191,51 +187,44 @@ export const withProductReducer = () => {
       // The source products are deleted and their children are moved under the target product
       on(productApiEvents.mergeProductsCompleted, ({ payload: { sourceProductIds, targetProductId } }) => {
         return (state) => {
-          const isSource = (product: { productId: Api.Product.Id }) => sourceProductIds.includes(product.productId);
-          const sourceGenerics = state.productList.filter(isSource);
+          const target = state.productList.find(product => product.productId === targetProductId);
+          const remaining = state.productList.filter(product => !sourceProductIds.includes(product.productId));
+          const specifics = new Map(remaining
+            .filter((product): product is Responses.SpecificProduct => product.productType === ProductType.Specific && sourceProductIds.includes(product.genericProductId))
+            .map(specific => [
+              specific.productId,
+              {
+                ...specific,
+                genericProductId: targetProductId,
+                fullName: getSpecificProductFullName(target?.fullName ?? '', specific),
+              },
+            ] as const));
 
           return {
             isInProgress: state.isInProgress.filter(id => !sourceProductIds.includes(id)),
-            productList: state.productList
-              .filter(generic => !isSource(generic))
-              .map((generic) => {
-                const sourceSpecifics = generic.children.filter(isSource);
-                const specifics = generic.children
-                  .filter(specific => !isSource(specific))
-                  .map((specific) => {
-                    const variants = specific.children.filter(variant => !isSource(variant));
+            productList: sortProductsByFullName(remaining.map((product): Responses.Product => {
+              if (product.productType === ProductType.Specific && specifics.has(product.productId)) {
+                return specifics.get(product.productId);
+              }
 
-                    if (specific.productId === targetProductId) {
-                      return {
-                        ...specific,
-                        children: sortByName([
-                          ...variants,
-                          ...sourceSpecifics.flatMap(sourceSpecific => sourceSpecific.children),
-                        ]),
-                      };
-                    }
-
-                    return {
-                      ...specific,
-                      children: variants,
-                    };
-                  });
-
-                if (generic.productId === targetProductId) {
-                  return {
-                    ...generic,
-                    children: sortByName([
-                      ...specifics,
-                      ...sourceGenerics.flatMap(sourceGeneric => sourceGeneric.children),
-                    ]),
-                  };
-                }
-
+              if (product.productType === ProductType.Variant && sourceProductIds.includes(product.genericProductId)) {
                 return {
-                  ...generic,
-                  children: specifics,
+                  ...product,
+                  genericProductId: targetProductId,
+                  fullName: getVariantProductFullName(specifics.get(product.specificProductId)?.fullName ?? '', product.name),
                 };
-              }),
+              }
+
+              if (product.productType === ProductType.Variant && sourceProductIds.includes(product.specificProductId)) {
+                return {
+                  ...product,
+                  specificProductId: targetProductId,
+                  fullName: getVariantProductFullName(target?.fullName ?? '', product.name),
+                };
+              }
+
+              return product;
+            })),
           };
         };
       }),

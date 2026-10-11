@@ -25,8 +25,13 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
   const instance: IProductService = {
     listProducts: () => {
       return mongodbService.products((model, session) => {
+        // The full name of a product is built from its parents, so they are loaded together with the product
         return model.find({})
           .session(session)
+          .populate([
+            'genericProduct',
+            'specificProduct',
+          ])
           .sort({
             productType: 1,
             name: 1,

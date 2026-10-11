@@ -5,6 +5,7 @@ export const FILE_UPLOAD_LINK_EXPIRATION = 60;
 export const MONGO_ID_PATTERN = '^[a-f0-9]{24}$';
 
 export const CATEGORY_FULL_NAME_SEPARATOR = ' - ';
+export const PRODUCT_FULL_NAME_SEPARATOR = ' / ';
 
 export const WORKDAY_LENGTH = 28;
 export const WORKDAY_START = 28;

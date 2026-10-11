@@ -128,6 +128,14 @@ export namespace Api {
       parentProductId: Id;
     };
 
+    export type GenericProductId = {
+      genericProductId: Id;
+    };
+
+    export type SpecificProductId = {
+      specificProductId: Id;
+    };
+
     export type FullName = {
       fullName: string;
     };

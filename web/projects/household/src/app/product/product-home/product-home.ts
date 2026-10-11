@@ -30,4 +30,8 @@ export class ProductHome {
   create() {
     this.productEvents.createProduct();
   }
+
+  onTEst () {
+    this.productEvents.selectProduct({});
+  }
 }

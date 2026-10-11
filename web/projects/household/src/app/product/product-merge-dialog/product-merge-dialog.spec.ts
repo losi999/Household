@@ -5,6 +5,7 @@ import { elementSelectorFactory, IElementSelector, MockSignalStore, provideMockS
 import { ProductStore } from '@household/state/product/product-store';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { getSpecificProductFullName, getVariantProductFullName } from '@household/shared/common/utils';
 import { MatActionList, MatListItem } from '@angular/material/list';
 import { MatChip, MatChipSet } from '@angular/material/chips';
 import { Responses } from '@household/shared/types/responses';
@@ -15,67 +16,74 @@ describe('ProductMergeDialog', () => {
   let mockProductStore: MockSignalStore<typeof ProductStore>;
   let mockDialogRef: MockService<MatDialogRef<ProductMergeDialog>>;
 
-  const targetGeneric = testDataFactory.product.tree({
-    name: 'target generic',
-  });
-  const sourceGeneric1 = testDataFactory.product.tree({
-    name: 'source generic 1',
-  });
-  const sourceGeneric2 = testDataFactory.product.tree({
-    name: 'source generic 2',
-  });
+  // builders of consistent products, the full names are built the same way as the API builds them
+  const generic = (name: string) => {
+    return testDataFactory.product.response.generic({
+      name,
+      fullName: name,
+    });
+  };
 
-  const targetVariant = testDataFactory.product.treeItem.variant({
-    name: 'target variant',
-  });
-  const sourceVariant1 = testDataFactory.product.treeItem.variant({
-    name: 'source variant 1',
-  });
-  const sourceVariant2 = testDataFactory.product.treeItem.variant({
-    name: 'source variant 2',
-  });
-  const otherVariant = testDataFactory.product.treeItem.variant({
-    name: 'variant of another specific product',
-  });
+  const specific = (parent: Responses.GenericProduct, name: string) => {
+    return testDataFactory.product.response.specific({
+      name,
+      measurement: 1,
+      unitOfMeasurement: 'kg',
+      genericProductId: parent.productId,
+      fullName: getSpecificProductFullName(parent.fullName, {
+        name,
+        measurement: 1,
+        unitOfMeasurement: 'kg',
+      }),
+    });
+  };
 
-  const targetSpecific = testDataFactory.product.treeItem.specific({
-    name: 'target specific',
-    measurement: 1,
-    unitOfMeasurement: 'kg',
-    fullName: 'target specific 1 kg',
-    children: [
-      targetVariant,
-      sourceVariant1,
-      sourceVariant2,
-    ],
-  });
-  const sourceSpecific1 = testDataFactory.product.treeItem.specific({
-    name: 'source specific 1',
-    fullName: 'source specific 1 2 kg',
-  });
-  const sourceSpecific2 = testDataFactory.product.treeItem.specific({
-    name: 'source specific 2',
-    fullName: 'source specific 2 3 kg',
-  });
-  const otherSpecific = testDataFactory.product.treeItem.specific({
-    name: 'specific of another generic product',
-    children: [otherVariant],
-  });
+  const variant = (parent: Responses.SpecificProduct, name: string) => {
+    return testDataFactory.product.response.variant({
+      name,
+      genericProductId: parent.genericProductId,
+      specificProductId: parent.productId,
+      fullName: getVariantProductFullName(parent.fullName, name),
+    });
+  };
 
-  // the specific products and variant products live under this generic product
-  const parentGeneric = testDataFactory.product.tree({
-    children: [
-      targetSpecific,
-      sourceSpecific1,
-      sourceSpecific2,
-    ],
-  });
-  const anotherGeneric = testDataFactory.product.tree({
-    children: [otherSpecific],
-  });
+  const targetGeneric = generic('target generic');
+  const sourceGeneric1 = generic('source generic 1');
+  const sourceGeneric2 = generic('source generic 2');
+  const anotherGeneric = generic('another generic');
+
+  const targetSpecific = specific(sourceGeneric1, 'target specific');
+  const sourceSpecific1 = specific(sourceGeneric1, 'source specific 1');
+  const sourceSpecific2 = specific(sourceGeneric1, 'source specific 2');
+  const otherSpecific = specific(anotherGeneric, 'specific of another generic product');
+
+  const targetVariant = variant(targetSpecific, 'target variant');
+  const sourceVariant1 = variant(targetSpecific, 'source variant 1');
+  const sourceVariant2 = variant(targetSpecific, 'source variant 2');
+  const otherVariant = variant(otherSpecific, 'variant of another specific product');
+
+  // the products of every level in a single flat list
+  const allProducts = [
+    targetGeneric,
+    sourceGeneric1,
+    targetSpecific,
+    sourceSpecific1,
+    sourceSpecific2,
+    targetVariant,
+    sourceVariant1,
+    sourceVariant2,
+    sourceGeneric2,
+    anotherGeneric,
+    otherSpecific,
+    otherVariant,
+  ];
 
   const getListItems = () => {
     return selector.listComponents<MatListItem, HTMLButtonElement>(MatListItem, MatActionList);
+  };
+
+  const getListTexts = () => {
+    return getListItems().map(item => item.nativeElement.textContent.trim());
   };
 
   const getChips = () => {
@@ -88,7 +96,7 @@ describe('ProductMergeDialog', () => {
 
   const render = async (params?: {
     dialogData?: ProductMergeDialogData;
-    productList?: Responses.ProductTree[];
+    productList?: Responses.Product[];
   }) => {
     TestBed.resetTestingModule();
 
@@ -125,28 +133,28 @@ describe('ProductMergeDialog', () => {
   };
 
   describe('dialog title', () => {
-    it('should display the name of a generic product', async () => {
+    it('should display the full name of a generic product', async () => {
       await render();
 
-      expect(selector.getComponent(MatDialogTitle).nativeElement.textContent).toContain(targetGeneric.name);
+      expect(selector.getComponent(MatDialogTitle).nativeElement.textContent).toContain(targetGeneric.fullName);
     });
 
     it('should display the full name of a specific product', async () => {
       await render({
         dialogData: targetSpecific,
-        productList: [parentGeneric],
+        productList: allProducts,
       });
 
       expect(selector.getComponent(MatDialogTitle).nativeElement.textContent).toContain(targetSpecific.fullName);
     });
 
-    it('should display the name of a variant product', async () => {
+    it('should display the full name of a variant product', async () => {
       await render({
         dialogData: targetVariant,
-        productList: [parentGeneric],
+        productList: allProducts,
       });
 
-      expect(selector.getComponent(MatDialogTitle).nativeElement.textContent).toContain(targetVariant.name);
+      expect(selector.getComponent(MatDialogTitle).nativeElement.textContent).toContain(targetVariant.fullName);
     });
   });
 
@@ -155,59 +163,42 @@ describe('ProductMergeDialog', () => {
       it('should display every other generic product', async () => {
         await render();
 
-        const listItems = getListItems();
-
-        expect(listItems.length).toBe(2);
-        expect(listItems[0].nativeElement.textContent.trim()).toBe(sourceGeneric1.name);
-        expect(listItems[1].nativeElement.textContent.trim()).toBe(sourceGeneric2.name);
+        expect(getListTexts()).toEqual([
+          sourceGeneric1.fullName,
+          sourceGeneric2.fullName,
+        ]);
       });
 
-      it('should not display its own specific products', async () => {
-        const genericWithChildren = testDataFactory.product.tree({
-          children: [sourceSpecific1],
-        });
-
+      it('should not display specific or variant products', async () => {
         await render({
-          dialogData: genericWithChildren,
-          productList: [
-            genericWithChildren,
-            sourceGeneric1,
-          ],
+          productList: allProducts,
         });
 
-        const listItems = getListItems();
-
-        expect(listItems.length).toBe(1);
-        expect(listItems[0].nativeElement.textContent.trim()).toBe(sourceGeneric1.name);
+        expect(getListTexts()).toEqual([
+          sourceGeneric1.fullName,
+          sourceGeneric2.fullName,
+          anotherGeneric.fullName,
+        ]);
       });
     });
 
     describe('for a specific product', () => {
-      it('should display only the other specific products of the same generic product, by full name', async () => {
+      it('should display only the other specific products of the same generic product', async () => {
         await render({
           dialogData: targetSpecific,
-          productList: [
-            targetGeneric,
-            parentGeneric,
-            anotherGeneric,
-          ],
+          productList: allProducts,
         });
 
-        const listItems = getListItems();
-
-        expect(listItems.length).toBe(2);
-        expect(listItems[0].nativeElement.textContent.trim()).toBe(sourceSpecific1.fullName);
-        expect(listItems[1].nativeElement.textContent.trim()).toBe(sourceSpecific2.fullName);
+        expect(getListTexts()).toEqual([
+          sourceSpecific1.fullName,
+          sourceSpecific2.fullName,
+        ]);
       });
 
-      it('should not display the specific products of another generic product or any generic product', async () => {
+      it('should display nothing if the generic product has no other specific products', async () => {
         await render({
           dialogData: otherSpecific,
-          productList: [
-            targetGeneric,
-            parentGeneric,
-            anotherGeneric,
-          ],
+          productList: allProducts,
         });
 
         expect(getListItems().length).toBe(0);
@@ -218,26 +209,19 @@ describe('ProductMergeDialog', () => {
       it('should display only the other variant products of the same specific product', async () => {
         await render({
           dialogData: targetVariant,
-          productList: [
-            parentGeneric,
-            anotherGeneric,
-          ],
+          productList: allProducts,
         });
 
-        const listItems = getListItems();
-
-        expect(listItems.length).toBe(2);
-        expect(listItems[0].nativeElement.textContent.trim()).toBe(sourceVariant1.name);
-        expect(listItems[1].nativeElement.textContent.trim()).toBe(sourceVariant2.name);
+        expect(getListTexts()).toEqual([
+          sourceVariant1.fullName,
+          sourceVariant2.fullName,
+        ]);
       });
 
-      it('should not display the variant products of another specific product', async () => {
+      it('should display nothing if the specific product has no other variant products', async () => {
         await render({
           dialogData: otherVariant,
-          productList: [
-            parentGeneric,
-            anotherGeneric,
-          ],
+          productList: allProducts,
         });
 
         expect(getListItems().length).toBe(0);
@@ -247,15 +231,6 @@ describe('ProductMergeDialog', () => {
     describe('should display nothing', () => {
       it('if the merge target is the only product on its level', async () => {
         await render({
-          productList: [targetGeneric],
-        });
-
-        expect(getListItems().length).toBe(0);
-      });
-
-      it('if the merge target cannot be found in the store', async () => {
-        await render({
-          dialogData: targetSpecific,
           productList: [targetGeneric],
         });
 
@@ -271,9 +246,7 @@ describe('ProductMergeDialog', () => {
 
         await fixture.whenStable();
 
-        const listItems = getListItems();
-        expect(listItems.length).toBe(1);
-        expect(listItems[0].nativeElement.textContent.trim()).toBe(sourceGeneric2.name);
+        expect(getListTexts()).toEqual([sourceGeneric2.fullName]);
         expect(fixture.componentInstance.selectedProducts()).toEqual([sourceGeneric1]);
       });
     });
@@ -286,7 +259,7 @@ describe('ProductMergeDialog', () => {
       expect(getChips().length).toBe(0);
     });
 
-    it('should be rendered for each selected product', async () => {
+    it('should be rendered with the full name for each selected product', async () => {
       await render();
 
       getListItems()[0].nativeElement.click();
@@ -297,20 +270,8 @@ describe('ProductMergeDialog', () => {
 
       const chips = getChips();
       expect(chips.length).toBe(2);
-      expect(chips[0].nativeElement.textContent).toContain(sourceGeneric1.name);
-      expect(chips[1].nativeElement.textContent).toContain(sourceGeneric2.name);
-    });
-
-    it('should display the full name of a selected specific product', async () => {
-      await render({
-        dialogData: targetSpecific,
-        productList: [parentGeneric],
-      });
-
-      getListItems()[0].nativeElement.click();
-      await fixture.whenStable();
-
-      expect(getChips()[0].nativeElement.textContent).toContain(sourceSpecific1.fullName);
+      expect(chips[0].nativeElement.textContent).toContain(sourceGeneric1.fullName);
+      expect(chips[1].nativeElement.textContent).toContain(sourceGeneric2.fullName);
     });
 
     describe('on click', () => {

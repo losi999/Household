@@ -19,10 +19,6 @@ export const productSchema = new Schema<Documents.Product>({
     type: String,
     minlength: 1,
   },
-  fullName: {
-    type: String,
-    minlength: 1,
-  },
   genericProduct: {
     type: Schema.Types.ObjectId,
     ref: 'products',
@@ -45,9 +41,11 @@ export const productSchema = new Schema<Documents.Product>({
   },
 });
 
+// Specific products of the same generic product are told apart by their measurement
 productSchema.index({
   name: 1,
-  fullName: 1,
+  measurement: 1,
+  unitOfMeasurement: 1,
   genericProduct: 1,
   specificProduct: 1,
 }, {

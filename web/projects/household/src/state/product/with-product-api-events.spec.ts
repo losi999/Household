@@ -42,7 +42,7 @@ describe('withProductApiEvents', () => {
 
   describe('dispatching listProductsInitiated', () => {
     it('should call API and dispatch response', () => {
-      const productList = [testDataFactory.product.tree()];
+      const productList = [testDataFactory.product.response.generic()];
       mockProductService.functions.listProducts.mockReturnValue(of(productList));
 
       dispatcher.dispatch(productApiEvents.listProductsInitiated());

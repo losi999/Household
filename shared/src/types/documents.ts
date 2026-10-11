@@ -34,7 +34,6 @@ export namespace Documents {
   & Api.Product.ProductType<Enum.ProductType.Specific> 
   & Api.Product.UnitOfMeasurement
   & Api.Product.Measurement
-  & Api.Product.FullName
   & Api.Product.Name
   & {
     genericProduct: GenericProduct;

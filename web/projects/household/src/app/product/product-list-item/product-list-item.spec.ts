@@ -1,9 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductListItem } from './product-list-item';
-import { productEvents, ProductTreeNode } from '@household/state/product/product-events';
+import { productEvents } from '@household/state/product/product-events';
 import { elementSelectorFactory, IElementSelector, MockSignalStore, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
 import { ProductStore } from '@household/state/product/product-store';
 import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { validateFunctionCall } from '@household/shared/common/unit-testing';
 import { Dispatcher } from '@ngrx/signals/events';
@@ -15,26 +16,32 @@ describe('ProductListItem', () => {
   let mockProductStore: MockSignalStore<typeof ProductStore>;
   let mockDispatcher: Dispatcher;
 
-  const genericProduct: ProductTreeNode = testDataFactory.product.tree();
-  const specificProduct: ProductTreeNode = testDataFactory.product.treeItem.specific({
+  const generic = testDataFactory.product.response.generic({
+    name: 'generic product',
+  });
+  const specific = testDataFactory.product.response.specific({
     name: 'specific product',
     measurement: 500,
     unitOfMeasurement: 'g',
+    genericProductId: generic.productId,
   });
-  const variantProduct: ProductTreeNode = testDataFactory.product.treeItem.variant({
+  const variant = testDataFactory.product.response.variant({
     name: 'variant product',
+    genericProductId: generic.productId,
+    specificProductId: specific.productId,
   });
 
   const render = async (params?: {
-    product?: ProductTreeNode;
+    product?: Responses.Product;
     isInProgress?: Api.Product.Id[];
+    productList?: Responses.Product[];
   }) => {
     TestBed.resetTestingModule();
 
     await TestBed.configureTestingModule({
       imports: [ProductListItem],
       providers: [
-        provideMockSignalStore(ProductStore, 'isInProgress'),
+        provideMockSignalStore(ProductStore, 'isInProgress', 'productList'),
         provideMockDispatcher(),
       ],
     })
@@ -44,9 +51,10 @@ describe('ProductListItem', () => {
     mockDispatcher = TestBed.inject(Dispatcher);
 
     mockProductStore.isInProgress.set(params?.isInProgress ?? []);
+    mockProductStore.productList.set(params?.productList ?? []);
 
     fixture = TestBed.createComponent(ProductListItem);
-    fixture.componentRef.setInput('product', params?.product ?? genericProduct);
+    fixture.componentRef.setInput('product', params?.product ?? generic);
 
     selector = elementSelectorFactory(fixture.debugElement);
 
@@ -74,91 +82,95 @@ describe('ProductListItem', () => {
 
     it('should be disabled if product is in progress', async () => {
       await render({
-        isInProgress: [genericProduct.productId],
+        isInProgress: [generic.productId],
       });
 
       expect(getElement().nativeElement.disabled).toBe(true);
     });
 
     describe('on click', () => {
+      it('should dispatch openProductListItemSubmenu for a product with children', async () => {
+        await render({
+          product: specific,
+          productList: [
+            generic,
+            specific,
+            variant,
+          ],
+        });
+
+        getElement().nativeElement.click();
+
+        validateFunctionCall(mockDispatcher.dispatch, productEvents.openProductListItemSubmenu({
+          product: specific,
+          hasChildren: true,
+        }), {
+          scope: 'self',
+        });
+      });
+
+      it('should dispatch openProductListItemSubmenu for a product without children', async () => {
+        await render({
+          product: variant,
+          productList: [
+            generic,
+            specific,
+            variant,
+          ],
+        });
+
+        getElement().nativeElement.click();
+
+        validateFunctionCall(mockDispatcher.dispatch, productEvents.openProductListItemSubmenu({
+          product: variant,
+          hasChildren: false,
+        }), {
+          scope: 'self',
+        });
+      });
+
       it('should not dispatch anything if disabled', async () => {
         await render({
-          isInProgress: [genericProduct.productId],
+          isInProgress: [generic.productId],
         });
 
         getElement().nativeElement.click();
 
         validateFunctionCall(mockDispatcher.dispatch);
       });
-
-      it('should dispatch openProductListItemSubmenu for a generic product', async () => {
-        await render({
-          product: genericProduct,
-        });
-
-        getElement().nativeElement.click();
-
-        validateFunctionCall(mockDispatcher.dispatch, productEvents.openProductListItemSubmenu(genericProduct), {
-          scope: 'self',
-        });
-      });
-
-      it('should dispatch openProductListItemSubmenu for a specific product', async () => {
-        await render({
-          product: specificProduct,
-        });
-
-        getElement().nativeElement.click();
-
-        validateFunctionCall(mockDispatcher.dispatch, productEvents.openProductListItemSubmenu(specificProduct), {
-          scope: 'self',
-        });
-      });
-
-      it('should dispatch openProductListItemSubmenu for a variant product', async () => {
-        await render({
-          product: variantProduct,
-        });
-
-        getElement().nativeElement.click();
-
-        validateFunctionCall(mockDispatcher.dispatch, productEvents.openProductListItemSubmenu(variantProduct), {
-          scope: 'self',
-        });
-      });
     });
   });
 
-  describe('name', () => {
-    it('should be rendered for generic product', async () => {
+  describe('title', () => {
+    it('should be the name of a generic product', async () => {
       await render({
-        product: genericProduct,
+        product: generic,
       });
 
-      expect(selector.getComponent(MatListItemTitle, MatListItem).nativeElement.textContent).toBe(genericProduct.name);
+      expect(selector.getComponent(MatListItemTitle, MatListItem).nativeElement.textContent).toBe(generic.name);
     });
 
-    it('should be rendered for specific product', async () => {
+    it('should be the name of a specific product', async () => {
       await render({
-        product: specificProduct,
+        product: specific,
       });
 
-      expect(selector.getComponent(MatListItemTitle, MatListItem).nativeElement.textContent).toBe(specificProduct.name);
+      expect(selector.getComponent(MatListItemTitle, MatListItem).nativeElement.textContent).toBe(specific.name);
     });
 
-    it('should be rendered for variant product', async () => {
+    it('should be the name of a variant product', async () => {
       await render({
-        product: variantProduct,
+        product: variant,
       });
 
-      expect(selector.getComponent(MatListItemTitle, MatListItem).nativeElement.textContent).toBe(variantProduct.name);
+      expect(selector.getComponent(MatListItemTitle, MatListItem).nativeElement.textContent).toBe(variant.name);
     });
   });
 
   describe('measurement', () => {
     it('should be rendered for specific product', async () => {
       await render({
-        product: specificProduct,
+        product: specific,
       });
 
       expect(selector.getComponent(MatListItemLine, MatListItem).nativeElement.textContent).toBe('500 g');
@@ -166,7 +178,7 @@ describe('ProductListItem', () => {
 
     it('should not be rendered for generic product', async () => {
       await render({
-        product: genericProduct,
+        product: generic,
       });
 
       expect(selector.getComponent(MatListItemLine, MatListItem)).toBeFalsy();
@@ -174,7 +186,7 @@ describe('ProductListItem', () => {
 
     it('should not be rendered for variant product', async () => {
       await render({
-        product: variantProduct,
+        product: variant,
       });
 
       expect(selector.getComponent(MatListItemLine, MatListItem)).toBeFalsy();
@@ -184,7 +196,7 @@ describe('ProductListItem', () => {
   describe('icon', () => {
     it('should be rendered for generic product', async () => {
       await render({
-        product: genericProduct,
+        product: generic,
       });
 
       expect(selector.getComponent(MatListItemIcon, MatListItem).nativeElement.textContent).toBe('sell');
@@ -192,7 +204,7 @@ describe('ProductListItem', () => {
 
     it('should be rendered for specific product', async () => {
       await render({
-        product: specificProduct,
+        product: specific,
       });
 
       expect(selector.getComponent(MatListItemIcon, MatListItem).nativeElement.textContent).toBe('scale');
@@ -200,7 +212,7 @@ describe('ProductListItem', () => {
 
     it('should be rendered for variant product', async () => {
       await render({
-        product: variantProduct,
+        product: variant,
       });
 
       expect(selector.getComponent(MatListItemIcon, MatListItem).nativeElement.textContent).toBe('label');
@@ -210,7 +222,7 @@ describe('ProductListItem', () => {
   describe('indentation', () => {
     it('should not be indented for generic product', async () => {
       await render({
-        product: genericProduct,
+        product: generic,
       });
 
       expect(fixture.componentInstance.indentation()).toBe(0);
@@ -218,7 +230,7 @@ describe('ProductListItem', () => {
 
     it('should be indented one level for specific product', async () => {
       await render({
-        product: specificProduct,
+        product: specific,
       });
 
       expect(fixture.componentInstance.indentation()).toBe(1);
@@ -227,7 +239,7 @@ describe('ProductListItem', () => {
 
     it('should be indented two levels for variant product', async () => {
       await render({
-        product: variantProduct,
+        product: variant,
       });
 
       expect(fixture.componentInstance.indentation()).toBe(2);

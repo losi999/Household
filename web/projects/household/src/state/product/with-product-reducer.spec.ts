@@ -2,10 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore, withState } from '@ngrx/signals';
 import { productApiEvents, productEvents } from '@household/state/product/product-events';
-import { ProductType } from '@household/shared/enums';
 import { ProductState } from '@household/state/product/product-store';
 import { withProductReducer } from '@household/state/product/with-product-reducer';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { getSpecificProductFullName, getVariantProductFullName } from '@household/shared/common/utils';
+import { ProductType } from '@household/shared/enums';
+import { Responses } from '@household/shared/types/responses';
 
 const createTestStore = (state: ProductState) => {
   return signalStore({
@@ -17,6 +19,37 @@ describe('withProductReducer', () => {
   let initialState: ProductState;
   let store: InstanceType<ReturnType<typeof createTestStore>>;
   let dispatcher: Dispatcher;
+
+  // builders of consistent products, the full names are built the same way as the API builds them
+  const generic = (name: string) => {
+    return testDataFactory.product.response.generic({
+      name,
+      fullName: name,
+    });
+  };
+
+  const specific = (parent: Responses.GenericProduct, name: string, measurement = 1, unitOfMeasurement: Responses.SpecificProduct['unitOfMeasurement'] = 'kg') => {
+    return testDataFactory.product.response.specific({
+      name,
+      measurement,
+      unitOfMeasurement,
+      genericProductId: parent.productId,
+      fullName: getSpecificProductFullName(parent.fullName, {
+        name,
+        measurement,
+        unitOfMeasurement,
+      }),
+    });
+  };
+
+  const variant = (parent: Responses.SpecificProduct, name: string) => {
+    return testDataFactory.product.response.variant({
+      name,
+      genericProductId: parent.genericProductId,
+      specificProductId: parent.productId,
+      fullName: getVariantProductFullName(parent.fullName, name),
+    });
+  };
 
   const validateState = (currentValue?: Partial<ProductState>) => {
     expect(store.pendingParentProduct(), 'pendingParentProduct').toEqual(Object.hasOwn(currentValue ?? {}, 'pendingParentProduct') ? currentValue.pendingParentProduct : initialState.pendingParentProduct);
@@ -42,389 +75,10 @@ describe('withProductReducer', () => {
     setup();
   });
 
-  describe('listProductsCompleted', () => {
-    it('should store the product tree', () => {
-      const productTree = testDataFactory.product.tree();
-
-      dispatcher.dispatch(productApiEvents.listProductsCompleted([productTree]));
-
-      validateState({
-        productList: [productTree],
-      });
-    });
-
-    it('should replace the previously stored product tree', () => {
-      setup({
-        productList: [testDataFactory.product.tree()],
-      });
-      const productTree = testDataFactory.product.tree();
-
-      dispatcher.dispatch(productApiEvents.listProductsCompleted([productTree]));
-
-      validateState({
-        productList: [productTree],
-      });
-    });
-  });
-
-  describe('deleteProductInitiated', () => {
-    it('should mark the product as in progress', () => {
-      const product = testDataFactory.product.tree();
-      const otherProductId = testDataFactory.product.id();
-      setup({
-        isInProgress: [otherProductId],
-        productList: [product],
-      });
-
-      dispatcher.dispatch(productApiEvents.deleteProductInitiated({
-        productId: product.productId,
-      }));
-
-      validateState({
-        isInProgress: [
-          otherProductId,
-          product.productId,
-        ],
-      });
-    });
-  });
-
-  describe('deleteProductFailed', () => {
-    it('should clear the in progress flag of the product', () => {
-      const product = testDataFactory.product.tree();
-      const otherProductId = testDataFactory.product.id();
-      setup({
-        isInProgress: [
-          otherProductId,
-          product.productId,
-        ],
-        productList: [product],
-      });
-
-      dispatcher.dispatch(productApiEvents.deleteProductFailed({
-        productId: product.productId,
-      }));
-
-      validateState({
-        isInProgress: [otherProductId],
-      });
-    });
-  });
-
-  describe('deleteProductCompleted', () => {
-    it('should remove a generic product and clear its in progress flag', () => {
-      const genericToDelete = testDataFactory.product.tree();
-      const otherGeneric = testDataFactory.product.tree();
-      const otherProductId = testDataFactory.product.id();
-      setup({
-        isInProgress: [
-          otherProductId,
-          genericToDelete.productId,
-        ],
-        productList: [
-          genericToDelete,
-          otherGeneric,
-        ],
-      });
-
-      dispatcher.dispatch(productApiEvents.deleteProductCompleted({
-        productId: genericToDelete.productId,
-      }));
-
-      validateState({
-        isInProgress: [otherProductId],
-        productList: [otherGeneric],
-      });
-    });
-
-    it('should remove a specific product from its generic product', () => {
-      const specificToDelete = testDataFactory.product.treeItem.specific();
-      const otherSpecific = testDataFactory.product.treeItem.specific();
-      const generic = testDataFactory.product.tree({
-        children: [
-          specificToDelete,
-          otherSpecific,
-        ],
-      });
-      setup({
-        isInProgress: [specificToDelete.productId],
-        productList: [generic],
-      });
-
-      dispatcher.dispatch(productApiEvents.deleteProductCompleted({
-        productId: specificToDelete.productId,
-      }));
-
-      validateState({
-        isInProgress: [],
-        productList: [
-          {
-            ...generic,
-            children: [otherSpecific],
-          },
-        ],
-      });
-    });
-
-    it('should remove a variant product from its specific product', () => {
-      const variantToDelete = testDataFactory.product.treeItem.variant();
-      const otherVariant = testDataFactory.product.treeItem.variant();
-      const specific = testDataFactory.product.treeItem.specific({
-        children: [
-          variantToDelete,
-          otherVariant,
-        ],
-      });
-      const generic = testDataFactory.product.tree({
-        children: [specific],
-      });
-      setup({
-        isInProgress: [variantToDelete.productId],
-        productList: [generic],
-      });
-
-      dispatcher.dispatch(productApiEvents.deleteProductCompleted({
-        productId: variantToDelete.productId,
-      }));
-
-      validateState({
-        isInProgress: [],
-        productList: [
-          {
-            ...generic,
-            children: [
-              {
-                ...specific,
-                children: [otherVariant],
-              },
-            ],
-          },
-        ],
-      });
-    });
-  });
-
-  describe('mergeProductsInitiated', () => {
-    it('should mark the source products as in progress', () => {
-      const targetProduct = testDataFactory.product.tree();
-      const sourceProduct = testDataFactory.product.tree();
-      const otherProductId = testDataFactory.product.id();
-      setup({
-        isInProgress: [otherProductId],
-        productList: [
-          targetProduct,
-          sourceProduct,
-        ],
-      });
-
-      dispatcher.dispatch(productApiEvents.mergeProductsInitiated({
-        sourceProductIds: [sourceProduct.productId],
-        targetProductId: targetProduct.productId,
-      }));
-
-      validateState({
-        isInProgress: [
-          otherProductId,
-          sourceProduct.productId,
-        ],
-      });
-    });
-  });
-
-  describe('mergeProductsFailed', () => {
-    it('should clear the in progress flags of the source products', () => {
-      const sourceProduct1 = testDataFactory.product.tree();
-      const sourceProduct2 = testDataFactory.product.tree();
-      const otherProductId = testDataFactory.product.id();
-      setup({
-        isInProgress: [
-          otherProductId,
-          sourceProduct1.productId,
-          sourceProduct2.productId,
-        ],
-        productList: [
-          sourceProduct1,
-          sourceProduct2,
-        ],
-      });
-
-      dispatcher.dispatch(productApiEvents.mergeProductsFailed({
-        sourceProductIds: [
-          sourceProduct1.productId,
-          sourceProduct2.productId,
-        ],
-      }));
-
-      validateState({
-        isInProgress: [otherProductId],
-      });
-    });
-  });
-
-  describe('mergeProductsCompleted', () => {
-    it('should remove the source generic products and move their specific products under the target, ordered by name', () => {
-      const specificB = testDataFactory.product.treeItem.specific({
-        name: 'b specific',
-      });
-      const specificA = testDataFactory.product.treeItem.specific({
-        name: 'a specific',
-      });
-      const specificC = testDataFactory.product.treeItem.specific({
-        name: 'c specific',
-      });
-      const targetGeneric = testDataFactory.product.tree({
-        children: [specificB],
-      });
-      const sourceGeneric1 = testDataFactory.product.tree({
-        children: [specificC],
-      });
-      const sourceGeneric2 = testDataFactory.product.tree({
-        children: [specificA],
-      });
-      const otherGeneric = testDataFactory.product.tree();
-      setup({
-        isInProgress: [
-          sourceGeneric1.productId,
-          sourceGeneric2.productId,
-        ],
-        productList: [
-          targetGeneric,
-          sourceGeneric1,
-          otherGeneric,
-          sourceGeneric2,
-        ],
-      });
-
-      dispatcher.dispatch(productApiEvents.mergeProductsCompleted({
-        sourceProductIds: [
-          sourceGeneric1.productId,
-          sourceGeneric2.productId,
-        ],
-        targetProductId: targetGeneric.productId,
-      }));
-
-      validateState({
-        isInProgress: [],
-        productList: [
-          {
-            ...targetGeneric,
-            children: [
-              specificA,
-              specificB,
-              specificC,
-            ],
-          },
-          otherGeneric,
-        ],
-      });
-    });
-
-    it('should remove the source specific products and move their variant products under the target, ordered by name', () => {
-      const variantB = testDataFactory.product.treeItem.variant({
-        name: 'b variant',
-      });
-      const variantA = testDataFactory.product.treeItem.variant({
-        name: 'a variant',
-      });
-      const targetSpecific = testDataFactory.product.treeItem.specific({
-        children: [variantB],
-      });
-      const sourceSpecific = testDataFactory.product.treeItem.specific({
-        children: [variantA],
-      });
-      const otherSpecific = testDataFactory.product.treeItem.specific();
-      const generic = testDataFactory.product.tree({
-        children: [
-          targetSpecific,
-          sourceSpecific,
-          otherSpecific,
-        ],
-      });
-      const otherGeneric = testDataFactory.product.tree({
-        children: [testDataFactory.product.treeItem.specific()],
-      });
-      setup({
-        isInProgress: [sourceSpecific.productId],
-        productList: [
-          generic,
-          otherGeneric,
-        ],
-      });
-
-      dispatcher.dispatch(productApiEvents.mergeProductsCompleted({
-        sourceProductIds: [sourceSpecific.productId],
-        targetProductId: targetSpecific.productId,
-      }));
-
-      validateState({
-        isInProgress: [],
-        productList: [
-          {
-            ...generic,
-            children: [
-              {
-                ...targetSpecific,
-                children: [
-                  variantA,
-                  variantB,
-                ],
-              },
-              otherSpecific,
-            ],
-          },
-          otherGeneric,
-        ],
-      });
-    });
-
-    it('should remove the source variant products', () => {
-      const targetVariant = testDataFactory.product.treeItem.variant();
-      const sourceVariant = testDataFactory.product.treeItem.variant();
-      const otherVariant = testDataFactory.product.treeItem.variant();
-      const specific = testDataFactory.product.treeItem.specific({
-        children: [
-          targetVariant,
-          sourceVariant,
-          otherVariant,
-        ],
-      });
-      const generic = testDataFactory.product.tree({
-        children: [specific],
-      });
-      setup({
-        isInProgress: [sourceVariant.productId],
-        productList: [generic],
-      });
-
-      dispatcher.dispatch(productApiEvents.mergeProductsCompleted({
-        sourceProductIds: [sourceVariant.productId],
-        targetProductId: targetVariant.productId,
-      }));
-
-      validateState({
-        isInProgress: [],
-        productList: [
-          {
-            ...generic,
-            children: [
-              {
-                ...specific,
-                children: [
-                  targetVariant,
-                  otherVariant,
-                ],
-              },
-            ],
-          },
-        ],
-      });
-    });
-  });
-
   describe('createProduct', () => {
     it('should clear the pending parent product', () => {
       setup({
-        pendingParentProduct: testDataFactory.product.tree(),
+        pendingParentProduct: generic('parent'),
       });
 
       dispatcher.dispatch(productEvents.createProduct());
@@ -438,10 +92,10 @@ describe('withProductReducer', () => {
   describe('updateProduct', () => {
     it('should clear the pending parent product', () => {
       setup({
-        pendingParentProduct: testDataFactory.product.tree(),
+        pendingParentProduct: generic('parent'),
       });
 
-      dispatcher.dispatch(productEvents.updateProduct(testDataFactory.product.tree()));
+      dispatcher.dispatch(productEvents.updateProduct(generic('product')));
 
       validateState({
         pendingParentProduct: undefined,
@@ -452,11 +106,11 @@ describe('withProductReducer', () => {
   describe('selectProduct', () => {
     it('should clear the pending parent product', () => {
       setup({
-        pendingParentProduct: testDataFactory.product.tree(),
+        pendingParentProduct: generic('parent'),
       });
 
       dispatcher.dispatch(productEvents.selectProduct({
-        productToUpdate: testDataFactory.product.tree(),
+        productToUpdate: generic('product'),
       }));
 
       validateState({
@@ -467,7 +121,7 @@ describe('withProductReducer', () => {
 
   describe('productSelected', () => {
     it('should store the selected product as the pending parent product', () => {
-      const product = testDataFactory.product.tree();
+      const product = generic('parent');
 
       dispatcher.dispatch(productEvents.productSelected(product));
 
@@ -477,22 +131,54 @@ describe('withProductReducer', () => {
     });
   });
 
-  describe('createProductCompleted', () => {
-    it('should add a generic product ordered by name', () => {
-      const existingGeneric = testDataFactory.product.tree({
-        name: 'b generic',
+  describe('listProductsCompleted', () => {
+    it('should store the products in the given order', () => {
+      const g = generic('a generic');
+      const s = specific(g, 'a specific');
+      const v = variant(s, 'a variant');
+
+      dispatcher.dispatch(productApiEvents.listProductsCompleted([
+        g,
+        s,
+        v,
+      ]));
+
+      validateState({
+        productList: [
+          g,
+          s,
+          v,
+        ],
       });
-      const productId = testDataFactory.product.id();
-      const request = testDataFactory.product.request.generic({
-        name: 'a generic',
-      });
+    });
+
+    it('should replace the previously stored products', () => {
       setup({
-        productList: [existingGeneric],
+        productList: [generic('old')],
+      });
+      const product = generic('new');
+
+      dispatcher.dispatch(productApiEvents.listProductsCompleted([product]));
+
+      validateState({
+        productList: [product],
+      });
+    });
+  });
+
+  describe('createProductCompleted', () => {
+    it('should add a generic product in the order of the full names', () => {
+      const existing = generic('b generic');
+      const productId = testDataFactory.product.id();
+      setup({
+        productList: [existing],
       });
 
       dispatcher.dispatch(productApiEvents.createProductCompleted({
         productId,
-        ...request,
+        ...testDataFactory.product.request.generic({
+          name: 'a generic',
+        }),
       }));
 
       validateState({
@@ -501,91 +187,81 @@ describe('withProductReducer', () => {
             productId,
             productType: ProductType.Generic,
             name: 'a generic',
-            children: [],
+            fullName: 'a generic',
           },
-          existingGeneric,
+          existing,
         ],
       });
     });
 
-    it('should add a specific product to its generic product with its full name', () => {
-      const generic = testDataFactory.product.tree();
-      const otherGeneric = testDataFactory.product.tree();
+    it('should add a specific product with its full name and generic product right after its generic product', () => {
+      const g = generic('a generic');
+      const other = generic('b generic');
       const productId = testDataFactory.product.id();
-      const request = testDataFactory.product.request.specific({
-        name: 'specific',
-        measurement: 2,
-        unitOfMeasurement: 'kg',
-        parentProductId: generic.productId,
-      });
       setup({
         productList: [
-          generic,
-          otherGeneric,
+          g,
+          other,
         ],
       });
 
       dispatcher.dispatch(productApiEvents.createProductCompleted({
         productId,
-        ...request,
+        ...testDataFactory.product.request.specific({
+          name: 'specific',
+          measurement: 2,
+          unitOfMeasurement: 'kg',
+          parentProductId: g.productId,
+        }),
       }));
 
       validateState({
         productList: [
+          g,
           {
-            ...generic,
-            children: [
-              {
-                productId,
-                productType: ProductType.Specific,
-                name: 'specific',
-                fullName: 'specific 2 kg',
-                measurement: 2,
-                unitOfMeasurement: 'kg',
-                children: [],
-              },
-            ],
+            productId,
+            productType: ProductType.Specific,
+            name: 'specific',
+            fullName: 'a generic / specific 2 kg',
+            measurement: 2,
+            unitOfMeasurement: 'kg',
+            genericProductId: g.productId,
           },
-          otherGeneric,
+          other,
         ],
       });
     });
 
-    it('should add a variant product to its specific product', () => {
-      const specific = testDataFactory.product.treeItem.specific();
-      const generic = testDataFactory.product.tree({
-        children: [specific],
-      });
+    it('should add a variant product with its full name and both of its parents', () => {
+      const g = generic('a generic');
+      const s = specific(g, 'a specific');
       const productId = testDataFactory.product.id();
-      const request = testDataFactory.product.request.variant({
-        name: 'variant',
-        parentProductId: specific.productId,
-      });
       setup({
-        productList: [generic],
+        productList: [
+          g,
+          s,
+        ],
       });
 
       dispatcher.dispatch(productApiEvents.createProductCompleted({
         productId,
-        ...request,
+        ...testDataFactory.product.request.variant({
+          name: 'variant',
+          parentProductId: s.productId,
+        }),
       }));
 
       validateState({
         productList: [
+          g,
+          s,
           {
-            ...generic,
-            children: [
-              {
-                ...specific,
-                children: [
-                  {
-                    productId,
-                    productType: ProductType.Variant,
-                    name: 'variant',
-                  },
-                ],
-              },
-            ],
+            productId,
+            productType: ProductType.Variant,
+            name: 'variant',
+            fullName: 'a generic / a specific 1 kg / variant',
+            genericProductId: g.productId,
+            specificProductId: s.productId,
           },
         ],
       });
@@ -594,7 +270,7 @@ describe('withProductReducer', () => {
 
   describe('updateProductInitiated', () => {
     it('should mark the product as in progress', () => {
-      const product = testDataFactory.product.tree();
+      const product = generic('product');
       const otherProductId = testDataFactory.product.id();
       setup({
         isInProgress: [otherProductId],
@@ -617,7 +293,7 @@ describe('withProductReducer', () => {
 
   describe('updateProductFailed', () => {
     it('should clear the in progress flag of the product', () => {
-      const product = testDataFactory.product.tree();
+      const product = generic('product');
       const otherProductId = testDataFactory.product.id();
       setup({
         isInProgress: [
@@ -638,25 +314,23 @@ describe('withProductReducer', () => {
   });
 
   describe('updateProductCompleted', () => {
-    it('should rename a generic product keeping its children and the order by name', () => {
-      const specific = testDataFactory.product.treeItem.specific();
-      const generic = testDataFactory.product.tree({
-        name: 'a generic',
-        children: [specific],
-      });
-      const otherGeneric = testDataFactory.product.tree({
-        name: 'b generic',
-      });
+    it('should rename a generic product and rebuild the full names of its specific and variant products', () => {
+      const g = generic('a generic');
+      const s = specific(g, 'a specific');
+      const v = variant(s, 'a variant');
+      const other = generic('b generic');
       setup({
-        isInProgress: [generic.productId],
+        isInProgress: [g.productId],
         productList: [
-          generic,
-          otherGeneric,
+          g,
+          s,
+          v,
+          other,
         ],
       });
 
       dispatcher.dispatch(productApiEvents.updateProductCompleted({
-        productId: generic.productId,
+        productId: g.productId,
         ...testDataFactory.product.request.generic({
           name: 'c generic',
         }),
@@ -665,38 +339,87 @@ describe('withProductReducer', () => {
       validateState({
         isInProgress: [],
         productList: [
-          otherGeneric,
+          other,
           {
-            ...generic,
+            ...g,
             name: 'c generic',
+            fullName: 'c generic',
+          },
+          {
+            ...s,
+            fullName: 'c generic / a specific 1 kg',
+          },
+          {
+            ...v,
+            fullName: 'c generic / a specific 1 kg / a variant',
           },
         ],
       });
     });
 
-    it('should move a specific product with its variants to another generic product', () => {
-      const variant = testDataFactory.product.treeItem.variant();
-      const specific = testDataFactory.product.treeItem.specific({
-        children: [variant],
-      });
-      const sourceGeneric = testDataFactory.product.tree({
-        children: [specific],
-      });
-      const targetGeneric = testDataFactory.product.tree();
+    it('should change a specific product and rebuild the full names of its variant products', () => {
+      const g = generic('a generic');
+      const s = specific(g, 'a specific');
+      const v = variant(s, 'a variant');
       setup({
-        isInProgress: [specific.productId],
+        isInProgress: [s.productId],
+        productList: [
+          g,
+          s,
+          v,
+        ],
+      });
+
+      dispatcher.dispatch(productApiEvents.updateProductCompleted({
+        productId: s.productId,
+        ...testDataFactory.product.request.specific({
+          name: 'b specific',
+          measurement: 2,
+          unitOfMeasurement: 'l',
+          parentProductId: g.productId,
+        }),
+      }));
+
+      validateState({
+        isInProgress: [],
+        productList: [
+          g,
+          {
+            ...s,
+            name: 'b specific',
+            measurement: 2,
+            unitOfMeasurement: 'l',
+            fullName: 'a generic / b specific 2 l',
+          },
+          {
+            ...v,
+            fullName: 'a generic / b specific 2 l / a variant',
+          },
+        ],
+      });
+    });
+
+    it('should move a specific product with its variant products to another generic product', () => {
+      const sourceGeneric = generic('a generic');
+      const targetGeneric = generic('b generic');
+      const s = specific(sourceGeneric, 'a specific');
+      const v = variant(s, 'a variant');
+      setup({
+        isInProgress: [s.productId],
         productList: [
           sourceGeneric,
+          s,
+          v,
           targetGeneric,
         ],
       });
 
       dispatcher.dispatch(productApiEvents.updateProductCompleted({
-        productId: specific.productId,
+        productId: s.productId,
         ...testDataFactory.product.request.specific({
-          name: 'moved',
-          measurement: 3,
-          unitOfMeasurement: 'l',
+          name: 'a specific',
+          measurement: 1,
+          unitOfMeasurement: 'kg',
           parentProductId: targetGeneric.productId,
         }),
       }));
@@ -704,93 +427,74 @@ describe('withProductReducer', () => {
       validateState({
         isInProgress: [],
         productList: [
+          sourceGeneric,
+          targetGeneric,
           {
-            ...sourceGeneric,
-            children: [],
+            ...s,
+            genericProductId: targetGeneric.productId,
+            fullName: 'b generic / a specific 1 kg',
           },
           {
-            ...targetGeneric,
-            children: [
-              {
-                productId: specific.productId,
-                productType: ProductType.Specific,
-                name: 'moved',
-                fullName: 'moved 3 l',
-                measurement: 3,
-                unitOfMeasurement: 'l',
-                children: [variant],
-              },
-            ],
+            ...v,
+            genericProductId: targetGeneric.productId,
+            fullName: 'b generic / a specific 1 kg / a variant',
           },
         ],
       });
     });
 
     it('should turn a variant product into a specific product of a generic product', () => {
-      const variant = testDataFactory.product.treeItem.variant();
-      const specific = testDataFactory.product.treeItem.specific({
-        name: 'z specific',
-        children: [variant],
-      });
-      const generic = testDataFactory.product.tree({
-        children: [specific],
-      });
+      const g = generic('a generic');
+      const s = specific(g, 'a specific');
+      const v = variant(s, 'a variant');
       setup({
-        isInProgress: [variant.productId],
-        productList: [generic],
+        isInProgress: [v.productId],
+        productList: [
+          g,
+          s,
+          v,
+        ],
       });
 
       dispatcher.dispatch(productApiEvents.updateProductCompleted({
-        productId: variant.productId,
+        productId: v.productId,
         ...testDataFactory.product.request.specific({
           name: 'was a variant',
           measurement: 1,
           unitOfMeasurement: 'db',
-          parentProductId: generic.productId,
+          parentProductId: g.productId,
         }),
       }));
 
       validateState({
         isInProgress: [],
         productList: [
+          g,
+          s,
           {
-            ...generic,
-            children: [
-              {
-                productId: variant.productId,
-                productType: ProductType.Specific,
-                name: 'was a variant',
-                fullName: 'was a variant 1 db',
-                measurement: 1,
-                unitOfMeasurement: 'db',
-                children: [],
-              },
-              {
-                ...specific,
-                children: [],
-              },
-            ],
+            productId: v.productId,
+            productType: ProductType.Specific,
+            name: 'was a variant',
+            fullName: 'a generic / was a variant 1 db',
+            measurement: 1,
+            unitOfMeasurement: 'db',
+            genericProductId: g.productId,
           },
         ],
       });
     });
 
     it('should turn a specific product without children into a variant product of another specific product', () => {
-      const specificToUpdate = testDataFactory.product.treeItem.specific({
-        name: 'a specific',
-      });
-      const targetSpecific = testDataFactory.product.treeItem.specific({
-        name: 'b specific',
-      });
-      const generic = testDataFactory.product.tree({
-        children: [
+      const g = generic('a generic');
+      const specificToUpdate = specific(g, 'a specific');
+      const targetSpecific = specific(g, 'b specific');
+      setup({
+        isInProgress: [specificToUpdate.productId],
+        productList: [
+          g,
           specificToUpdate,
           targetSpecific,
         ],
-      });
-      setup({
-        isInProgress: [specificToUpdate.productId],
-        productList: [generic],
       });
 
       dispatcher.dispatch(productApiEvents.updateProductCompleted({
@@ -804,38 +508,33 @@ describe('withProductReducer', () => {
       validateState({
         isInProgress: [],
         productList: [
+          g,
+          targetSpecific,
           {
-            ...generic,
-            children: [
-              {
-                ...targetSpecific,
-                children: [
-                  {
-                    productId: specificToUpdate.productId,
-                    productType: ProductType.Variant,
-                    name: 'now a variant',
-                  },
-                ],
-              },
-            ],
+            productId: specificToUpdate.productId,
+            productType: ProductType.Variant,
+            name: 'now a variant',
+            fullName: 'a generic / b specific 1 kg / now a variant',
+            genericProductId: g.productId,
+            specificProductId: targetSpecific.productId,
           },
         ],
       });
     });
 
     it('should turn a specific product without children into a generic product', () => {
-      const specific = testDataFactory.product.treeItem.specific();
-      const generic = testDataFactory.product.tree({
-        name: 'b generic',
-        children: [specific],
-      });
+      const g = generic('b generic');
+      const s = specific(g, 'a specific');
       setup({
-        isInProgress: [specific.productId],
-        productList: [generic],
+        isInProgress: [s.productId],
+        productList: [
+          g,
+          s,
+        ],
       });
 
       dispatcher.dispatch(productApiEvents.updateProductCompleted({
-        productId: specific.productId,
+        productId: s.productId,
         ...testDataFactory.product.request.generic({
           name: 'a generic',
         }),
@@ -845,15 +544,256 @@ describe('withProductReducer', () => {
         isInProgress: [],
         productList: [
           {
-            productId: specific.productId,
+            productId: s.productId,
             productType: ProductType.Generic,
             name: 'a generic',
-            children: [],
+            fullName: 'a generic',
+          },
+          g,
+        ],
+      });
+    });
+  });
+
+  describe('deleteProductInitiated', () => {
+    it('should mark the product as in progress', () => {
+      const product = generic('product');
+      const otherProductId = testDataFactory.product.id();
+      setup({
+        isInProgress: [otherProductId],
+        productList: [product],
+      });
+
+      dispatcher.dispatch(productApiEvents.deleteProductInitiated({
+        productId: product.productId,
+      }));
+
+      validateState({
+        isInProgress: [
+          otherProductId,
+          product.productId,
+        ],
+      });
+    });
+  });
+
+  describe('deleteProductFailed', () => {
+    it('should clear the in progress flag of the product', () => {
+      const product = generic('product');
+      const otherProductId = testDataFactory.product.id();
+      setup({
+        isInProgress: [
+          otherProductId,
+          product.productId,
+        ],
+        productList: [product],
+      });
+
+      dispatcher.dispatch(productApiEvents.deleteProductFailed({
+        productId: product.productId,
+      }));
+
+      validateState({
+        isInProgress: [otherProductId],
+      });
+    });
+  });
+
+  describe('deleteProductCompleted', () => {
+    it('should remove the product and clear its in progress flag', () => {
+      const productToDelete = generic('a generic');
+      const otherProduct = generic('b generic');
+      const otherProductId = testDataFactory.product.id();
+      setup({
+        isInProgress: [
+          otherProductId,
+          productToDelete.productId,
+        ],
+        productList: [
+          productToDelete,
+          otherProduct,
+        ],
+      });
+
+      dispatcher.dispatch(productApiEvents.deleteProductCompleted({
+        productId: productToDelete.productId,
+      }));
+
+      validateState({
+        isInProgress: [otherProductId],
+        productList: [otherProduct],
+      });
+    });
+  });
+
+  describe('mergeProductsInitiated', () => {
+    it('should mark the source products as in progress', () => {
+      const target = generic('a generic');
+      const source = generic('b generic');
+      const otherProductId = testDataFactory.product.id();
+      setup({
+        isInProgress: [otherProductId],
+        productList: [
+          target,
+          source,
+        ],
+      });
+
+      dispatcher.dispatch(productApiEvents.mergeProductsInitiated({
+        sourceProductIds: [source.productId],
+        targetProductId: target.productId,
+      }));
+
+      validateState({
+        isInProgress: [
+          otherProductId,
+          source.productId,
+        ],
+      });
+    });
+  });
+
+  describe('mergeProductsFailed', () => {
+    it('should clear the in progress flags of the source products', () => {
+      const source1 = generic('a generic');
+      const source2 = generic('b generic');
+      const otherProductId = testDataFactory.product.id();
+      setup({
+        isInProgress: [
+          otherProductId,
+          source1.productId,
+          source2.productId,
+        ],
+        productList: [
+          source1,
+          source2,
+        ],
+      });
+
+      dispatcher.dispatch(productApiEvents.mergeProductsFailed({
+        sourceProductIds: [
+          source1.productId,
+          source2.productId,
+        ],
+      }));
+
+      validateState({
+        isInProgress: [otherProductId],
+      });
+    });
+  });
+
+  describe('mergeProductsCompleted', () => {
+    it('should remove the source generic products and move their specific and variant products under the target', () => {
+      const target = generic('a generic');
+      const targetSpecific = specific(target, 'a specific');
+      const source = generic('b generic');
+      const movedSpecific = specific(source, 'b specific');
+      const movedVariant = variant(movedSpecific, 'b variant');
+      const other = generic('c generic');
+      const otherSpecific = specific(other, 'c specific');
+      setup({
+        isInProgress: [source.productId],
+        productList: [
+          target,
+          targetSpecific,
+          source,
+          movedSpecific,
+          movedVariant,
+          other,
+          otherSpecific,
+        ],
+      });
+
+      dispatcher.dispatch(productApiEvents.mergeProductsCompleted({
+        sourceProductIds: [source.productId],
+        targetProductId: target.productId,
+      }));
+
+      validateState({
+        isInProgress: [],
+        productList: [
+          target,
+          targetSpecific,
+          {
+            ...movedSpecific,
+            genericProductId: target.productId,
+            fullName: 'a generic / b specific 1 kg',
           },
           {
-            ...generic,
-            children: [],
+            ...movedVariant,
+            genericProductId: target.productId,
+            fullName: 'a generic / b specific 1 kg / b variant',
           },
+          other,
+          otherSpecific,
+        ],
+      });
+    });
+
+    it('should remove the source specific products and move their variant products under the target', () => {
+      const g = generic('a generic');
+      const targetSpecific = specific(g, 'a specific');
+      const targetVariant = variant(targetSpecific, 'a variant');
+      const source = specific(g, 'b specific');
+      const movedVariant = variant(source, 'b variant');
+      setup({
+        isInProgress: [source.productId],
+        productList: [
+          g,
+          targetSpecific,
+          targetVariant,
+          source,
+          movedVariant,
+        ],
+      });
+
+      dispatcher.dispatch(productApiEvents.mergeProductsCompleted({
+        sourceProductIds: [source.productId],
+        targetProductId: targetSpecific.productId,
+      }));
+
+      validateState({
+        isInProgress: [],
+        productList: [
+          g,
+          targetSpecific,
+          targetVariant,
+          {
+            ...movedVariant,
+            specificProductId: targetSpecific.productId,
+            fullName: 'a generic / a specific 1 kg / b variant',
+          },
+        ],
+      });
+    });
+
+    it('should remove the source variant products', () => {
+      const g = generic('a generic');
+      const s = specific(g, 'a specific');
+      const targetVariant = variant(s, 'a variant');
+      const source = variant(s, 'b variant');
+      setup({
+        isInProgress: [source.productId],
+        productList: [
+          g,
+          s,
+          targetVariant,
+          source,
+        ],
+      });
+
+      dispatcher.dispatch(productApiEvents.mergeProductsCompleted({
+        sourceProductIds: [source.productId],
+        targetProductId: targetVariant.productId,
+      }));
+
+      validateState({
+        isInProgress: [],
+        productList: [
+          g,
+          s,
+          targetVariant,
         ],
       });
     });

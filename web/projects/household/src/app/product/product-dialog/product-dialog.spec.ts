@@ -23,47 +23,59 @@ describe('ProductDialog', () => {
   let mockDialogRef: MockService<MatDialogRef<ProductDialog>>;
   let mockDispatcher: Dispatcher;
 
-  const variantToUpdate = testDataFactory.product.treeItem.variant({
-    name: 'variant to update',
+  const parentGeneric = testDataFactory.product.response.generic({
+    name: 'parent generic',
+    fullName: 'parent generic',
   });
-  const specificWithVariant = testDataFactory.product.treeItem.specific({
+  const specificWithVariant = testDataFactory.product.response.specific({
     name: 'specific with variant',
     measurement: 1,
     unitOfMeasurement: 'kg',
-    fullName: 'specific with variant 1 kg',
-    children: [variantToUpdate],
+    fullName: 'parent generic / specific with variant 1 kg',
+    genericProductId: parentGeneric.productId,
   });
-  const specificWithoutChildren = testDataFactory.product.treeItem.specific({
+  const variantToUpdate = testDataFactory.product.response.variant({
+    name: 'variant to update',
+    fullName: 'parent generic / specific with variant 1 kg / variant to update',
+    genericProductId: parentGeneric.productId,
+    specificProductId: specificWithVariant.productId,
+  });
+  const specificWithoutChildren = testDataFactory.product.response.specific({
     name: 'specific without children',
     measurement: 5,
     unitOfMeasurement: 'g',
-    fullName: 'specific without children 5 g',
+    fullName: 'parent generic / specific without children 5 g',
+    genericProductId: parentGeneric.productId,
   });
-  const specificWithChildren = testDataFactory.product.treeItem.specific({
+  const specificWithChildren = testDataFactory.product.response.specific({
     name: 'specific with children',
     measurement: 2,
     unitOfMeasurement: 'l',
-    fullName: 'specific with children 2 l',
-    children: [testDataFactory.product.treeItem.variant()],
+    fullName: 'parent generic / specific with children 2 l',
+    genericProductId: parentGeneric.productId,
   });
-  const parentGeneric = testDataFactory.product.tree({
-    name: 'parent generic',
-    children: [
-      specificWithVariant,
-      specificWithoutChildren,
-      specificWithChildren,
-    ],
-  });
-  const genericWithChildren = testDataFactory.product.tree({
+  const genericWithChildren = testDataFactory.product.response.generic({
     name: 'generic with children',
-    children: [testDataFactory.product.treeItem.specific()],
+    fullName: 'generic with children',
   });
-  const genericWithoutChildren = testDataFactory.product.tree({
+  const genericWithoutChildren = testDataFactory.product.response.generic({
     name: 'generic without children',
+    fullName: 'generic without children',
   });
   const productList = [
     parentGeneric,
+    specificWithVariant,
+    variantToUpdate,
+    specificWithoutChildren,
+    specificWithChildren,
+    testDataFactory.product.response.variant({
+      genericProductId: parentGeneric.productId,
+      specificProductId: specificWithChildren.productId,
+    }),
     genericWithChildren,
+    testDataFactory.product.response.specific({
+      genericProductId: genericWithChildren.productId,
+    }),
     genericWithoutChildren,
   ];
 
@@ -109,7 +121,7 @@ describe('ProductDialog', () => {
     await fixture.whenStable();
   };
 
-  const selectParent = async (parent: Responses.ProductTree | Responses.SpecificProductTreeItem) => {
+  const selectParent = async (parent: Responses.Product) => {
     mockProductStore.pendingParentProduct.set(parent);
 
     await fixture.whenStable();
@@ -123,7 +135,7 @@ describe('ProductDialog', () => {
 
   const render = async (params?: {
     dialogData?: ProductDialogData;
-    productList?: Responses.ProductTree[];
+    productList?: Responses.Product[];
   }) => {
     TestBed.resetTestingModule();
 
@@ -234,7 +246,7 @@ describe('ProductDialog', () => {
         dialogData: specificWithoutChildren,
       });
 
-      expect(getParentIconText().componentInstance.text()).toBe(parentGeneric.name);
+      expect(getParentIconText().componentInstance.text()).toBe(parentGeneric.fullName);
       expect(getParentIconText().componentInstance.icon()).toBe('account_tree');
       expect(getParentMenuButton()).toBeTruthy();
       expect(getParentAddButton()).toBeFalsy();
@@ -264,7 +276,7 @@ describe('ProductDialog', () => {
 
       await selectParent(parentGeneric);
 
-      expect(getParentIconText().componentInstance.text()).toBe(parentGeneric.name);
+      expect(getParentIconText().componentInstance.text()).toBe(parentGeneric.fullName);
       expect(fixture.componentInstance.parentProduct()).toEqual(parentGeneric);
     });
   });
@@ -318,6 +330,7 @@ describe('ProductDialog', () => {
       await fixture.whenStable();
 
       validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct({
+        isParentSelection: true,
         productToUpdate: specificWithoutChildren,
       }), {
         scope: 'self',
@@ -333,6 +346,7 @@ describe('ProductDialog', () => {
       await fixture.whenStable();
 
       validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct({
+        isParentSelection: true,
         productToUpdate: undefined,
       }), {
         scope: 'self',
@@ -348,6 +362,7 @@ describe('ProductDialog', () => {
       await fixture.whenStable();
 
       validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct({
+        isParentSelection: true,
         productToUpdate: genericWithoutChildren,
       }), {
         scope: 'self',

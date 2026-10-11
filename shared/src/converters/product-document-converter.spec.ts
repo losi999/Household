@@ -1,5 +1,5 @@
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { addSeconds, getProductId } from '@household/shared/common/utils';
+import { addSeconds, getProductId, getSpecificProductFullName, getVariantProductFullName } from '@household/shared/common/utils';
 import { productDocumentConverterFactory, IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { Types } from 'mongoose';
 
@@ -30,20 +30,22 @@ describe('Product document converter', () => {
   const genericProductResponse = testDataFactory.product.response.generic({
     productId: getProductId(genericProductDocument),
     name: genericProductDocument.name,
+    fullName: genericProductDocument.name,
   });
   const specificProductResponse = testDataFactory.product.response.specific({
     productId: getProductId(specificProductDocument),
     name: specificProductDocument.name,
     measurement: specificProductDocument.measurement,
     unitOfMeasurement: specificProductDocument.unitOfMeasurement,
-    fullName: specificProductDocument.fullName,
-    genericProduct: genericProductResponse,
+    fullName: getSpecificProductFullName(genericProductDocument.name, specificProductDocument),
+    genericProductId: getProductId(genericProductDocument),
   });
   const variantProductResponse = testDataFactory.product.response.variant({
     productId: getProductId(variantProductDocument),
     name: variantProductDocument.name,
-    genericProduct: genericProductResponse,
-    specificProduct: specificProductResponse,
+    fullName: getVariantProductFullName(specificProductResponse.fullName, variantProductDocument.name),
+    genericProductId: getProductId(genericProductDocument),
+    specificProductId: getProductId(specificProductDocument),
   });
 
   describe('createGeneric', () => {
@@ -99,7 +101,6 @@ describe('Product document converter', () => {
       }, undefined);
       expect(result).toEqual(testDataFactory.product.document.specific({
         ...restOfBody,
-        fullName: `${body.name} ${body.measurement} ${body.unitOfMeasurement}`,
         genericProduct: genericProductDocument,
         _id: undefined,
         expiresAt: undefined,
@@ -117,7 +118,6 @@ describe('Product document converter', () => {
       }, expiresIn);
       expect(result).toEqual(testDataFactory.product.document.specific({
         ...restOfBody,
-        fullName: `${body.name} ${body.measurement} ${body.unitOfMeasurement}`,
         genericProduct: genericProductDocument,
         _id: undefined,
         expiresAt: addSeconds(expiresIn),
@@ -135,7 +135,6 @@ describe('Product document converter', () => {
       }, undefined, true);
       expect(result).toEqual(testDataFactory.product.document.specific({
         ...restOfBody,
-        fullName: `${body.name} ${body.measurement} ${body.unitOfMeasurement}`,
         genericProduct: genericProductDocument,
         _id: expect.any(Types.ObjectId),
         expiresAt: undefined,
@@ -230,7 +229,6 @@ describe('Product document converter', () => {
       }, undefined);
       expect(result).toEqual(testDataFactory.product.document.specific({
         ...restOfBody,
-        fullName: `${body.name} ${body.measurement} ${body.unitOfMeasurement}`,
         genericProduct: genericProductDocument,
         _id: undefined,
         expiresAt: undefined,
@@ -273,7 +271,6 @@ describe('Product document converter', () => {
             expiresAt: addSeconds(expiresIn),
           },
           $unset: {
-            fullName: true,
             genericProduct: true,
             measurement: true,
             specificProduct: true,
@@ -298,7 +295,6 @@ describe('Product document converter', () => {
           $set: {
             ...restOfBody,
             genericProduct: genericProductDocument,
-            fullName: `${body.name} ${body.measurement} ${body.unitOfMeasurement}`,
             expiresAt: addSeconds(expiresIn),
           },
           $unset: {
@@ -327,7 +323,6 @@ describe('Product document converter', () => {
             expiresAt: addSeconds(expiresIn),
           },
           $unset: {
-            fullName: true,
             measurement: true,
             unitOfMeasurement: true,
           },
@@ -387,53 +382,70 @@ describe('Product document converter', () => {
         variantProductResponse,
       ]);
     });
-  });
 
-  describe('toGroupedResponseList', () => {
-    it('should return generic products with their descendants nested', () => {
-      const result = converter.toResponseTreeList([
-        genericProductDocument,
-        specificProductDocument,
-        variantProductDocument,
-      ]);
-      expect(result).toEqual([
-        testDataFactory.product.tree({
-          productId: getProductId(genericProductDocument),
-          name: genericProductDocument.name,
-          children: [
-            testDataFactory.product.treeItem.specific({
-              productId: getProductId(specificProductDocument),
-              productType: specificProductDocument.productType,
-              name: specificProductDocument.name,
-              fullName: specificProductDocument.fullName,
-              measurement: specificProductDocument.measurement,
-              unitOfMeasurement: specificProductDocument.unitOfMeasurement,
-              children: [
-                testDataFactory.product.treeItem.variant({
-                  productId: getProductId(variantProductDocument),
-                  productType: variantProductDocument.productType,
-                  name: variantProductDocument.name,
-                }),
-              ],
-            }),
-          ],
-        }),
-      ]);
-    });
+    it('should return every product directly followed by its children', () => {
+      const secondGenericDocument = testDataFactory.product.document.generic({
+        name: 'b generic',
+      });
+      const secondSpecificDocument = testDataFactory.product.document.specific({
+        name: 'b specific',
+        genericProduct: secondGenericDocument,
+      });
+      const firstGenericDocument = testDataFactory.product.document.generic({
+        name: 'a generic',
+      });
+      const firstSpecificDocument = testDataFactory.product.document.specific({
+        name: 'a specific',
+        genericProduct: firstGenericDocument,
+      });
+      const firstVariantDocument = testDataFactory.product.document.variant({
+        name: 'a variant',
+        genericProduct: firstGenericDocument,
+        specificProduct: firstSpecificDocument,
+      });
 
-    it('should omit products whose parent is not among the documents', () => {
-      const result = converter.toResponseTreeList([
-        specificProductDocument,
-        variantProductDocument,
+      const result = converter.toResponseList([
+        firstVariantDocument,
+        secondSpecificDocument,
+        secondGenericDocument,
+        firstSpecificDocument,
+        firstGenericDocument,
       ]);
-      expect(result).toEqual([]);
+
+      expect(result.map(response => response.productId)).toEqual([
+        getProductId(firstGenericDocument),
+        getProductId(firstSpecificDocument),
+        getProductId(firstVariantDocument),
+        getProductId(secondGenericDocument),
+        getProductId(secondSpecificDocument),
+      ]);
     });
   });
 
   describe('toReport', () => {
-    // The converter still hardcodes `fullName: 'document.fullName'` (marked TODO in
-    // product-document-converter.ts): `fullName` only exists on specific products, so what it
-    // should resolve to for generic and variant products is still undecided.
-    it.todo('should return report');
+    it('should return report of a generic product', () => {
+      expect(converter.toReport(genericProductDocument)).toEqual({
+        productId: getProductId(genericProductDocument),
+        fullName: genericProductResponse.fullName,
+      });
+    });
+
+    it('should return report of a specific product', () => {
+      expect(converter.toReport(specificProductDocument)).toEqual({
+        productId: getProductId(specificProductDocument),
+        fullName: specificProductResponse.fullName,
+      });
+    });
+
+    it('should return report of a variant product', () => {
+      expect(converter.toReport(variantProductDocument)).toEqual({
+        productId: getProductId(variantProductDocument),
+        fullName: variantProductResponse.fullName,
+      });
+    });
+
+    it('should return undefined if there is no product', () => {
+      expect(converter.toReport(undefined)).toBeUndefined();
+    });
   });
 });

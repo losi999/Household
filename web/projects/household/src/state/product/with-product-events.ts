@@ -3,7 +3,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { ProductDialog, ProductDialogData, ProductDialogResult } from '@household/app/product/product-dialog/product-dialog';
 import { ProductMergeDialog, ProductMergeDialogData, ProductMergeDialogResult } from '@household/app/product/product-merge-dialog/product-merge-dialog';
 import { ProductSelectDialog, ProductSelectDialogData, ProductSelectDialogResult } from '@household/app/product/product-select-dialog/product-select-dialog';
-import { ProductType } from '@household/shared/enums';
 import { productApiEvents, productEvents } from '@household/state/product/product-events';
 import { BottomSheetService, DialogService, dispatchIfConfirmed } from '@household/shared-ui';
 import { signalStoreFeature } from '@ngrx/signals';
@@ -89,22 +88,23 @@ export const withProductEvents = () => {
         ),
         openProductListItemSubmenu: events.on(productEvents.openProductListItemSubmenu)
           .pipe(
-            exhaustMap(({ payload }) => {
+            exhaustMap(({ payload: { product, hasChildren } }) => {
               let afterDismissed: Observable<'edit' | 'merge' | 'delete'>;
 
-              if (payload.productType !== ProductType.Variant && payload.children.length > 0) {
-                afterDismissed = bottomSheetService.openBottomSubmenu(payload.name, 'edit', 'merge').afterDismissed();
+              // A product with children cannot be deleted, so the delete action is not offered
+              if (hasChildren) {
+                afterDismissed = bottomSheetService.openBottomSubmenu(product.name, 'edit', 'merge').afterDismissed();
               } else {
-                afterDismissed = bottomSheetService.openBottomSubmenu(payload.name, 'edit', 'merge', 'delete').afterDismissed();
+                afterDismissed = bottomSheetService.openBottomSubmenu(product.name, 'edit', 'merge', 'delete').afterDismissed();
               }
 
               return afterDismissed.pipe(
                 filter(value => !!value),
                 map((value) => {
                   switch(value) {
-                    case 'edit': return productEvents.updateProduct(payload);
-                    case 'delete': return productEvents.deleteProduct(payload);
-                    case 'merge': return productEvents.mergeProducts(payload);
+                    case 'edit': return productEvents.updateProduct(product);
+                    case 'delete': return productEvents.deleteProduct(product);
+                    case 'merge': return productEvents.mergeProducts(product);
                   }
                 }),
               );

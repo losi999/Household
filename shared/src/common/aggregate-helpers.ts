@@ -61,6 +61,12 @@ export const populateAggregate = (localField: string, from: string, pipeline?: P
   },
 ];
 
+// The full name of a product is built from its parents, so they are looked up together with the product
+export const productAggregate: PipelineStage.Lookup['$lookup']['pipeline'] = [
+  ...populateAggregate('genericProduct', 'products'),
+  ...populateAggregate('specificProduct', 'products'),
+];
+
 export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] = [
   ...populateAggregate('recipient', 'recipients'),
   {
@@ -137,7 +143,7 @@ export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] =
     },
   },
   lookup('projects', 'allProjects'),
-  lookup('products', 'allProducts'),
+  lookup('products', 'allProducts', productAggregate),
   lookup('categories', 'allCategories', [
     {
       $lookup: {

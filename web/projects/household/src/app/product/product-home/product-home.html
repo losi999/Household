@@ -1,6 +1,8 @@
 <household-toolbar title="Termékek">
   <button matIconButton (click)="create()" type="button">
     <mat-icon>add</mat-icon>
+  </button><button matIconButton (click)="onTEst()" type="button">
+    <mat-icon>delete</mat-icon>
   </button>
 </household-toolbar>
 <household-product-list [products]="productStore.productList()" />

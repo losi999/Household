@@ -12,36 +12,25 @@ describe('ProductList', () => {
   let fixture: ComponentFixture<ProductList>;
   let selector: IElementSelector;
 
-  const variant1 = testDataFactory.product.treeItem.variant({
-    name: 'variant 1',
+  const generic = testDataFactory.product.response.generic();
+  const specific = testDataFactory.product.response.specific({
+    genericProductId: generic.productId,
   });
-  const variant2 = testDataFactory.product.treeItem.variant({
-    name: 'variant 2',
+  const variant = testDataFactory.product.response.variant({
+    genericProductId: generic.productId,
+    specificProductId: specific.productId,
   });
-  const specific1 = testDataFactory.product.treeItem.specific({
-    name: 'specific 1',
-    children: [
-      variant1,
-      variant2,
-    ],
-  });
-  const specific2 = testDataFactory.product.treeItem.specific({
-    name: 'specific 2',
-  });
-  const generic1 = testDataFactory.product.tree({
-    children: [
-      specific1,
-      specific2,
-    ],
-  });
-  const generic2 = testDataFactory.product.tree();
+  const otherGeneric = testDataFactory.product.response.generic();
 
+  // every product is followed by its children
   const products = [
-    generic1,
-    generic2,
+    generic,
+    specific,
+    variant,
+    otherGeneric,
   ];
 
-  const render = async (productList: Responses.ProductTree[] = products) => {
+  const render = async (productList: Responses.Product[] = products) => {
     TestBed.resetTestingModule();
 
     await TestBed.configureTestingModule({
@@ -74,28 +63,12 @@ describe('ProductList', () => {
   });
 
   describe('list items', () => {
-    it('should be rendered for every product of the tree, each parent followed by its children', async () => {
+    it('should be rendered for every product in the given order', async () => {
       await render();
 
       const listItems = selector.listComponents<ProductListItem>(ProductListItemStub, MatActionList);
 
-      expect(listItems.map(listItem => listItem.componentInstance.product())).toEqual([
-        generic1,
-        specific1,
-        variant1,
-        variant2,
-        specific2,
-        generic2,
-      ]);
-    });
-
-    it('should be rendered for generic products without children', async () => {
-      await render([generic2]);
-
-      const listItems = selector.listComponents<ProductListItem>(ProductListItemStub, MatActionList);
-
-      expect(listItems.length).toBe(1);
-      expect(listItems[0].componentInstance.product()).toEqual(generic2);
+      expect(listItems.map(listItem => listItem.componentInstance.product())).toEqual(products);
     });
 
     it('should not be rendered if there are no products', async () => {

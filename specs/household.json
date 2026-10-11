@@ -1185,115 +1185,137 @@
         ],
         "responses": {
           "200": {
-            "description": "List of products grouped by category",
+            "description": "List of products ordered by their full name, every product is followed by its children",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
                     "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                      "name": {
-                        "type": "string",
-                        "minLength": 1
-                      },
-                      "productId": {
-                        "type": "string",
-                        "pattern": "^[a-f0-9]{24}$"
-                      },
-                      "productType": {
-                        "type": "string",
-                        "enum": [
-                          "generic"
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "productId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          "productType": {
+                            "type": "string",
+                            "enum": [
+                              "generic"
+                            ]
+                          },
+                          "fullName": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "productId",
+                          "productType",
+                          "fullName"
                         ]
                       },
-                      "children": {
-                        "type": "array",
-                        "minItems": 1,
-                        "items": {
-                          "type": "object",
-                          "additionalProperties": false,
-                          "properties": {
-                            "productId": {
-                              "type": "string",
-                              "pattern": "^[a-f0-9]{24}$"
-                            },
-                            "name": {
-                              "type": "string",
-                              "minLength": 1
-                            },
-                            "unitOfMeasurement": {
-                              "type": "string",
-                              "enum": [
-                                "cm",
-                                "db",
-                                "g",
-                                "kg",
-                                "l",
-                                "m",
-                                "ml"
-                              ]
-                            },
-                            "measurement": {
-                              "type": "number",
-                              "exclusiveMinimum": 0
-                            },
-                            "productType": {
-                              "type": "string",
-                              "enum": [
-                                "specific"
-                              ]
-                            },
-                            "fullName": {
-                              "type": "string",
-                              "minLength": 1
-                            },
-                            "children": {
-                              "type": "array",
-                              "minItems": 1,
-                              "items": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "properties": {
-                                  "productId": {
-                                    "type": "string",
-                                    "pattern": "^[a-f0-9]{24}$"
-                                  },
-                                  "name": {
-                                    "type": "string",
-                                    "minLength": 1
-                                  },
-                                  "productType": {
-                                    "type": "string",
-                                    "enum": [
-                                      "variant"
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "productId",
-                                  "name",
-                                  "productType"
-                                ]
-                              }
-                            }
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
                           },
-                          "required": [
-                            "productId",
-                            "name",
-                            "unitOfMeasurement",
-                            "measurement",
-                            "productType",
-                            "fullName"
-                          ]
-                        }
+                          "productId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          "unitOfMeasurement": {
+                            "type": "string",
+                            "enum": [
+                              "cm",
+                              "db",
+                              "g",
+                              "kg",
+                              "l",
+                              "m",
+                              "ml"
+                            ]
+                          },
+                          "measurement": {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                          },
+                          "productType": {
+                            "type": "string",
+                            "enum": [
+                              "specific"
+                            ]
+                          },
+                          "fullName": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "genericProductId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "productId",
+                          "unitOfMeasurement",
+                          "measurement",
+                          "productType",
+                          "fullName",
+                          "genericProductId"
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "productId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          "productType": {
+                            "type": "string",
+                            "enum": [
+                              "variant"
+                            ]
+                          },
+                          "fullName": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "genericProductId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          },
+                          "specificProductId": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{24}$"
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "productId",
+                          "productType",
+                          "fullName",
+                          "genericProductId",
+                          "specificProductId"
+                        ]
                       }
-                    },
-                    "required": [
-                      "name",
-                      "productId",
-                      "productType"
                     ]
                   }
                 }
@@ -1311,8 +1333,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": false,
-                "properties": {},
                 "oneOf": [
                   {
                     "type": "object",
@@ -1452,8 +1472,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": false,
-                "properties": {},
                 "oneOf": [
                   {
                     "type": "object",
@@ -1859,8 +1877,6 @@
                           },
                           "product": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "properties": {},
                             "oneOf": [
                               {
                                 "type": "object",
@@ -1879,12 +1895,17 @@
                                     "enum": [
                                       "generic"
                                     ]
+                                  },
+                                  "fullName": {
+                                    "type": "string",
+                                    "minLength": 1
                                   }
                                 },
                                 "required": [
                                   "name",
                                   "productId",
-                                  "productType"
+                                  "productType",
+                                  "fullName"
                                 ]
                               },
                               {
@@ -1921,30 +1942,13 @@
                                       "specific"
                                     ]
                                   },
-                                  "genericProduct": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                      },
-                                      "productId": {
-                                        "type": "string",
-                                        "pattern": "^[a-f0-9]{24}$"
-                                      },
-                                      "productType": {
-                                        "type": "string",
-                                        "enum": [
-                                          "generic"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "name",
-                                      "productId",
-                                      "productType"
-                                    ]
+                                  "fullName": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "genericProductId": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{24}$"
                                   }
                                 },
                                 "required": [
@@ -1953,7 +1957,8 @@
                                   "unitOfMeasurement",
                                   "measurement",
                                   "productType",
-                                  "genericProduct"
+                                  "fullName",
+                                  "genericProductId"
                                 ]
                               },
                               {
@@ -1974,107 +1979,26 @@
                                       "variant"
                                     ]
                                   },
-                                  "genericProduct": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                      },
-                                      "productId": {
-                                        "type": "string",
-                                        "pattern": "^[a-f0-9]{24}$"
-                                      },
-                                      "productType": {
-                                        "type": "string",
-                                        "enum": [
-                                          "generic"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "name",
-                                      "productId",
-                                      "productType"
-                                    ]
+                                  "fullName": {
+                                    "type": "string",
+                                    "minLength": 1
                                   },
-                                  "specificProduct": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                      },
-                                      "productId": {
-                                        "type": "string",
-                                        "pattern": "^[a-f0-9]{24}$"
-                                      },
-                                      "unitOfMeasurement": {
-                                        "type": "string",
-                                        "enum": [
-                                          "cm",
-                                          "db",
-                                          "g",
-                                          "kg",
-                                          "l",
-                                          "m",
-                                          "ml"
-                                        ]
-                                      },
-                                      "measurement": {
-                                        "type": "number",
-                                        "exclusiveMinimum": 0
-                                      },
-                                      "productType": {
-                                        "type": "string",
-                                        "enum": [
-                                          "specific"
-                                        ]
-                                      },
-                                      "genericProduct": {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "name": {
-                                            "type": "string",
-                                            "minLength": 1
-                                          },
-                                          "productId": {
-                                            "type": "string",
-                                            "pattern": "^[a-f0-9]{24}$"
-                                          },
-                                          "productType": {
-                                            "type": "string",
-                                            "enum": [
-                                              "generic"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "name",
-                                          "productId",
-                                          "productType"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "name",
-                                      "productId",
-                                      "unitOfMeasurement",
-                                      "measurement",
-                                      "productType",
-                                      "genericProduct"
-                                    ]
+                                  "genericProductId": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{24}$"
+                                  },
+                                  "specificProductId": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{24}$"
                                   }
                                 },
                                 "required": [
                                   "name",
                                   "productId",
                                   "productType",
-                                  "genericProduct",
-                                  "specificProduct"
+                                  "fullName",
+                                  "genericProductId",
+                                  "specificProductId"
                                 ]
                               }
                             ]
@@ -2469,8 +2393,6 @@
                                 },
                                 "product": {
                                   "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {},
                                   "oneOf": [
                                     {
                                       "type": "object",
@@ -2489,12 +2411,17 @@
                                           "enum": [
                                             "generic"
                                           ]
+                                        },
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
                                         }
                                       },
                                       "required": [
                                         "name",
                                         "productId",
-                                        "productType"
+                                        "productType",
+                                        "fullName"
                                       ]
                                     },
                                     {
@@ -2531,30 +2458,13 @@
                                             "specific"
                                           ]
                                         },
-                                        "genericProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "generic"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "productType"
-                                          ]
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "genericProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
                                         }
                                       },
                                       "required": [
@@ -2563,7 +2473,8 @@
                                         "unitOfMeasurement",
                                         "measurement",
                                         "productType",
-                                        "genericProduct"
+                                        "fullName",
+                                        "genericProductId"
                                       ]
                                     },
                                     {
@@ -2584,107 +2495,26 @@
                                             "variant"
                                           ]
                                         },
-                                        "genericProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "generic"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "productType"
-                                          ]
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
                                         },
-                                        "specificProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "unitOfMeasurement": {
-                                              "type": "string",
-                                              "enum": [
-                                                "cm",
-                                                "db",
-                                                "g",
-                                                "kg",
-                                                "l",
-                                                "m",
-                                                "ml"
-                                              ]
-                                            },
-                                            "measurement": {
-                                              "type": "number",
-                                              "exclusiveMinimum": 0
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "specific"
-                                              ]
-                                            },
-                                            "genericProduct": {
-                                              "type": "object",
-                                              "additionalProperties": false,
-                                              "properties": {
-                                                "name": {
-                                                  "type": "string",
-                                                  "minLength": 1
-                                                },
-                                                "productId": {
-                                                  "type": "string",
-                                                  "pattern": "^[a-f0-9]{24}$"
-                                                },
-                                                "productType": {
-                                                  "type": "string",
-                                                  "enum": [
-                                                    "generic"
-                                                  ]
-                                                }
-                                              },
-                                              "required": [
-                                                "name",
-                                                "productId",
-                                                "productType"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "unitOfMeasurement",
-                                            "measurement",
-                                            "productType",
-                                            "genericProduct"
-                                          ]
+                                        "genericProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
+                                        },
+                                        "specificProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
                                         }
                                       },
                                       "required": [
                                         "name",
                                         "productId",
                                         "productType",
-                                        "genericProduct",
-                                        "specificProduct"
+                                        "fullName",
+                                        "genericProductId",
+                                        "specificProductId"
                                       ]
                                     }
                                   ]
@@ -2859,8 +2689,6 @@
                                 },
                                 "product": {
                                   "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {},
                                   "oneOf": [
                                     {
                                       "type": "object",
@@ -2879,12 +2707,17 @@
                                           "enum": [
                                             "generic"
                                           ]
+                                        },
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
                                         }
                                       },
                                       "required": [
                                         "name",
                                         "productId",
-                                        "productType"
+                                        "productType",
+                                        "fullName"
                                       ]
                                     },
                                     {
@@ -2921,30 +2754,13 @@
                                             "specific"
                                           ]
                                         },
-                                        "genericProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "generic"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "productType"
-                                          ]
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "genericProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
                                         }
                                       },
                                       "required": [
@@ -2953,7 +2769,8 @@
                                         "unitOfMeasurement",
                                         "measurement",
                                         "productType",
-                                        "genericProduct"
+                                        "fullName",
+                                        "genericProductId"
                                       ]
                                     },
                                     {
@@ -2974,107 +2791,26 @@
                                             "variant"
                                           ]
                                         },
-                                        "genericProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "generic"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "productType"
-                                          ]
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
                                         },
-                                        "specificProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "unitOfMeasurement": {
-                                              "type": "string",
-                                              "enum": [
-                                                "cm",
-                                                "db",
-                                                "g",
-                                                "kg",
-                                                "l",
-                                                "m",
-                                                "ml"
-                                              ]
-                                            },
-                                            "measurement": {
-                                              "type": "number",
-                                              "exclusiveMinimum": 0
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "specific"
-                                              ]
-                                            },
-                                            "genericProduct": {
-                                              "type": "object",
-                                              "additionalProperties": false,
-                                              "properties": {
-                                                "name": {
-                                                  "type": "string",
-                                                  "minLength": 1
-                                                },
-                                                "productId": {
-                                                  "type": "string",
-                                                  "pattern": "^[a-f0-9]{24}$"
-                                                },
-                                                "productType": {
-                                                  "type": "string",
-                                                  "enum": [
-                                                    "generic"
-                                                  ]
-                                                }
-                                              },
-                                              "required": [
-                                                "name",
-                                                "productId",
-                                                "productType"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "unitOfMeasurement",
-                                            "measurement",
-                                            "productType",
-                                            "genericProduct"
-                                          ]
+                                        "genericProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
+                                        },
+                                        "specificProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
                                         }
                                       },
                                       "required": [
                                         "name",
                                         "productId",
                                         "productType",
-                                        "genericProduct",
-                                        "specificProduct"
+                                        "fullName",
+                                        "genericProductId",
+                                        "specificProductId"
                                       ]
                                     }
                                   ]
@@ -3374,8 +3110,6 @@
                           },
                           "product": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "properties": {},
                             "oneOf": [
                               {
                                 "type": "object",
@@ -3394,12 +3128,17 @@
                                     "enum": [
                                       "generic"
                                     ]
+                                  },
+                                  "fullName": {
+                                    "type": "string",
+                                    "minLength": 1
                                   }
                                 },
                                 "required": [
                                   "name",
                                   "productId",
-                                  "productType"
+                                  "productType",
+                                  "fullName"
                                 ]
                               },
                               {
@@ -3436,30 +3175,13 @@
                                       "specific"
                                     ]
                                   },
-                                  "genericProduct": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                      },
-                                      "productId": {
-                                        "type": "string",
-                                        "pattern": "^[a-f0-9]{24}$"
-                                      },
-                                      "productType": {
-                                        "type": "string",
-                                        "enum": [
-                                          "generic"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "name",
-                                      "productId",
-                                      "productType"
-                                    ]
+                                  "fullName": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "genericProductId": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{24}$"
                                   }
                                 },
                                 "required": [
@@ -3468,7 +3190,8 @@
                                   "unitOfMeasurement",
                                   "measurement",
                                   "productType",
-                                  "genericProduct"
+                                  "fullName",
+                                  "genericProductId"
                                 ]
                               },
                               {
@@ -3489,107 +3212,26 @@
                                       "variant"
                                     ]
                                   },
-                                  "genericProduct": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                      },
-                                      "productId": {
-                                        "type": "string",
-                                        "pattern": "^[a-f0-9]{24}$"
-                                      },
-                                      "productType": {
-                                        "type": "string",
-                                        "enum": [
-                                          "generic"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "name",
-                                      "productId",
-                                      "productType"
-                                    ]
+                                  "fullName": {
+                                    "type": "string",
+                                    "minLength": 1
                                   },
-                                  "specificProduct": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                      },
-                                      "productId": {
-                                        "type": "string",
-                                        "pattern": "^[a-f0-9]{24}$"
-                                      },
-                                      "unitOfMeasurement": {
-                                        "type": "string",
-                                        "enum": [
-                                          "cm",
-                                          "db",
-                                          "g",
-                                          "kg",
-                                          "l",
-                                          "m",
-                                          "ml"
-                                        ]
-                                      },
-                                      "measurement": {
-                                        "type": "number",
-                                        "exclusiveMinimum": 0
-                                      },
-                                      "productType": {
-                                        "type": "string",
-                                        "enum": [
-                                          "specific"
-                                        ]
-                                      },
-                                      "genericProduct": {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "name": {
-                                            "type": "string",
-                                            "minLength": 1
-                                          },
-                                          "productId": {
-                                            "type": "string",
-                                            "pattern": "^[a-f0-9]{24}$"
-                                          },
-                                          "productType": {
-                                            "type": "string",
-                                            "enum": [
-                                              "generic"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "name",
-                                          "productId",
-                                          "productType"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "name",
-                                      "productId",
-                                      "unitOfMeasurement",
-                                      "measurement",
-                                      "productType",
-                                      "genericProduct"
-                                    ]
+                                  "genericProductId": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{24}$"
+                                  },
+                                  "specificProductId": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{24}$"
                                   }
                                 },
                                 "required": [
                                   "name",
                                   "productId",
                                   "productType",
-                                  "genericProduct",
-                                  "specificProduct"
+                                  "fullName",
+                                  "genericProductId",
+                                  "specificProductId"
                                 ]
                               }
                             ]
@@ -3879,8 +3521,6 @@
                           },
                           "product": {
                             "type": "object",
-                            "additionalProperties": false,
-                            "properties": {},
                             "oneOf": [
                               {
                                 "type": "object",
@@ -3899,12 +3539,17 @@
                                     "enum": [
                                       "generic"
                                     ]
+                                  },
+                                  "fullName": {
+                                    "type": "string",
+                                    "minLength": 1
                                   }
                                 },
                                 "required": [
                                   "name",
                                   "productId",
-                                  "productType"
+                                  "productType",
+                                  "fullName"
                                 ]
                               },
                               {
@@ -3941,30 +3586,13 @@
                                       "specific"
                                     ]
                                   },
-                                  "genericProduct": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                      },
-                                      "productId": {
-                                        "type": "string",
-                                        "pattern": "^[a-f0-9]{24}$"
-                                      },
-                                      "productType": {
-                                        "type": "string",
-                                        "enum": [
-                                          "generic"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "name",
-                                      "productId",
-                                      "productType"
-                                    ]
+                                  "fullName": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "genericProductId": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{24}$"
                                   }
                                 },
                                 "required": [
@@ -3973,7 +3601,8 @@
                                   "unitOfMeasurement",
                                   "measurement",
                                   "productType",
-                                  "genericProduct"
+                                  "fullName",
+                                  "genericProductId"
                                 ]
                               },
                               {
@@ -3994,107 +3623,26 @@
                                       "variant"
                                     ]
                                   },
-                                  "genericProduct": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                      },
-                                      "productId": {
-                                        "type": "string",
-                                        "pattern": "^[a-f0-9]{24}$"
-                                      },
-                                      "productType": {
-                                        "type": "string",
-                                        "enum": [
-                                          "generic"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "name",
-                                      "productId",
-                                      "productType"
-                                    ]
+                                  "fullName": {
+                                    "type": "string",
+                                    "minLength": 1
                                   },
-                                  "specificProduct": {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "name": {
-                                        "type": "string",
-                                        "minLength": 1
-                                      },
-                                      "productId": {
-                                        "type": "string",
-                                        "pattern": "^[a-f0-9]{24}$"
-                                      },
-                                      "unitOfMeasurement": {
-                                        "type": "string",
-                                        "enum": [
-                                          "cm",
-                                          "db",
-                                          "g",
-                                          "kg",
-                                          "l",
-                                          "m",
-                                          "ml"
-                                        ]
-                                      },
-                                      "measurement": {
-                                        "type": "number",
-                                        "exclusiveMinimum": 0
-                                      },
-                                      "productType": {
-                                        "type": "string",
-                                        "enum": [
-                                          "specific"
-                                        ]
-                                      },
-                                      "genericProduct": {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "name": {
-                                            "type": "string",
-                                            "minLength": 1
-                                          },
-                                          "productId": {
-                                            "type": "string",
-                                            "pattern": "^[a-f0-9]{24}$"
-                                          },
-                                          "productType": {
-                                            "type": "string",
-                                            "enum": [
-                                              "generic"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "name",
-                                          "productId",
-                                          "productType"
-                                        ]
-                                      }
-                                    },
-                                    "required": [
-                                      "name",
-                                      "productId",
-                                      "unitOfMeasurement",
-                                      "measurement",
-                                      "productType",
-                                      "genericProduct"
-                                    ]
+                                  "genericProductId": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{24}$"
+                                  },
+                                  "specificProductId": {
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{24}$"
                                   }
                                 },
                                 "required": [
                                   "name",
                                   "productId",
                                   "productType",
-                                  "genericProduct",
-                                  "specificProduct"
+                                  "fullName",
+                                  "genericProductId",
+                                  "specificProductId"
                                 ]
                               }
                             ]
@@ -4485,8 +4033,6 @@
                         },
                         "product": {
                           "type": "object",
-                          "additionalProperties": false,
-                          "properties": {},
                           "oneOf": [
                             {
                               "type": "object",
@@ -4505,12 +4051,17 @@
                                   "enum": [
                                     "generic"
                                   ]
+                                },
+                                "fullName": {
+                                  "type": "string",
+                                  "minLength": 1
                                 }
                               },
                               "required": [
                                 "name",
                                 "productId",
-                                "productType"
+                                "productType",
+                                "fullName"
                               ]
                             },
                             {
@@ -4547,30 +4098,13 @@
                                     "specific"
                                   ]
                                 },
-                                "genericProduct": {
-                                  "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "name": {
-                                      "type": "string",
-                                      "minLength": 1
-                                    },
-                                    "productId": {
-                                      "type": "string",
-                                      "pattern": "^[a-f0-9]{24}$"
-                                    },
-                                    "productType": {
-                                      "type": "string",
-                                      "enum": [
-                                        "generic"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "name",
-                                    "productId",
-                                    "productType"
-                                  ]
+                                "fullName": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "genericProductId": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{24}$"
                                 }
                               },
                               "required": [
@@ -4579,7 +4113,8 @@
                                 "unitOfMeasurement",
                                 "measurement",
                                 "productType",
-                                "genericProduct"
+                                "fullName",
+                                "genericProductId"
                               ]
                             },
                             {
@@ -4600,107 +4135,26 @@
                                     "variant"
                                   ]
                                 },
-                                "genericProduct": {
-                                  "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "name": {
-                                      "type": "string",
-                                      "minLength": 1
-                                    },
-                                    "productId": {
-                                      "type": "string",
-                                      "pattern": "^[a-f0-9]{24}$"
-                                    },
-                                    "productType": {
-                                      "type": "string",
-                                      "enum": [
-                                        "generic"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "name",
-                                    "productId",
-                                    "productType"
-                                  ]
+                                "fullName": {
+                                  "type": "string",
+                                  "minLength": 1
                                 },
-                                "specificProduct": {
-                                  "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "name": {
-                                      "type": "string",
-                                      "minLength": 1
-                                    },
-                                    "productId": {
-                                      "type": "string",
-                                      "pattern": "^[a-f0-9]{24}$"
-                                    },
-                                    "unitOfMeasurement": {
-                                      "type": "string",
-                                      "enum": [
-                                        "cm",
-                                        "db",
-                                        "g",
-                                        "kg",
-                                        "l",
-                                        "m",
-                                        "ml"
-                                      ]
-                                    },
-                                    "measurement": {
-                                      "type": "number",
-                                      "exclusiveMinimum": 0
-                                    },
-                                    "productType": {
-                                      "type": "string",
-                                      "enum": [
-                                        "specific"
-                                      ]
-                                    },
-                                    "genericProduct": {
-                                      "type": "object",
-                                      "additionalProperties": false,
-                                      "properties": {
-                                        "name": {
-                                          "type": "string",
-                                          "minLength": 1
-                                        },
-                                        "productId": {
-                                          "type": "string",
-                                          "pattern": "^[a-f0-9]{24}$"
-                                        },
-                                        "productType": {
-                                          "type": "string",
-                                          "enum": [
-                                            "generic"
-                                          ]
-                                        }
-                                      },
-                                      "required": [
-                                        "name",
-                                        "productId",
-                                        "productType"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "name",
-                                    "productId",
-                                    "unitOfMeasurement",
-                                    "measurement",
-                                    "productType",
-                                    "genericProduct"
-                                  ]
+                                "genericProductId": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{24}$"
+                                },
+                                "specificProductId": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{24}$"
                                 }
                               },
                               "required": [
                                 "name",
                                 "productId",
                                 "productType",
-                                "genericProduct",
-                                "specificProduct"
+                                "fullName",
+                                "genericProductId",
+                                "specificProductId"
                               ]
                             }
                           ]
@@ -5095,8 +4549,6 @@
                               },
                               "product": {
                                 "type": "object",
-                                "additionalProperties": false,
-                                "properties": {},
                                 "oneOf": [
                                   {
                                     "type": "object",
@@ -5115,12 +4567,17 @@
                                         "enum": [
                                           "generic"
                                         ]
+                                      },
+                                      "fullName": {
+                                        "type": "string",
+                                        "minLength": 1
                                       }
                                     },
                                     "required": [
                                       "name",
                                       "productId",
-                                      "productType"
+                                      "productType",
+                                      "fullName"
                                     ]
                                   },
                                   {
@@ -5157,30 +4614,13 @@
                                           "specific"
                                         ]
                                       },
-                                      "genericProduct": {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "name": {
-                                            "type": "string",
-                                            "minLength": 1
-                                          },
-                                          "productId": {
-                                            "type": "string",
-                                            "pattern": "^[a-f0-9]{24}$"
-                                          },
-                                          "productType": {
-                                            "type": "string",
-                                            "enum": [
-                                              "generic"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "name",
-                                          "productId",
-                                          "productType"
-                                        ]
+                                      "fullName": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "genericProductId": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{24}$"
                                       }
                                     },
                                     "required": [
@@ -5189,7 +4629,8 @@
                                       "unitOfMeasurement",
                                       "measurement",
                                       "productType",
-                                      "genericProduct"
+                                      "fullName",
+                                      "genericProductId"
                                     ]
                                   },
                                   {
@@ -5210,107 +4651,26 @@
                                           "variant"
                                         ]
                                       },
-                                      "genericProduct": {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "name": {
-                                            "type": "string",
-                                            "minLength": 1
-                                          },
-                                          "productId": {
-                                            "type": "string",
-                                            "pattern": "^[a-f0-9]{24}$"
-                                          },
-                                          "productType": {
-                                            "type": "string",
-                                            "enum": [
-                                              "generic"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "name",
-                                          "productId",
-                                          "productType"
-                                        ]
+                                      "fullName": {
+                                        "type": "string",
+                                        "minLength": 1
                                       },
-                                      "specificProduct": {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "name": {
-                                            "type": "string",
-                                            "minLength": 1
-                                          },
-                                          "productId": {
-                                            "type": "string",
-                                            "pattern": "^[a-f0-9]{24}$"
-                                          },
-                                          "unitOfMeasurement": {
-                                            "type": "string",
-                                            "enum": [
-                                              "cm",
-                                              "db",
-                                              "g",
-                                              "kg",
-                                              "l",
-                                              "m",
-                                              "ml"
-                                            ]
-                                          },
-                                          "measurement": {
-                                            "type": "number",
-                                            "exclusiveMinimum": 0
-                                          },
-                                          "productType": {
-                                            "type": "string",
-                                            "enum": [
-                                              "specific"
-                                            ]
-                                          },
-                                          "genericProduct": {
-                                            "type": "object",
-                                            "additionalProperties": false,
-                                            "properties": {
-                                              "name": {
-                                                "type": "string",
-                                                "minLength": 1
-                                              },
-                                              "productId": {
-                                                "type": "string",
-                                                "pattern": "^[a-f0-9]{24}$"
-                                              },
-                                              "productType": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "generic"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "name",
-                                              "productId",
-                                              "productType"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "name",
-                                          "productId",
-                                          "unitOfMeasurement",
-                                          "measurement",
-                                          "productType",
-                                          "genericProduct"
-                                        ]
+                                      "genericProductId": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{24}$"
+                                      },
+                                      "specificProductId": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{24}$"
                                       }
                                     },
                                     "required": [
                                       "name",
                                       "productId",
                                       "productType",
-                                      "genericProduct",
-                                      "specificProduct"
+                                      "fullName",
+                                      "genericProductId",
+                                      "specificProductId"
                                     ]
                                   }
                                 ]
@@ -5485,8 +4845,6 @@
                               },
                               "product": {
                                 "type": "object",
-                                "additionalProperties": false,
-                                "properties": {},
                                 "oneOf": [
                                   {
                                     "type": "object",
@@ -5505,12 +4863,17 @@
                                         "enum": [
                                           "generic"
                                         ]
+                                      },
+                                      "fullName": {
+                                        "type": "string",
+                                        "minLength": 1
                                       }
                                     },
                                     "required": [
                                       "name",
                                       "productId",
-                                      "productType"
+                                      "productType",
+                                      "fullName"
                                     ]
                                   },
                                   {
@@ -5547,30 +4910,13 @@
                                           "specific"
                                         ]
                                       },
-                                      "genericProduct": {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "name": {
-                                            "type": "string",
-                                            "minLength": 1
-                                          },
-                                          "productId": {
-                                            "type": "string",
-                                            "pattern": "^[a-f0-9]{24}$"
-                                          },
-                                          "productType": {
-                                            "type": "string",
-                                            "enum": [
-                                              "generic"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "name",
-                                          "productId",
-                                          "productType"
-                                        ]
+                                      "fullName": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "genericProductId": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{24}$"
                                       }
                                     },
                                     "required": [
@@ -5579,7 +4925,8 @@
                                       "unitOfMeasurement",
                                       "measurement",
                                       "productType",
-                                      "genericProduct"
+                                      "fullName",
+                                      "genericProductId"
                                     ]
                                   },
                                   {
@@ -5600,107 +4947,26 @@
                                           "variant"
                                         ]
                                       },
-                                      "genericProduct": {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "name": {
-                                            "type": "string",
-                                            "minLength": 1
-                                          },
-                                          "productId": {
-                                            "type": "string",
-                                            "pattern": "^[a-f0-9]{24}$"
-                                          },
-                                          "productType": {
-                                            "type": "string",
-                                            "enum": [
-                                              "generic"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "name",
-                                          "productId",
-                                          "productType"
-                                        ]
+                                      "fullName": {
+                                        "type": "string",
+                                        "minLength": 1
                                       },
-                                      "specificProduct": {
-                                        "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {
-                                          "name": {
-                                            "type": "string",
-                                            "minLength": 1
-                                          },
-                                          "productId": {
-                                            "type": "string",
-                                            "pattern": "^[a-f0-9]{24}$"
-                                          },
-                                          "unitOfMeasurement": {
-                                            "type": "string",
-                                            "enum": [
-                                              "cm",
-                                              "db",
-                                              "g",
-                                              "kg",
-                                              "l",
-                                              "m",
-                                              "ml"
-                                            ]
-                                          },
-                                          "measurement": {
-                                            "type": "number",
-                                            "exclusiveMinimum": 0
-                                          },
-                                          "productType": {
-                                            "type": "string",
-                                            "enum": [
-                                              "specific"
-                                            ]
-                                          },
-                                          "genericProduct": {
-                                            "type": "object",
-                                            "additionalProperties": false,
-                                            "properties": {
-                                              "name": {
-                                                "type": "string",
-                                                "minLength": 1
-                                              },
-                                              "productId": {
-                                                "type": "string",
-                                                "pattern": "^[a-f0-9]{24}$"
-                                              },
-                                              "productType": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "generic"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "name",
-                                              "productId",
-                                              "productType"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "name",
-                                          "productId",
-                                          "unitOfMeasurement",
-                                          "measurement",
-                                          "productType",
-                                          "genericProduct"
-                                        ]
+                                      "genericProductId": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{24}$"
+                                      },
+                                      "specificProductId": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{24}$"
                                       }
                                     },
                                     "required": [
                                       "name",
                                       "productId",
                                       "productType",
-                                      "genericProduct",
-                                      "specificProduct"
+                                      "fullName",
+                                      "genericProductId",
+                                      "specificProductId"
                                     ]
                                   }
                                 ]
@@ -6000,8 +5266,6 @@
                         },
                         "product": {
                           "type": "object",
-                          "additionalProperties": false,
-                          "properties": {},
                           "oneOf": [
                             {
                               "type": "object",
@@ -6020,12 +5284,17 @@
                                   "enum": [
                                     "generic"
                                   ]
+                                },
+                                "fullName": {
+                                  "type": "string",
+                                  "minLength": 1
                                 }
                               },
                               "required": [
                                 "name",
                                 "productId",
-                                "productType"
+                                "productType",
+                                "fullName"
                               ]
                             },
                             {
@@ -6062,30 +5331,13 @@
                                     "specific"
                                   ]
                                 },
-                                "genericProduct": {
-                                  "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "name": {
-                                      "type": "string",
-                                      "minLength": 1
-                                    },
-                                    "productId": {
-                                      "type": "string",
-                                      "pattern": "^[a-f0-9]{24}$"
-                                    },
-                                    "productType": {
-                                      "type": "string",
-                                      "enum": [
-                                        "generic"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "name",
-                                    "productId",
-                                    "productType"
-                                  ]
+                                "fullName": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "genericProductId": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{24}$"
                                 }
                               },
                               "required": [
@@ -6094,7 +5346,8 @@
                                 "unitOfMeasurement",
                                 "measurement",
                                 "productType",
-                                "genericProduct"
+                                "fullName",
+                                "genericProductId"
                               ]
                             },
                             {
@@ -6115,107 +5368,26 @@
                                     "variant"
                                   ]
                                 },
-                                "genericProduct": {
-                                  "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "name": {
-                                      "type": "string",
-                                      "minLength": 1
-                                    },
-                                    "productId": {
-                                      "type": "string",
-                                      "pattern": "^[a-f0-9]{24}$"
-                                    },
-                                    "productType": {
-                                      "type": "string",
-                                      "enum": [
-                                        "generic"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "name",
-                                    "productId",
-                                    "productType"
-                                  ]
+                                "fullName": {
+                                  "type": "string",
+                                  "minLength": 1
                                 },
-                                "specificProduct": {
-                                  "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "name": {
-                                      "type": "string",
-                                      "minLength": 1
-                                    },
-                                    "productId": {
-                                      "type": "string",
-                                      "pattern": "^[a-f0-9]{24}$"
-                                    },
-                                    "unitOfMeasurement": {
-                                      "type": "string",
-                                      "enum": [
-                                        "cm",
-                                        "db",
-                                        "g",
-                                        "kg",
-                                        "l",
-                                        "m",
-                                        "ml"
-                                      ]
-                                    },
-                                    "measurement": {
-                                      "type": "number",
-                                      "exclusiveMinimum": 0
-                                    },
-                                    "productType": {
-                                      "type": "string",
-                                      "enum": [
-                                        "specific"
-                                      ]
-                                    },
-                                    "genericProduct": {
-                                      "type": "object",
-                                      "additionalProperties": false,
-                                      "properties": {
-                                        "name": {
-                                          "type": "string",
-                                          "minLength": 1
-                                        },
-                                        "productId": {
-                                          "type": "string",
-                                          "pattern": "^[a-f0-9]{24}$"
-                                        },
-                                        "productType": {
-                                          "type": "string",
-                                          "enum": [
-                                            "generic"
-                                          ]
-                                        }
-                                      },
-                                      "required": [
-                                        "name",
-                                        "productId",
-                                        "productType"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "name",
-                                    "productId",
-                                    "unitOfMeasurement",
-                                    "measurement",
-                                    "productType",
-                                    "genericProduct"
-                                  ]
+                                "genericProductId": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{24}$"
+                                },
+                                "specificProductId": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{24}$"
                                 }
                               },
                               "required": [
                                 "name",
                                 "productId",
                                 "productType",
-                                "genericProduct",
-                                "specificProduct"
+                                "fullName",
+                                "genericProductId",
+                                "specificProductId"
                               ]
                             }
                           ]
@@ -6505,8 +5677,6 @@
                         },
                         "product": {
                           "type": "object",
-                          "additionalProperties": false,
-                          "properties": {},
                           "oneOf": [
                             {
                               "type": "object",
@@ -6525,12 +5695,17 @@
                                   "enum": [
                                     "generic"
                                   ]
+                                },
+                                "fullName": {
+                                  "type": "string",
+                                  "minLength": 1
                                 }
                               },
                               "required": [
                                 "name",
                                 "productId",
-                                "productType"
+                                "productType",
+                                "fullName"
                               ]
                             },
                             {
@@ -6567,30 +5742,13 @@
                                     "specific"
                                   ]
                                 },
-                                "genericProduct": {
-                                  "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "name": {
-                                      "type": "string",
-                                      "minLength": 1
-                                    },
-                                    "productId": {
-                                      "type": "string",
-                                      "pattern": "^[a-f0-9]{24}$"
-                                    },
-                                    "productType": {
-                                      "type": "string",
-                                      "enum": [
-                                        "generic"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "name",
-                                    "productId",
-                                    "productType"
-                                  ]
+                                "fullName": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "genericProductId": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{24}$"
                                 }
                               },
                               "required": [
@@ -6599,7 +5757,8 @@
                                 "unitOfMeasurement",
                                 "measurement",
                                 "productType",
-                                "genericProduct"
+                                "fullName",
+                                "genericProductId"
                               ]
                             },
                             {
@@ -6620,107 +5779,26 @@
                                     "variant"
                                   ]
                                 },
-                                "genericProduct": {
-                                  "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "name": {
-                                      "type": "string",
-                                      "minLength": 1
-                                    },
-                                    "productId": {
-                                      "type": "string",
-                                      "pattern": "^[a-f0-9]{24}$"
-                                    },
-                                    "productType": {
-                                      "type": "string",
-                                      "enum": [
-                                        "generic"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "name",
-                                    "productId",
-                                    "productType"
-                                  ]
+                                "fullName": {
+                                  "type": "string",
+                                  "minLength": 1
                                 },
-                                "specificProduct": {
-                                  "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "name": {
-                                      "type": "string",
-                                      "minLength": 1
-                                    },
-                                    "productId": {
-                                      "type": "string",
-                                      "pattern": "^[a-f0-9]{24}$"
-                                    },
-                                    "unitOfMeasurement": {
-                                      "type": "string",
-                                      "enum": [
-                                        "cm",
-                                        "db",
-                                        "g",
-                                        "kg",
-                                        "l",
-                                        "m",
-                                        "ml"
-                                      ]
-                                    },
-                                    "measurement": {
-                                      "type": "number",
-                                      "exclusiveMinimum": 0
-                                    },
-                                    "productType": {
-                                      "type": "string",
-                                      "enum": [
-                                        "specific"
-                                      ]
-                                    },
-                                    "genericProduct": {
-                                      "type": "object",
-                                      "additionalProperties": false,
-                                      "properties": {
-                                        "name": {
-                                          "type": "string",
-                                          "minLength": 1
-                                        },
-                                        "productId": {
-                                          "type": "string",
-                                          "pattern": "^[a-f0-9]{24}$"
-                                        },
-                                        "productType": {
-                                          "type": "string",
-                                          "enum": [
-                                            "generic"
-                                          ]
-                                        }
-                                      },
-                                      "required": [
-                                        "name",
-                                        "productId",
-                                        "productType"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "name",
-                                    "productId",
-                                    "unitOfMeasurement",
-                                    "measurement",
-                                    "productType",
-                                    "genericProduct"
-                                  ]
+                                "genericProductId": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{24}$"
+                                },
+                                "specificProductId": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{24}$"
                                 }
                               },
                               "required": [
                                 "name",
                                 "productId",
                                 "productType",
-                                "genericProduct",
-                                "specificProduct"
+                                "fullName",
+                                "genericProductId",
+                                "specificProductId"
                               ]
                             }
                           ]
@@ -7774,8 +6852,6 @@
                                 },
                                 "product": {
                                   "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {},
                                   "oneOf": [
                                     {
                                       "type": "object",
@@ -7794,12 +6870,17 @@
                                           "enum": [
                                             "generic"
                                           ]
+                                        },
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
                                         }
                                       },
                                       "required": [
                                         "name",
                                         "productId",
-                                        "productType"
+                                        "productType",
+                                        "fullName"
                                       ]
                                     },
                                     {
@@ -7836,30 +6917,13 @@
                                             "specific"
                                           ]
                                         },
-                                        "genericProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "generic"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "productType"
-                                          ]
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "genericProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
                                         }
                                       },
                                       "required": [
@@ -7868,7 +6932,8 @@
                                         "unitOfMeasurement",
                                         "measurement",
                                         "productType",
-                                        "genericProduct"
+                                        "fullName",
+                                        "genericProductId"
                                       ]
                                     },
                                     {
@@ -7889,107 +6954,26 @@
                                             "variant"
                                           ]
                                         },
-                                        "genericProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "generic"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "productType"
-                                          ]
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
                                         },
-                                        "specificProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "unitOfMeasurement": {
-                                              "type": "string",
-                                              "enum": [
-                                                "cm",
-                                                "db",
-                                                "g",
-                                                "kg",
-                                                "l",
-                                                "m",
-                                                "ml"
-                                              ]
-                                            },
-                                            "measurement": {
-                                              "type": "number",
-                                              "exclusiveMinimum": 0
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "specific"
-                                              ]
-                                            },
-                                            "genericProduct": {
-                                              "type": "object",
-                                              "additionalProperties": false,
-                                              "properties": {
-                                                "name": {
-                                                  "type": "string",
-                                                  "minLength": 1
-                                                },
-                                                "productId": {
-                                                  "type": "string",
-                                                  "pattern": "^[a-f0-9]{24}$"
-                                                },
-                                                "productType": {
-                                                  "type": "string",
-                                                  "enum": [
-                                                    "generic"
-                                                  ]
-                                                }
-                                              },
-                                              "required": [
-                                                "name",
-                                                "productId",
-                                                "productType"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "unitOfMeasurement",
-                                            "measurement",
-                                            "productType",
-                                            "genericProduct"
-                                          ]
+                                        "genericProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
+                                        },
+                                        "specificProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
                                         }
                                       },
                                       "required": [
                                         "name",
                                         "productId",
                                         "productType",
-                                        "genericProduct",
-                                        "specificProduct"
+                                        "fullName",
+                                        "genericProductId",
+                                        "specificProductId"
                                       ]
                                     }
                                   ]
@@ -8384,8 +7368,6 @@
                                       },
                                       "product": {
                                         "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {},
                                         "oneOf": [
                                           {
                                             "type": "object",
@@ -8404,12 +7386,17 @@
                                                 "enum": [
                                                   "generic"
                                                 ]
+                                              },
+                                              "fullName": {
+                                                "type": "string",
+                                                "minLength": 1
                                               }
                                             },
                                             "required": [
                                               "name",
                                               "productId",
-                                              "productType"
+                                              "productType",
+                                              "fullName"
                                             ]
                                           },
                                           {
@@ -8446,30 +7433,13 @@
                                                   "specific"
                                                 ]
                                               },
-                                              "genericProduct": {
-                                                "type": "object",
-                                                "additionalProperties": false,
-                                                "properties": {
-                                                  "name": {
-                                                    "type": "string",
-                                                    "minLength": 1
-                                                  },
-                                                  "productId": {
-                                                    "type": "string",
-                                                    "pattern": "^[a-f0-9]{24}$"
-                                                  },
-                                                  "productType": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "generic"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "name",
-                                                  "productId",
-                                                  "productType"
-                                                ]
+                                              "fullName": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              },
+                                              "genericProductId": {
+                                                "type": "string",
+                                                "pattern": "^[a-f0-9]{24}$"
                                               }
                                             },
                                             "required": [
@@ -8478,7 +7448,8 @@
                                               "unitOfMeasurement",
                                               "measurement",
                                               "productType",
-                                              "genericProduct"
+                                              "fullName",
+                                              "genericProductId"
                                             ]
                                           },
                                           {
@@ -8499,107 +7470,26 @@
                                                   "variant"
                                                 ]
                                               },
-                                              "genericProduct": {
-                                                "type": "object",
-                                                "additionalProperties": false,
-                                                "properties": {
-                                                  "name": {
-                                                    "type": "string",
-                                                    "minLength": 1
-                                                  },
-                                                  "productId": {
-                                                    "type": "string",
-                                                    "pattern": "^[a-f0-9]{24}$"
-                                                  },
-                                                  "productType": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "generic"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "name",
-                                                  "productId",
-                                                  "productType"
-                                                ]
+                                              "fullName": {
+                                                "type": "string",
+                                                "minLength": 1
                                               },
-                                              "specificProduct": {
-                                                "type": "object",
-                                                "additionalProperties": false,
-                                                "properties": {
-                                                  "name": {
-                                                    "type": "string",
-                                                    "minLength": 1
-                                                  },
-                                                  "productId": {
-                                                    "type": "string",
-                                                    "pattern": "^[a-f0-9]{24}$"
-                                                  },
-                                                  "unitOfMeasurement": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "cm",
-                                                      "db",
-                                                      "g",
-                                                      "kg",
-                                                      "l",
-                                                      "m",
-                                                      "ml"
-                                                    ]
-                                                  },
-                                                  "measurement": {
-                                                    "type": "number",
-                                                    "exclusiveMinimum": 0
-                                                  },
-                                                  "productType": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "specific"
-                                                    ]
-                                                  },
-                                                  "genericProduct": {
-                                                    "type": "object",
-                                                    "additionalProperties": false,
-                                                    "properties": {
-                                                      "name": {
-                                                        "type": "string",
-                                                        "minLength": 1
-                                                      },
-                                                      "productId": {
-                                                        "type": "string",
-                                                        "pattern": "^[a-f0-9]{24}$"
-                                                      },
-                                                      "productType": {
-                                                        "type": "string",
-                                                        "enum": [
-                                                          "generic"
-                                                        ]
-                                                      }
-                                                    },
-                                                    "required": [
-                                                      "name",
-                                                      "productId",
-                                                      "productType"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "name",
-                                                  "productId",
-                                                  "unitOfMeasurement",
-                                                  "measurement",
-                                                  "productType",
-                                                  "genericProduct"
-                                                ]
+                                              "genericProductId": {
+                                                "type": "string",
+                                                "pattern": "^[a-f0-9]{24}$"
+                                              },
+                                              "specificProductId": {
+                                                "type": "string",
+                                                "pattern": "^[a-f0-9]{24}$"
                                               }
                                             },
                                             "required": [
                                               "name",
                                               "productId",
                                               "productType",
-                                              "genericProduct",
-                                              "specificProduct"
+                                              "fullName",
+                                              "genericProductId",
+                                              "specificProductId"
                                             ]
                                           }
                                         ]
@@ -8774,8 +7664,6 @@
                                       },
                                       "product": {
                                         "type": "object",
-                                        "additionalProperties": false,
-                                        "properties": {},
                                         "oneOf": [
                                           {
                                             "type": "object",
@@ -8794,12 +7682,17 @@
                                                 "enum": [
                                                   "generic"
                                                 ]
+                                              },
+                                              "fullName": {
+                                                "type": "string",
+                                                "minLength": 1
                                               }
                                             },
                                             "required": [
                                               "name",
                                               "productId",
-                                              "productType"
+                                              "productType",
+                                              "fullName"
                                             ]
                                           },
                                           {
@@ -8836,30 +7729,13 @@
                                                   "specific"
                                                 ]
                                               },
-                                              "genericProduct": {
-                                                "type": "object",
-                                                "additionalProperties": false,
-                                                "properties": {
-                                                  "name": {
-                                                    "type": "string",
-                                                    "minLength": 1
-                                                  },
-                                                  "productId": {
-                                                    "type": "string",
-                                                    "pattern": "^[a-f0-9]{24}$"
-                                                  },
-                                                  "productType": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "generic"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "name",
-                                                  "productId",
-                                                  "productType"
-                                                ]
+                                              "fullName": {
+                                                "type": "string",
+                                                "minLength": 1
+                                              },
+                                              "genericProductId": {
+                                                "type": "string",
+                                                "pattern": "^[a-f0-9]{24}$"
                                               }
                                             },
                                             "required": [
@@ -8868,7 +7744,8 @@
                                               "unitOfMeasurement",
                                               "measurement",
                                               "productType",
-                                              "genericProduct"
+                                              "fullName",
+                                              "genericProductId"
                                             ]
                                           },
                                           {
@@ -8889,107 +7766,26 @@
                                                   "variant"
                                                 ]
                                               },
-                                              "genericProduct": {
-                                                "type": "object",
-                                                "additionalProperties": false,
-                                                "properties": {
-                                                  "name": {
-                                                    "type": "string",
-                                                    "minLength": 1
-                                                  },
-                                                  "productId": {
-                                                    "type": "string",
-                                                    "pattern": "^[a-f0-9]{24}$"
-                                                  },
-                                                  "productType": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "generic"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "name",
-                                                  "productId",
-                                                  "productType"
-                                                ]
+                                              "fullName": {
+                                                "type": "string",
+                                                "minLength": 1
                                               },
-                                              "specificProduct": {
-                                                "type": "object",
-                                                "additionalProperties": false,
-                                                "properties": {
-                                                  "name": {
-                                                    "type": "string",
-                                                    "minLength": 1
-                                                  },
-                                                  "productId": {
-                                                    "type": "string",
-                                                    "pattern": "^[a-f0-9]{24}$"
-                                                  },
-                                                  "unitOfMeasurement": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "cm",
-                                                      "db",
-                                                      "g",
-                                                      "kg",
-                                                      "l",
-                                                      "m",
-                                                      "ml"
-                                                    ]
-                                                  },
-                                                  "measurement": {
-                                                    "type": "number",
-                                                    "exclusiveMinimum": 0
-                                                  },
-                                                  "productType": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                      "specific"
-                                                    ]
-                                                  },
-                                                  "genericProduct": {
-                                                    "type": "object",
-                                                    "additionalProperties": false,
-                                                    "properties": {
-                                                      "name": {
-                                                        "type": "string",
-                                                        "minLength": 1
-                                                      },
-                                                      "productId": {
-                                                        "type": "string",
-                                                        "pattern": "^[a-f0-9]{24}$"
-                                                      },
-                                                      "productType": {
-                                                        "type": "string",
-                                                        "enum": [
-                                                          "generic"
-                                                        ]
-                                                      }
-                                                    },
-                                                    "required": [
-                                                      "name",
-                                                      "productId",
-                                                      "productType"
-                                                    ]
-                                                  }
-                                                },
-                                                "required": [
-                                                  "name",
-                                                  "productId",
-                                                  "unitOfMeasurement",
-                                                  "measurement",
-                                                  "productType",
-                                                  "genericProduct"
-                                                ]
+                                              "genericProductId": {
+                                                "type": "string",
+                                                "pattern": "^[a-f0-9]{24}$"
+                                              },
+                                              "specificProductId": {
+                                                "type": "string",
+                                                "pattern": "^[a-f0-9]{24}$"
                                               }
                                             },
                                             "required": [
                                               "name",
                                               "productId",
                                               "productType",
-                                              "genericProduct",
-                                              "specificProduct"
+                                              "fullName",
+                                              "genericProductId",
+                                              "specificProductId"
                                             ]
                                           }
                                         ]
@@ -9289,8 +8085,6 @@
                                 },
                                 "product": {
                                   "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {},
                                   "oneOf": [
                                     {
                                       "type": "object",
@@ -9309,12 +8103,17 @@
                                           "enum": [
                                             "generic"
                                           ]
+                                        },
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
                                         }
                                       },
                                       "required": [
                                         "name",
                                         "productId",
-                                        "productType"
+                                        "productType",
+                                        "fullName"
                                       ]
                                     },
                                     {
@@ -9351,30 +8150,13 @@
                                             "specific"
                                           ]
                                         },
-                                        "genericProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "generic"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "productType"
-                                          ]
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "genericProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
                                         }
                                       },
                                       "required": [
@@ -9383,7 +8165,8 @@
                                         "unitOfMeasurement",
                                         "measurement",
                                         "productType",
-                                        "genericProduct"
+                                        "fullName",
+                                        "genericProductId"
                                       ]
                                     },
                                     {
@@ -9404,107 +8187,26 @@
                                             "variant"
                                           ]
                                         },
-                                        "genericProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "generic"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "productType"
-                                          ]
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
                                         },
-                                        "specificProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "unitOfMeasurement": {
-                                              "type": "string",
-                                              "enum": [
-                                                "cm",
-                                                "db",
-                                                "g",
-                                                "kg",
-                                                "l",
-                                                "m",
-                                                "ml"
-                                              ]
-                                            },
-                                            "measurement": {
-                                              "type": "number",
-                                              "exclusiveMinimum": 0
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "specific"
-                                              ]
-                                            },
-                                            "genericProduct": {
-                                              "type": "object",
-                                              "additionalProperties": false,
-                                              "properties": {
-                                                "name": {
-                                                  "type": "string",
-                                                  "minLength": 1
-                                                },
-                                                "productId": {
-                                                  "type": "string",
-                                                  "pattern": "^[a-f0-9]{24}$"
-                                                },
-                                                "productType": {
-                                                  "type": "string",
-                                                  "enum": [
-                                                    "generic"
-                                                  ]
-                                                }
-                                              },
-                                              "required": [
-                                                "name",
-                                                "productId",
-                                                "productType"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "unitOfMeasurement",
-                                            "measurement",
-                                            "productType",
-                                            "genericProduct"
-                                          ]
+                                        "genericProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
+                                        },
+                                        "specificProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
                                         }
                                       },
                                       "required": [
                                         "name",
                                         "productId",
                                         "productType",
-                                        "genericProduct",
-                                        "specificProduct"
+                                        "fullName",
+                                        "genericProductId",
+                                        "specificProductId"
                                       ]
                                     }
                                   ]
@@ -9794,8 +8496,6 @@
                                 },
                                 "product": {
                                   "type": "object",
-                                  "additionalProperties": false,
-                                  "properties": {},
                                   "oneOf": [
                                     {
                                       "type": "object",
@@ -9814,12 +8514,17 @@
                                           "enum": [
                                             "generic"
                                           ]
+                                        },
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
                                         }
                                       },
                                       "required": [
                                         "name",
                                         "productId",
-                                        "productType"
+                                        "productType",
+                                        "fullName"
                                       ]
                                     },
                                     {
@@ -9856,30 +8561,13 @@
                                             "specific"
                                           ]
                                         },
-                                        "genericProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "generic"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "productType"
-                                          ]
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "genericProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
                                         }
                                       },
                                       "required": [
@@ -9888,7 +8576,8 @@
                                         "unitOfMeasurement",
                                         "measurement",
                                         "productType",
-                                        "genericProduct"
+                                        "fullName",
+                                        "genericProductId"
                                       ]
                                     },
                                     {
@@ -9909,107 +8598,26 @@
                                             "variant"
                                           ]
                                         },
-                                        "genericProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "generic"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "productType"
-                                          ]
+                                        "fullName": {
+                                          "type": "string",
+                                          "minLength": 1
                                         },
-                                        "specificProduct": {
-                                          "type": "object",
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string",
-                                              "minLength": 1
-                                            },
-                                            "productId": {
-                                              "type": "string",
-                                              "pattern": "^[a-f0-9]{24}$"
-                                            },
-                                            "unitOfMeasurement": {
-                                              "type": "string",
-                                              "enum": [
-                                                "cm",
-                                                "db",
-                                                "g",
-                                                "kg",
-                                                "l",
-                                                "m",
-                                                "ml"
-                                              ]
-                                            },
-                                            "measurement": {
-                                              "type": "number",
-                                              "exclusiveMinimum": 0
-                                            },
-                                            "productType": {
-                                              "type": "string",
-                                              "enum": [
-                                                "specific"
-                                              ]
-                                            },
-                                            "genericProduct": {
-                                              "type": "object",
-                                              "additionalProperties": false,
-                                              "properties": {
-                                                "name": {
-                                                  "type": "string",
-                                                  "minLength": 1
-                                                },
-                                                "productId": {
-                                                  "type": "string",
-                                                  "pattern": "^[a-f0-9]{24}$"
-                                                },
-                                                "productType": {
-                                                  "type": "string",
-                                                  "enum": [
-                                                    "generic"
-                                                  ]
-                                                }
-                                              },
-                                              "required": [
-                                                "name",
-                                                "productId",
-                                                "productType"
-                                              ]
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "productId",
-                                            "unitOfMeasurement",
-                                            "measurement",
-                                            "productType",
-                                            "genericProduct"
-                                          ]
+                                        "genericProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
+                                        },
+                                        "specificProductId": {
+                                          "type": "string",
+                                          "pattern": "^[a-f0-9]{24}$"
                                         }
                                       },
                                       "required": [
                                         "name",
                                         "productId",
                                         "productType",
-                                        "genericProduct",
-                                        "specificProduct"
+                                        "fullName",
+                                        "genericProductId",
+                                        "specificProductId"
                                       ]
                                     }
                                   ]

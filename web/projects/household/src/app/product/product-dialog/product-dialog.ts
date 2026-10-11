@@ -6,17 +6,18 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
-import { getProductName } from '@household/app/product/product-name';
+import { getParentProductId, hasChildren } from '@household/app/product/product-utils';
 import { ClearableInput, exclusiveMin, IconText } from '@household/shared-ui';
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { ProductType } from '@household/shared/enums';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
-import { productEvents, ProductTreeNode } from '@household/state/product/product-events';
+import { Responses } from '@household/shared/types/responses';
+import { productEvents } from '@household/state/product/product-events';
 import { ProductStore } from '@household/state/product/product-store';
 import { injectDispatch } from '@ngrx/signals/events';
 
-export type ProductDialogData = ProductTreeNode;
+export type ProductDialogData = Responses.Product;
 export type ProductDialogResult = Requests.Product;
 
 @Component({
@@ -41,9 +42,8 @@ export class ProductDialog {
   readonly productStore = inject(ProductStore);
 
   readonly unitsOfMeasurement = unitsOfMeasurement;
-  readonly getName = getProductName;
 
-  private readonly hasChildren = this.product?.productType !== ProductType.Variant && this.product?.children.length > 0;
+  private readonly hasChildren = hasChildren(this.productStore.productList(), this.product);
 
   // A product with children cannot change its type, so a generic product with children cannot get a parent
   // and a specific product with children cannot lose its parent
@@ -58,7 +58,7 @@ export class ProductDialog {
     });
   }
 
-  parentProduct = signal<ProductTreeNode>(this.findParent());
+  parentProduct = signal<Responses.Product>(this.findParent());
 
   // The product type is determined by the parent: a product of a generic product is a specific product
   isSpecific = computed(() => {
@@ -89,24 +89,15 @@ export class ProductDialog {
     });
   });
 
-  private findParent(): ProductTreeNode {
-    const productList = this.productStore.productList();
+  private findParent(): Responses.Product {
+    const parentProductId = this.product ? getParentProductId(this.product) : undefined;
 
-    switch (this.product?.productType) {
-      case ProductType.Specific: {
-        return productList.find(generic => generic.children.some(specific => specific.productId === this.product.productId));
-      }
-      case ProductType.Variant: {
-        return productList.flatMap(generic => generic.children).find(specific => specific.children.some(variant => variant.productId === this.product.productId));
-      }
-      default: {
-        return undefined;
-      }
-    }
+    return this.productStore.productList().find(p => p.productId === parentProductId);
   }
 
   onEditParent() {
     this.productEvents.selectProduct({
+      isParentSelection: true,
       productToUpdate: this.product,
     });
   }

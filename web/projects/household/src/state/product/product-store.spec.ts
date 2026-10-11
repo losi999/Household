@@ -63,9 +63,9 @@ describe('Product store', () => {
   };
 
   it('should initialize with the provided state', () => {
-    const productList = [testDataFactory.product.tree()];
+    const productList = [testDataFactory.product.response.generic()];
     const isInProgress = [testDataFactory.product.id()];
-    const pendingParentProduct = testDataFactory.product.tree();
+    const pendingParentProduct = testDataFactory.product.response.generic();
 
     setup({
       productList,
@@ -88,33 +88,36 @@ describe('Product store', () => {
 
   it('should have the reducer wired in', () => {
     setup();
-    const productTree = testDataFactory.product.tree();
+    const product = testDataFactory.product.response.generic();
 
-    dispatcher.dispatch(productApiEvents.listProductsCompleted([productTree]));
+    dispatcher.dispatch(productApiEvents.listProductsCompleted([product]));
 
-    expect(store.productList()).toEqual([productTree]);
+    expect(store.productList()).toEqual([product]);
   });
 
   it('should have the UI event handlers wired in', () => {
     setup();
-    const productTree = testDataFactory.product.tree();
+    const product = testDataFactory.product.response.generic();
     mockBottomSheetService.functions.openBottomSubmenu.mockReturnValue({
       afterDismissed: () => of(undefined),
     } as any);
 
-    dispatcher.dispatch(productEvents.openProductListItemSubmenu(productTree));
+    dispatcher.dispatch(productEvents.openProductListItemSubmenu({
+      product,
+      hasChildren: false,
+    }));
 
     expect(mockBottomSheetService.functions.openBottomSubmenu).toHaveBeenCalled();
   });
 
   it('should have the API event handlers and the reducer working together', () => {
     setup();
-    const productTree = testDataFactory.product.tree();
-    mockProductService.functions.listProducts.mockReturnValue(of([productTree]));
+    const product = testDataFactory.product.response.generic();
+    mockProductService.functions.listProducts.mockReturnValue(of([product]));
 
     dispatcher.dispatch(productApiEvents.listProductsInitiated());
 
     expect(mockProductService.functions.listProducts).toHaveBeenCalled();
-    expect(store.productList()).toEqual([productTree]);
+    expect(store.productList()).toEqual([product]);
   });
 });

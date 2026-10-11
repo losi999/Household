@@ -4,20 +4,22 @@ import { Responses } from '@household/shared/types/responses';
 import { type } from '@ngrx/signals';
 import { eventGroup } from '@ngrx/signals/events';
 
-export type ProductTreeNode = Responses.ProductTree | Responses.SpecificProductTreeItem | Responses.VariantProductTreeItem;
-
 export const productEvents = eventGroup({
   source: 'Product',
   events: {
     createProduct: type<void>(),
-    updateProduct: type<ProductTreeNode>(),
-    deleteProduct: type<ProductTreeNode>(),
-    mergeProducts: type<ProductTreeNode>(),
-    openProductListItemSubmenu: type<ProductTreeNode>(),
-    selectProduct: type<{
-      productToUpdate?: ProductTreeNode;
+    updateProduct: type<Responses.Product>(),
+    deleteProduct: type<Responses.Product>(),
+    mergeProducts: type<Responses.Product>(),
+    openProductListItemSubmenu: type<{
+      product: Responses.Product;
+      hasChildren: boolean;
     }>(),
-    productSelected: type<ProductTreeNode>(),
+    selectProduct: type<{
+      isParentSelection?: boolean;
+      productToUpdate?: Responses.Product;
+    }>(),
+    productSelected: type<Responses.Product>(),
   },
 });
 
@@ -25,7 +27,7 @@ export const productApiEvents = eventGroup({
   source: 'Product API',
   events: {
     listProductsInitiated: type<void>(),
-    listProductsCompleted: type<Responses.ProductTree[]>(),
+    listProductsCompleted: type<Responses.Product[]>(),
     createProductInitiated: type<Requests.Product>(),
     createProductCompleted: type<Api.Product.ProductId & Requests.Product>(),
     updateProductInitiated: type<Api.Product.ProductId & Requests.Product>(),

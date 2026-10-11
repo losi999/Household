@@ -11,22 +11,22 @@ describe('List products service', () => {
 
   beforeEach(() => {
     mockProductService = createMockService('listProducts');
-    mockProductDocumentConverter = createMockService('toResponseTreeList');
+    mockProductDocumentConverter = createMockService('toResponseList');
 
     service = listProductsServiceFactory(mockProductService.service, mockProductDocumentConverter.service);
   });
 
   const queriedProductDocument = testDataFactory.product.document.generic();
-  const convertedResponse = testDataFactory.product.tree();
+  const convertedResponse = testDataFactory.product.response.generic();
 
   it('should return documents', async () => {
     mockProductService.functions.listProducts.mockResolvedValue([queriedProductDocument]);
-    mockProductDocumentConverter.functions.toResponseTreeList.mockReturnValue([convertedResponse]);
+    mockProductDocumentConverter.functions.toResponseList.mockReturnValue([convertedResponse]);
 
     const result = await service();
     expect(result).toEqual([convertedResponse]);
     expect(mockProductService.functions.listProducts).toHaveBeenCalled();
-    validateFunctionCall(mockProductDocumentConverter.functions.toResponseTreeList, [queriedProductDocument]);
+    validateFunctionCall(mockProductDocumentConverter.functions.toResponseList, [queriedProductDocument]);
     expect.assertions(3);
   });
 
@@ -36,7 +36,7 @@ describe('List products service', () => {
 
       await service().catch(validateError('Error while listing products', 500));
       expect(mockProductService.functions.listProducts).toHaveBeenCalled();
-      validateFunctionCall(mockProductDocumentConverter.functions.toResponseTreeList);
+      validateFunctionCall(mockProductDocumentConverter.functions.toResponseList);
       expect.assertions(4);
     });
   });

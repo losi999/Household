@@ -12,7 +12,7 @@ describe('ProductService', () => {
   let service: ProductService;
   let httpMock: HttpTestingController;
 
-  const productTree = testDataFactory.product.tree();
+  const product = testDataFactory.product.response.generic();
   const productId = testDataFactory.product.id();
   const productRequest = testDataFactory.product.request.generic();
 
@@ -39,7 +39,7 @@ describe('ProductService', () => {
   });
 
   describe('listProducts', () => {
-    it('should send a GET request and return the product tree', () => {
+    it('should send a GET request and return the products', () => {
       setup();
 
       const next = vi.fn();
@@ -48,10 +48,10 @@ describe('ProductService', () => {
       const req = httpMock.expectOne(baseUrl);
       expect(req.request.method).toBe('GET');
 
-      req.flush([productTree]);
+      req.flush([product]);
 
       expect(next).toHaveBeenCalledTimes(1);
-      expect(next).toHaveBeenCalledWith([productTree]);
+      expect(next).toHaveBeenCalledWith([product]);
     });
 
     it('should propagate the error', () => {

@@ -7,7 +7,7 @@ import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore } from '@ngrx/signals';
 import { Mock } from 'vitest';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { productApiEvents, productEvents, ProductTreeNode } from '@household/state/product/product-events';
+import { productApiEvents, productEvents } from '@household/state/product/product-events';
 import { withProductEvents } from '@household/state/product/with-product-events';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of } from 'rxjs';
@@ -95,7 +95,7 @@ describe('withProductEvents', () => {
   });
 
   describe('dispatching updateProduct', () => {
-    const product = testDataFactory.product.tree();
+    const product = testDataFactory.product.response.generic();
     const productRequest = testDataFactory.product.request.specific();
 
     it('should open dialog and dispatch if submitted', () => {
@@ -131,8 +131,8 @@ describe('withProductEvents', () => {
   });
 
   describe('dispatching selectProduct', () => {
-    const productToUpdate = testDataFactory.product.tree();
-    const selectedProduct = testDataFactory.product.tree();
+    const productToUpdate = testDataFactory.product.response.generic();
+    const selectedProduct = testDataFactory.product.response.generic();
 
     it('should open dialog and dispatch if submitted', () => {
       mockMatDialog.functions.open.mockReturnValue({
@@ -140,12 +140,14 @@ describe('withProductEvents', () => {
       } as MatDialogRef<any>);
 
       dispatcher.dispatch(productEvents.selectProduct({
+        isParentSelection: true,
         productToUpdate,
       }));
 
       validateFunctionCall(mockMatDialog.functions.open, ProductSelectDialog, {
         disableClose: true,
         data: {
+          isParentSelection: true,
           productToUpdate,
         },
         height: '80vh',
@@ -160,12 +162,14 @@ describe('withProductEvents', () => {
       } as MatDialogRef<any>);
 
       dispatcher.dispatch(productEvents.selectProduct({
+        isParentSelection: true,
         productToUpdate,
       }));
 
       validateFunctionCall(mockMatDialog.functions.open, ProductSelectDialog, {
         disableClose: true,
         data: {
+          isParentSelection: true,
           productToUpdate,
         },
         height: '80vh',
@@ -176,7 +180,7 @@ describe('withProductEvents', () => {
   });
 
   describe('dispatching mergeProducts', () => {
-    const product = testDataFactory.product.tree();
+    const product = testDataFactory.product.response.generic();
     const sourceProductId = testDataFactory.product.id();
 
     it('should open dialog and dispatch if submitted', () => {
@@ -219,7 +223,7 @@ describe('withProductEvents', () => {
   });
 
   describe('dispatching deleteProduct', () => {
-    const product = testDataFactory.product.tree();
+    const product = testDataFactory.product.response.generic();
 
     it('should open dialog and dispatch if confirmed', () => {
       mockDialogService.functions.openConfirmationDialog.mockReturnValue(of(true));
@@ -249,34 +253,40 @@ describe('withProductEvents', () => {
   });
 
   describe('dispatching openProductListItemSubmenu', () => {
-    const productWithoutChildren: ProductTreeNode = testDataFactory.product.tree();
-    const productWithChildren: ProductTreeNode = testDataFactory.product.tree({
-      children: [testDataFactory.product.treeItem.specific()],
-    });
+    const genericProduct = testDataFactory.product.response.generic();
+    const specificProduct = testDataFactory.product.response.specific();
+    const variantProduct = testDataFactory.product.response.variant();
 
     describe('bottom sheet', () => {
       it('should offer edit, merge and delete for a generic product without children', () => {
         dismissWith(undefined);
 
-        dispatcher.dispatch(productEvents.openProductListItemSubmenu(productWithoutChildren));
+        dispatcher.dispatch(productEvents.openProductListItemSubmenu({
+          product: genericProduct,
+          hasChildren: false,
+        }));
 
-        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, productWithoutChildren.name, 'edit', 'merge', 'delete');
+        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, genericProduct.name, 'edit', 'merge', 'delete');
       });
 
       it('should offer edit, merge and delete for a specific product without children', () => {
-        const specificProduct = testDataFactory.product.treeItem.specific();
         dismissWith(undefined);
 
-        dispatcher.dispatch(productEvents.openProductListItemSubmenu(specificProduct));
+        dispatcher.dispatch(productEvents.openProductListItemSubmenu({
+          product: specificProduct,
+          hasChildren: false,
+        }));
 
         validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, specificProduct.name, 'edit', 'merge', 'delete');
       });
 
       it('should offer edit, merge and delete for a variant product', () => {
-        const variantProduct = testDataFactory.product.treeItem.variant();
         dismissWith(undefined);
 
-        dispatcher.dispatch(productEvents.openProductListItemSubmenu(variantProduct));
+        dispatcher.dispatch(productEvents.openProductListItemSubmenu({
+          product: variantProduct,
+          hasChildren: false,
+        }));
 
         validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, variantProduct.name, 'edit', 'merge', 'delete');
       });
@@ -284,18 +294,21 @@ describe('withProductEvents', () => {
       it('should offer only edit and merge for a generic product with children', () => {
         dismissWith(undefined);
 
-        dispatcher.dispatch(productEvents.openProductListItemSubmenu(productWithChildren));
+        dispatcher.dispatch(productEvents.openProductListItemSubmenu({
+          product: genericProduct,
+          hasChildren: true,
+        }));
 
-        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, productWithChildren.name, 'edit', 'merge');
+        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, genericProduct.name, 'edit', 'merge');
       });
 
       it('should offer only edit and merge for a specific product with children', () => {
-        const specificProduct = testDataFactory.product.treeItem.specific({
-          children: [testDataFactory.product.treeItem.variant()],
-        });
         dismissWith(undefined);
 
-        dispatcher.dispatch(productEvents.openProductListItemSubmenu(specificProduct));
+        dispatcher.dispatch(productEvents.openProductListItemSubmenu({
+          product: specificProduct,
+          hasChildren: true,
+        }));
 
         validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, specificProduct.name, 'edit', 'merge');
       });
@@ -305,31 +318,43 @@ describe('withProductEvents', () => {
       it('should dispatch updateProduct if edit is selected', () => {
         dismissWith('edit');
 
-        dispatcher.dispatch(productEvents.openProductListItemSubmenu(productWithoutChildren));
+        dispatcher.dispatch(productEvents.openProductListItemSubmenu({
+          product: genericProduct,
+          hasChildren: false,
+        }));
 
-        validateDispatcher(dispatchSpy, productEvents.updateProduct(productWithoutChildren));
+        validateDispatcher(dispatchSpy, productEvents.updateProduct(genericProduct));
       });
 
       it('should dispatch mergeProducts if merge is selected', () => {
         dismissWith('merge');
 
-        dispatcher.dispatch(productEvents.openProductListItemSubmenu(productWithoutChildren));
+        dispatcher.dispatch(productEvents.openProductListItemSubmenu({
+          product: genericProduct,
+          hasChildren: false,
+        }));
 
-        validateDispatcher(dispatchSpy, productEvents.mergeProducts(productWithoutChildren));
+        validateDispatcher(dispatchSpy, productEvents.mergeProducts(genericProduct));
       });
 
       it('should dispatch deleteProduct if delete is selected', () => {
         dismissWith('delete');
 
-        dispatcher.dispatch(productEvents.openProductListItemSubmenu(productWithoutChildren));
+        dispatcher.dispatch(productEvents.openProductListItemSubmenu({
+          product: genericProduct,
+          hasChildren: false,
+        }));
 
-        validateDispatcher(dispatchSpy, productEvents.deleteProduct(productWithoutChildren));
+        validateDispatcher(dispatchSpy, productEvents.deleteProduct(genericProduct));
       });
 
       it('should not dispatch anything if cancelled', () => {
         dismissWith(undefined);
 
-        dispatcher.dispatch(productEvents.openProductListItemSubmenu(productWithoutChildren));
+        dispatcher.dispatch(productEvents.openProductListItemSubmenu({
+          product: genericProduct,
+          hasChildren: false,
+        }));
 
         validateDispatcher(dispatchSpy);
       });

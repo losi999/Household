@@ -1,4 +1,4 @@
-import { addDays, addSeconds, createDate, dateToISODateString, toSearchTerms } from '@household/shared/common/utils';
+import { addDays, addSeconds, createDate, dateToISODateString, getSpecificProductFullName, getVariantProductFullName, toSearchTerms } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, ProductType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DataFactoryFunction, DocumentUpdate, RecursivePartial, Searchable } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
@@ -808,7 +808,6 @@ const createSpecificProductDocument: DataFactoryFunction<Documents.SpecificProdu
     _id: createId(),
     ...base,
     expiresAt: undefined,
-    fullName: `${doc?.name ?? base.name} ${doc?.measurement ?? base.measurement} ${doc?.unitOfMeasurement ?? base.unitOfMeasurement}`,
     genericProduct: createGenericProductDocument(),
     ...doc,
   };
@@ -833,61 +832,38 @@ const createGenericProductResponse: DataFactoryFunction<Responses.GenericProduct
   return {
     productId: createProductId(),
     ...base,
+    fullName: resp?.name ?? base.name,
     ...resp,
   };
 };
 
 const createSpecificProductResponse: DataFactoryFunction<Responses.SpecificProduct> = (resp) => {
   const { parentProductId, ...base } = createSpecificProductRequest();
-  
+
   return {
     productId: createProductId(),
     ...base,
-    fullName: `${resp?.name ?? base.name} ${resp?.measurement ?? base.measurement} ${resp?.unitOfMeasurement ?? base.unitOfMeasurement}`,
-    genericProduct: createGenericProductResponse(),
+    genericProductId: parentProductId,
+    fullName: getSpecificProductFullName(faker.commerce.department(), {
+      name: resp?.name ?? base.name,
+      measurement: resp?.measurement ?? base.measurement,
+      unitOfMeasurement: resp?.unitOfMeasurement ?? base.unitOfMeasurement,
+    }),
     ...resp,
   };
 };
 
 const createVariantProductResponse: DataFactoryFunction<Responses.VariantProduct> = (resp) => {
   const { parentProductId, ...base } = createVariantProductRequest();
-  
+  const specificProduct = createSpecificProductResponse();
+
   return {
     productId: createProductId(),
     ...base,
-    genericProduct: createGenericProductResponse(),
-    specificProduct: createSpecificProductResponse(),
+    genericProductId: specificProduct.genericProductId,
+    specificProductId: specificProduct.productId,
+    fullName: getVariantProductFullName(specificProduct.fullName, resp?.name ?? base.name),
     ...resp,
-  };
-};
-
-const createVariantProductTreeItem: DataFactoryFunction<Responses.VariantProductTreeItem> = (resp) => {
-  const { genericProduct, specificProduct, ...restOfResp } = createVariantProductResponse(resp);
-
-  return {
-    ...restOfResp,
-  };
-};
-
-const createSpecificProductTreeItem: DataFactoryFunction<Responses.SpecificProductTreeItem> = (resp) => {
-  const { children, ...restOfResp } = resp ?? {};
-
-  const { genericProduct, ...specificBase } = createSpecificProductResponse(restOfResp);
-
-  return {
-    ...specificBase,
-    children: children ?? [],
-  };
-};
-
-const createProductTreeResponse: DataFactoryFunction<Responses.ProductTree> = (resp) => {
-  const { children, ...restOfResp } = resp ?? {};
-
-  const genericBase = createGenericProductResponse(restOfResp);
-
-  return {
-    ...genericBase,
-    children: children ?? [],
   };
 };
 
@@ -1564,11 +1540,6 @@ export const testDataFactory = {
       generic: createGenericProductResponse,
       specific: createSpecificProductResponse,
       variant: createVariantProductResponse,
-    },
-    tree: createProductTreeResponse,
-    treeItem: {
-      specific: createSpecificProductTreeItem,
-      variant: createVariantProductTreeItem,
     },
     report: createProductReport,
   },

@@ -1,11 +1,17 @@
-import { matchAnyProperty, populateAggregate, transactionAggregate } from '@household/shared/common/aggregate-helpers';
+import { matchAnyProperty, populateAggregate, productAggregate, transactionAggregate } from '@household/shared/common/aggregate-helpers';
 import { populate } from '@household/shared/common/mongoose-utils';
 import { TransactionType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
-import { PipelineStage, Types } from 'mongoose';
+import { PipelineStage, PopulateOptions, Types } from 'mongoose';
 import { Documents } from '@household/shared/types/documents';
+
+// The full name of a product is built from its parents, so they are loaded together with the product
+const populateProduct = (path: string): PopulateOptions => ({
+  path,
+  populate: populate('genericProduct', 'specificProduct'),
+});
 
 export interface ITransactionService {
   saveTransaction(doc: Documents.Transaction): Promise<Documents.Transaction>;
@@ -60,15 +66,15 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                 'ownerAccount',
                 'category',
                 'category.ancestors',
-                'product',
+                populateProduct('product'),
                 'splits.category',
                 'splits.project',
-                'splits.product',
+                populateProduct('splits.product'),
                 'deferredSplits.payingAccount',
                 'deferredSplits.ownerAccount',
                 'deferredSplits.category',
                 'deferredSplits.project',
-                'deferredSplits.product'),
+                populateProduct('deferredSplits.product')),
               lean: true,
               session,
             }) as T;
@@ -218,7 +224,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               },
             ]),
             ...populateAggregate('project', 'projects'),
-            ...populateAggregate('product', 'products'),
+            ...populateAggregate('product', 'products', productAggregate),
             ...populateAggregate('recipient', 'recipients'),
             {
               $sort: {

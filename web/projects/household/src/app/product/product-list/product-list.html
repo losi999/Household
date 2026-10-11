@@ -1,5 +1,5 @@
 <mat-action-list>
-  @for (p of items(); track p.productId) {
-  <household-product-list-item [product]="p" />
+  @for (product of products(); track product.productId) {
+  <household-product-list-item [product]="product" />
   }
 </mat-action-list>

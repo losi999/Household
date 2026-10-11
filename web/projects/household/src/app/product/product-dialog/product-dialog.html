@@ -6,7 +6,7 @@
   @if (canHaveParent) {
   <div class="parent">
     @if (parentProduct()) {
-    <shared-icon-text [text]="getName(parentProduct())" icon="account_tree" size="small" />
+    <shared-icon-text [text]="parentProduct().fullName" icon="account_tree" size="small" />
     <button matIconButton [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
     <mat-menu #menu="matMenu" yPosition="above" xPosition="before">
       <button mat-menu-item data-testId="edit-parent-button" (click)="onEditParent()"><mat-icon>edit</mat-icon>Módosítás</button>

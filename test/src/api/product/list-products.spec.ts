@@ -1,4 +1,4 @@
-import { groupedResponseList as schema } from '@household/shared/schemas/product';
+import { responseList as schema } from '@household/shared/schemas/product';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { forbidUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
@@ -46,20 +46,17 @@ test.describe('GET /product/v1/products', () => {
             genericProduct,
             specificProduct,
           });
-          await saveProducts(genericProduct);
+          await saveProducts(genericProduct, specificProduct, variantProduct);
           const res = await requestListProducts();
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
 
-          expect(res).toContainProductTree({
-            product: genericProduct,
-            children: [
-              {
-                product: specificProduct,
-                children: [variantProduct],
-              },
-            ],
-          });
+          // every product is followed by its children
+          expect(res).toContainProducts([
+            genericProduct,
+            specificProduct,
+            variantProduct,
+          ]);
         });
       }
     });

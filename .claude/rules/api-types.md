@@ -390,7 +390,7 @@ request/response gets a flat, **un-prefixed** name in `Requests`/`Responses` —
 `Requests.RefreshToken`, `Responses.Login`, `Responses.RefreshToken`. `Requests`/`Responses` are
 already flat namespaces spanning every domain, so the flow name alone is unambiguous; don't prefix
 these with the owning namespace (`Requests.AuthLogin` was tried and reverted). Contrast
-`Responses.AccountReport`/`Responses.ProductGroupedResponse`, where the prefix is doing real work:
+`Responses.AccountReport`/`Responses.ProductReport`, where the prefix is doing real work:
 those are *variants of one domain's record*, so the domain name distinguishes them from
 `Responses.Account`/`Responses.Product`. A standalone action payload has no such sibling to
 disambiguate against.

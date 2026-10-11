@@ -47,36 +47,26 @@ export namespace Responses {
 
   export type GenericProduct = Api.Product.ProductId
     & Api.Product.ProductType<Enum.ProductType.Generic> 
-    & Api.Product.Name;
+    & Api.Product.Name
+    & Api.Product.FullName;
   export type SpecificProduct = Api.Product.ProductId
     & Api.Product.ProductType<Enum.ProductType.Specific> 
     & Api.Product.UnitOfMeasurement
     & Api.Product.Measurement
     & Api.Product.Name
     & Api.Product.FullName
-    & {
-      genericProduct: GenericProduct;
-    };
+    & Api.Product.GenericProductId;
   export type VariantProduct = Api.Product.ProductId
     & Api.Product.ProductType<Enum.ProductType.Variant> 
     & Api.Product.Name
-    & {
-      genericProduct: GenericProduct;
-      specificProduct: SpecificProduct;
-    };    
+    & Api.Product.FullName
+    & Api.Product.GenericProductId
+    & Api.Product.SpecificProductId;
 
   export type Product = GenericProduct | SpecificProduct | VariantProduct;
 
   export type ProductReport = Api.Product.ProductId &
     Api.Product.FullName;
-
-  export type VariantProductTreeItem = Omit<VariantProduct, 'genericProduct' | 'specificProduct'>;
-  export type SpecificProductTreeItem = Omit<SpecificProduct, 'genericProduct'> & {
-    children: VariantProductTreeItem[];
-  };
-  export type ProductTree = GenericProduct & {
-    children: SpecificProductTreeItem[];
-  };
 
   export type PaymentTransaction = Api.Transaction.TransactionId
     & Api.Transaction.Amount

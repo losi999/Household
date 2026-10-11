@@ -22,11 +22,11 @@ describe('ProductHome', () => {
   let mockDispatcher: Dispatcher;
 
   const products = [
-    testDataFactory.product.tree(),
-    testDataFactory.product.tree(),
+    testDataFactory.product.response.generic(),
+    testDataFactory.product.response.generic(),
   ];
 
-  const render = async (productList: Responses.ProductTree[] = products) => {
+  const render = async (productList: Responses.Product[] = products) => {
     TestBed.resetTestingModule();
 
     await TestBed.configureTestingModule({

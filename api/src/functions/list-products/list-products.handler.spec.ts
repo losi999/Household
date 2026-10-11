@@ -12,7 +12,7 @@ describe('List products handler', () => {
     handlerFunction = handler(mockListProductsService);
   });
 
-  const products = [testDataFactory.product.tree()];
+  const products = [testDataFactory.product.response.generic()];
   const handlerEvent = {} as AWSLambda.APIGatewayProxyEvent;
 
   it('should handle business service error', async () => {

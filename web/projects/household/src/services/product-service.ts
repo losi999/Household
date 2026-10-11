@@ -11,7 +11,7 @@ export class ProductService {
   private apiUrl = inject(API_URL);
 
   listProducts() {
-    return this.httpClient.get<Responses.ProductTree[]>(`${this.apiUrl}/product/v1/products`);
+    return this.httpClient.get<Responses.Product[]>(`${this.apiUrl}/product/v1/products`);
   }
 
   createProduct(body: Requests.Product) {

@@ -1,4 +1,4 @@
-import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
+import { PRODUCT_FULL_NAME_SEPARATOR, WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
 import { Dictionary, Searchable } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
@@ -160,4 +160,22 @@ export const search = (item: Searchable, searchValue: string): boolean => {
     .split(' ');
 
   return item.searchTerms?.some(s => terms.every(t => s.includes(t)));
+};
+
+// The full name of a generic product is its name
+export const getSpecificProductFullName = (genericProductFullName: string, product: Pick<Responses.SpecificProduct, 'name' | 'measurement' | 'unitOfMeasurement'>): string => {
+  return `${genericProductFullName}${PRODUCT_FULL_NAME_SEPARATOR}${product.name} ${product.measurement} ${product.unitOfMeasurement}`;
+};
+
+export const getVariantProductFullName = (specificProductFullName: string, name: string): string => {
+  return `${specificProductFullName}${PRODUCT_FULL_NAME_SEPARATOR}${name}`;
+};
+
+// The full name of a product starts with the full name of its parent, so in a list ordered by the full name every
+// product is followed by its children. The measurement is compared as a number, so 2 l comes before 10 l.
+export const sortProductsByFullName = (products: Responses.Product[]): Responses.Product[] => {
+  return [...products].sort((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
+    sensitivity: 'base',
+    numeric: true,
+  }));
 };
