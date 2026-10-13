@@ -1,5 +1,5 @@
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { addSeconds, getProductId, getSpecificProductFullName, getVariantProductFullName } from '@household/shared/common/utils';
+import { addSeconds, getProductId } from '@household/shared/common/utils';
 import { productDocumentConverterFactory, IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { Types } from 'mongoose';
 
@@ -33,19 +33,20 @@ describe('Product document converter', () => {
     fullName: genericProductDocument.name,
   });
   const specificProductResponse = testDataFactory.product.response.specific({
-    productId: getProductId(specificProductDocument),
-    name: specificProductDocument.name,
-    measurement: specificProductDocument.measurement,
-    unitOfMeasurement: specificProductDocument.unitOfMeasurement,
-    fullName: getSpecificProductFullName(genericProductDocument.name, specificProductDocument),
-    genericProductId: getProductId(genericProductDocument),
+    response: {
+      productId: getProductId(specificProductDocument),
+      name: specificProductDocument.name,
+      measurement: specificProductDocument.measurement,
+      unitOfMeasurement: specificProductDocument.unitOfMeasurement,
+    },
+    genericProduct: genericProductResponse,
   });
   const variantProductResponse = testDataFactory.product.response.variant({
-    productId: getProductId(variantProductDocument),
-    name: variantProductDocument.name,
-    fullName: getVariantProductFullName(specificProductResponse.fullName, variantProductDocument.name),
-    genericProductId: getProductId(genericProductDocument),
-    specificProductId: getProductId(specificProductDocument),
+    response: {
+      productId: getProductId(variantProductDocument),
+      name: variantProductDocument.name,
+    },
+    specificProduct: specificProductResponse,
   });
 
   describe('createGeneric', () => {

@@ -131,7 +131,6 @@ describe('withProductEvents', () => {
   });
 
   describe('dispatching selectProduct', () => {
-    const productToUpdate = testDataFactory.product.response.generic();
     const selectedProduct = testDataFactory.product.response.generic();
 
     it('should open dialog and dispatch if submitted', () => {
@@ -139,17 +138,13 @@ describe('withProductEvents', () => {
         afterClosed: () => of(selectedProduct),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(productEvents.selectProduct({
-        isParentSelection: true,
-        productToUpdate,
-      }));
+      const items = [testDataFactory.product.response.generic()];
+
+      dispatcher.dispatch(productEvents.selectProduct(items));
 
       validateFunctionCall(mockMatDialog.functions.open, ProductSelectDialog, {
         disableClose: true,
-        data: {
-          isParentSelection: true,
-          productToUpdate,
-        },
+        data: items,
         height: '80vh',
         width: '90vw',
       });
@@ -161,17 +156,13 @@ describe('withProductEvents', () => {
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(productEvents.selectProduct({
-        isParentSelection: true,
-        productToUpdate,
-      }));
+      const items = [testDataFactory.product.response.generic()];
+
+      dispatcher.dispatch(productEvents.selectProduct(items));
 
       validateFunctionCall(mockMatDialog.functions.open, ProductSelectDialog, {
         disableClose: true,
-        data: {
-          isParentSelection: true,
-          productToUpdate,
-        },
+        data: items,
         height: '80vh',
         width: '90vw',
       });

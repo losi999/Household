@@ -27,7 +27,7 @@ export class RecipientHome {
     this.recipientApiEvents.listRecipientsInitiated();
   }
 
-  create() {
+  onCreate() {
     this.recipientEvents.createRecipient();
   }
 }

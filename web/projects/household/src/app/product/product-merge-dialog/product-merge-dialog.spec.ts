@@ -5,8 +5,7 @@ import { elementSelectorFactory, IElementSelector, MockSignalStore, provideMockS
 import { ProductStore } from '@household/state/product/product-store';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
-import { getSpecificProductFullName, getVariantProductFullName } from '@household/shared/common/utils';
-import { MatActionList, MatListItem } from '@angular/material/list';
+import { MatActionList, MatListItem, MatListItemLine, MatListItemTitle } from '@angular/material/list';
 import { MatChip, MatChipSet } from '@angular/material/chips';
 import { Responses } from '@household/shared/types/responses';
 
@@ -16,51 +15,36 @@ describe('ProductMergeDialog', () => {
   let mockProductStore: MockSignalStore<typeof ProductStore>;
   let mockDialogRef: MockService<MatDialogRef<ProductMergeDialog>>;
 
-  // builders of consistent products, the full names are built the same way as the API builds them
-  const generic = (name: string) => {
-    return testDataFactory.product.response.generic({
-      name,
-      fullName: name,
-    });
-  };
+  const targetGeneric = testDataFactory.product.response.generic();
+  const sourceGeneric1 = testDataFactory.product.response.generic();
+  const sourceGeneric2 = testDataFactory.product.response.generic();
+  const anotherGeneric = testDataFactory.product.response.generic();
 
-  const specific = (parent: Responses.GenericProduct, name: string) => {
-    return testDataFactory.product.response.specific({
-      name,
-      measurement: 1,
-      unitOfMeasurement: 'kg',
-      genericProductId: parent.productId,
-      fullName: getSpecificProductFullName(parent.fullName, {
-        name,
-        measurement: 1,
-        unitOfMeasurement: 'kg',
-      }),
-    });
-  };
+  const targetSpecific = testDataFactory.product.response.specific({
+    genericProduct: sourceGeneric1,
+  });
+  const sourceSpecific1 = testDataFactory.product.response.specific({
+    genericProduct: sourceGeneric1,
+  });
+  const sourceSpecific2 = testDataFactory.product.response.specific({
+    genericProduct: sourceGeneric1,
+  });
+  const otherSpecific = testDataFactory.product.response.specific({
+    genericProduct: anotherGeneric,
+  });
 
-  const variant = (parent: Responses.SpecificProduct, name: string) => {
-    return testDataFactory.product.response.variant({
-      name,
-      genericProductId: parent.genericProductId,
-      specificProductId: parent.productId,
-      fullName: getVariantProductFullName(parent.fullName, name),
-    });
-  };
-
-  const targetGeneric = generic('target generic');
-  const sourceGeneric1 = generic('source generic 1');
-  const sourceGeneric2 = generic('source generic 2');
-  const anotherGeneric = generic('another generic');
-
-  const targetSpecific = specific(sourceGeneric1, 'target specific');
-  const sourceSpecific1 = specific(sourceGeneric1, 'source specific 1');
-  const sourceSpecific2 = specific(sourceGeneric1, 'source specific 2');
-  const otherSpecific = specific(anotherGeneric, 'specific of another generic product');
-
-  const targetVariant = variant(targetSpecific, 'target variant');
-  const sourceVariant1 = variant(targetSpecific, 'source variant 1');
-  const sourceVariant2 = variant(targetSpecific, 'source variant 2');
-  const otherVariant = variant(otherSpecific, 'variant of another specific product');
+  const targetVariant = testDataFactory.product.response.variant({
+    specificProduct: targetSpecific,
+  });
+  const sourceVariant1 = testDataFactory.product.response.variant({
+    specificProduct: targetSpecific,
+  });
+  const sourceVariant2 = testDataFactory.product.response.variant({
+    specificProduct: targetSpecific,
+  });
+  const otherVariant = testDataFactory.product.response.variant({
+    specificProduct: otherSpecific,
+  });
 
   // the products of every level in a single flat list
   const allProducts = [
@@ -82,8 +66,12 @@ describe('ProductMergeDialog', () => {
     return selector.listComponents<MatListItem, HTMLButtonElement>(MatListItem, MatActionList);
   };
 
-  const getListTexts = () => {
-    return getListItems().map(item => item.nativeElement.textContent.trim());
+  const getListItemTitles = () => {
+    return selector.listComponents(MatListItemTitle, MatListItem, MatActionList).map(item => item.nativeElement.textContent);
+  };
+
+  const getListItemLines = () => {
+    return selector.listComponents(MatListItemLine, MatListItem, MatActionList).map(item => item.nativeElement.textContent);
   };
 
   const getChips = () => {
@@ -163,9 +151,9 @@ describe('ProductMergeDialog', () => {
       it('should display every other generic product', async () => {
         await render();
 
-        expect(getListTexts()).toEqual([
-          sourceGeneric1.fullName,
-          sourceGeneric2.fullName,
+        expect(getListItemTitles()).toEqual([
+          sourceGeneric1.name,
+          sourceGeneric2.name,
         ]);
       });
 
@@ -174,10 +162,10 @@ describe('ProductMergeDialog', () => {
           productList: allProducts,
         });
 
-        expect(getListTexts()).toEqual([
-          sourceGeneric1.fullName,
-          sourceGeneric2.fullName,
-          anotherGeneric.fullName,
+        expect(getListItemTitles()).toEqual([
+          sourceGeneric1.name,
+          sourceGeneric2.name,
+          anotherGeneric.name,
         ]);
       });
     });
@@ -189,9 +177,13 @@ describe('ProductMergeDialog', () => {
           productList: allProducts,
         });
 
-        expect(getListTexts()).toEqual([
-          sourceSpecific1.fullName,
-          sourceSpecific2.fullName,
+        expect(getListItemTitles()).toEqual([
+          sourceSpecific1.name,
+          sourceSpecific2.name,
+        ]);
+        expect(getListItemLines()).toEqual([
+          `${sourceSpecific1.measurement} ${sourceSpecific1.unitOfMeasurement}`,
+          `${sourceSpecific2.measurement} ${sourceSpecific2.unitOfMeasurement}`,
         ]);
       });
 
@@ -212,9 +204,9 @@ describe('ProductMergeDialog', () => {
           productList: allProducts,
         });
 
-        expect(getListTexts()).toEqual([
-          sourceVariant1.fullName,
-          sourceVariant2.fullName,
+        expect(getListItemTitles()).toEqual([
+          sourceVariant1.name,
+          sourceVariant2.name,
         ]);
       });
 
@@ -246,7 +238,7 @@ describe('ProductMergeDialog', () => {
 
         await fixture.whenStable();
 
-        expect(getListTexts()).toEqual([sourceGeneric2.fullName]);
+        expect(getListItemTitles()).toEqual([sourceGeneric2.fullName]);
         expect(fixture.componentInstance.selectedProducts()).toEqual([sourceGeneric1]);
       });
     });

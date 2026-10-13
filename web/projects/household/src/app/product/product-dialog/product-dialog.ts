@@ -96,10 +96,17 @@ export class ProductDialog {
   }
 
   onEditParent() {
-    this.productEvents.selectProduct({
-      isParentSelection: true,
-      productToUpdate: this.product,
+    const hasVariants = this.product?.productType === ProductType.Specific && this.productStore.productList().some((p => p.productType === ProductType.Variant && p.specificProductId === this.product.productId));
+    
+    const items = this.productStore.productList().filter((product) => {
+      const isVariant = product.productType === ProductType.Variant;
+      const isItself = product.productId === this.product?.productId;
+      const isAllowedByChildren = !hasVariants || product.productType === ProductType.Generic;
+
+      return !isVariant && !isItself && isAllowedByChildren;
     });
+    
+    this.productEvents.selectProduct(items);
   }
 
   onRemoveParent() {

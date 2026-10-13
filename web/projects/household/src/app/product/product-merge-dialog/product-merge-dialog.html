@@ -12,11 +12,16 @@
 <div mat-dialog-content>
   <mat-action-list>
     @for (product of products(); track product.productId) {
-    <button mat-list-item (click)="onAddProduct(product)"> {{product.fullName}} </button>
+    <button mat-list-item (click)="onAddProduct(product)">
+      <div matListItemTitle>{{product.name}}</div>
+      @if (product.productType === 'specific') {
+      <div matListItemLine>{{product.measurement}} {{product.unitOfMeasurement}}</div>
+      }
+    </button>
     }
   </mat-action-list>
 </div>
 <div mat-dialog-actions>
-  <button matButton="filled" cdkFocusInitial data-testId="save-button" [disabled]="selectedProducts().length === 0" (click)="onSave()">Mentés</button>
+  <button matButton="filled" data-testId="save-button" [disabled]="selectedProducts().length === 0" (click)="onSave()">Mentés</button>
   <button matButton="text" mat-dialog-close>Mégse</button>
 </div>

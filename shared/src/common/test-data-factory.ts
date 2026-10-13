@@ -1,6 +1,6 @@
-import { addDays, addSeconds, createDate, dateToISODateString, getSpecificProductFullName, getVariantProductFullName, toSearchTerms } from '@household/shared/common/utils';
+import { addDays, addSeconds, createDate, dateToISODateString, getSpecificProductFullName, getVariantProductFullName } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, ProductType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
-import { DataFactoryFunction, DocumentUpdate, RecursivePartial, Searchable } from '@household/shared/types/common';
+import { DataFactoryFunction, DocumentUpdate, RecursivePartial } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
@@ -736,17 +736,6 @@ const createCategoryResponse: DataFactoryFunction<Responses.Category> = (resp) =
   };
 };
 
-const createCategorySearchableResponse: DataFactoryFunction<Searchable<Responses.Category>> = (resp) => {
-  const { searchTerms, ...restOfResponse } = resp ?? {};
-
-  const response = createCategoryResponse(restOfResponse);
-  
-  return {
-    ...response,
-    searchTerms: searchTerms ?? toSearchTerms(response.fullName),
-  };
-};
-
 const createCategoryReport: DataFactoryFunction<Responses.CategoryReport> = (rep) => {
   return {
     categoryId: createCategoryId(),
@@ -837,33 +826,37 @@ const createGenericProductResponse: DataFactoryFunction<Responses.GenericProduct
   };
 };
 
-const createSpecificProductResponse: DataFactoryFunction<Responses.SpecificProduct> = (resp) => {
-  const { parentProductId, ...base } = createSpecificProductRequest();
+const createSpecificProductResponse = (input?: {
+  response?: Partial<Responses.SpecificProduct>;
+  genericProduct?: Responses.GenericProduct;
+}): Responses.SpecificProduct => {
+  const { genericProductId, fullName, productId, ...restOfInput } = input?.response ?? {};
+  const { parentProductId, ...base } = createSpecificProductRequest(restOfInput);
+  const { name } = createGenericProductRequest();
 
   return {
-    productId: createProductId(),
+    productId: productId ?? createProductId(),
     ...base,
-    genericProductId: parentProductId,
-    fullName: getSpecificProductFullName(faker.commerce.department(), {
-      name: resp?.name ?? base.name,
-      measurement: resp?.measurement ?? base.measurement,
-      unitOfMeasurement: resp?.unitOfMeasurement ?? base.unitOfMeasurement,
-    }),
-    ...resp,
+    genericProductId: genericProductId ?? input?.genericProduct?.productId ?? parentProductId,
+    fullName: fullName ?? getSpecificProductFullName(input?.genericProduct?.fullName ?? name, base),
   };
 };
 
-const createVariantProductResponse: DataFactoryFunction<Responses.VariantProduct> = (resp) => {
-  const { parentProductId, ...base } = createVariantProductRequest();
-  const specificProduct = createSpecificProductResponse();
+const createVariantProductResponse = (input?: {
+  response?: Partial<Responses.VariantProduct>;
+  specificProduct?: Responses.SpecificProduct
+}): Responses.VariantProduct => {
+  const { genericProductId, specificProductId, fullName, productId, ...restOfInput } = input?.response ?? {};
+  const { parentProductId, ...base } = createVariantProductRequest(restOfInput);
+
+  const specific = input?.specificProduct ?? createSpecificProductResponse();
 
   return {
-    productId: createProductId(),
+    productId: productId ?? createProductId(),
     ...base,
-    genericProductId: specificProduct.genericProductId,
-    specificProductId: specificProduct.productId,
-    fullName: getVariantProductFullName(specificProduct.fullName, resp?.name ?? base.name),
-    ...resp,
+    genericProductId: genericProductId ?? specific.genericProductId,
+    specificProductId: specificProductId ?? specific.productId,
+    fullName: fullName ?? getVariantProductFullName(specific.fullName, base.name),
   };
 };
 
@@ -1521,7 +1514,6 @@ export const testDataFactory = {
     request: createCategoryRequest,
     document: createCategoryDocument,
     response: createCategoryResponse,
-    searchableResponse: createCategorySearchableResponse,
     report: createCategoryReport,
   },
   product: {

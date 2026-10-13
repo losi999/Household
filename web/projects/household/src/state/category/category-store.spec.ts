@@ -9,6 +9,8 @@ import { categoryApiEvents, categoryEvents } from '@household/state/category/cat
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of } from 'rxjs';
 import { CategoryDialog } from '@household/app/category/category-dialog/category-dialog';
+import { toSearchable } from '@household/shared/common/utils';
+import { CATEGORY_FULL_NAME_SEPARATOR } from '@household/shared/constants';
 
 // The behavior of each store feature is covered in its own spec (with-category-reducer.spec.ts,
 // with-category-events.spec.ts, with-category-api-events.spec.ts). This spec only verifies that the store
@@ -64,7 +66,7 @@ describe('Category store', () => {
   };
 
   it('should initialize with the provided state', () => {
-    const categoryList = [testDataFactory.category.searchableResponse()];
+    const categoryList = [toSearchable(testDataFactory.category.response(), ['fullName'], CATEGORY_FULL_NAME_SEPARATOR)];
     const pendingParentCategory = testDataFactory.category.response();
     const isInProgress = [testDataFactory.category.id()];
 

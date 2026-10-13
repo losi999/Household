@@ -6,6 +6,7 @@ import { CategoryState } from '@household/state/category/category-store';
 import { withCategoryReducer } from '@household/state/category/with-category-reducer';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { CATEGORY_FULL_NAME_SEPARATOR } from '@household/shared/constants';
+import { toSearchable } from '@household/shared/common/utils';
 
 const createTestStore = (state: CategoryState) => {
   return signalStore({
@@ -76,9 +77,11 @@ describe('withCategoryReducer', () => {
         pendingParentCategory: testDataFactory.category.response(),
       });
 
-      dispatcher.dispatch(categoryEvents.selectCategory({
-        excludedCategory: testDataFactory.category.response(),
-      }));
+      dispatcher.dispatch(categoryEvents.selectCategory([
+        toSearchable(testDataFactory.category.response(), ['fullName'],
+          CATEGORY_FULL_NAME_SEPARATOR,
+        ),
+      ]));
 
       validateState({
         pendingParentCategory: undefined,

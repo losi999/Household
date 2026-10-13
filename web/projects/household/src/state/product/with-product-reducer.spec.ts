@@ -7,7 +7,7 @@ import { withProductReducer } from '@household/state/product/with-product-reduce
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { getSpecificProductFullName, getVariantProductFullName } from '@household/shared/common/utils';
 import { ProductType } from '@household/shared/enums';
-import { Responses } from '@household/shared/types/responses';
+import { PRODUCT_FULL_NAME_SEPARATOR } from '@household/shared/constants';
 
 const createTestStore = (state: ProductState) => {
   return signalStore({
@@ -19,37 +19,6 @@ describe('withProductReducer', () => {
   let initialState: ProductState;
   let store: InstanceType<ReturnType<typeof createTestStore>>;
   let dispatcher: Dispatcher;
-
-  // builders of consistent products, the full names are built the same way as the API builds them
-  const generic = (name: string) => {
-    return testDataFactory.product.response.generic({
-      name,
-      fullName: name,
-    });
-  };
-
-  const specific = (parent: Responses.GenericProduct, name: string, measurement = 1, unitOfMeasurement: Responses.SpecificProduct['unitOfMeasurement'] = 'kg') => {
-    return testDataFactory.product.response.specific({
-      name,
-      measurement,
-      unitOfMeasurement,
-      genericProductId: parent.productId,
-      fullName: getSpecificProductFullName(parent.fullName, {
-        name,
-        measurement,
-        unitOfMeasurement,
-      }),
-    });
-  };
-
-  const variant = (parent: Responses.SpecificProduct, name: string) => {
-    return testDataFactory.product.response.variant({
-      name,
-      genericProductId: parent.genericProductId,
-      specificProductId: parent.productId,
-      fullName: getVariantProductFullName(parent.fullName, name),
-    });
-  };
 
   const validateState = (currentValue?: Partial<ProductState>) => {
     expect(store.pendingParentProduct(), 'pendingParentProduct').toEqual(Object.hasOwn(currentValue ?? {}, 'pendingParentProduct') ? currentValue.pendingParentProduct : initialState.pendingParentProduct);
@@ -78,7 +47,9 @@ describe('withProductReducer', () => {
   describe('createProduct', () => {
     it('should clear the pending parent product', () => {
       setup({
-        pendingParentProduct: generic('parent'),
+        pendingParentProduct: testDataFactory.product.response.generic({
+          name: 'parent',
+        }),
       });
 
       dispatcher.dispatch(productEvents.createProduct());
@@ -92,10 +63,14 @@ describe('withProductReducer', () => {
   describe('updateProduct', () => {
     it('should clear the pending parent product', () => {
       setup({
-        pendingParentProduct: generic('parent'),
+        pendingParentProduct: testDataFactory.product.response.generic({
+          name: 'parent',
+        }),
       });
 
-      dispatcher.dispatch(productEvents.updateProduct(generic('product')));
+      dispatcher.dispatch(productEvents.updateProduct(testDataFactory.product.response.generic({
+        name: 'product',
+      })));
 
       validateState({
         pendingParentProduct: undefined,
@@ -106,12 +81,12 @@ describe('withProductReducer', () => {
   describe('selectProduct', () => {
     it('should clear the pending parent product', () => {
       setup({
-        pendingParentProduct: generic('parent'),
+        pendingParentProduct: testDataFactory.product.response.generic({
+          name: 'parent',
+        }),
       });
 
-      dispatcher.dispatch(productEvents.selectProduct({
-        productToUpdate: generic('product'),
-      }));
+      dispatcher.dispatch(productEvents.selectProduct(undefined));
 
       validateState({
         pendingParentProduct: undefined,
@@ -121,7 +96,9 @@ describe('withProductReducer', () => {
 
   describe('productSelected', () => {
     it('should store the selected product as the pending parent product', () => {
-      const product = generic('parent');
+      const product = testDataFactory.product.response.generic({
+        name: 'parent',
+      });
 
       dispatcher.dispatch(productEvents.productSelected(product));
 
@@ -132,52 +109,52 @@ describe('withProductReducer', () => {
   });
 
   describe('listProductsCompleted', () => {
-    it('should store the products in the given order', () => {
-      const g = generic('a generic');
-      const s = specific(g, 'a specific');
-      const v = variant(s, 'a variant');
-
-      dispatcher.dispatch(productApiEvents.listProductsCompleted([
-        g,
-        s,
-        v,
-      ]));
-
-      validateState({
-        productList: [
-          g,
-          s,
-          v,
-        ],
-      });
-    });
-
     it('should replace the previously stored products', () => {
       setup({
-        productList: [generic('old')],
+        productList: [
+          testDataFactory.product.response.generic({
+            name: 'old',
+          }),
+        ],
       });
-      const product = generic('new');
+      const product = testDataFactory.product.response.generic({
+        name: 'ékezetes név',
+      });
 
       dispatcher.dispatch(productApiEvents.listProductsCompleted([product]));
 
       validateState({
-        productList: [product],
+        productList: [
+          {
+            ...product,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
+          },
+        ],
       });
     });
   });
 
   describe('createProductCompleted', () => {
     it('should add a generic product in the order of the full names', () => {
-      const existing = generic('b generic');
+      const existing = testDataFactory.product.response.generic({
+        name: 'z generic',
+      });
       const productId = testDataFactory.product.id();
       setup({
         productList: [existing],
       });
 
+      const name = 'ékezetes név';
+
       dispatcher.dispatch(productApiEvents.createProductCompleted({
         productId,
         ...testDataFactory.product.request.generic({
-          name: 'a generic',
+          name,
         }),
       }));
 
@@ -186,8 +163,14 @@ describe('withProductReducer', () => {
           {
             productId,
             productType: ProductType.Generic,
-            name: 'a generic',
-            fullName: 'a generic',
+            name,
+            fullName: name,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
           existing,
         ],
@@ -195,73 +178,81 @@ describe('withProductReducer', () => {
     });
 
     it('should add a specific product with its full name and generic product right after its generic product', () => {
-      const g = generic('a generic');
-      const other = generic('b generic');
+      const generic = testDataFactory.product.response.generic({
+        name: 'a generic',
+      });
       const productId = testDataFactory.product.id();
       setup({
-        productList: [
-          g,
-          other,
-        ],
+        productList: [generic],
+      });
+
+      const name = 'ékezetes név';
+      const request = testDataFactory.product.request.specific({
+        name,
+        parentProductId: generic.productId,
       });
 
       dispatcher.dispatch(productApiEvents.createProductCompleted({
         productId,
-        ...testDataFactory.product.request.specific({
-          name: 'specific',
-          measurement: 2,
-          unitOfMeasurement: 'kg',
-          parentProductId: g.productId,
-        }),
+        ...request,
       }));
 
       validateState({
         productList: [
-          g,
+          generic,
           {
             productId,
+            measurement: request.measurement,
+            name: request.name,
+            unitOfMeasurement: request.unitOfMeasurement,
             productType: ProductType.Specific,
-            name: 'specific',
-            fullName: 'a generic / specific 2 kg',
-            measurement: 2,
-            unitOfMeasurement: 'kg',
-            genericProductId: g.productId,
+            fullName: getSpecificProductFullName(generic.name, request),
+            genericProductId: generic.productId,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
-          other,
         ],
       });
     });
 
     it('should add a variant product with its full name and both of its parents', () => {
-      const g = generic('a generic');
-      const s = specific(g, 'a specific');
+      const specific = testDataFactory.product.response.specific();
       const productId = testDataFactory.product.id();
       setup({
-        productList: [
-          g,
-          s,
-        ],
+        productList: [specific],
+      });
+
+      const name = 'ékezetes név';
+      const request = testDataFactory.product.request.variant({
+        name,
+        parentProductId: specific.productId,
       });
 
       dispatcher.dispatch(productApiEvents.createProductCompleted({
         productId,
-        ...testDataFactory.product.request.variant({
-          name: 'variant',
-          parentProductId: s.productId,
-        }),
+        ...request,
       }));
 
       validateState({
         productList: [
-          g,
-          s,
+          specific,
           {
             productId,
             productType: ProductType.Variant,
-            name: 'variant',
-            fullName: 'a generic / a specific 1 kg / variant',
-            genericProductId: g.productId,
-            specificProductId: s.productId,
+            name: request.name,
+            fullName: getVariantProductFullName(specific.fullName, request.name),
+            genericProductId: specific.genericProductId,
+            specificProductId: specific.productId,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
         ],
       });
@@ -270,7 +261,7 @@ describe('withProductReducer', () => {
 
   describe('updateProductInitiated', () => {
     it('should mark the product as in progress', () => {
-      const product = generic('product');
+      const product = testDataFactory.product.response.generic();
       const otherProductId = testDataFactory.product.id();
       setup({
         isInProgress: [otherProductId],
@@ -293,7 +284,7 @@ describe('withProductReducer', () => {
 
   describe('updateProductFailed', () => {
     it('should clear the in progress flag of the product', () => {
-      const product = generic('product');
+      const product = testDataFactory.product.response.generic();
       const otherProductId = testDataFactory.product.id();
       setup({
         isInProgress: [
@@ -315,192 +306,437 @@ describe('withProductReducer', () => {
 
   describe('updateProductCompleted', () => {
     it('should rename a generic product and rebuild the full names of its specific and variant products', () => {
-      const g = generic('a generic');
-      const s = specific(g, 'a specific');
-      const v = variant(s, 'a variant');
-      const other = generic('b generic');
+      const generic = testDataFactory.product.response.generic();
+      const specific = testDataFactory.product.response.specific({
+        genericProduct: generic,
+      });
+      const variant = testDataFactory.product.response.variant({
+        specificProduct: specific,
+      });
       setup({
-        isInProgress: [g.productId],
+        isInProgress: [generic.productId],
         productList: [
-          g,
-          s,
-          v,
-          other,
+          generic,
+          specific,
+          variant,
         ],
       });
 
+      const name = 'ékezetes név';
+
       dispatcher.dispatch(productApiEvents.updateProductCompleted({
-        productId: g.productId,
+        productId: generic.productId,
         ...testDataFactory.product.request.generic({
-          name: 'c generic',
+          name,
         }),
       }));
 
       validateState({
         isInProgress: [],
         productList: [
-          other,
           {
-            ...g,
-            name: 'c generic',
-            fullName: 'c generic',
+            ...generic,
+            name,
+            fullName: name,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
           {
-            ...s,
-            fullName: 'c generic / a specific 1 kg',
+            ...specific,
+            fullName: getSpecificProductFullName(name, specific),
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
           {
-            ...v,
-            fullName: 'c generic / a specific 1 kg / a variant',
+            ...variant,
+            fullName: getVariantProductFullName(getSpecificProductFullName(name, specific), variant.name),
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
         ],
       });
     });
 
     it('should change a specific product and rebuild the full names of its variant products', () => {
-      const g = generic('a generic');
-      const s = specific(g, 'a specific');
-      const v = variant(s, 'a variant');
+      const generic = testDataFactory.product.response.generic();
+      const specific = testDataFactory.product.response.specific({
+        genericProduct: generic,
+      });
+      const variant = testDataFactory.product.response.variant({
+        specificProduct: specific,
+      });
       setup({
-        isInProgress: [s.productId],
+        isInProgress: [specific.productId],
         productList: [
-          g,
-          s,
-          v,
+          generic,
+          specific,
+          variant,
         ],
       });
 
+      const name = 'ékezetes név';
+      const request = testDataFactory.product.request.specific({
+        name,
+        parentProductId: generic.productId,
+      });
+
       dispatcher.dispatch(productApiEvents.updateProductCompleted({
-        productId: s.productId,
-        ...testDataFactory.product.request.specific({
-          name: 'b specific',
-          measurement: 2,
-          unitOfMeasurement: 'l',
-          parentProductId: g.productId,
-        }),
+        productId: specific.productId,
+        ...request,
       }));
 
       validateState({
         isInProgress: [],
         productList: [
-          g,
+          generic,
           {
-            ...s,
-            name: 'b specific',
-            measurement: 2,
-            unitOfMeasurement: 'l',
-            fullName: 'a generic / b specific 2 l',
+            ...specific,
+            name,
+            measurement: request.measurement,
+            unitOfMeasurement: request.unitOfMeasurement,
+            fullName: getSpecificProductFullName(generic.name, request),
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
           {
-            ...v,
-            fullName: 'a generic / b specific 2 l / a variant',
+            ...variant,
+            fullName: getVariantProductFullName(getSpecificProductFullName(generic.name, request), variant.name),
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
+          },
+        ],
+      });
+    });
+
+    it('should rename a variant product', () => {
+      const generic = testDataFactory.product.response.generic();
+      const specific = testDataFactory.product.response.specific({
+        genericProduct: generic,
+      });
+      const variant = testDataFactory.product.response.variant({
+        specificProduct: specific,
+      });
+      setup({
+        isInProgress: [variant.productId],
+        productList: [
+          generic,
+          specific,
+          variant,
+        ],
+      });
+
+      const name = 'ékezetes név';
+      const request = testDataFactory.product.request.variant({
+        name,
+        parentProductId: specific.productId,
+      });
+
+      dispatcher.dispatch(productApiEvents.updateProductCompleted({
+        productId: variant.productId,
+        ...request,
+      }));
+
+      validateState({
+        isInProgress: [],
+        productList: [
+          generic,
+          specific,
+          {
+            ...variant,
+            name,
+            fullName: getVariantProductFullName(specific.fullName, name),
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
         ],
       });
     });
 
     it('should move a specific product with its variant products to another generic product', () => {
-      const sourceGeneric = generic('a generic');
-      const targetGeneric = generic('b generic');
-      const s = specific(sourceGeneric, 'a specific');
-      const v = variant(s, 'a variant');
+      const sourceGeneric = testDataFactory.product.response.generic({
+        name: 'a generic',
+      });
+      const targetGeneric = testDataFactory.product.response.generic({
+        name: 'z generic',
+      });
+      const specific = testDataFactory.product.response.specific({
+        genericProduct: sourceGeneric,
+      });
+      const variant = testDataFactory.product.response.variant({
+        specificProduct: specific,
+      });
       setup({
-        isInProgress: [s.productId],
+        isInProgress: [specific.productId],
         productList: [
           sourceGeneric,
-          s,
-          v,
+          specific,
+          variant,
           targetGeneric,
         ],
       });
 
-      dispatcher.dispatch(productApiEvents.updateProductCompleted({
-        productId: s.productId,
-        ...testDataFactory.product.request.specific({
-          name: 'a specific',
-          measurement: 1,
-          unitOfMeasurement: 'kg',
-          parentProductId: targetGeneric.productId,
-        }),
-      }));
+      const name = 'ékezetes név';
+      const request = testDataFactory.product.request.specific({
+        name,
+        parentProductId: targetGeneric.productId,
+      });
 
+      dispatcher.dispatch(productApiEvents.updateProductCompleted({
+        productId: specific.productId,
+        ...request,
+      }));
+      
       validateState({
         isInProgress: [],
         productList: [
           sourceGeneric,
           targetGeneric,
           {
-            ...s,
+            ...specific,
+            name,
+            measurement: request.measurement,
+            unitOfMeasurement: request.unitOfMeasurement,
             genericProductId: targetGeneric.productId,
-            fullName: 'b generic / a specific 1 kg',
+            fullName: getSpecificProductFullName(targetGeneric.name, request),
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
           {
-            ...v,
+            ...variant,
             genericProductId: targetGeneric.productId,
-            fullName: 'b generic / a specific 1 kg / a variant',
+            fullName: getVariantProductFullName(getSpecificProductFullName(targetGeneric.name, request), variant.name),
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
         ],
       });
     });
 
-    it('should turn a variant product into a specific product of a generic product', () => {
-      const g = generic('a generic');
-      const s = specific(g, 'a specific');
-      const v = variant(s, 'a variant');
+    it('should move a variant product to another specific product', () => {
+      const sourceGeneric = testDataFactory.product.response.generic({
+        name: 'a generic',
+      });
+      const targetGeneric = testDataFactory.product.response.generic({
+        name: 'b generic',
+      });
+      const sourceSpecific = testDataFactory.product.response.specific({
+        response: {
+          name: 'a specific',
+        },
+        genericProduct: sourceGeneric,
+      });
+      const targetSpecific = testDataFactory.product.response.specific({
+        response: {
+          name: 'b specific',
+        },
+        genericProduct: targetGeneric,
+      });
+      const variant = testDataFactory.product.response.variant({
+        specificProduct: sourceSpecific,
+      });
+
       setup({
-        isInProgress: [v.productId],
+        isInProgress: [variant.productId],
         productList: [
-          g,
-          s,
-          v,
+          sourceGeneric,
+          sourceSpecific,
+          variant,
+          targetGeneric,
+          targetSpecific,
         ],
       });
 
+      const name = 'ékezetes név';
+      const request = testDataFactory.product.request.variant({
+        name,
+        parentProductId: targetSpecific.productId,
+      });
+
       dispatcher.dispatch(productApiEvents.updateProductCompleted({
-        productId: v.productId,
-        ...testDataFactory.product.request.specific({
-          name: 'was a variant',
-          measurement: 1,
-          unitOfMeasurement: 'db',
-          parentProductId: g.productId,
-        }),
+        productId: variant.productId,
+        ...request,
+      }));
+      
+      validateState({
+        isInProgress: [],
+        productList: [
+          sourceGeneric,
+          sourceSpecific,
+          targetGeneric, 
+          targetSpecific,
+          {
+            ...variant,
+            specificProductId: targetSpecific.productId,
+            genericProductId: targetGeneric.productId,
+            name,
+            fullName: getVariantProductFullName(targetSpecific.fullName, name),
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
+          },
+        ],
+      });
+    });
+
+    it('should turn a generic product without children into a specific product of a different generic product', () => {
+      const generic = testDataFactory.product.response.generic();
+      const targetGeneric = testDataFactory.product.response.generic();
+      setup({
+        isInProgress: [generic.productId],
+        productList: [
+          generic,
+          targetGeneric,
+        ],
+      });
+
+      const name = 'ékezetes név';
+      const request = testDataFactory.product.request.specific({
+        name,
+        parentProductId: targetGeneric.productId,
+      });
+
+      dispatcher.dispatch(productApiEvents.updateProductCompleted({
+        productId: generic.productId,
+        ...request,
       }));
 
       validateState({
         isInProgress: [],
         productList: [
-          g,
-          s,
+          targetGeneric,
           {
-            productId: v.productId,
+            productId: generic.productId,
             productType: ProductType.Specific,
-            name: 'was a variant',
-            fullName: 'a generic / was a variant 1 db',
-            measurement: 1,
-            unitOfMeasurement: 'db',
-            genericProductId: g.productId,
+            name,
+            fullName: getSpecificProductFullName(targetGeneric.name, request),
+            measurement: request.measurement,
+            unitOfMeasurement: request.unitOfMeasurement,
+            genericProductId: targetGeneric.productId,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
+          },
+        ],
+      });
+
+    });
+
+    it('should turn a generic product without children into a variant product of a specific product', () => {
+      const sourceGeneric = testDataFactory.product.response.generic();
+      const targetGeneric = testDataFactory.product.response.generic({
+        name: 'a generic',
+      });
+      const targetSpecific = testDataFactory.product.response.specific({
+        response: {
+          name: 'a specific',
+        },
+        genericProduct: targetGeneric,
+      });
+
+      setup({
+        isInProgress: [sourceGeneric.productId],
+        productList: [
+          sourceGeneric,
+          targetGeneric,
+          targetSpecific,
+        ],
+      });
+
+      const name = 'ékezetes név';
+      const request = testDataFactory.product.request.variant({
+        name,
+        parentProductId: targetSpecific.productId,
+      });
+
+      dispatcher.dispatch(productApiEvents.updateProductCompleted({
+        productId: sourceGeneric.productId,
+        ...request,
+      }));
+      
+      validateState({
+        isInProgress: [],
+        productList: [
+          targetGeneric, 
+          targetSpecific,
+          {
+            productId: sourceGeneric.productId,
+            productType: ProductType.Variant,
+            specificProductId: targetSpecific.productId,
+            genericProductId: targetGeneric.productId,
+            name,
+            fullName: getVariantProductFullName(targetSpecific.fullName, name),
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
         ],
       });
     });
 
     it('should turn a specific product without children into a variant product of another specific product', () => {
-      const g = generic('a generic');
-      const specificToUpdate = specific(g, 'a specific');
-      const targetSpecific = specific(g, 'b specific');
+      const generic = testDataFactory.product.response.generic();
+      const specificToUpdate = testDataFactory.product.response.specific({
+        genericProduct: generic,
+      });
+      const targetSpecific = testDataFactory.product.response.specific({
+        genericProduct: generic,
+      });
       setup({
         isInProgress: [specificToUpdate.productId],
         productList: [
-          g,
+          generic,
           specificToUpdate,
           targetSpecific,
         ],
       });
 
+      const name = 'ékezetes név';
+
       dispatcher.dispatch(productApiEvents.updateProductCompleted({
         productId: specificToUpdate.productId,
         ...testDataFactory.product.request.variant({
-          name: 'now a variant',
+          name,
           parentProductId: targetSpecific.productId,
         }),
       }));
@@ -508,48 +744,171 @@ describe('withProductReducer', () => {
       validateState({
         isInProgress: [],
         productList: [
-          g,
+          generic,
           targetSpecific,
           {
             productId: specificToUpdate.productId,
             productType: ProductType.Variant,
-            name: 'now a variant',
-            fullName: 'a generic / b specific 1 kg / now a variant',
-            genericProductId: g.productId,
+            name,
+            fullName: getVariantProductFullName(targetSpecific.fullName, name),
+            genericProductId: generic.productId,
             specificProductId: targetSpecific.productId,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
         ],
       });
     });
 
     it('should turn a specific product without children into a generic product', () => {
-      const g = generic('b generic');
-      const s = specific(g, 'a specific');
+      const generic = testDataFactory.product.response.generic({
+        name: 'a generic',
+      });
+      const specific = testDataFactory.product.response.specific({
+        genericProduct: generic,
+      });
       setup({
-        isInProgress: [s.productId],
+        isInProgress: [specific.productId],
         productList: [
-          g,
-          s,
+          generic,
+          specific,
         ],
       });
 
+      const name = 'ékezetes név';
+
       dispatcher.dispatch(productApiEvents.updateProductCompleted({
-        productId: s.productId,
+        productId: specific.productId,
         ...testDataFactory.product.request.generic({
-          name: 'a generic',
+          name,
         }),
       }));
 
       validateState({
         isInProgress: [],
         productList: [
+          generic,
           {
-            productId: s.productId,
+            productId: specific.productId,
             productType: ProductType.Generic,
-            name: 'a generic',
-            fullName: 'a generic',
+            name,
+            fullName: name,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
           },
-          g,
+        ],
+      });
+    });
+
+    it('should turn a variant product into a specific product of a generic product', () => {
+      const generic = testDataFactory.product.response.generic();
+      const specific = testDataFactory.product.response.specific({
+        response: {
+          name: 'a specific',
+        },
+        genericProduct: generic,
+      });
+      const variant = testDataFactory.product.response.variant({
+        specificProduct: specific,
+      });
+      setup({
+        isInProgress: [variant.productId],
+        productList: [
+          generic,
+          specific,
+          variant,
+        ],
+      });
+
+      const name = 'ékezetes név';
+      const request = testDataFactory.product.request.specific({
+        name,
+        parentProductId: generic.productId,
+      });
+
+      dispatcher.dispatch(productApiEvents.updateProductCompleted({
+        productId: variant.productId,
+        ...request,
+      }));
+
+      validateState({
+        isInProgress: [],
+        productList: [
+          generic,
+          specific,
+          {
+            productId: variant.productId,
+            productType: ProductType.Specific,
+            name,
+            fullName: getSpecificProductFullName(generic.name, request),
+            measurement: request.measurement,
+            unitOfMeasurement: request.unitOfMeasurement,
+            genericProductId: generic.productId,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
+          },
+        ],
+      });
+    });
+
+    it('should turn a variant product into a generic product', () => {
+      const generic = testDataFactory.product.response.generic({
+        name: 'a generic',
+      });
+      const specific = testDataFactory.product.response.specific({
+        genericProduct: generic,
+      });
+      const variant = testDataFactory.product.response.variant({
+        specificProduct: specific,
+      });
+      setup({
+        isInProgress: [variant.productId],
+        productList: [
+          generic,
+          specific,
+          variant,
+        ],
+      });
+
+      const name = 'ékezetes név';
+      const request = testDataFactory.product.request.generic({
+        name,
+      });
+
+      dispatcher.dispatch(productApiEvents.updateProductCompleted({
+        productId: variant.productId,
+        ...request,
+      }));
+
+      validateState({
+        isInProgress: [],
+        productList: [
+          generic,
+          specific,
+          {
+            productId: variant.productId,
+            productType: ProductType.Generic,
+            name,
+            fullName: name,
+            searchTerms: expect.arrayContaining([
+              'ekezetes',
+              'nev',
+              'ékezetes',
+              'név',
+            ]),
+          },
         ],
       });
     });
@@ -557,7 +916,7 @@ describe('withProductReducer', () => {
 
   describe('deleteProductInitiated', () => {
     it('should mark the product as in progress', () => {
-      const product = generic('product');
+      const product = testDataFactory.product.response.generic();
       const otherProductId = testDataFactory.product.id();
       setup({
         isInProgress: [otherProductId],
@@ -579,7 +938,7 @@ describe('withProductReducer', () => {
 
   describe('deleteProductFailed', () => {
     it('should clear the in progress flag of the product', () => {
-      const product = generic('product');
+      const product = testDataFactory.product.response.generic();
       const otherProductId = testDataFactory.product.id();
       setup({
         isInProgress: [
@@ -601,8 +960,8 @@ describe('withProductReducer', () => {
 
   describe('deleteProductCompleted', () => {
     it('should remove the product and clear its in progress flag', () => {
-      const productToDelete = generic('a generic');
-      const otherProduct = generic('b generic');
+      const productToDelete = testDataFactory.product.response.generic();
+      const otherProduct = testDataFactory.product.response.generic();
       const otherProductId = testDataFactory.product.id();
       setup({
         isInProgress: [
@@ -628,8 +987,8 @@ describe('withProductReducer', () => {
 
   describe('mergeProductsInitiated', () => {
     it('should mark the source products as in progress', () => {
-      const target = generic('a generic');
-      const source = generic('b generic');
+      const target = testDataFactory.product.response.generic();
+      const source = testDataFactory.product.response.generic();
       const otherProductId = testDataFactory.product.id();
       setup({
         isInProgress: [otherProductId],
@@ -655,8 +1014,8 @@ describe('withProductReducer', () => {
 
   describe('mergeProductsFailed', () => {
     it('should clear the in progress flags of the source products', () => {
-      const source1 = generic('a generic');
-      const source2 = generic('b generic');
+      const source1 = testDataFactory.product.response.generic();
+      const source2 = testDataFactory.product.response.generic();
       const otherProductId = testDataFactory.product.id();
       setup({
         isInProgress: [
@@ -685,23 +1044,21 @@ describe('withProductReducer', () => {
 
   describe('mergeProductsCompleted', () => {
     it('should remove the source generic products and move their specific and variant products under the target', () => {
-      const target = generic('a generic');
-      const targetSpecific = specific(target, 'a specific');
-      const source = generic('b generic');
-      const movedSpecific = specific(source, 'b specific');
-      const movedVariant = variant(movedSpecific, 'b variant');
-      const other = generic('c generic');
-      const otherSpecific = specific(other, 'c specific');
+      const target = testDataFactory.product.response.generic();
+      const source = testDataFactory.product.response.generic();
+      const movedSpecific = testDataFactory.product.response.specific({
+        genericProduct: source,
+      });
+      const movedVariant = testDataFactory.product.response.variant({
+        specificProduct: movedSpecific,
+      });
       setup({
         isInProgress: [source.productId],
         productList: [
           target,
-          targetSpecific,
           source,
           movedSpecific,
           movedVariant,
-          other,
-          otherSpecific,
         ],
       });
 
@@ -714,35 +1071,38 @@ describe('withProductReducer', () => {
         isInProgress: [],
         productList: [
           target,
-          targetSpecific,
           {
             ...movedSpecific,
             genericProductId: target.productId,
-            fullName: 'a generic / b specific 1 kg',
+            fullName: getSpecificProductFullName(target.name, movedSpecific),
+            searchTerms: expect.arrayContaining(target.name.toLowerCase().split(' ')),
           },
           {
             ...movedVariant,
             genericProductId: target.productId,
-            fullName: 'a generic / b specific 1 kg / b variant',
+            fullName: getVariantProductFullName(getSpecificProductFullName(target.name, movedSpecific), movedVariant.name),
+            searchTerms: expect.arrayContaining(target.name.toLowerCase().split(' ')),
           },
-          other,
-          otherSpecific,
         ],
       });
     });
 
     it('should remove the source specific products and move their variant products under the target', () => {
-      const g = generic('a generic');
-      const targetSpecific = specific(g, 'a specific');
-      const targetVariant = variant(targetSpecific, 'a variant');
-      const source = specific(g, 'b specific');
-      const movedVariant = variant(source, 'b variant');
+      const generic = testDataFactory.product.response.generic();
+      const targetSpecific = testDataFactory.product.response.specific({
+        genericProduct: generic,
+      });
+      const source = testDataFactory.product.response.specific({
+        genericProduct: generic,
+      });
+      const movedVariant = testDataFactory.product.response.variant({
+        specificProduct: source,
+      });
       setup({
         isInProgress: [source.productId],
         productList: [
-          g,
+          generic,
           targetSpecific,
-          targetVariant,
           source,
           movedVariant,
         ],
@@ -756,28 +1116,35 @@ describe('withProductReducer', () => {
       validateState({
         isInProgress: [],
         productList: [
-          g,
+          generic,
           targetSpecific,
-          targetVariant,
           {
             ...movedVariant,
             specificProductId: targetSpecific.productId,
-            fullName: 'a generic / a specific 1 kg / b variant',
+            fullName: getVariantProductFullName(targetSpecific.fullName, movedVariant.name),
+            searchTerms: expect.arrayContaining(targetSpecific.fullName.toLowerCase().replaceAll(PRODUCT_FULL_NAME_SEPARATOR, ' ')
+              .split(' ')),
           },
         ],
       });
     });
 
     it('should remove the source variant products', () => {
-      const g = generic('a generic');
-      const s = specific(g, 'a specific');
-      const targetVariant = variant(s, 'a variant');
-      const source = variant(s, 'b variant');
+      const generic = testDataFactory.product.response.generic();
+      const specific = testDataFactory.product.response.specific({
+        genericProduct: generic,
+      });
+      const targetVariant = testDataFactory.product.response.variant({
+        specificProduct: specific,
+      });
+      const source = testDataFactory.product.response.variant({
+        specificProduct: specific,
+      });
       setup({
         isInProgress: [source.productId],
         productList: [
-          g,
-          s,
+          generic,
+          specific,
           targetVariant,
           source,
         ],
@@ -791,8 +1158,8 @@ describe('withProductReducer', () => {
       validateState({
         isInProgress: [],
         productList: [
-          g,
-          s,
+          generic,
+          specific,
           targetVariant,
         ],
       });

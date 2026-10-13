@@ -5,11 +5,12 @@ import { withProductApiEvents } from '@household/state/product/with-product-api-
 import { withProductEvents } from '@household/state/product/with-product-events';
 import { withProductReducer } from '@household/state/product/with-product-reducer';
 import { inject, ValueProvider, InjectionToken } from '@angular/core';
+import { Searchable } from '@household/shared/types/common';
 
 const PRODUCT_STORE_INITIAL_STATE = new InjectionToken<ProductState>('PRODUCT_STORE_INITIAL_STATE');
 
 export type ProductState = {
-  productList: Responses.Product[]; // TODO Searchable
+  productList: Searchable<Responses.Product>[];
   isInProgress: Api.Product.Id[];
   pendingParentProduct: Responses.Product;
 };

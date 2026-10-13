@@ -5,6 +5,7 @@ import { elementSelectorFactory, IElementSelector, MockSignalStore, provideMockD
 import { ProductStore } from '@household/state/product/product-store';
 import { Api } from '@household/shared/types/api';
 import { Responses } from '@household/shared/types/responses';
+import { ProductType } from '@household/shared/enums';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { validateFunctionCall } from '@household/shared/common/unit-testing';
 import { Dispatcher } from '@ngrx/signals/events';
@@ -16,19 +17,12 @@ describe('ProductListItem', () => {
   let mockProductStore: MockSignalStore<typeof ProductStore>;
   let mockDispatcher: Dispatcher;
 
-  const generic = testDataFactory.product.response.generic({
-    name: 'generic product',
-  });
+  const generic = testDataFactory.product.response.generic();
   const specific = testDataFactory.product.response.specific({
-    name: 'specific product',
-    measurement: 500,
-    unitOfMeasurement: 'g',
-    genericProductId: generic.productId,
+    genericProduct: generic,
   });
   const variant = testDataFactory.product.response.variant({
-    name: 'variant product',
-    genericProductId: generic.productId,
-    specificProductId: specific.productId,
+    specificProduct: specific,
   });
 
   const render = async (params?: {
@@ -173,7 +167,7 @@ describe('ProductListItem', () => {
         product: specific,
       });
 
-      expect(selector.getComponent(MatListItemLine, MatListItem).nativeElement.textContent).toBe('500 g');
+      expect(selector.getComponent(MatListItemLine, MatListItem).nativeElement.textContent).toBe(`${specific.measurement} ${specific.unitOfMeasurement}`);
     });
 
     it('should not be rendered for generic product', async () => {
@@ -219,31 +213,45 @@ describe('ProductListItem', () => {
     });
   });
 
-  describe('indentation', () => {
-    it('should not be indented for generic product', async () => {
+  describe('host class', () => {
+    // the product type classes the host of the component has
+    const getProductTypeClasses = () => {
+      return Object.values(ProductType).filter(productType => fixture.nativeElement.classList.contains(productType));
+    };
+
+    it('should be the generic class for generic product', async () => {
       await render({
         product: generic,
       });
 
-      expect(fixture.componentInstance.indentation()).toBe(0);
+      expect(getProductTypeClasses()).toEqual([ProductType.Generic]);
     });
 
-    it('should be indented one level for specific product', async () => {
+    it('should be the specific class for specific product', async () => {
       await render({
         product: specific,
       });
 
-      expect(fixture.componentInstance.indentation()).toBe(1);
-      expect(fixture.nativeElement.style.paddingLeft).toBe('1rem');
+      expect(getProductTypeClasses()).toEqual([ProductType.Specific]);
     });
 
-    it('should be indented two levels for variant product', async () => {
+    it('should be the variant class for variant product', async () => {
       await render({
         product: variant,
       });
 
-      expect(fixture.componentInstance.indentation()).toBe(2);
-      expect(fixture.nativeElement.style.paddingLeft).toBe('2rem');
+      expect(getProductTypeClasses()).toEqual([ProductType.Variant]);
+    });
+
+    it('should follow the product if it changes', async () => {
+      await render({
+        product: generic,
+      });
+
+      fixture.componentRef.setInput('product', variant);
+      await fixture.whenStable();
+
+      expect(getProductTypeClasses()).toEqual([ProductType.Variant]);
     });
   });
 });

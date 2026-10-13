@@ -8,12 +8,6 @@ import { productEvents } from '@household/state/product/product-events';
 import { ProductStore } from '@household/state/product/product-store';
 import { injectDispatch } from '@ngrx/signals/events';
 
-const INDENTATION_REM: Record<ProductType, number> = {
-  [ProductType.Generic]: 0,
-  [ProductType.Specific]: 1,
-  [ProductType.Variant]: 2,
-};
-
 @Component({
   imports: [
     MatIconModule,
@@ -23,17 +17,13 @@ const INDENTATION_REM: Record<ProductType, number> = {
   styleUrl: './product-list-item.scss',
   templateUrl: './product-list-item.html',
   host: {
-    '[style.padding-left.rem]': 'indentation()',
+    '[class]': 'this.product().productType',
   },
 })
 export class ProductListItem {
   product = input.required<Responses.Product>();
   private productEvents = injectDispatch(productEvents);
   private readonly productStore = inject(ProductStore);
-
-  indentation = computed(() => {
-    return INDENTATION_REM[this.product().productType];
-  });
 
   measurement = computed(() => {
     const product = this.product();

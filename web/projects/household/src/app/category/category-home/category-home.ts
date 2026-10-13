@@ -27,7 +27,7 @@ export class CategoryHome {
     this.categoryApiEvents.listCategoriesInitiated();
   }
 
-  create() {
+  onCreate() {
     this.categoryEvents.createCategory();
   }
 }

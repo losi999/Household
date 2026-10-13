@@ -12,7 +12,7 @@ export const withRecipientReducer = () => {
           recipientList: payload.map(p => {
             return {
               ...p,
-              searchTerms: toSearchTerms(p.name),
+              ...toSearchTerms(p.name),
             };
           }),
         };
@@ -41,7 +41,7 @@ export const withRecipientReducer = () => {
               .concat({
                 recipientId,
                 name,
-                searchTerms: toSearchTerms(name),
+                ...toSearchTerms(name),
               })
               .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
                 sensitivity: 'base',

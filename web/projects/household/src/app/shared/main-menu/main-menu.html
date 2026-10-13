@@ -7,7 +7,7 @@
   <button mat-menu-item data-testId="imports" *householdIsEditor [routerLink]="['/','imports']">Importálás</button>
   <mat-divider />
   <button mat-menu-item data-testId="settings" [routerLink]="['/','settings']">Beállítások</button>
-  <button mat-menu-item data-testId="log-out" (click)="logOut()">Kijelentkezés</button>
+  <button mat-menu-item data-testId="log-out" (click)="onLogOut()">Kijelentkezés</button>
 </mat-menu>
 
 <mat-menu #catalog="matMenu">

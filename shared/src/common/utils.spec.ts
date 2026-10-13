@@ -28,31 +28,34 @@ describe('Product utils', () => {
       fullName: 'b generic',
     });
     const specific1 = testDataFactory.product.response.specific({
-      name: 'a specific',
-      measurement: 2,
-      unitOfMeasurement: 'l',
-      fullName: 'a generic / a specific 2 l',
-      genericProductId: generic1.productId,
+      response: {
+        name: 'a specific',
+        measurement: 2,
+        unitOfMeasurement: 'l',
+      },
+      genericProduct: generic1,
     });
     const specific2 = testDataFactory.product.response.specific({
-      name: 'a specific',
-      measurement: 10,
-      unitOfMeasurement: 'l',
-      fullName: 'a generic / a specific 10 l',
-      genericProductId: generic1.productId,
+      response: {
+        name: 'a specific',
+        measurement: 10,
+        unitOfMeasurement: 'l',
+      },
+      genericProduct: generic1,
     });
     const specific3 = testDataFactory.product.response.specific({
-      name: 'b specific',
-      measurement: 1,
-      unitOfMeasurement: 'kg',
-      fullName: 'b generic / b specific 1 kg',
-      genericProductId: generic2.productId,
+      response: {
+        name: 'b specific',
+        measurement: 1,
+        unitOfMeasurement: 'kg',
+      },
+      genericProduct: generic2,
     });
     const variant1 = testDataFactory.product.response.variant({
-      name: 'a variant',
-      fullName: 'a generic / a specific 2 l / a variant',
-      genericProductId: generic1.productId,
-      specificProductId: specific1.productId,
+      response: {
+        name: 'a variant',
+      },
+      specificProduct: specific1,
     });
 
     it('should return nothing for an empty list', () => {

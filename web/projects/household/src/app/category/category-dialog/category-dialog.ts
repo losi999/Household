@@ -61,9 +61,14 @@ export class CategoryDialog {
   });
 
   onEditParent() {
-    this.categoryEvents.selectCategory({
-      excludedCategory: this.category,
+    const items = this.categoryStore.categoryList().filter((c) => {
+      const isItself = c.categoryId === this.category?.categoryId;
+      const isAChildCategory = c.ancestors.some(a => a.categoryId === this.category?.categoryId);
+
+      return !isItself && !isAChildCategory;
     });
+
+    this.categoryEvents.selectCategory(items);
   }
 
   onRemoveParent() {

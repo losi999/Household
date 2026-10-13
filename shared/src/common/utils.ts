@@ -138,17 +138,41 @@ export const calculateWorkdayLimits = (day: Responses.CalendarDay): Api.Calendar
   };
 };
 
-export const toSearchTerms = (input: string): string[] => {
+export const toSearchTerms = (input: string): Searchable<object> => {
   const lowercased = input.toLowerCase().split(' ');
 
-  return [
-    ...new Set(lowercased.flatMap(term => {
+  return {
+    searchTerms: [
+      ...new Set(lowercased.flatMap(term => {
+        return [
+          term,
+          term.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+        ];
+      })),
+    ],
+  };
+};
+
+export const toSearchable = <T extends object>(input: T, propertiesToSearch: (keyof T)[], ...additionalSeparators: string[]): Searchable<T> => {
+  const separators = additionalSeparators?.filter(x => !!(x.trim())) ?? []; 
+
+  return {
+    ...input,
+    searchTerms: propertiesToSearch.flatMap((prop) => {
+      const terms = separators.reduce((accumulator, currentValue) => {
+        return accumulator.replaceAll(currentValue, ' ');
+      }, String(input[prop]).toLowerCase()).split(' ');
+
       return [
-        term,
-        term.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+        ...new Set(terms.flatMap(term => {
+          return [
+            term,
+            term.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+          ];
+        })),
       ];
-    })),
-  ];
+    }),
+  };
 };
 
 export const search = (item: Searchable, searchValue: string): boolean => {
@@ -173,7 +197,7 @@ export const getVariantProductFullName = (specificProductFullName: string, name:
 
 // The full name of a product starts with the full name of its parent, so in a list ordered by the full name every
 // product is followed by its children. The measurement is compared as a number, so 2 l comes before 10 l.
-export const sortProductsByFullName = (products: Responses.Product[]): Responses.Product[] => {
+export const sortProductsByFullName = <T extends Responses.Product>(products: T[]): T[] => {
   return [...products].sort((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
     sensitivity: 'base',
     numeric: true,

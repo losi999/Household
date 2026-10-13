@@ -5,11 +5,10 @@ import { MatListModule } from '@angular/material/list';
 import { ClearableInput } from '@household/shared-ui';
 import { search } from '@household/shared/common/utils';
 import { Responses } from '@household/shared/types/responses';
+import { Searchable } from '@household/shared/types/common';
 import { CategoryStore } from '@household/state/category/category-store';
 
-export type CategorySelectDialogData = {
-  excludedCategory?: Responses.Category;
-};
+export type CategorySelectDialogData = Searchable<Responses.Category>[];
 export type CategorySelectDialogResult = Responses.Category;
 
 @Component({
@@ -30,15 +29,14 @@ export class CategorySelectDialog {
   searchValue = model<string>('');
 
   selectableCategories = computed(() => {
-    if (!this.data?.excludedCategory && !this.searchValue()) {
-      return this.categoryStore.categoryList();
+    const categoryList = this.data ?? this.categoryStore.categoryList();
+
+    if (!this.searchValue()) {
+      return categoryList;
     }
 
-    return this.categoryStore.categoryList().filter((c) => {
-      const isItself = c.categoryId === this.data?.excludedCategory?.categoryId;
-      const isAChildCategory = c.ancestors.some(a => a.categoryId === this.data?.excludedCategory?.categoryId);
-
-      return !isItself && !isAChildCategory && search(c, this.searchValue());
+    return categoryList.filter((category) => {
+      return search(category, this.searchValue());
     });
   });
 

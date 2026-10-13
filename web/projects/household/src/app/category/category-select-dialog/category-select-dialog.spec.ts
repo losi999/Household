@@ -7,6 +7,9 @@ import { CategoryStore } from '@household/state/category/category-store';
 import { MatListItem, MatActionList } from '@angular/material/list';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { Responses } from '@household/shared/types/responses';
+import { Searchable } from '@household/shared/types/common';
+import { toSearchable } from '@household/shared/common/utils';
+import { CATEGORY_FULL_NAME_SEPARATOR } from '@household/shared/constants';
 
 describe('CategorySelectDialog', () => {
   const ClearableInputStub = createStubComponent(ClearableInput);
@@ -16,8 +19,8 @@ describe('CategorySelectDialog', () => {
   let mockDialogRef: MockService<MatDialogRef<CategorySelectDialog>>;
   let mockCategoryStore: MockSignalStore<typeof CategoryStore>;
 
-  const category1 = testDataFactory.category.searchableResponse();
-  const category2 = testDataFactory.category.searchableResponse();
+  const category1 = toSearchable(testDataFactory.category.response(), ['fullName'], CATEGORY_FULL_NAME_SEPARATOR);
+  const category2 = toSearchable(testDataFactory.category.response(), ['fullName'], CATEGORY_FULL_NAME_SEPARATOR);
 
   const getSearchInput = () => {
     return selector.getComponent(ClearableInputStub, MatDialogContent);
@@ -27,9 +30,9 @@ describe('CategorySelectDialog', () => {
     return selector.listComponents<MatListItem, HTMLButtonElement>(MatListItem, MatActionList);
   };
 
-  const render = async (params?: { 
-    dialogData?: CategorySelectDialogData
-    categoryList?: Responses.Category[]
+  const render = async (params?: {
+    dialogData?: CategorySelectDialogData;
+    categoryList?: Searchable<Responses.Category>[];
   }) => {
     TestBed.resetTestingModule();
 
@@ -89,53 +92,30 @@ describe('CategorySelectDialog', () => {
   });
 
   describe('selectable category list', () => {
-    it('should display every category without filtering', async () => {
+    it('should display the categories from the store', async () => {
       await render();
-  
+
       const listItems = getListItems();
-  
+
       expect(listItems.length).toBe(2);
       expect(listItems[0].nativeElement.textContent.trim()).toBe(category1.name);
       expect(listItems[1].nativeElement.textContent.trim()).toBe(category2.name);
-    });      
+    });
 
-    it('should not display the excluded category', async () => {
+    it('should display the categories from injected data', async () => {
       await render({
-        dialogData: {
-          excludedCategory: category2,
-        },
-      });
-  
-      const listItems = getListItems();
-  
-      expect(listItems.length).toBe(1);
-      expect(listItems[0].nativeElement.textContent.trim()).toBe(category1.name);
-    });   
-    
-    it('should not display child of excluded category', async () => {
-      const category = testDataFactory.category.response();
-      const childCategory = testDataFactory.category.response({
-        ancestors: [category],
-      });
-
-      await render({
+        dialogData: [category2],
         categoryList: [
-          category,
-          childCategory,
           category1,
           category2,
         ],
-        dialogData: {
-          excludedCategory: category,
-        },
       });
-  
+
       const listItems = getListItems();
-  
-      expect(listItems.length).toBe(2);
-      expect(listItems[0].nativeElement.textContent.trim()).toBe(category1.name);
-      expect(listItems[1].nativeElement.textContent.trim()).toBe(category2.name);
-    });    
+
+      expect(listItems.length).toBe(1);
+      expect(listItems[0].nativeElement.textContent.trim()).toBe(category2.name);
+    });
 
     it('should be filtered based on search input value', async () => {
       await render(); 

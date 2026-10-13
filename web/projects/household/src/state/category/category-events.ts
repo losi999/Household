@@ -2,6 +2,7 @@
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
+import { Searchable } from '@household/shared/types/common';
 import { type } from '@ngrx/signals';
 import { eventGroup } from '@ngrx/signals/events';
 
@@ -13,9 +14,7 @@ export const categoryEvents = eventGroup({
     deleteCategory: type<Responses.Category>(),
     mergeCategories: type<Responses.Category>(),
     openCategoryListItemSubmenu: type<Responses.Category>(),
-    selectCategory: type<{
-      excludedCategory?: Responses.Category;
-    }>(),
+    selectCategory: type<Searchable<Responses.Category>[] | undefined>(),
     categorySelected: type<Responses.Category>(),
   },
 });

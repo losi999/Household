@@ -4,15 +4,14 @@ import { testDataFactory } from '@household/shared/common/test-data-factory';
 describe('product utils', () => {
   const generic = testDataFactory.product.response.generic();
   const specific = testDataFactory.product.response.specific({
-    genericProductId: generic.productId,
+    genericProduct: generic,
   });
   const variant = testDataFactory.product.response.variant({
-    genericProductId: generic.productId,
-    specificProductId: specific.productId,
+    specificProduct: specific,
   });
   const otherGeneric = testDataFactory.product.response.generic();
   const otherSpecific = testDataFactory.product.response.specific({
-    genericProductId: otherGeneric.productId,
+    genericProduct: otherGeneric,
   });
 
   describe('getParentProductId', () => {

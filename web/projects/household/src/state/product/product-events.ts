@@ -1,4 +1,5 @@
 import { Api } from '@household/shared/types/api';
+import { Searchable } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { type } from '@ngrx/signals';
@@ -15,10 +16,7 @@ export const productEvents = eventGroup({
       product: Responses.Product;
       hasChildren: boolean;
     }>(),
-    selectProduct: type<{
-      isParentSelection?: boolean;
-      productToUpdate?: Responses.Product;
-    }>(),
+    selectProduct: type<Searchable<Responses.Product>[] | undefined>(),
     productSelected: type<Responses.Product>(),
   },
 });

@@ -92,7 +92,12 @@ describe('Product store', () => {
 
     dispatcher.dispatch(productApiEvents.listProductsCompleted([product]));
 
-    expect(store.productList()).toEqual([product]);
+    expect(store.productList()).toEqual([
+      {
+        ...product,
+        searchTerms: expect.any(Array),
+      },
+    ]);
   });
 
   it('should have the UI event handlers wired in', () => {
@@ -118,6 +123,11 @@ describe('Product store', () => {
     dispatcher.dispatch(productApiEvents.listProductsInitiated());
 
     expect(mockProductService.functions.listProducts).toHaveBeenCalled();
-    expect(store.productList()).toEqual([product]);
+    expect(store.productList()).toEqual([
+      {
+        ...product,
+        searchTerms: expect.any(Array),
+      },
+    ]);
   });
 });

@@ -27,11 +27,7 @@ export class ProductHome {
     this.productApiEvents.listProductsInitiated();
   }
 
-  create() {
+  onCreate() {
     this.productEvents.createProduct();
-  }
-
-  onTEst () {
-    this.productEvents.selectProduct({});
   }
 }

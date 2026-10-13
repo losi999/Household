@@ -24,7 +24,7 @@ import { IsEditor } from '@household/app/shared/directives/is-editor';
 export class MainMenu {
   private authEvents = injectDispatch(authEvents);
 
-  logOut() {
+  onLogOut() {
     this.authEvents.logOut();    
   }
 }

@@ -23,60 +23,24 @@ describe('ProductDialog', () => {
   let mockDialogRef: MockService<MatDialogRef<ProductDialog>>;
   let mockDispatcher: Dispatcher;
 
-  const parentGeneric = testDataFactory.product.response.generic({
-    name: 'parent generic',
-    fullName: 'parent generic',
+  const genericWithChildren = testDataFactory.product.response.generic();
+  const specificWithChildren = testDataFactory.product.response.specific({
+    genericProduct: genericWithChildren,
   });
-  const specificWithVariant = testDataFactory.product.response.specific({
-    name: 'specific with variant',
-    measurement: 1,
-    unitOfMeasurement: 'kg',
-    fullName: 'parent generic / specific with variant 1 kg',
-    genericProductId: parentGeneric.productId,
-  });
-  const variantToUpdate = testDataFactory.product.response.variant({
-    name: 'variant to update',
-    fullName: 'parent generic / specific with variant 1 kg / variant to update',
-    genericProductId: parentGeneric.productId,
-    specificProductId: specificWithVariant.productId,
+  const variant = testDataFactory.product.response.variant({
+    specificProduct: specificWithChildren,
   });
   const specificWithoutChildren = testDataFactory.product.response.specific({
-    name: 'specific without children',
-    measurement: 5,
-    unitOfMeasurement: 'g',
-    fullName: 'parent generic / specific without children 5 g',
-    genericProductId: parentGeneric.productId,
+    genericProduct: genericWithChildren,
   });
-  const specificWithChildren = testDataFactory.product.response.specific({
-    name: 'specific with children',
-    measurement: 2,
-    unitOfMeasurement: 'l',
-    fullName: 'parent generic / specific with children 2 l',
-    genericProductId: parentGeneric.productId,
-  });
-  const genericWithChildren = testDataFactory.product.response.generic({
-    name: 'generic with children',
-    fullName: 'generic with children',
-  });
-  const genericWithoutChildren = testDataFactory.product.response.generic({
-    name: 'generic without children',
-    fullName: 'generic without children',
-  });
+  
+  const genericWithoutChildren = testDataFactory.product.response.generic();
   const productList = [
-    parentGeneric,
-    specificWithVariant,
-    variantToUpdate,
-    specificWithoutChildren,
-    specificWithChildren,
-    testDataFactory.product.response.variant({
-      genericProductId: parentGeneric.productId,
-      specificProductId: specificWithChildren.productId,
-    }),
-    genericWithChildren,
-    testDataFactory.product.response.specific({
-      genericProductId: genericWithChildren.productId,
-    }),
     genericWithoutChildren,
+    genericWithChildren,
+    specificWithChildren,
+    variant,
+    specificWithoutChildren,
   ];
 
   const getNameInput = () => {
@@ -246,7 +210,7 @@ describe('ProductDialog', () => {
         dialogData: specificWithoutChildren,
       });
 
-      expect(getParentIconText().componentInstance.text()).toBe(parentGeneric.fullName);
+      expect(getParentIconText().componentInstance.text()).toBe(genericWithChildren.fullName);
       expect(getParentIconText().componentInstance.icon()).toBe('account_tree');
       expect(getParentMenuButton()).toBeTruthy();
       expect(getParentAddButton()).toBeFalsy();
@@ -254,10 +218,10 @@ describe('ProductDialog', () => {
 
     it('should be the specific product of a variant product, with its full name', async () => {
       await render({
-        dialogData: variantToUpdate,
+        dialogData: variant,
       });
 
-      expect(getParentIconText().componentInstance.text()).toBe(specificWithVariant.fullName);
+      expect(getParentIconText().componentInstance.text()).toBe(specificWithChildren.fullName);
       expect(getParentMenuButton()).toBeTruthy();
     });
 
@@ -274,17 +238,17 @@ describe('ProductDialog', () => {
     it('should be the product selected in the select dialog', async () => {
       await render();
 
-      await selectParent(parentGeneric);
+      await selectParent(genericWithoutChildren);
 
-      expect(getParentIconText().componentInstance.text()).toBe(parentGeneric.fullName);
-      expect(fixture.componentInstance.parentProduct()).toEqual(parentGeneric);
+      expect(getParentIconText().componentInstance.text()).toBe(genericWithoutChildren.fullName);
+      expect(fixture.componentInstance.parentProduct()).toEqual(genericWithoutChildren);
     });
   });
 
   describe('remove parent product button', () => {
     it('should remove the parent product from the form', async () => {
       await render({
-        dialogData: variantToUpdate,
+        dialogData: variant,
       });
 
       await openParentMenu();
@@ -306,7 +270,7 @@ describe('ProductDialog', () => {
       expect(getParentRemoveButton()).toBeTruthy();
     });
 
-    it('should not be available for a specific product with children, because it would become a generic product', async () => {
+    it('should not be available for a specific product with children', async () => {
       await render({
         dialogData: specificWithChildren,
       });
@@ -329,10 +293,11 @@ describe('ProductDialog', () => {
       getParentEditButton().nativeElement.click();
       await fixture.whenStable();
 
-      validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct({
-        isParentSelection: true,
-        productToUpdate: specificWithoutChildren,
-      }), {
+      validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct([
+        genericWithoutChildren,
+        genericWithChildren,
+        specificWithChildren,
+      ]), {
         scope: 'self',
       });
     });
@@ -345,15 +310,17 @@ describe('ProductDialog', () => {
       getParentAddButton().nativeElement.click();
       await fixture.whenStable();
 
-      validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct({
-        isParentSelection: true,
-        productToUpdate: undefined,
-      }), {
+      validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct([
+        genericWithoutChildren,
+        genericWithChildren,
+        specificWithChildren,
+        specificWithoutChildren,
+      ]), {
         scope: 'self',
       });
     });
 
-    it('should dispatch selectProduct with the updated product', async () => {
+    it('should dispatch selectProduct with the valid product for a generic without children', async () => {
       await render({
         dialogData: genericWithoutChildren,
       });
@@ -361,10 +328,11 @@ describe('ProductDialog', () => {
       getParentAddButton().nativeElement.click();
       await fixture.whenStable();
 
-      validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct({
-        isParentSelection: true,
-        productToUpdate: genericWithoutChildren,
-      }), {
+      validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct([
+        genericWithChildren,
+        specificWithChildren,
+        specificWithoutChildren,
+      ]), {
         scope: 'self',
       });
     });
@@ -379,7 +347,7 @@ describe('ProductDialog', () => {
 
     it('should not be rendered if the parent product is a specific product', async () => {
       await render({
-        dialogData: variantToUpdate,
+        dialogData: variant,
       });
 
       expect(getMeasurementInput()).toBeFalsy();
@@ -388,7 +356,7 @@ describe('ProductDialog', () => {
     it('should be rendered if the parent product is a generic product', async () => {
       await render();
 
-      await selectParent(parentGeneric);
+      await selectParent(genericWithChildren);
 
       expect(getMeasurementInput().componentInstance.label()).toBe('Mennyiség');
       expect(getMeasurementInput().componentInstance.type()).toBe('number');
@@ -404,7 +372,7 @@ describe('ProductDialog', () => {
 
     it('should accept a positive number only', async () => {
       await render();
-      await selectParent(parentGeneric);
+      await selectParent(genericWithChildren);
 
       await setValue(getMeasurementInput().componentInstance, 0);
       expect(getMeasurementInput().componentInstance.errors().map(error => error.message)).toEqual(['A mennyiségnek nagyobbnak kell lennie, mint 0']);
@@ -418,7 +386,7 @@ describe('ProductDialog', () => {
 
     it('should be required', async () => {
       await render();
-      await selectParent(parentGeneric);
+      await selectParent(genericWithChildren);
 
       await setValue(getMeasurementInput().componentInstance, '');
 
@@ -435,7 +403,7 @@ describe('ProductDialog', () => {
 
     it('should not be rendered if the parent product is a specific product', async () => {
       await render({
-        dialogData: variantToUpdate,
+        dialogData: variant,
       });
 
       expect(getUnitSelect()).toBeFalsy();
@@ -444,7 +412,7 @@ describe('ProductDialog', () => {
     it('should be rendered with the default value if the parent product is a generic product', async () => {
       await render();
 
-      await selectParent(parentGeneric);
+      await selectParent(genericWithChildren);
 
       expect(getUnitSelect().componentInstance.value).toBe('db');
     });
@@ -459,7 +427,7 @@ describe('ProductDialog', () => {
 
     it('should offer the accepted units of measurement', async () => {
       await render();
-      await selectParent(parentGeneric);
+      await selectParent(genericWithChildren);
 
       getUnitSelect().componentInstance.open();
       await fixture.whenStable();
@@ -479,7 +447,7 @@ describe('ProductDialog', () => {
 
     it('should be disabled if the parent product is generic and the measurement is not positive', async () => {
       await render();
-      await selectParent(parentGeneric);
+      await selectParent(genericWithChildren);
       await setValue(getNameInput().componentInstance, 'product name');
 
       expect(getSaveButton().nativeElement.disabled).toBe(true);
@@ -496,7 +464,7 @@ describe('ProductDialog', () => {
 
     it('should not close the dialog if the parent product is generic and the measurement is not positive', async () => {
       await render();
-      await selectParent(parentGeneric);
+      await selectParent(genericWithChildren);
       await setValue(getNameInput().componentInstance, 'product name');
 
       getSaveButton().nativeElement.click();
@@ -519,7 +487,7 @@ describe('ProductDialog', () => {
 
     it('should close the dialog with a specific product if the parent product is generic', async () => {
       await render();
-      await selectParent(parentGeneric);
+      await selectParent(genericWithChildren);
       await setValue(getNameInput().componentInstance, 'product name');
       await setValue(getMeasurementInput().componentInstance, 750);
       fixture.componentInstance.productForm.unitOfMeasurement().value.set('g');
@@ -530,7 +498,7 @@ describe('ProductDialog', () => {
       validateFunctionCall(mockDialogRef.functions.close, {
         productType: ProductType.Specific,
         name: 'product name',
-        parentProductId: parentGeneric.productId,
+        parentProductId: genericWithChildren.productId,
         measurement: 750,
         unitOfMeasurement: 'g',
       });
@@ -561,7 +529,7 @@ describe('ProductDialog', () => {
         validateFunctionCall(mockDialogRef.functions.close, {
           productType: ProductType.Specific,
           name: specificWithoutChildren.name,
-          parentProductId: parentGeneric.productId,
+          parentProductId: genericWithChildren.productId,
           measurement: specificWithoutChildren.measurement,
           unitOfMeasurement: specificWithoutChildren.unitOfMeasurement,
         });
@@ -569,7 +537,7 @@ describe('ProductDialog', () => {
 
       it('should close the dialog with a generic product if the parent product is removed from a variant product', async () => {
         await render({
-          dialogData: variantToUpdate,
+          dialogData: variant,
         });
 
         await openParentMenu();
@@ -580,13 +548,13 @@ describe('ProductDialog', () => {
 
         validateFunctionCall(mockDialogRef.functions.close, {
           productType: ProductType.Generic,
-          name: variantToUpdate.name,
+          name: variant.name,
         });
       });
 
       it('should close the dialog with a specific product if a generic parent is selected for a variant product', async () => {
         await render({
-          dialogData: variantToUpdate,
+          dialogData: variant,
         });
         await selectParent(genericWithoutChildren);
         await setValue(getMeasurementInput().componentInstance, 3);
@@ -595,7 +563,7 @@ describe('ProductDialog', () => {
 
         validateFunctionCall(mockDialogRef.functions.close, {
           productType: ProductType.Specific,
-          name: variantToUpdate.name,
+          name: variant.name,
           parentProductId: genericWithoutChildren.productId,
           measurement: 3,
           unitOfMeasurement: 'db',
@@ -606,14 +574,14 @@ describe('ProductDialog', () => {
         await render({
           dialogData: specificWithoutChildren,
         });
-        await selectParent(specificWithVariant);
+        await selectParent(specificWithChildren);
 
         getSaveButton().nativeElement.click();
 
         validateFunctionCall(mockDialogRef.functions.close, {
           productType: ProductType.Variant,
           name: specificWithoutChildren.name,
-          parentProductId: specificWithVariant.productId,
+          parentProductId: specificWithChildren.productId,
         });
       });
 

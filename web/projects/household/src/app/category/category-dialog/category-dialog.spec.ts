@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CategoryDialog, CategoryDialogData } from './category-dialog';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
-import { ClearableInput, createStubComponent, elementSelectorFactory, IconText, IElementSelector, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
+import { ClearableInput, createStubComponent, elementSelectorFactory, IconText, IElementSelector, MockSignalStore, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { CategoryStore } from '@household/state/category/category-store';
@@ -10,6 +10,8 @@ import { CategoryType } from '@household/shared/enums';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { Dispatcher } from '@ngrx/signals/events';
 import { categoryEvents } from '@household/state/category/category-events';
+import { Responses } from '@household/shared/types/responses';
+import { Searchable } from '@household/shared/types/common';
 
 describe('CategoryDialog', () => {
   const ClearableInputStub = createStubComponent(ClearableInput);
@@ -19,6 +21,7 @@ describe('CategoryDialog', () => {
   let selector: IElementSelector;
   let mockDialogRef: MockService<MatDialogRef<CategoryDialog>>;
   let mockDispatcher: Dispatcher;
+  let mockCategoryStore: MockSignalStore<typeof CategoryStore>;
 
   const category = testDataFactory.category.response();
 
@@ -68,7 +71,10 @@ describe('CategoryDialog', () => {
     return selector.getElementByTestId<HTMLButtonElement>('save-button', MatDialogActions);
   };
 
-  const render = async (dialogData: CategoryDialogData = undefined) => {
+  const render = async (params?: {
+    dialogData?: CategoryDialogData;
+    categoryList?: Searchable<Responses.Category>[];
+  }) => {
     TestBed.resetTestingModule();
 
     mockDialogRef = createMockService('close');
@@ -76,11 +82,11 @@ describe('CategoryDialog', () => {
     await TestBed.configureTestingModule({
       imports: [CategoryDialog],
       providers: [
-        provideMockSignalStore(CategoryStore, 'pendingParentCategory'),
+        provideMockSignalStore(CategoryStore, 'pendingParentCategory', 'categoryList'),
         provideMockDispatcher(),
         {
           provide: MAT_DIALOG_DATA,
-          useValue: dialogData,
+          useValue: params?.dialogData,
         },
         {
           provide: MatDialogRef,
@@ -105,6 +111,9 @@ describe('CategoryDialog', () => {
       .compileComponents();
 
     mockDispatcher = TestBed.inject(Dispatcher);
+    mockCategoryStore = TestBed.inject<MockSignalStore<typeof CategoryStore>>(CategoryStore);
+
+    mockCategoryStore.categoryList.set(params?.categoryList ?? []);
 
     fixture = TestBed.createComponent(CategoryDialog);
 
@@ -121,7 +130,9 @@ describe('CategoryDialog', () => {
     });
 
     it('should be the edit title if a category is given', async () => {
-      await render(category);
+      await render({
+        dialogData: category,
+      });
 
       expect(selector.getComponent(MatDialogTitle).nativeElement.textContent).toBe('Kategória szerkesztése');
     });
@@ -136,7 +147,9 @@ describe('CategoryDialog', () => {
     });
 
     it('should be filled with the name of the category', async () => {
-      await render(category);
+      await render({
+        dialogData: category,
+      });
 
       expect(getNameInput().componentInstance.value()).toBe(category.name);
     });
@@ -198,7 +211,9 @@ describe('CategoryDialog', () => {
         parentCategory,
       });
 
-      await render(category);
+      await render({
+        dialogData: category,
+      });
 
       expect(getParentCategoryIconText().componentInstance.text()).toBe(parentCategory.fullName);
       expect(getParentCategoryIconText().componentInstance.icon()).toBe('account_tree');
@@ -222,7 +237,9 @@ describe('CategoryDialog', () => {
         parentCategory,
       });
 
-      await render(category);
+      await render({
+        dialogData: category,
+      });
 
       getParentCategoryMenuButton().nativeElement.click();
 
@@ -237,13 +254,25 @@ describe('CategoryDialog', () => {
   });
 
   describe('edit parent category button', () => {
-    it('should dispatch selectCategory', async () => {
+    it('should dispatch selectCategory with every category but the edited one and its children', async () => {
       const parentCategory = testDataFactory.category.response();
       const category = testDataFactory.category.response({
         parentCategory,
       });
+      const childCategory = testDataFactory.category.response({
+        ancestors: [category],
+      });
+      const otherCategory = testDataFactory.category.response();
 
-      await render(category);
+      await render({
+        dialogData: category,
+        categoryList: [
+          parentCategory,
+          category,
+          childCategory,
+          otherCategory,
+        ],
+      });
 
       getParentCategoryMenuButton().nativeElement.click();
 
@@ -253,25 +282,35 @@ describe('CategoryDialog', () => {
 
       await fixture.whenStable();
 
-      validateFunctionCall(mockDispatcher.dispatch, categoryEvents.selectCategory({
-        excludedCategory: category,
-      }), {
+      validateFunctionCall(mockDispatcher.dispatch, categoryEvents.selectCategory([
+        parentCategory,
+        otherCategory,
+      ]), {
         scope: 'self',
       });
     });
   });
 
   describe('add parent category button', () => {
-    it('should dispatch selectCategory', async () => {
-      await render();
+    it('should dispatch selectCategory with every category when creating', async () => {
+      const category1 = testDataFactory.category.response();
+      const category2 = testDataFactory.category.response();
+
+      await render({
+        categoryList: [
+          category1,
+          category2,
+        ],
+      });
 
       getParentCategoryAddButton().nativeElement.click();
 
       await fixture.whenStable();
 
-      validateFunctionCall(mockDispatcher.dispatch, categoryEvents.selectCategory({
-        excludedCategory: undefined,
-      }), {
+      validateFunctionCall(mockDispatcher.dispatch, categoryEvents.selectCategory([
+        category1,
+        category2,
+      ]), {
         scope: 'self',
       });
     });
@@ -328,7 +367,9 @@ describe('CategoryDialog', () => {
     });
 
     it('should close the dialog with the values of the edited category', async () => {
-      await render(category);
+      await render({
+        dialogData: category,
+      });
 
       getSaveButton().nativeElement.click();
 

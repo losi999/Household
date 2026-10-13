@@ -27,7 +27,7 @@ export class ProjectHome {
     this.projectApiEvents.listProjectsInitiated();
   }
 
-  create() {
+  onCreate() {
     this.projectEvents.createProject();
   }
 }

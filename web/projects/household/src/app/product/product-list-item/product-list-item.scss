@@ -6,3 +6,10 @@
   margin-top: 0;
   align-self: center;
 }
+
+:host(.specific) {
+  padding-left: 1rem;;
+}
+:host(.variant) {
+  padding-left: 2rem;
+}

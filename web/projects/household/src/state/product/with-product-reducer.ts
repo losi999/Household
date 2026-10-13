@@ -1,6 +1,8 @@
-import { getSpecificProductFullName, getVariantProductFullName, sortProductsByFullName } from '@household/shared/common/utils';
+import { getSpecificProductFullName, getVariantProductFullName, sortProductsByFullName, toSearchable } from '@household/shared/common/utils';
+import { PRODUCT_FULL_NAME_SEPARATOR } from '@household/shared/constants';
 import { ProductType } from '@household/shared/enums';
 import { Api } from '@household/shared/types/api';
+import { Searchable } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { productApiEvents, productEvents } from '@household/state/product/product-events';
@@ -17,88 +19,43 @@ const findSpecific = (productList: Responses.Product[], productId: Api.Product.I
 };
 
 // The full name and the ids of the parents are built the same way as the API builds them
-const toProduct = (request: Api.Product.ProductId & Requests.Product, productList: Responses.Product[]): Responses.Product => {
+const toProduct = (request: Api.Product.ProductId & Requests.Product, productList: Responses.Product[]): Searchable<Responses.Product> => {
   switch (request.productType) {
     case ProductType.Generic: {
-      return {
+      return toSearchable({
         productId: request.productId,
         productType: request.productType,
         name: request.name,
         fullName: request.name,
-      };
+      }, ['name']);
     }
     case ProductType.Specific: {
       const generic = findGeneric(productList, request.parentProductId);
+      const fullName = getSpecificProductFullName(generic.fullName, request);
 
-      return {
+      return toSearchable({
         productId: request.productId,
         productType: request.productType,
         name: request.name,
-        fullName: getSpecificProductFullName(generic?.fullName ?? '', request),
+        fullName,
         measurement: request.measurement,
         unitOfMeasurement: request.unitOfMeasurement,
         genericProductId: request.parentProductId,
-      };
+      }, ['fullName'], PRODUCT_FULL_NAME_SEPARATOR);
     }
     case ProductType.Variant: {
       const specific = findSpecific(productList, request.parentProductId);
+      const fullName = getVariantProductFullName(specific.fullName, request.name);
 
-      return {
+      return toSearchable({
         productId: request.productId,
         productType: request.productType,
         name: request.name,
-        fullName: getVariantProductFullName(specific?.fullName ?? '', request.name),
-        genericProductId: specific?.genericProductId,
+        fullName,
+        genericProductId: specific.genericProductId,
         specificProductId: request.parentProductId,
-      };
-    }
-  }
-};
-
-// The full names of the descendants of an updated product are built from its full name
-const refreshDescendants = (productList: Responses.Product[], updated: Responses.Product): Responses.Product[] => {
-  switch (updated.productType) {
-    case ProductType.Generic: {
-      const specifics = new Map(productList
-        .filter((product): product is Responses.SpecificProduct => product.productType === ProductType.Specific && product.genericProductId === updated.productId)
-        .map(specific => [
-          specific.productId,
-          {
-            ...specific,
-            fullName: getSpecificProductFullName(updated.fullName, specific),
-          },
-        ] as const));
-
-      return productList.map((product): Responses.Product => {
-        if (product.productType === ProductType.Specific && specifics.has(product.productId)) {
-          return specifics.get(product.productId);
-        }
-
-        if (product.productType === ProductType.Variant && product.genericProductId === updated.productId) {
-          return {
-            ...product,
-            fullName: getVariantProductFullName(specifics.get(product.specificProductId)?.fullName ?? '', product.name),
-          };
-        }
-
-        return product;
-      });
-    }
-    case ProductType.Specific: {
-      return productList.map((product): Responses.Product => {
-        if (product.productType === ProductType.Variant && product.specificProductId === updated.productId) {
-          return {
-            ...product,
-            genericProductId: updated.genericProductId,
-            fullName: getVariantProductFullName(updated.fullName, product.name),
-          };
-        }
-
-        return product;
-      });
-    }
-    default: {
-      return productList;
+      }, ['fullName'], PRODUCT_FULL_NAME_SEPARATOR);
+      
     }
   }
 };
@@ -118,7 +75,9 @@ export const withProductReducer = () => {
       }),
       on(productApiEvents.listProductsCompleted, ({ payload }) => {
         return {
-          productList: payload,
+          productList: payload.map(p => {
+            return toSearchable(p, ['fullName'], PRODUCT_FULL_NAME_SEPARATOR);
+          }),
         };
       }),
       on(productApiEvents.createProductCompleted, ({ payload }) => {
@@ -151,11 +110,71 @@ export const withProductReducer = () => {
       on(productApiEvents.updateProductCompleted, ({ payload }) => {
         return (state) => {
           const updated = toProduct(payload, state.productList);
-          const productList = state.productList.map(product => product.productId === payload.productId ? updated : product);
+          const specifics = new Map<Api.Product.Id, Searchable<Responses.SpecificProduct>>();
+
+          const productList = state.productList.reduce<Searchable<Responses.Product>[]>((accumulator, currentValue) => {
+            if (currentValue.productId === updated.productId) {
+              return [
+                ...accumulator,
+                updated,
+              ];
+            }
+
+            if (currentValue.productType === ProductType.Generic) {
+              return [
+                ...accumulator,
+                currentValue,
+              ];  
+            }
+
+            if (currentValue.genericProductId === updated.productId) {
+              if (currentValue.productType === ProductType.Specific) {
+                const fullName = getSpecificProductFullName(updated.fullName, currentValue);
+
+                specifics.set(currentValue.productId, toSearchable({
+                  ...currentValue,
+                  fullName,
+                }, ['fullName'], PRODUCT_FULL_NAME_SEPARATOR));
+
+                return [
+                  ...accumulator,
+                  specifics.get(currentValue.productId),
+                ];
+              }
+
+              const fullName = getVariantProductFullName(specifics.get(currentValue.specificProductId).fullName, currentValue.name);
+
+              return [
+                ...accumulator,
+                toSearchable({
+                  ...currentValue,
+                  fullName,
+                }, ['fullName'], PRODUCT_FULL_NAME_SEPARATOR),
+              ];
+            }
+
+            if (currentValue.productType === ProductType.Variant && currentValue.specificProductId === updated.productId) {
+              const fullName = getVariantProductFullName(updated.fullName, currentValue.name);
+
+              return [
+                ...accumulator,
+                toSearchable({
+                  ...currentValue,
+                  fullName,
+                  genericProductId: (updated as Responses.SpecificProduct).genericProductId,
+                }, ['fullName'], PRODUCT_FULL_NAME_SEPARATOR),
+              ];
+            }
+            
+            return [
+              ...accumulator,
+              currentValue,
+            ];
+          }, []);
 
           return {
             isInProgress: state.isInProgress.filter(id => id !== payload.productId),
-            productList: sortProductsByFullName(refreshDescendants(productList, updated)),
+            productList: sortProductsByFullName(productList),
           };
         };
       }),
@@ -188,43 +207,72 @@ export const withProductReducer = () => {
       on(productApiEvents.mergeProductsCompleted, ({ payload: { sourceProductIds, targetProductId } }) => {
         return (state) => {
           const target = state.productList.find(product => product.productId === targetProductId);
-          const remaining = state.productList.filter(product => !sourceProductIds.includes(product.productId));
-          const specifics = new Map(remaining
-            .filter((product): product is Responses.SpecificProduct => product.productType === ProductType.Specific && sourceProductIds.includes(product.genericProductId))
-            .map(specific => [
-              specific.productId,
-              {
-                ...specific,
+          const specifics = new Map<Api.Product.Id, Searchable<Responses.SpecificProduct>>();
+              
+          const productList = state.productList.reduce<Searchable<Responses.Product>[]>((accumulator, currentValue) => {
+            if (currentValue.productId === targetProductId) {
+              return [
+                ...accumulator,
+                currentValue,
+              ];
+            }
+
+            if (sourceProductIds.includes(currentValue.productId)) {
+              return accumulator;
+            }
+
+            if (currentValue.productType === ProductType.Specific && sourceProductIds.includes(currentValue.genericProductId)) {
+              const fullName = getSpecificProductFullName(target.fullName, currentValue);
+
+              specifics.set(currentValue.productId, toSearchable({
+                ...currentValue,
+                fullName,
                 genericProductId: targetProductId,
-                fullName: getSpecificProductFullName(target?.fullName ?? '', specific),
-              },
-            ] as const));
+              }, ['fullName'], PRODUCT_FULL_NAME_SEPARATOR));
+
+              return [
+                ...accumulator,
+                {
+                  ...specifics.get(currentValue.productId),
+                },
+              ];
+            }
+
+            if (currentValue.productType === ProductType.Variant && sourceProductIds.includes(currentValue.genericProductId)) {
+              const fullName = getVariantProductFullName(specifics.get(currentValue.specificProductId).fullName, currentValue.name);
+
+              return [
+                ...accumulator,
+                toSearchable({
+                  ...currentValue,
+                  fullName,
+                  genericProductId: targetProductId,
+                }, ['fullName'], PRODUCT_FULL_NAME_SEPARATOR),
+              ];
+            }
+
+            if (currentValue.productType === ProductType.Variant && sourceProductIds.includes(currentValue.specificProductId)) {
+              const fullName = getVariantProductFullName(target.fullName, currentValue.name);
+
+              return [
+                ...accumulator,
+                toSearchable({
+                  ...currentValue,
+                  fullName,
+                  specificProductId: targetProductId,
+                }, ['fullName'], PRODUCT_FULL_NAME_SEPARATOR),
+              ];
+            }
+
+            return [
+              ...accumulator,
+              currentValue,
+            ];
+          }, []);
 
           return {
             isInProgress: state.isInProgress.filter(id => !sourceProductIds.includes(id)),
-            productList: sortProductsByFullName(remaining.map((product): Responses.Product => {
-              if (product.productType === ProductType.Specific && specifics.has(product.productId)) {
-                return specifics.get(product.productId);
-              }
-
-              if (product.productType === ProductType.Variant && sourceProductIds.includes(product.genericProductId)) {
-                return {
-                  ...product,
-                  genericProductId: targetProductId,
-                  fullName: getVariantProductFullName(specifics.get(product.specificProductId)?.fullName ?? '', product.name),
-                };
-              }
-
-              if (product.productType === ProductType.Variant && sourceProductIds.includes(product.specificProductId)) {
-                return {
-                  ...product,
-                  specificProductId: targetProductId,
-                  fullName: getVariantProductFullName(target?.fullName ?? '', product.name),
-                };
-              }
-
-              return product;
-            })),
+            productList: sortProductsByFullName(productList),
           };
         };
       }),

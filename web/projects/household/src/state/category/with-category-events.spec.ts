@@ -16,6 +16,8 @@ import { CategoryDialog } from '@household/app/category/category-dialog/category
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { CategoryMergeDialog } from '@household/app/category/category-merge-dialog/category-merge-dialog';
 import { CategorySelectDialog } from '@household/app/category/category-select-dialog/category-select-dialog';
+import { toSearchable } from '@household/shared/common/utils';
+import { CATEGORY_FULL_NAME_SEPARATOR } from '@household/shared/constants';
 
 describe('withCategoryEvents', () => {
   let dispatcher: Dispatcher;
@@ -249,21 +251,18 @@ describe('withCategoryEvents', () => {
 
   describe('dispatching selectCategory', () => {
     const categoryResponse = testDataFactory.category.response();
+    const selectableCategories = [toSearchable(testDataFactory.category.response(), ['fullName'], CATEGORY_FULL_NAME_SEPARATOR)];
 
     it('should open dialog and dispatch if submitted', () => {
       mockMatDialog.functions.open.mockReturnValue({
         afterClosed: () => of(categoryResponse),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(categoryEvents.selectCategory({
-        excludedCategory: categoryResponse,
-      }));
+      dispatcher.dispatch(categoryEvents.selectCategory(selectableCategories));
 
       validateFunctionCall(mockMatDialog.functions.open, CategorySelectDialog, {
         disableClose: true,
-        data: {
-          excludedCategory: categoryResponse,
-        },
+        data: selectableCategories,
         height: '80vh',
         width: '90vw',
       });
@@ -275,19 +274,30 @@ describe('withCategoryEvents', () => {
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(categoryEvents.selectCategory({
-        excludedCategory: categoryResponse,
-      }));
+      dispatcher.dispatch(categoryEvents.selectCategory(selectableCategories));
 
       validateFunctionCall(mockMatDialog.functions.open, CategorySelectDialog, {
         disableClose: true,
-        data: {
-          excludedCategory: categoryResponse,
-        },
+        data: selectableCategories,
         height: '80vh',
         width: '90vw',
       });
       validateDispatcher(dispatchSpy);
+    });
+
+    it('should open dialog without data if there are no categories given', () => {
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(categoryEvents.selectCategory(undefined));
+
+      validateFunctionCall(mockMatDialog.functions.open, CategorySelectDialog, {
+        disableClose: true,
+        data: undefined,
+        height: '80vh',
+        width: '90vw',
+      });
     });
   });
 });

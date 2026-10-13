@@ -7,13 +7,13 @@
   </div>
   <mat-action-list>
     @for (product of selectableProducts(); track product.productId) {
-    <button mat-list-item (click)="onSelect(product)">
+    <button mat-list-item (click)="onSelect(product)" [class]="product.productType">
       <div matListItemTitle>{{product.name}}</div>
       @if (product.productType === 'specific') {
-      <div matListItemLine>{{product.measurement}} {{product.unitOfMeasurement}}</div>
+      <div matListItemLine data-testId="measurement">{{product.measurement}} {{product.unitOfMeasurement}}</div>
       }
       @if (product.productType !== 'generic') {
-      <div matListItemLine>{{product.fullName}}</div>
+      <div matListItemLine data-testId="full-name">{{product.fullName}}</div>
       }
     </button>
     }

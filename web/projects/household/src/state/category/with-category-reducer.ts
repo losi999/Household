@@ -1,6 +1,6 @@
 import { categoryApiEvents, categoryEvents } from '@household/state/category/category-events';
 import { CategoryState } from '@household/state/category/category-store';
-import { toSearchTerms } from '@household/shared/common/utils';
+import { toSearchable } from '@household/shared/common/utils';
 import { signalStoreFeature } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
 import { Responses } from '@household/shared/types/responses';
@@ -23,10 +23,7 @@ export const withCategoryReducer = () => {
       on(categoryApiEvents.listCategoriesCompleted, ({ payload }) => {
         return {
           categoryList: payload.map(p => {
-            return {
-              ...p,
-              searchTerms: toSearchTerms(p.fullName.replaceAll(CATEGORY_FULL_NAME_SEPARATOR, ' ')),
-            };
+            return toSearchable(p, ['fullName'], CATEGORY_FULL_NAME_SEPARATOR);
           }),
         };
       }),
@@ -61,7 +58,7 @@ export const withCategoryReducer = () => {
           const fullName = parentCategory ? `${parentCategory.fullName}${CATEGORY_FULL_NAME_SEPARATOR}${name}` : name;
 
           return {
-            categoryList: state.categoryList.concat({
+            categoryList: state.categoryList.concat(toSearchable({
               categoryId,
               name,
               categoryType,
@@ -76,8 +73,7 @@ export const withCategoryReducer = () => {
                 ...parentCategory.ancestors,
                 parentCategory,
               ] : [],
-              searchTerms: toSearchTerms(fullName.replaceAll(CATEGORY_FULL_NAME_SEPARATOR, ' ')),
-            })
+            }, ['fullName'], CATEGORY_FULL_NAME_SEPARATOR))
               .toSorted((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
                 sensitivity: 'base',
               })),
@@ -89,7 +85,7 @@ export const withCategoryReducer = () => {
           const childCategoriesIds = state.categoryList.filter(c => c.ancestors.some(a => a.categoryId === categoryId)).map(c => c.categoryId);
           const parentCategory = state.categoryList.find(c => c.categoryId === parentCategoryId);
           const fullName = parentCategory ? `${parentCategory.fullName}${CATEGORY_FULL_NAME_SEPARATOR}${name}` : name;
-          const updatedCategory: Searchable<Responses.Category> = {
+          const updatedCategory: Searchable<Responses.Category> = toSearchable({
             categoryId,
             name,
             categoryType,
@@ -108,8 +104,7 @@ export const withCategoryReducer = () => {
                 name: parentCategory.name,
               },
             ] : [],
-            searchTerms: toSearchTerms(fullName.replaceAll(CATEGORY_FULL_NAME_SEPARATOR, ' ')),
-          };
+          }, ['fullName'], CATEGORY_FULL_NAME_SEPARATOR);
 
           return {
             isInProgress: state.isInProgress.filter(id => ![
