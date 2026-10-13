@@ -1,6 +1,6 @@
 import { recipientApiEvents } from '@household/state/recipient/recipient-events';
 import { RecipientState } from '@household/state/recipient/recipient-store';
-import { toSearchTerms } from '@household/shared/common/utils';
+import { toSearchable } from '@household/shared/common/utils';
 import { signalStoreFeature } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
 
@@ -10,10 +10,7 @@ export const withRecipientReducer = () => {
       on(recipientApiEvents.listRecipientsCompleted, ({ payload }) => {
         return {
           recipientList: payload.map(p => {
-            return {
-              ...p,
-              ...toSearchTerms(p.name),
-            };
+            return toSearchable(p, ['name']);
           }),
         };
       }),
@@ -38,11 +35,10 @@ export const withRecipientReducer = () => {
         return (state) => {
           return {
             recipientList: state.recipientList.filter(p => p.recipientId !== recipientId)
-              .concat({
+              .concat(toSearchable({
                 recipientId,
                 name,
-                ...toSearchTerms(name),
-              })
+              }, ['name']))
               .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
                 sensitivity: 'base',
               })),

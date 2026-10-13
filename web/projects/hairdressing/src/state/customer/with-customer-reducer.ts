@@ -1,6 +1,6 @@
 import { customerApiEvents, customerEvents } from '@hairdressing/state/customer/customer-events';
 import { CustomerState } from '@hairdressing/state/customer/customer-store';
-import { toSearchTerms } from '@household/shared/common/utils';
+import { toSearchable } from '@household/shared/common/utils';
 import { signalStoreFeature } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
 
@@ -10,27 +10,23 @@ export const withCustomerReducer = () => {
       on(customerApiEvents.listCustomersCompleted, ({ payload }) => {
         return {
           customerList: payload.map(c => {
-            return {
-              ...c,
-              searchTerms: toSearchTerms(c.name),
-            };
+            return toSearchable(c, ['name']);
           }),
         };
       }),
       on(customerApiEvents.createCustomerCompleted, ({ payload: { customerId, description, name, isGroup, rating } }) => {
         return (state) => {
           return {
-            customerList: state.customerList.concat({
+            customerList: state.customerList.concat(toSearchable({
               customerId,
               name,
-              searchTerms: toSearchTerms(name),
               description,
               isGroup,
               rating,
               isArchived: false,
               jobs: [],
               blacklistedCustomers: [],
-            })
+            }, ['name']))
               .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
                 sensitivity: 'base',
               })),
@@ -44,14 +40,13 @@ export const withCustomerReducer = () => {
               if (c.customerId !== customerId) {
                 return c;
               }
-              return {
+              return toSearchable({
                 ...c,
                 name,
-                searchTerms: toSearchTerms(name),
                 description,
                 isGroup,
                 rating,
-              };
+              }, ['name']);
             }).toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
               sensitivity: 'base',
             })),

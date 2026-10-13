@@ -621,7 +621,6 @@ const createAccountRequest: DataFactoryFunction<Requests.Account> = (req) => {
     accountType: faker.helpers.arrayElement(Object.values(AccountType).filter(a => a !== AccountType.Loan)),
     name: `${faker.finance.accountName()} ${faker.finance.accountNumber()}`,
     currency: faker.finance.currencySymbol(),
-    owner: faker.person.firstName(),
     ...req,
   };
 };
@@ -642,7 +641,6 @@ const createAccountResponse: DataFactoryFunction<Responses.Account> = (resp) => 
   return {
     ...base,
     balance: faker.number.int(),
-    fullName: `${resp?.name ?? base.name} (${resp?.owner ?? base.owner})`,
     accountId: createAccountId(),
     isOpen: faker.datatype.boolean(),
     ...resp,
@@ -655,7 +653,7 @@ const createAccountReport: DataFactoryFunction<Responses.AccountReport> = (rep) 
   return {
     accountId: createAccountId(),
     currency: faker.finance.currencySymbol(),
-    fullName: `${base.name} (${base.owner})`,
+    name: base.name,
     ...rep,
   };
 };

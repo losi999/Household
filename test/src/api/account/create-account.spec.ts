@@ -48,21 +48,6 @@ test.describe('POST account/v1/accounts', () => {
           expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
         });
 
-        test('should create account with an existing name for a different owner', async ({ requestCreateAccount, saveAccount, findAccountById }) => {
-          const accountDocument = accountDataFactory.document(request);
-
-          request = accountDataFactory.request({
-            name: request.name,
-          });
-
-          await saveAccount(accountDocument);
-          const res = await requestCreateAccount(request);
-          expect(res).toBeCreatedResponse();
-
-          const { accountId } = (await res.json()) as Api.Account.AccountId;
-          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(accountId));
-        });
-
         test.describe('should return error', () => {
           test.describe('if body', () => {
             test('has additional properties', async ({ requestCreateAccount }) => {
@@ -101,7 +86,7 @@ test.describe('POST account/v1/accounts', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different account of the same owner', async ({ requestCreateAccount, saveAccount }) => {
+            test('is already in use by a different account', async ({ requestCreateAccount, saveAccount }) => {
               const accountDocument = accountDataFactory.document(request);
 
               await saveAccount(accountDocument);
@@ -163,31 +148,6 @@ test.describe('POST account/v1/accounts', () => {
             });
           });
 
-          test.describe('if owner', () => {
-            test('is missing from body', async ({ requestCreateAccount }) => {
-              const res = await requestCreateAccount(accountDataFactory.request({
-                owner: undefined, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'owner');
-            });
-
-            test('is not string', async ({ requestCreateAccount }) => {
-              const res = await requestCreateAccount(accountDataFactory.request({
-                owner: <any>1, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'owner', 'string');
-            });
-
-            test('is too short', async ({ requestCreateAccount }) => {
-              const res = await requestCreateAccount(accountDataFactory.request({
-                owner: '', 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'owner', 1);
-            });
-          });
         });
       }
     });

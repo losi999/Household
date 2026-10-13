@@ -1,0 +1,5 @@
+<mat-action-list>
+  @for (a of accounts(); track a.accountId) {
+  <household-account-list-item [account]="a" />
+  }
+</mat-action-list>

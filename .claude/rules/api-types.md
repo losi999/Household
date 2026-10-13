@@ -42,11 +42,9 @@ export namespace Api {
     export type Name = { name: string };
     export type Currency = { currency: string };
     export type AccountType = { accountType: Enum.AccountType };
-    export type Owner = { owner: string };
-    export type FullName = { fullName: string };
     export type Balance = { balance: number };
 
-    export type Base = Name & Currency & AccountType & Owner;
+    export type Base = Name & Currency & AccountType;
   }
 }
 ```
@@ -69,9 +67,9 @@ update body.
 
 ```ts
 export namespace Responses {
-  export type AccountLean = Api.Account.Base & Api.Account.IsOpen & Api.Account.AccountId & Api.Account.FullName;
+  export type AccountLean = Api.Account.Base & Api.Account.IsOpen & Api.Account.AccountId;
   export type Account = AccountLean & Api.Account.Balance;
-  export type AccountReport = Api.Account.AccountId & Api.Account.FullName & Api.Account.Currency;
+  export type AccountReport = Api.Account.AccountId & Api.Account.Name & Api.Account.Currency;
 }
 ```
 
@@ -145,10 +143,10 @@ export const accountId: ObjectSchema<Api.Account.AccountId> = { type: 'object', 
 const name: ObjectSchema<Api.Account.Name> = { ... };
 // ...one per field...
 
-const base = combine<Api.Account.Base>([name, currency, accountType, owner]);
-export const leanResponse = combine<Responses.AccountLean>([accountId, isOpen, base, fullName]);
+const base = combine<Api.Account.Base>([name, currency, accountType]);
+export const leanResponse = combine<Responses.AccountLean>([accountId, isOpen, base]);
 export const response = combine<Responses.Account>([leanResponse, balance]);
-export const report = combine<Responses.AccountReport>([accountId, fullName, currency]);
+export const report = combine<Responses.AccountReport>([accountId, name, currency]);
 export const request = combine<Requests.Account>([base]);
 ```
 

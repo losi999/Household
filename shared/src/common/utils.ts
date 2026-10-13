@@ -138,21 +138,6 @@ export const calculateWorkdayLimits = (day: Responses.CalendarDay): Api.Calendar
   };
 };
 
-export const toSearchTerms = (input: string): Searchable<object> => {
-  const lowercased = input.toLowerCase().split(' ');
-
-  return {
-    searchTerms: [
-      ...new Set(lowercased.flatMap(term => {
-        return [
-          term,
-          term.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
-        ];
-      })),
-    ],
-  };
-};
-
 export const toSearchable = <T extends object>(input: T, propertiesToSearch: (keyof T)[], ...additionalSeparators: string[]): Searchable<T> => {
   const separators = additionalSeparators?.filter(x => !!(x.trim())) ?? []; 
 

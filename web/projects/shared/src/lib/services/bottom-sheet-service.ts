@@ -21,6 +21,14 @@ export class BottomSheetService {
       icon: 'merge',
       label: 'Egyesítés',
     },
+    open: {
+      icon: 'credit_card',
+      label: 'Nyitás',
+    },
+    close: {
+      icon: 'credit_card_off',
+      label: 'Zárás',
+    },
   };
 
   openBottomSubmenu<I extends keyof typeof this.itemMapping>(title: string, ...items: I[]) {

@@ -52,17 +52,6 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
           expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(getAccountId(accountDocument)));
         });
 
-        test('should update account with an existing name for a different owner', async ({ requestUpdateAccount, saveAccounts, findAccountById }) => {
-          const sameNameAccountDocument = accountDataFactory.document({
-            ...request,
-            owner: 'different owner',
-          });
-
-          await saveAccounts(accountDocument, sameNameAccountDocument);
-          const res = await requestUpdateAccount(getAccountId(accountDocument), request);
-          expect(res).toBeNoContentResponse();
-          expect(request).toHaveBeenSavedAsAccountDocument(await findAccountById(getAccountId(accountDocument)));
-        });
         test.describe('should return error', () => {
           test.describe('if body', () => {
             test('has additional properties', async ({ requestUpdateAccount }) => {
@@ -100,7 +89,7 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
               expect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
-            test('is already in use by a different account of the same owner', async ({ requestUpdateAccount, saveAccount }) => {
+            test('is already in use by a different account', async ({ requestUpdateAccount, saveAccount }) => {
               const duplicateAccountDocument = accountDataFactory.document(request);
 
               await saveAccount(accountDocument);
@@ -160,32 +149,6 @@ test.describe('PUT /account/v1/accounts/{accountId}', () => {
               }));
               expect(res).toBeBadRequestResponse();
               expect(res).toHaveTooShortValidationError('body', 'currency', 1);
-            });
-          });
-
-          test.describe('if owner', () => {
-            test('is missing from body', async ({ requestUpdateAccount }) => {
-              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                owner: undefined, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'owner');
-            });
-
-            test('is not string', async ({ requestUpdateAccount }) => {
-              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                owner: <any>1, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'owner', 'string');
-            });
-
-            test('is too short', async ({ requestUpdateAccount }) => {
-              const res = await requestUpdateAccount(accountDataFactory.id(), accountDataFactory.request({
-                owner: '', 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'owner', 1);
             });
           });
 

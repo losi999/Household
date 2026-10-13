@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+// Closed accounts have a striped background: 45 degrees stripes of the same color, each 10px wide
+:host(.closed) {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--mat-sys-surface-container-high),
+    var(--mat-sys-surface-container-high) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}

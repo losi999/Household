@@ -5,16 +5,14 @@ export namespace Responses {
   export type Account = Api.Account.Base &
     Api.Account.IsOpen &
     Api.Account.AccountId &
-    Api.Account.FullName &
     Api.Account.Balance;
 
   export type AccountLean = Api.Account.Base &
     Api.Account.IsOpen &
-    Api.Account.AccountId &
-    Api.Account.FullName;
+    Api.Account.AccountId;
 
   export type AccountReport = Api.Account.AccountId &
-    Api.Account.FullName &
+    Api.Account.Name &
     Api.Account.Currency;
 
   export type Project = Api.Project.Base &

@@ -1,6 +1,6 @@
 import { projectApiEvents } from '@household/state/project/project-events';
 import { ProjectState } from '@household/state/project/project-store';
-import { toSearchTerms } from '@household/shared/common/utils';
+import { toSearchable } from '@household/shared/common/utils';
 import { signalStoreFeature } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
 
@@ -10,10 +10,7 @@ export const withProjectReducer = () => {
       on(projectApiEvents.listProjectsCompleted, ({ payload }) => {
         return {
           projectList: payload.map(p => {
-            return {
-              ...p,
-              ...toSearchTerms(p.name),
-            };
+            return toSearchable(p, ['name']);
           }),
         };
       }),
@@ -38,12 +35,11 @@ export const withProjectReducer = () => {
         return (state) => {
           return {
             projectList: state.projectList.filter(p => p.projectId !== projectId)
-              .concat({
+              .concat(toSearchable({
                 projectId,
                 name,
                 description,
-                ...toSearchTerms(name),
-              })
+              }, ['name']))
               .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
                 sensitivity: 'base',
               })),

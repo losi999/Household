@@ -94,9 +94,7 @@ export const validateAccountResponse = (response: Responses.Account, document: D
     name: document.name,
     accountType: document.accountType,
     currency: document.currency,
-    owner: document.owner,
     isOpen: document.isOpen,
-    fullName: `${document.name} (${document.owner})`,
     balance: expectedBalance,
   });
 };
@@ -107,9 +105,7 @@ export const validateAccountLeanResponse = (response: Responses.AccountLean, doc
     name: document.name,
     accountType: document.accountType,
     currency: document.currency,
-    owner: document.owner,
     isOpen: document.isOpen,
-    fullName: `${document.name} (${document.owner})`,
   });
 };
 
@@ -126,7 +122,6 @@ export const expect = baseExpect.extend({
       name: req.name,
       accountType: req.accountType,
       currency: req.currency,
-      owner: req.owner,
       isOpen: true,
     }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
   
