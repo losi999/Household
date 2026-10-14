@@ -93,9 +93,16 @@ export const withProductEvents = () => {
 
               // A product with children cannot be deleted, so the delete action is not offered
               if (hasChildren) {
-                afterDismissed = bottomSheetService.openBottomSubmenu(product.name, 'edit', 'merge').afterDismissed();
+                afterDismissed = bottomSheetService.openBottomSubmenu(product.name, [
+                  BottomSheetService.Edit,
+                  BottomSheetService.Merge,
+                ]).afterDismissed();
               } else {
-                afterDismissed = bottomSheetService.openBottomSubmenu(product.name, 'edit', 'merge', 'delete').afterDismissed();
+                afterDismissed = bottomSheetService.openBottomSubmenu(product.name, [
+                  BottomSheetService.Edit,
+                  BottomSheetService.Merge,
+                  BottomSheetService.Delete,
+                ]).afterDismissed();
               }
 
               return afterDismissed.pipe(

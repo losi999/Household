@@ -60,7 +60,11 @@ export const withProjectEvents = () => {
         openProjectListItemSubmenu: events.on(projectEvents.openProjectListItemSubmenu)
           .pipe(
             exhaustMap(({ payload }) => {
-              return bottomSheetService.openBottomSubmenu(payload.name, 'edit', 'merge', 'delete')
+              return bottomSheetService.openBottomSubmenu(payload.name, [
+                BottomSheetService.Edit,
+                BottomSheetService.Merge,
+                BottomSheetService.Delete,
+              ])
                 .afterDismissed()
                 .pipe(
                   filter(value => !!value),

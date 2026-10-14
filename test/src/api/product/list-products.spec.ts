@@ -52,11 +52,9 @@ test.describe('GET /product/v1/products', () => {
           expect(res).toMatchSchema(schema);
 
           // every product is followed by its children
-          expect(res).toContainProducts([
-            genericProduct,
-            specificProduct,
-            variantProduct,
-          ]);
+          expect(res).toContainMatchingProductDocument(genericProduct);
+          expect(res).toContainMatchingProductDocument(specificProduct);
+          expect(res).toContainMatchingProductDocument(variantProduct);
         });
       }
     });

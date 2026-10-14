@@ -11,6 +11,7 @@ import { AccountDialog } from '@household/app/account/account-dialog/account-dia
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of } from 'rxjs';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { AccountType } from '@household/shared/enums';
 
 describe('withAccountEvents', () => {
   let dispatcher: Dispatcher;
@@ -219,22 +220,52 @@ describe('withAccountEvents', () => {
     });
   });
 
+  const transactionItems = [
+    {
+      icon: 'format_list_bulleted',
+      link: 'projects',
+      label: 'Tranzakciók',
+    },
+    {
+      icon: 'post_add',
+      link: 'categories',
+      label: 'Új tranzakció',
+    },
+  ];
+  const balanceItem = {
+    icon: 'payments',
+    link: 'recipients',
+    label: 'Új egyenleg',
+  };
+  const closeItem = {
+    action: 'close',
+    icon: 'credit_card_off',
+    label: 'Zárás',
+  };
+  const openItem = {
+    action: 'open',
+    icon: 'credit_card',
+    label: 'Nyitás',
+  };
+
   describe('dispatching openAccountListItemSubmenu for an open account', () => {
     const account = testDataFactory.account.response({
       isOpen: true,
+      accountType: AccountType.BankAccount,
     });
     const items = [
-      'edit',
-      'close',
-      'delete',
-    ] as const;
+      ...transactionItems,
+      closeItem,
+      BottomSheetService.Edit,
+      BottomSheetService.Delete,
+    ];
 
     it('should open bottom sheet and dispatch if edit is selected', () => {
       dismissWith('edit');
 
       dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, ...items);
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
       validateDispatcher(dispatchSpy, accountEvents.updateAccount(account));
     });
 
@@ -243,7 +274,7 @@ describe('withAccountEvents', () => {
 
       dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, ...items);
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
       validateDispatcher(dispatchSpy, accountEvents.closeAccount(account));
     });
 
@@ -252,16 +283,16 @@ describe('withAccountEvents', () => {
 
       dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, ...items);
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
       validateDispatcher(dispatchSpy, accountEvents.deleteAccount(account));
     });
 
-    it('should open bottom sheet and not dispatch anything if cancelled', () => {
+    it('should open bottom sheet and not dispatch anything if cancelled or a link is selected', () => {
       dismissWith(undefined);
 
       dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, ...items);
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
       validateDispatcher(dispatchSpy);
     });
   });
@@ -269,19 +300,21 @@ describe('withAccountEvents', () => {
   describe('dispatching openAccountListItemSubmenu for a closed account', () => {
     const account = testDataFactory.account.response({
       isOpen: false,
+      accountType: AccountType.BankAccount,
     });
     const items = [
-      'edit',
-      'open',
-      'delete',
-    ] as const;
+      ...transactionItems,
+      openItem,
+      BottomSheetService.Edit,
+      BottomSheetService.Delete,
+    ];
 
     it('should open bottom sheet and dispatch if edit is selected', () => {
       dismissWith('edit');
 
       dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, ...items);
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
       validateDispatcher(dispatchSpy, accountEvents.updateAccount(account));
     });
 
@@ -290,7 +323,7 @@ describe('withAccountEvents', () => {
 
       dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, ...items);
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
       validateDispatcher(dispatchSpy, accountEvents.openAccount(account));
     });
 
@@ -299,16 +332,66 @@ describe('withAccountEvents', () => {
 
       dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, ...items);
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
       validateDispatcher(dispatchSpy, accountEvents.deleteAccount(account));
     });
 
-    it('should open bottom sheet and not dispatch anything if cancelled', () => {
+    it('should open bottom sheet and not dispatch anything if cancelled or a link is selected', () => {
       dismissWith(undefined);
 
       dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, ...items);
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
+      validateDispatcher(dispatchSpy);
+    });
+  });
+
+  describe('dispatching openAccountListItemSubmenu for an open cash account', () => {
+    const account = testDataFactory.account.response({
+      isOpen: true,
+      accountType: AccountType.Cash,
+    });
+    const items = [
+      ...transactionItems,
+      balanceItem,
+      closeItem,
+      BottomSheetService.Edit,
+      BottomSheetService.Delete,
+    ];
+
+    it('should open bottom sheet and dispatch if edit is selected', () => {
+      dismissWith('edit');
+
+      dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
+
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
+      validateDispatcher(dispatchSpy, accountEvents.updateAccount(account));
+    });
+
+    it('should open bottom sheet and dispatch if close is selected', () => {
+      dismissWith('close');
+
+      dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
+
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
+      validateDispatcher(dispatchSpy, accountEvents.closeAccount(account));
+    });
+
+    it('should open bottom sheet and dispatch if delete is selected', () => {
+      dismissWith('delete');
+
+      dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
+
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
+      validateDispatcher(dispatchSpy, accountEvents.deleteAccount(account));
+    });
+
+    it('should open bottom sheet and not dispatch anything if cancelled or a link is selected', () => {
+      dismissWith(undefined);
+
+      dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
+
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
       validateDispatcher(dispatchSpy);
     });
   });

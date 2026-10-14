@@ -214,7 +214,11 @@ describe('withRecipientEvents', () => {
 
       dispatcher.dispatch(recipientEvents.openRecipientListItemSubmenu(recipientResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, recipientResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, recipientResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, recipientEvents.updateRecipient(recipientResponse));
     });
 
@@ -223,7 +227,11 @@ describe('withRecipientEvents', () => {
 
       dispatcher.dispatch(recipientEvents.openRecipientListItemSubmenu(recipientResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, recipientResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, recipientResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, recipientEvents.mergeRecipients(recipientResponse));
     });
 
@@ -232,7 +240,11 @@ describe('withRecipientEvents', () => {
 
       dispatcher.dispatch(recipientEvents.openRecipientListItemSubmenu(recipientResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, recipientResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, recipientResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, recipientEvents.deleteRecipient(recipientResponse));
     });
 
@@ -241,7 +253,11 @@ describe('withRecipientEvents', () => {
 
       dispatcher.dispatch(recipientEvents.openRecipientListItemSubmenu(recipientResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, recipientResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, recipientResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy);
     });
   });

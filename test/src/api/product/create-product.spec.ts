@@ -217,23 +217,23 @@ test.describe('POST /product/v1/products', () => {
                 });
               });
 
-              test('specific product when creating specific product', async ({ requestCreateProduct, saveProduct }) => {
+              test('specific product when creating specific product', async ({ requestCreateProduct, saveProducts }) => {
                 request = productDataFactory.request.specific({
                   parentProductId: getProductId(specificProductDocument),
                 });
 
-                await saveProduct(specificProductDocument);
+                await saveProducts(specificProductDocument, genericProductDocument);
                 const res = await requestCreateProduct(request);
                 expect(res).toBeBadRequestResponse();
                 expect(res).toHaveMessage('Product type of parent must be "generic" when creating "specific" product');
               });
               
-              test('variant product when creating specific product', async ({ requestCreateProduct, saveProduct }) => {
+              test('variant product when creating specific product', async ({ requestCreateProduct, saveProducts }) => {
                 request = productDataFactory.request.specific({
                   parentProductId: getProductId(variantProductDocument),
                 });
 
-                await saveProduct(variantProductDocument);
+                await saveProducts(variantProductDocument, specificProductDocument, genericProductDocument);
                 const res = await requestCreateProduct(request);
                 expect(res).toBeBadRequestResponse();
                 expect(res).toHaveMessage('Product type of parent must be "generic" when creating "specific" product');
@@ -250,12 +250,12 @@ test.describe('POST /product/v1/products', () => {
                 expect(res).toHaveMessage('Product type of parent must be "specific" when creating "variant" product');
               });
 
-              test('variant product when creating variant product', async ({ requestCreateProduct, saveProduct }) => {
+              test('variant product when creating variant product', async ({ requestCreateProduct, saveProducts }) => {
                 request = productDataFactory.request.variant({
                   parentProductId: getProductId(variantProductDocument),
                 });
 
-                await saveProduct(variantProductDocument);
+                await saveProducts(variantProductDocument, specificProductDocument, genericProductDocument);
                 const res = await requestCreateProduct(request);
                 expect(res).toBeBadRequestResponse();
                 expect(res).toHaveMessage('Product type of parent must be "specific" when creating "variant" product');

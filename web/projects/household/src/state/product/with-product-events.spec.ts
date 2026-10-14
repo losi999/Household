@@ -257,7 +257,11 @@ describe('withProductEvents', () => {
           hasChildren: false,
         }));
 
-        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, genericProduct.name, 'edit', 'merge', 'delete');
+        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, genericProduct.name, [
+          BottomSheetService.Edit,
+          BottomSheetService.Merge,
+          BottomSheetService.Delete,
+        ]);
       });
 
       it('should offer edit, merge and delete for a specific product without children', () => {
@@ -268,7 +272,11 @@ describe('withProductEvents', () => {
           hasChildren: false,
         }));
 
-        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, specificProduct.name, 'edit', 'merge', 'delete');
+        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, specificProduct.name, [
+          BottomSheetService.Edit,
+          BottomSheetService.Merge,
+          BottomSheetService.Delete,
+        ]);
       });
 
       it('should offer edit, merge and delete for a variant product', () => {
@@ -279,7 +287,11 @@ describe('withProductEvents', () => {
           hasChildren: false,
         }));
 
-        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, variantProduct.name, 'edit', 'merge', 'delete');
+        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, variantProduct.name, [
+          BottomSheetService.Edit,
+          BottomSheetService.Merge,
+          BottomSheetService.Delete,
+        ]);
       });
 
       it('should offer only edit and merge for a generic product with children', () => {
@@ -290,7 +302,10 @@ describe('withProductEvents', () => {
           hasChildren: true,
         }));
 
-        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, genericProduct.name, 'edit', 'merge');
+        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, genericProduct.name, [
+          BottomSheetService.Edit,
+          BottomSheetService.Merge,
+        ]);
       });
 
       it('should offer only edit and merge for a specific product with children', () => {
@@ -301,7 +316,10 @@ describe('withProductEvents', () => {
           hasChildren: true,
         }));
 
-        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, specificProduct.name, 'edit', 'merge');
+        validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, specificProduct.name, [
+          BottomSheetService.Edit,
+          BottomSheetService.Merge,
+        ]);
       });
     });
 

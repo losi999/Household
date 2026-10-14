@@ -2,6 +2,11 @@
   display: block;
 }
 
+.mdc-list-item--with-two-lines mat-icon {
+  margin-top: 0;
+  align-self: center;
+}
+
 // Closed accounts have a striped background: 45 degrees stripes of the same color, each 10px wide
 :host(.closed) {
   background: repeating-linear-gradient(

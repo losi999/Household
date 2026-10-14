@@ -38,6 +38,18 @@ export const routes: Routes = [
     loadComponent: () => import('@household/app/project/project-home/project-home').then(m => m.ProjectHome),
     canMatch: [authenticatedGuard],
   },
+  {
+    path: 'accounts/:accountId',
+    title: 'Tranzakciók',
+    loadComponent: () => import('@household/app/transaction/transaction-home/transaction-home').then(m => m.TransactionHome),
+    canMatch: [authenticatedGuard],
+  },
+  {
+    path: 'accounts/:accountId/balance',
+    title: 'Egyenleg kalkulátor',
+    loadComponent: () => import('@household/app/account/account-balance-calculator/account-balance-calculator').then(m => m.AccountBalanceCalculator),
+    canMatch: [authenticatedGuard],
+  },
 
   {
     path: '',

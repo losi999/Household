@@ -217,7 +217,11 @@ describe('withCategoryEvents', () => {
 
       dispatcher.dispatch(categoryEvents.openCategoryListItemSubmenu(categoryResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, categoryResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, categoryResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, categoryEvents.updateCategory(categoryResponse));
     });
 
@@ -226,7 +230,11 @@ describe('withCategoryEvents', () => {
 
       dispatcher.dispatch(categoryEvents.openCategoryListItemSubmenu(categoryResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, categoryResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, categoryResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, categoryEvents.mergeCategories(categoryResponse));
     });
 
@@ -235,7 +243,11 @@ describe('withCategoryEvents', () => {
 
       dispatcher.dispatch(categoryEvents.openCategoryListItemSubmenu(categoryResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, categoryResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, categoryResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, categoryEvents.deleteCategory(categoryResponse));
     });
 
@@ -244,7 +256,11 @@ describe('withCategoryEvents', () => {
 
       dispatcher.dispatch(categoryEvents.openCategoryListItemSubmenu(categoryResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, categoryResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, categoryResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy);
     });
   });

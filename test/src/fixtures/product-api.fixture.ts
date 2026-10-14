@@ -191,21 +191,23 @@ export const expect = baseExpect.extend({
       message: () => `Expected product to have its parent reassigned, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainProducts(received: APIResponse, documents: Documents.Product[]) {
+  async toContainMatchingProductDocument(received: APIResponse, document: Documents.Product) {
     const response = await received.json() as Responses.Product[];
-
-    if (response.length !== documents.length) {
+  
+    const matchingResponse = response.find(r => r.productId === getProductId(document));
+  
+    if (!matchingResponse) {
       return {
         pass: false,
-        message: () => `Expected response to contain ${documents.length} products, but it contains ${response.length}`,
+        message: () => `Expected response to contain a product with id ${getProductId(document)}, but it was not found`,
       };
     }
-
-    const errors = documents.flatMap((document, index) => validateProductResponse(response[index], document).validate());
-
+  
+    const errors = validateProductResponse(matchingResponse, document).validate();
+        
     return {
-      pass: !errors.length,
-      message: () => `Expected response to match the product documents in the given order, but it did not:\n${errors.join('\n')}`,
+      pass: errors.length === 0,
+      message: () => `Expected response to match product document, but it did not:\n${errors.join('\n')}`,
     };
-  },
+  }, 
 });

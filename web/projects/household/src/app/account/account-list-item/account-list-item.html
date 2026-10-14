@@ -17,4 +17,5 @@
   }
   }
   <div matListItemTitle>{{account().name}}</div>
+  <div matListItemLine>{{balanceTitle()}}: {{account().balance | number:'1.0-2':'hu'}} {{account().currency}}</div>
 </button>

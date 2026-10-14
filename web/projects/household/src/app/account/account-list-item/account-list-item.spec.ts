@@ -1,3 +1,5 @@
+import { formatNumber, registerLocaleData } from '@angular/common';
+import localeHu from '@angular/common/locales/hu';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AccountListItem } from './account-list-item';
 import { elementSelectorFactory, IElementSelector, MockSignalStore, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
@@ -10,6 +12,8 @@ import { MatListItem, MatListItemIcon, MatListItemLine, MatListItemTitle } from 
 import { AccountType } from '@household/shared/enums';
 import { Api } from '@household/shared/types/api';
 import { Responses } from '@household/shared/types/responses';
+
+registerLocaleData(localeHu);
 
 describe('AccountListItem', () => {
   let fixture: ComponentFixture<AccountListItem>;
@@ -199,10 +203,51 @@ describe('AccountListItem', () => {
   });
 
   describe('secondary line', () => {
-    it('should not be rendered, only the name is displayed', async () => {
-      await render();
+    const getElement = () => {
+      return selector.getComponent(MatListItemLine, MatListItem);
+    };
 
-      expect(selector.getComponent(MatListItemLine, MatListItem)).toBeFalsy();
+    const formatBalance = (balance: number) => formatNumber(balance, 'hu', '1.0-2');
+
+    it('should render balance', async () => {
+      const account = testDataFactory.account.response({
+        accountType: AccountType.BankAccount,
+      });
+      await render({
+        account,
+      });
+
+      expect(getElement().nativeElement.textContent).toContain('Egyenleg');
+      expect(getElement().nativeElement.textContent).toContain(formatBalance(account.balance));
+      expect(getElement().nativeElement.textContent).toContain(account.currency);
+    });
+
+    it('should render debt', async () => {
+      const account = testDataFactory.account.response({
+        accountType: AccountType.Loan,
+        balance: -3000,
+      });
+      await render({
+        account,
+      });
+
+      expect(getElement().nativeElement.textContent).toContain('Tartozás');
+      expect(getElement().nativeElement.textContent).toContain(formatBalance(account.balance));
+      expect(getElement().nativeElement.textContent).toContain(account.currency);
+    });
+
+    it('should render loan', async () => {
+      const account = testDataFactory.account.response({
+        accountType: AccountType.Loan,
+        balance: 3000,
+      });
+      await render({
+        account,
+      });
+
+      expect(getElement().nativeElement.textContent).toContain('Kintlévőség');
+      expect(getElement().nativeElement.textContent).toContain(formatBalance(account.balance));
+      expect(getElement().nativeElement.textContent).toContain(account.currency);
     });
   });
 });

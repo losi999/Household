@@ -2,18 +2,18 @@
   <mat-icon>menu</mat-icon>
 </button>
 <mat-menu #main="matMenu">
-  <button mat-menu-item data-testId="home" [routerLink]="['/']"><mat-icon>home</mat-icon>Kezdőlap</button>
+  <a mat-menu-item data-testId="home" [routerLink]="['/']"><mat-icon>home</mat-icon>Kezdőlap</a>
   <button mat-menu-item data-testId="catalog" *householdIsEditor [matMenuTriggerFor]="catalog"><mat-icon>menu_book</mat-icon>Katalógus</button>
-  <button mat-menu-item data-testId="imports" *householdIsEditor [routerLink]="['/','imports']"><mat-icon>upload</mat-icon>Importálás</button>
+  <a mat-menu-item data-testId="imports" *householdIsEditor [routerLink]="['/','imports']"><mat-icon>upload</mat-icon>Importálás</a>
   <mat-divider />
-  <button mat-menu-item data-testId="settings" [routerLink]="['/','settings']"><mat-icon>settings</mat-icon>Beállítások</button>
+  <a mat-menu-item data-testId="settings" [routerLink]="['/','settings']"><mat-icon>settings</mat-icon>Beállítások</a>
   <button mat-menu-item data-testId="log-out" (click)="onLogOut()"><mat-icon>logout</mat-icon>Kijelentkezés</button>
 </mat-menu>
 
 <mat-menu #catalog="matMenu">
-  <button mat-menu-item data-testId="categories" [routerLink]="['/','categories']"><mat-icon>category</mat-icon>Kategóriák</button>
-  <button mat-menu-item data-testId="recipients" [routerLink]="['/','recipients']"><mat-icon>store</mat-icon>Partnerek</button>
-  <button mat-menu-item data-testId="projects" [routerLink]="['/','projects']"><mat-icon>stacks</mat-icon>Projektek</button>
-  <button mat-menu-item data-testId="accounts" [routerLink]="['/','accounts']"><mat-icon>account_balance</mat-icon>Számlák</button>
-  <button mat-menu-item data-testId="products" [routerLink]="['/','products']"><mat-icon>barcode</mat-icon>Termékek</button>
+  <a mat-menu-item data-testId="categories" [routerLink]="['/','categories']"><mat-icon>category</mat-icon>Kategóriák</a>
+  <a mat-menu-item data-testId="recipients" [routerLink]="['/','recipients']"><mat-icon>store</mat-icon>Partnerek</a>
+  <a mat-menu-item data-testId="projects" [routerLink]="['/','projects']"><mat-icon>stacks</mat-icon>Projektek</a>
+  <a mat-menu-item data-testId="accounts" [routerLink]="['/','accounts']"><mat-icon>account_balance</mat-icon>Számlák</a>
+  <a mat-menu-item data-testId="products" [routerLink]="['/','products']"><mat-icon>barcode</mat-icon>Termékek</a>
 </mat-menu>

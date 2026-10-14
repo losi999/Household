@@ -2,10 +2,24 @@ import { inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { AccountDialog, AccountDialogData, AccountDialogResult } from '@household/app/account/account-dialog/account-dialog';
 import { accountApiEvents, accountEvents } from '@household/state/account/account-events';
-import { BottomSheetService, DialogService, dispatchIfConfirmed } from '@household/shared-ui';
+import { BottomSheetService, BottomSubmenuItem, DialogService, dispatchIfConfirmed } from '@household/shared-ui';
 import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
-import { exhaustMap, filter, map, Observable } from 'rxjs';
+import { EMPTY, exhaustMap, filter, map } from 'rxjs';
+import { AccountType } from '@household/shared/enums';
+
+// Only accounts have these menu items, so they are not part of the common items of the BottomSheetService
+export const openAccountMenuItem = {
+  action: 'open',
+  icon: 'credit_card',
+  label: 'Nyitás',
+} as const;
+
+export const closeAccountMenuItem = {
+  action: 'close',
+  icon: 'credit_card_off',
+  label: 'Zárás',
+} as const;
 
 export const withAccountEvents = () => {
   return signalStoreFeature(
@@ -84,27 +98,55 @@ export const withAccountEvents = () => {
         ),
         openAccountListItemSubmenu: events.on(accountEvents.openAccountListItemSubmenu)
           .pipe(
-            exhaustMap(({ payload }) => {
-              let afterDismissed: Observable<'edit' | 'open' | 'close' | 'delete'>;
+            exhaustMap(({ payload }) => {             
+              const subMenuItems: BottomSubmenuItem[] = [
+                {
+                  link: `accounts/${payload.accountId}`,
+                  icon: 'format_list_bulleted',
+                  label: 'Tranzakciók',
+                },
+                {
+                  link: '/',
+                  icon: 'post_add',
+                  label: 'Új tranzakció',
+                },
+              ]; 
 
-              // An open account can be closed, a closed account can be opened again
-              if (payload.isOpen) {
-                afterDismissed = bottomSheetService.openBottomSubmenu(payload.name, 'edit', 'close', 'delete').afterDismissed();
-              } else {
-                afterDismissed = bottomSheetService.openBottomSubmenu(payload.name, 'edit', 'open', 'delete').afterDismissed();
+              if (payload.accountType === AccountType.Cash) {
+                subMenuItems.push({
+                  link: `accounts/${payload.accountId}/balance`,
+                  icon: 'payments',
+                  label: 'Új egyenleg',
+                });
               }
 
-              return afterDismissed.pipe(
-                filter(value => !!value),
-                map((value) => {
-                  switch(value) {
-                    case 'edit': return accountEvents.updateAccount(payload);
-                    case 'open': return accountEvents.openAccount(payload);
-                    case 'close': return accountEvents.closeAccount(payload);
-                    case 'delete': return accountEvents.deleteAccount(payload);
-                  }
-                }),
-              );
+              subMenuItems.push(payload.isOpen ? {
+                action: 'close',
+                icon: 'credit_card_off',
+                label: 'Zárás',
+              } : {
+                action: 'open',
+                icon: 'credit_card',
+                label: 'Nyitás',
+              });
+
+              return bottomSheetService.openBottomSubmenu(payload.name, [
+                ...subMenuItems,
+                BottomSheetService.Edit,
+                BottomSheetService.Delete,
+              ]).afterDismissed()
+                .pipe(
+                  filter(value => !!value),
+                  map((value) => {
+                    switch(value) {
+                      case 'edit': return accountEvents.updateAccount(payload);
+                      case 'open': return accountEvents.openAccount(payload);
+                      case 'close': return accountEvents.closeAccount(payload);
+                      case 'delete': return accountEvents.deleteAccount(payload);
+                      default: return EMPTY;
+                    }
+                  }),
+                );
             }),
           ),
       };

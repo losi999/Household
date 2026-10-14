@@ -61,7 +61,11 @@ export const withCategoryEvents = () => {
         openCategoryListItemSubmenu: events.on(categoryEvents.openCategoryListItemSubmenu)
           .pipe(
             exhaustMap(({ payload }) => {
-              return bottomSheetService.openBottomSubmenu(payload.name, 'edit', 'merge', 'delete')
+              return bottomSheetService.openBottomSubmenu(payload.name, [
+                BottomSheetService.Edit,
+                BottomSheetService.Merge,
+                BottomSheetService.Delete,
+              ])
                 .afterDismissed()
                 .pipe(
                   filter(value => !!value),

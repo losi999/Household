@@ -214,7 +214,11 @@ describe('withProjectEvents', () => {
 
       dispatcher.dispatch(projectEvents.openProjectListItemSubmenu(projectResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, projectResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, projectResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, projectEvents.updateProject(projectResponse));
     });
 
@@ -223,7 +227,11 @@ describe('withProjectEvents', () => {
 
       dispatcher.dispatch(projectEvents.openProjectListItemSubmenu(projectResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, projectResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, projectResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, projectEvents.mergeProjects(projectResponse));
     });
 
@@ -232,7 +240,11 @@ describe('withProjectEvents', () => {
 
       dispatcher.dispatch(projectEvents.openProjectListItemSubmenu(projectResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, projectResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, projectResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, projectEvents.deleteProject(projectResponse));
     });
 
@@ -241,7 +253,11 @@ describe('withProjectEvents', () => {
 
       dispatcher.dispatch(projectEvents.openProjectListItemSubmenu(projectResponse));
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, projectResponse.name, 'edit', 'merge', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, projectResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Merge,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy);
     });
   });

@@ -71,7 +71,7 @@ test.describe('PUT /product/v1/products/{productId}', () => {
                 parentProductId: getProductId(specificProductDocument),
               });
 
-              await saveProducts(originalProductDocument, specificProductDocument);
+              await saveProducts(originalProductDocument, specificProductDocument, genericProductDocument);
               const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
               expect(res).toBeNoContentResponse();
               expect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)), specificProductDocument);
@@ -97,7 +97,7 @@ test.describe('PUT /product/v1/products/{productId}', () => {
                 parentProductId: getProductId(specificProductDocument),
               });
 
-              await saveProducts(originalProductDocument, specificProductDocument);
+              await saveProducts(originalProductDocument, specificProductDocument, genericProductDocument);
               const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
               expect(res).toBeNoContentResponse();
               expect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)), specificProductDocument);
@@ -289,7 +289,7 @@ test.describe('PUT /product/v1/products/{productId}', () => {
                   parentProductId: getProductId(specificProductDocument),
                 });
             
-                await saveProducts(originalProductDocument, specificProductDocument);
+                await saveProducts(originalProductDocument, specificProductDocument, genericProductDocument);
                 const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
                 expect(res).toBeBadRequestResponse();
                 expect(res).toHaveMessage('Product type of parent must be "generic" when creating "specific" product');
@@ -300,7 +300,7 @@ test.describe('PUT /product/v1/products/{productId}', () => {
                   parentProductId: getProductId(variantProductDocument),
                 });
             
-                await saveProducts(originalProductDocument, variantProductDocument);
+                await saveProducts(originalProductDocument, variantProductDocument, specificProductDocument, genericProductDocument);
                 const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
                 expect(res).toBeBadRequestResponse();
                 expect(res).toHaveMessage('Product type of parent must be "generic" when creating "specific" product');
@@ -322,7 +322,7 @@ test.describe('PUT /product/v1/products/{productId}', () => {
                   parentProductId: getProductId(variantProductDocument),
                 });
             
-                await saveProducts(originalProductDocument, variantProductDocument);
+                await saveProducts(originalProductDocument, variantProductDocument, specificProductDocument, genericProductDocument);
                 const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
                 expect(res).toBeBadRequestResponse();
                 expect(res).toHaveMessage('Product type of parent must be "specific" when creating "variant" product');
