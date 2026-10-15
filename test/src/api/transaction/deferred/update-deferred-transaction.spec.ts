@@ -551,15 +551,6 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/payment (deferred
           });
 
           test.describe('if productId', () => {
-            test('is present and quantity is missing', async ({ requestUpdateToPaymentTransaction }) => {
-              const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
-                productId: productDataFactory.id(),
-                quantity: undefined, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
-            });
-
             test('is not string', async ({ requestUpdateToPaymentTransaction }) => {
               const res = await requestUpdateToPaymentTransaction(getTransactionId(originalDocument), deferredTransactionDataFactory.request({
                 productId: <any>1, 

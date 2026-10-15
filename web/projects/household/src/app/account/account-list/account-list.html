@@ -1,5 +1,5 @@
 <mat-action-list>
-  @for (a of accounts(); track a.accountId) {
-  <household-account-list-item [account]="a" />
+  @for (account of accounts(); track account.accountId) {
+  <household-account-list-item [account]="account" />
   }
 </mat-action-list>

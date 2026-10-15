@@ -1,1 +1,7 @@
-<p>transaction-home works!</p>
+<household-toolbar title="Tranzakciók">
+  <button matIconButton type="button">
+    <mat-icon>add</mat-icon>
+  </button>
+</household-toolbar>
+<household-transaction-list [transactions]="transactionStore.transactionList()" />
+<button mat-raised-button data-testId="load-more" (click)="onLoadMore()">Betöltés</button>

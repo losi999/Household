@@ -1,7 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { hasChildren } from '@household/app/product/product-utils';
+import { GenericProductIcon, SpecificProductIcon, VariantProductIcon } from '@household/app/shared/icons';
 import { ProductType } from '@household/shared/enums';
 import { Responses } from '@household/shared/types/responses';
 import { productEvents } from '@household/state/product/product-events';
@@ -10,8 +10,10 @@ import { injectDispatch } from '@ngrx/signals/events';
 
 @Component({
   imports: [
-    MatIconModule,
     MatListModule,
+    GenericProductIcon,
+    SpecificProductIcon,
+    VariantProductIcon,
   ],
   selector: 'household-product-list-item',
   styleUrl: './product-list-item.scss',

@@ -343,15 +343,6 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
           });
 
           test.describe('if productId', () => {
-            test('is present and quantity is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-                productId: productDataFactory.id(),
-                quantity: undefined, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
-            });
-
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 productId: <any>1, 

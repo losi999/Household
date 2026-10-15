@@ -1,0 +1,5 @@
+<mat-list>
+  @for (transaction of transactions(); track $index) {
+  <household-transaction-list-item [transaction]="transaction" />
+  }
+</mat-list>>

@@ -106,9 +106,9 @@ const inventoryRequest: ObjectSchema<Api.Transaction.Quantity & Api.Product.Prod
   {
     type: 'object',
     additionalProperties: false,
+    // A product can be set without a quantity, but a quantity makes no sense without a product
     dependencies: {
       quantity: ['productId'],
-      productId: ['quantity'],
     },
   },
 ]);

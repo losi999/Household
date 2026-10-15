@@ -759,19 +759,6 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
           });
 
           test.describe('if splits.productId', () => {
-            test('is present and quantity is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
-                splits: [
-                  {
-                    productId: productDataFactory.id(),
-                    quantity: undefined, 
-                  },
-                ],
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
-            });
-
             test('is not string', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 splits: [
@@ -1162,19 +1149,6 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
           });
 
           test.describe('if loans.productId', () => {
-            test('is present and quantity is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
-                loans: [
-                  {
-                    productId: productDataFactory.id(),
-                    quantity: undefined, 
-                  },
-                ],
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
-            });
-
             test('is not string', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 loans: [

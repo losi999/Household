@@ -12,6 +12,7 @@ import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of } from 'rxjs';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { AccountType } from '@household/shared/enums';
+import { Api } from '@household/shared/types/api';
 
 describe('withAccountEvents', () => {
   let dispatcher: Dispatcher;
@@ -220,23 +221,23 @@ describe('withAccountEvents', () => {
     });
   });
 
-  const transactionItems = [
+  const transactionItems = (accountId: Api.Account.Id) => [
     {
+      link: `accounts/${accountId}`,
       icon: 'format_list_bulleted',
-      link: 'projects',
       label: 'Tranzakciók',
     },
     {
+      link: '/',
       icon: 'post_add',
-      link: 'categories',
       label: 'Új tranzakció',
     },
   ];
-  const balanceItem = {
+  const balanceItem = (accountId: Api.Account.Id) => ({
+    link: `accounts/${accountId}/balance`,
     icon: 'payments',
-    link: 'recipients',
     label: 'Új egyenleg',
-  };
+  });
   const closeItem = {
     action: 'close',
     icon: 'credit_card_off',
@@ -254,7 +255,7 @@ describe('withAccountEvents', () => {
       accountType: AccountType.BankAccount,
     });
     const items = [
-      ...transactionItems,
+      ...transactionItems(account.accountId),
       closeItem,
       BottomSheetService.Edit,
       BottomSheetService.Delete,
@@ -303,7 +304,7 @@ describe('withAccountEvents', () => {
       accountType: AccountType.BankAccount,
     });
     const items = [
-      ...transactionItems,
+      ...transactionItems(account.accountId),
       openItem,
       BottomSheetService.Edit,
       BottomSheetService.Delete,
@@ -352,8 +353,8 @@ describe('withAccountEvents', () => {
       accountType: AccountType.Cash,
     });
     const items = [
-      ...transactionItems,
-      balanceItem,
+      ...transactionItems(account.accountId),
+      balanceItem(account.accountId),
       closeItem,
       BottomSheetService.Edit,
       BottomSheetService.Delete,

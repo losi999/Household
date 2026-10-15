@@ -920,19 +920,6 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
           });
 
           test.describe('if splits.productId', () => {
-            test('is present and quantity is missing', async ({ requestUpdateToSplitTransaction }) => {
-              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                splits: [
-                  {
-                    productId: productDataFactory.id(),
-                    quantity: undefined, 
-                  },
-                ],
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
-            });
-
             test('is not string', async ({ requestUpdateToSplitTransaction }) => {
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
                 splits: [
@@ -1325,19 +1312,6 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
           });
 
           test.describe('if loans.productId', () => {
-            test('is present and quantity is missing', async ({ requestUpdateToSplitTransaction }) => {
-              const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
-                loans: [
-                  {
-                    productId: productDataFactory.id(),
-                    quantity: undefined, 
-                  },
-                ],
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
-            });
-
             test('is not string', async ({ requestUpdateToSplitTransaction }) => {
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
                 loans: [
