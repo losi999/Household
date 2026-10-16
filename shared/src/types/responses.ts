@@ -82,6 +82,9 @@ export namespace Responses {
       recipient: Recipient;
     };
 
+  /**
+     * @deprecated
+     */
   export type DeferredTransaction = Api.Transaction.TransactionId
     & Api.Transaction.Amount
     & Api.Transaction.Description
@@ -99,6 +102,9 @@ export namespace Responses {
       recipient: Recipient;
     };
 
+  /**
+ * @deprecated
+ */
   export type ReimbursementTransaction = Api.Transaction.TransactionId
     & Api.Transaction.Amount
     & Api.Transaction.Description

@@ -43,10 +43,70 @@ const splitItemSchema = new Schema<Documents.SplitItem>({
   _id: false,
 });
 
+const loanItemSchema = new Schema<Documents.LoanTransaction>({
+  transactionType: {
+    type: String,
+    enum: [ 'loan' ],
+  },
+  payingAccount: {
+    type: Schema.Types.ObjectId,
+    ref: 'accounts',
+    index: true,
+  },
+  issuedAt: {
+    type: Schema.Types.Date,
+  },
+  ownerAccount: {
+    type: Schema.Types.ObjectId,
+    ref: 'accounts',
+    index: true,
+  },
+  description: {
+    type: String,
+    minlength: 1,
+  },
+  amount: {
+    type: Number,
+    required: true,
+    max: 0,
+  },
+  quantity: {
+    type: Number,
+  },
+  product: {
+    type: Schema.Types.ObjectId,
+    ref: 'products',
+    index: true,
+  },
+  invoiceNumber: {
+    type: String,
+    minlength: 1,
+  },
+  billingEndDate: {
+    type: Date,
+  },
+  billingStartDate: {
+    type: Date,
+  },
+  category: {
+    type: Schema.Types.ObjectId,
+    ref: 'categories',
+    index: true,
+  },
+  project: {
+    type: Schema.Types.ObjectId,
+    ref: 'projects',
+    index: true,
+  },
+});
+
 const deferredSplitSchema = new Schema<Documents.DeferredTransaction>({
   transactionType: {
     type: String,
-    enum: ['deferred'],
+    enum: [
+      'deferred', 
+      'loan',
+    ],
   },
   payingAccount: {
     type: Schema.Types.ObjectId,
@@ -176,6 +236,10 @@ const schemaDefinition: SchemaDefinition<SchemaDefinitionType<Documents.Transact
   },
   splits: {
     type: [splitItemSchema],
+    default: undefined,
+  },
+  loans: {
+    type: [loanItemSchema],
     default: undefined,
   },
   deferredSplits: {

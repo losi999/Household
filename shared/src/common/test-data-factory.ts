@@ -1231,6 +1231,7 @@ const createSplitTransactionDocument = (doc?: RecursivePartial<Omit<Documents.Sp
     amount,
     splits: splitDocuments,
     deferredSplits: deferredDocuments,
+    loans: [], // TODO
   };
 };
 

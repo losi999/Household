@@ -1,13 +1,13 @@
 <button mat-list-item (click)="onShowMenu()" [disabled]="isDisabled()">
   @switch (product().productType) {
   @case ('generic') {
-  <household-generic-product-icon matListItemIcon />
+  <mat-icon matListItemIcon>sell</mat-icon>
   }
   @case ('specific') {
-  <household-specific-product-icon matListItemIcon />
+  <mat-icon matListItemIcon>scale</mat-icon>
   }
   @case ('variant') {
-  <household-variant-product-icon matListItemIcon />
+  <mat-icon matListItemIcon>label</mat-icon>
   }
   }
   <div matListItemTitle>{{product().name}}</div>

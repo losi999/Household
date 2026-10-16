@@ -90,6 +90,7 @@ export const splitTransactionDocumentConverterFactory = (
         transactionType,
         issuedAt: new Date(body.issuedAt),
         splits: body.splits?.map((s) => createSplitDocumentItem(s, categories[s.categoryId], projects[s.projectId], products[s.productId])),
+        loans: [], // TODO
         deferredSplits: body.loans?.map((s) => {
           const category = categories[s.categoryId];
 

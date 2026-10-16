@@ -1,1 +1,22 @@
-<p>transaction-list-item works!</p>
+<mat-card appearance="outlined">
+  <mat-card-header>
+    <div class="header-text">
+      <mat-card-title>{{transaction().issuedAt | date: 'MMMM d., EEEE'}}</mat-card-title>
+      <mat-card-subtitle>{{transaction().issuedAt | date: 'HH:mm'}}</mat-card-subtitle>
+    </div>
+    <div class="amount">
+      {{transaction().amount | number:'1.0-2':'hu'}} {{currency()}}
+    </div>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="splits">
+      <div>split1</div>
+      <div>split2</div>
+      <div>split3</div>
+    </div>
+  </mat-card-content>
+  <mat-card-actions>
+    <a matIconButton><mat-icon>format_list_bulleted</mat-icon></a>
+    <button matIconButton class="danger"><mat-icon>delete</mat-icon></button>
+  </mat-card-actions>
+</mat-card>

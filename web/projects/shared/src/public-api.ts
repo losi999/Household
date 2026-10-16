@@ -30,4 +30,3 @@ export * from './lib/testing/element-selector';
 export * from './lib/testing/common';
 export * from './lib/directives/holdable-button';
 export * from './lib/testing/stub-component';
-export * from './lib/icons';

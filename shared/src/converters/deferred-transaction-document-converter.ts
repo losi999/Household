@@ -51,6 +51,7 @@ export const deferredTransactionDocumentConverterFactory = (
     deferredSplits: true,
     splits: true,
     account: true,
+    loans: true,
   };
 
   const instance: IDeferredTransactionDocumentConverter = {

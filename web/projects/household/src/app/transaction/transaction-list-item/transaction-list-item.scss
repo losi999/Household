@@ -1,0 +1,34 @@
+@use '@angular/material' as mat;
+
+mat-card {
+  @include mat.card-overrides((title-text-size: var(--mat-sys-title-medium-size),
+      subtitle-text-size: var(--mat-sys-title-small-size),
+      outlined-container-color: var(--mat-sys-surface-container)));
+  // --mat-sys-surface-variant split container
+  margin-bottom: 10px;
+
+  mat-card-header {
+    align-items: center;
+  }
+
+  .splits {
+    padding: 10px;
+    border-radius: 10px;
+    background-color: var(--mat-sys-secondary-container);
+  }
+
+  .header-text {
+    min-width: 0;
+  }
+
+  .amount {
+    font-size: var(--mat-sys-title-large-size);
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  mat-card-actions {
+    justify-content: flex-end;
+  }
+}

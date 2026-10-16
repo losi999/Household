@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductListItem } from './product-list-item';
 import { productEvents } from '@household/state/product/product-events';
-import { createStubComponent, elementSelectorFactory, IElementSelector, MockSignalStore, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
+import { elementSelectorFactory, IElementSelector, MockSignalStore, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
 import { ProductStore } from '@household/state/product/product-store';
 import { Api } from '@household/shared/types/api';
 import { Responses } from '@household/shared/types/responses';
@@ -9,14 +9,9 @@ import { ProductType } from '@household/shared/enums';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { validateFunctionCall } from '@household/shared/common/unit-testing';
 import { Dispatcher } from '@ngrx/signals/events';
-import { MatListItem, MatListItemLine, MatListItemTitle } from '@angular/material/list';
-import { GenericProductIcon, SpecificProductIcon, VariantProductIcon } from '@household/app/shared/icons';
+import { MatListItem, MatListItemIcon, MatListItemLine, MatListItemTitle } from '@angular/material/list';
 
 describe('ProductListItem', () => {
-  const GenericProductIconStub = createStubComponent(GenericProductIcon);
-  const SpecificProductIconStub = createStubComponent(SpecificProductIcon);
-  const VariantProductIconStub = createStubComponent(VariantProductIcon);
-
   let fixture: ComponentFixture<ProductListItem>;
   let selector: IElementSelector;
   let mockProductStore: MockSignalStore<typeof ProductStore>;
@@ -43,21 +38,6 @@ describe('ProductListItem', () => {
         provideMockSignalStore(ProductStore, 'isInProgress', 'productList'),
         provideMockDispatcher(),
       ],
-    }).overrideComponent(ProductListItem, {
-      remove: {
-        imports: [
-          GenericProductIcon,
-          SpecificProductIcon,
-          VariantProductIcon,
-        ],
-      },
-      add: {
-        imports: [
-          GenericProductIconStub,
-          SpecificProductIconStub,
-          VariantProductIconStub,
-        ],
-      },
     })
       .compileComponents();
 
@@ -213,7 +193,7 @@ describe('ProductListItem', () => {
         product: generic,
       });
 
-      expect(selector.getComponent(GenericProductIconStub)).toBeTruthy();
+      expect(selector.getComponent(MatListItemIcon, MatListItem).nativeElement.textContent).toBe('sell');
     });
 
     it('should be rendered for specific product', async () => {
@@ -221,7 +201,7 @@ describe('ProductListItem', () => {
         product: specific,
       });
 
-      expect(selector.getComponent(SpecificProductIconStub)).toBeTruthy();
+      expect(selector.getComponent(MatListItemIcon, MatListItem).nativeElement.textContent).toBe('scale');
     });
 
     it('should be rendered for variant product', async () => {
@@ -229,7 +209,7 @@ describe('ProductListItem', () => {
         product: variant,
       });
 
-      expect(selector.getComponent(VariantProductIconStub)).toBeTruthy();
+      expect(selector.getComponent(MatListItemIcon, MatListItem).nativeElement.textContent).toBe('label');
     });
   });
 

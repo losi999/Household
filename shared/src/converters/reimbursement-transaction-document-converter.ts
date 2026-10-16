@@ -51,6 +51,7 @@ export const reimbursementTransactionDocumentConverterFactory = (
     deferredSplits: true,
     splits: true,
     account: true,
+    loans: true,
   };
 
   const instance: IReimbursementTransactionDocumentConverter = {

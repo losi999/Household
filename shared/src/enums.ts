@@ -36,6 +36,7 @@ export enum TransactionType {
   Deferred = 'deferred',
   Reimbursement = 'reimbursement',
   Draft = 'draft',
+  Loan = 'loan',
 }
 
 export enum UserType {
