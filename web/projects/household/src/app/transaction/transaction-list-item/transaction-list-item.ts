@@ -31,16 +31,16 @@ export class TransactionListItem {
   private readonly accountId: Api.Account.Id;
 
   currency = computed(() => {
-    const transaction = this.transaction();
-    switch(transaction.transactionType) {
-      case TransactionType.Deferred:
-      case TransactionType.Reimbursement: {
-        return transaction.payingAccount.currency;
-      }
-      default: {
-        return transaction.account.currency;
-      }
-    }
+    // const transaction = this.transaction();
+    // switch(transaction.transactionType) {
+    //   case TransactionType.Deferred:
+    //   case TransactionType.Reimbursement: {
+    //     return transaction.payingAccount.currency;
+    //   }
+    //   default: {
+    //     return transaction.account.currency;
+    //   }
+    // }
   });
 
   amountColor = computed(() => {

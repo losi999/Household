@@ -7,7 +7,7 @@ describe('TransactionListItem', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TransactionListItem]
+      imports: [TransactionListItem],
     })
       .compileComponents();
 
