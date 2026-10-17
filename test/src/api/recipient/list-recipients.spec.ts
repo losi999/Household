@@ -1,10 +1,10 @@
 import { entries } from '@household/shared/common/utils';
 import { forbidUsers } from '@household/test/utils';
-import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { recipientApiTest, recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { apiExpect } from '@household/test/fixtures/api.fixture';
 import { responseList as schema } from '@household/shared/schemas/recipient';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 import { mergeTests } from '@playwright/test';
 
 const permissionMap = forbidUsers();

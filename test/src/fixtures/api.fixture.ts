@@ -1,7 +1,7 @@
 import { validatorService } from '@household/shared/dependencies/services/validator-service';
 import { User } from '@household/test/types';
-import { expect as baseExpect, APIResponse, APIRequestContext, MatcherReturnType } from '@playwright/test';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { expect, APIResponse, APIRequestContext, MatcherReturnType } from '@playwright/test';
+import { test } from '@household/test/fixtures/logging.fixture';
 import { StrictSchema } from '@household/shared/types/schema';
 
 export type ApiFixture = {
@@ -12,7 +12,7 @@ export type ApiFixture = {
 
 type RequestPart = 'body' | 'queryStringParameters' | 'pathParameters' | 'multiValueQueryStringParameters';
 
-export const test = baseTest.extend<ApiFixture>({
+export const apiTest = test.extend<ApiFixture>({
   userType: undefined,
   loggedRequest: async ({ request, logApiCall }, use) => {
     const loggedRequest: Pick<APIRequestContext, 'get' | 'post' | 'put' | 'delete'> = {
@@ -71,7 +71,7 @@ const matchRegexp = async (received: APIResponse, requestPart: RequestPart, rege
   };  
 };
 
-export const expect = baseExpect.extend({
+export const apiExpect = expect.extend({
   toBeOkResponse(received: APIResponse) {
     return {
       message: () => `expected response to be ok, but got status: ${received.status()}`,

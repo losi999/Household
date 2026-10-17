@@ -58,6 +58,7 @@ export const paymentTransactionDocumentConverterFactory = (
     payingAccount: true,
     deferredSplits: true,
     splits: true,
+    loans: true,
   };
 
   const instance: IPaymentTransactionDocumentConverter = {

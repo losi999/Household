@@ -1,9 +1,8 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getAccountId, getTransactionId } from '@household/shared/common/utils';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { ILoanTransactionDocumentConverter } from '@household/shared/converters/loan-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
-import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
-import { AccountType, CategoryType } from '@household/shared/enums';
+import { CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -29,8 +28,7 @@ export const createPaymentTransactionServiceFactory = (
   productService: IProductService,
   transactionService: ITransactionService,
   paymentTransactionDocumentConverter: IPaymentTransactionDocumentConverter,
-  reimbursementTransactionDocumentConverter: IReimbursementTransactionDocumentConverter,
-  deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
+  loanTransactionDocumentConverter: ILoanTransactionDocumentConverter,
 ): ICreatePaymentTransactionService => {
   return async ({ body, expiresIn }) => {
     const { accountId, categoryId, projectId, recipientId, productId, loanAccountId } = body;
@@ -99,7 +97,7 @@ export const createPaymentTransactionServiceFactory = (
       }, 400);
     }
 
-    let document: Documents.PaymentTransaction | Documents.DeferredTransaction | Documents.ReimbursementTransaction;
+    let document: Documents.PaymentTransaction | Documents.LoanTransaction;
 
     if (!body.loanAccountId) {
       httpErrors.transaction.invalidLoanAccountType(account);
@@ -113,29 +111,20 @@ export const createPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
     } else {
-      if (account.accountType === AccountType.Loan) {
-        httpErrors.transaction.invalidLoanAccountType(loanAccount);
+      httpErrors.transaction.loanAccountRequired([
+        account,
+        loanAccount,
+      ]);
 
-        document = reimbursementTransactionDocumentConverter.create({
-          body,
-          payingAccount: account,
-          ownerAccount: loanAccount,
-          category,
-          project,
-          recipient,
-          product,
-        }, expiresIn);
-      } else {
-        document = deferredTransactionDocumentConverter.create({
-          body,
-          payingAccount: account,
-          ownerAccount: loanAccount,
-          category,
-          project,
-          recipient,
-          product,
-        }, expiresIn);
-      }
+      document = loanTransactionDocumentConverter.create({
+        body,
+        payingAccount: account,
+        ownerAccount: loanAccount,
+        category,
+        project,
+        recipient,
+        product,
+      }, expiresIn);
     }
 
     const saved = await transactionService.saveTransaction(document).catch(httpErrors.transaction.save(document));

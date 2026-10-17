@@ -11,13 +11,12 @@ import { transactionService } from '@household/shared/dependencies/services/tran
 import { default as index } from '@household/api/handlers/index.handler';
 import { productService } from '@household/shared/dependencies/services/product-service';
 import { paymentTransactionDocumentConverter } from '@household/shared/dependencies/converters/payment-transaction-document-converter';
-import { reimbursementTransactionDocumentConverter } from '@household/shared/dependencies/converters/reimbursement-transaction-document-converter';
-import { deferredTransactionDocumentConverter } from '@household/shared/dependencies/converters/deferred-transaction-document-converter';
+import { loanTransactionDocumentConverter } from '@household/shared/dependencies/converters/loan-transaction-document-converter';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
 import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
-const createPaymentTransactionService = createPaymentTransactionServiceFactory(accountService, projectService, categoryService, recipientService, productService, transactionService, paymentTransactionDocumentConverter, reimbursementTransactionDocumentConverter, deferredTransactionDocumentConverter);
+const createPaymentTransactionService = createPaymentTransactionServiceFactory(accountService, projectService, categoryService, recipientService, productService, transactionService, paymentTransactionDocumentConverter, loanTransactionDocumentConverter);
 
 export default index({
   handler: handler(createPaymentTransactionService),

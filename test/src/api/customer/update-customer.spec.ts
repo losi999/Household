@@ -2,15 +2,12 @@ import { entries, getCustomerId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
-import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { customerApiTest, customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
-
-const expect = mergeExpects(customerApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -45,7 +42,7 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestUpdateCustomer }) => {
       const res = await requestUpdateCustomer(customerDataFactory.id(), request);
-      expect(res).toBeUnauthorizedResponse();
+      customerApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -60,15 +57,15 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestUpdateCustomer }) => {
           const res = await requestUpdateCustomer(customerDataFactory.id(), request);
-          expect(res).toBeForbiddenResponse();
+          customerApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should update a customer', async ({ requestUpdateCustomer, savePrice, saveCustomers, findCustomerById }) => {
           await saveCustomers(customerDocument, blacklistedCustomer);
           await savePrice(priceDocument);
           const res = await requestUpdateCustomer(getCustomerId(customerDocument), request);
-          expect(res).toBeNoContentResponse();
-          expect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(getCustomerId(customerDocument)), customerDocument);
+          customerApiExpect(res).toBeNoContentResponse();
+          customerApiExpect(request).toHaveBeenSavedAsCustomerDocument(await findCustomerById(getCustomerId(customerDocument)), customerDocument);
         });
 
         test.describe('should return error', () => {
@@ -79,8 +76,8 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
                 extraProperty: 'extra',
               } as any);
                   
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 
@@ -89,24 +86,24 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 name: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
             test('is not string', async ({ requestUpdateCustomer }) => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 name: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
             test('is too short', async ({ requestUpdateCustomer }) => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 name: '', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'name', 1);
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
             test('is already in use by a different customer', async ({ requestUpdateCustomer, savePrice, saveCustomers }) => {
@@ -117,8 +114,8 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
               await saveCustomers(customerDocument, updatedCustomerDocument);
               await savePrice(priceDocument);
               const res = await requestUpdateCustomer(getCustomerId(customerDocument), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Duplicate customer name');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveMessage('Duplicate customer name');
             });
           });
 
@@ -127,16 +124,16 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 description: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
             test('is too short', async ({ requestUpdateCustomer }) => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 description: '', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'description', 1);
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
@@ -145,16 +142,16 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 isGroup: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'isGroup');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveRequiredPropertyValidationError('body', 'isGroup');
             });
 
             test('is not boolean', async ({ requestUpdateCustomer }) => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 isGroup: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'isGroup', 'boolean');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveWrongTypeValidationError('body', 'isGroup', 'boolean');
             });
           });
 
@@ -163,45 +160,45 @@ test.describe('PUT /customer/v1/customers/{customerId}', () => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 rating: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'rating');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveRequiredPropertyValidationError('body', 'rating');
             });
 
             test('is not integer', async ({ requestUpdateCustomer }) => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 rating: 1.5, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'rating', 'integer');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveWrongTypeValidationError('body', 'rating', 'integer');
             });
 
             test('is too small', async ({ requestUpdateCustomer }) => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 rating: 0, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooSmallValidationError('body', 'rating', 1);
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveTooSmallValidationError('body', 'rating', 1);
             });
 
             test('is too large', async ({ requestUpdateCustomer }) => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), customerDataFactory.request({
                 rating: 6, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooLargeValidationError('body', 'rating', 5);
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveTooLargeValidationError('body', 'rating', 5);
             });
           });
 
           test.describe('if customerId', () => {
             test('is not mongo id', async ({ requestUpdateCustomer }) => {
               const res = await requestUpdateCustomer(customerDataFactory.id('not-valid'), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'customerId');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHavePatternValidationError('pathParameters', 'customerId');
             });
 
             test('does not belong to any customer', async ({ requestUpdateCustomer }) => {
               const res = await requestUpdateCustomer(customerDataFactory.id(), request);
-              expect(res).toBeNotFoundResponse();
+              customerApiExpect(res).toBeNotFoundResponse();
             });
           });
         });

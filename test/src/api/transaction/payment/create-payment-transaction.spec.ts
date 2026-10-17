@@ -9,19 +9,16 @@ import { recipientDataFactory } from '@household/test/api/recipient/data-factory
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { forbidUsers } from '@household/test/utils';
 
-import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
-import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
-import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
-import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+import { transactionApiTest, transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
-
-const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = forbidUsers('viewer') ;
 
@@ -76,7 +73,7 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestCreatePaymentTransaction }) => {
       const res = await requestCreatePaymentTransaction(request);
-      expect(res).toBeUnauthorizedResponse();
+      transactionApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -91,7 +88,7 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestCreatePaymentTransaction }) => {
           const res = await requestCreatePaymentTransaction(request);
-          expect(res).toBeForbiddenResponse();
+          transactionApiExpect(res).toBeForbiddenResponse();
         });
       } else {
 
@@ -103,10 +100,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('using invoice category', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
@@ -120,10 +117,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
             test('using inventory category', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
               request = paymentTransactionDataFactory.request({
@@ -137,10 +134,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreatePaymentTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
           });
 
@@ -156,10 +153,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
             test(CategoryType.Inventory, async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
               request = paymentTransactionDataFactory.request({
@@ -174,10 +171,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
             test(CategoryType.Invoice, async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
@@ -194,10 +191,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('invoice.invoiceNumber', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
@@ -212,10 +209,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('categoryId', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveProject, saveRecipient }) => {
@@ -228,10 +225,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('recipientId', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveProject }) => {
@@ -244,10 +241,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               const res = await requestCreatePaymentTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('projectId', async ({ requestCreatePaymentTransaction, saveAccount, getTransactionById, saveCategory, saveRecipient }) => {
@@ -260,10 +257,10 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               await saveCategory(regularCategoryDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsPaymentTransactionDocument(await getTransactionById(transactionId));
             });
           });
         });
@@ -274,8 +271,8 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 extra: 123, 
               } as any));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
             });
           });
 
@@ -284,16 +281,16 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 amount: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
             test('is not number', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 amount: <any>'1', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
             });
           });
 
@@ -302,16 +299,16 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 description: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
             test('is too short', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 description: '', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'description', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
@@ -321,51 +318,42 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 productId: undefined,
                 quantity: 1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
             });
 
             test('is not number', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 quantity: <any>'a', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
             test('is too small', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 quantity: 0, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
             });
           });
 
           test.describe('if productId', () => {
-            test('is present and quantity is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
-                productId: productDataFactory.id(),
-                quantity: undefined, 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
-            });
-
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 productId: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 productId: productDataFactory.id('not-valid'), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'productId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'productId');
             });
 
             test('does not belong to any product', async ({ requestCreatePaymentTransaction, saveAccount, saveCategory, saveProject, saveRecipient }) => {
@@ -377,8 +365,8 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No product found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No product found');
             });
           });
 
@@ -388,23 +376,23 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 billingEndDate: undefined,
                 billingStartDate: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
             });
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 invoiceNumber: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
             });
 
             test('is too short', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 invoiceNumber: '', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
             });
           });
 
@@ -413,24 +401,24 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 billingStartDate: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 billingEndDate: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
             });
 
             test('is not date format', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 billingEndDate: 'not-date', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
             });
 
             test('is later than billingStartDate', async ({ requestCreatePaymentTransaction }) => {
@@ -438,8 +426,8 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 billingEndDate: '2022-06-01',
                 billingStartDate: '2022-06-03', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
             });
           });
 
@@ -448,24 +436,24 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 billingEndDate: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 billingStartDate: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
             });
 
             test('is not date format', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 billingStartDate: 'not-date', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
             });
           });
 
@@ -474,24 +462,24 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 issuedAt: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'issuedAt');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'issuedAt');
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 issuedAt: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'issuedAt', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'issuedAt', 'string');
             });
 
             test('is not date-time format', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 issuedAt: 'not-date-time', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'issuedAt', 'date-time');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'issuedAt', 'date-time');
             });
           });
 
@@ -508,8 +496,8 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 ...relatedDocumentIds,
                 accountId: getAccountId(loanAccountDocument), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Account type cannot be loan');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('Account type cannot be loan');
             });
 
             test('does not belong to any account', async ({ requestCreatePaymentTransaction, saveCategory, saveProject, saveRecipient }) => {
@@ -520,32 +508,32 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 ...relatedDocumentIds,
                 accountId: accountDataFactory.id(), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No account found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No account found');
             });
 
             test('is missing', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 accountId: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'accountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'accountId');
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 accountId: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'accountId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'accountId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 accountId: accountDataFactory.id('not-mongo-id'), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'accountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'accountId');
             });
           });
 
@@ -558,24 +546,24 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 ...relatedDocumentIds,
                 categoryId: categoryDataFactory.id(), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No category found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No category found');
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 categoryId: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 categoryId: categoryDataFactory.id('not-mongo-id'), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'categoryId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'categoryId');
             });
           });
 
@@ -588,24 +576,24 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 ...relatedDocumentIds,
                 recipientId: recipientDataFactory.id(), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No recipient found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No recipient found');
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 recipientId: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'recipientId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'recipientId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 recipientId: recipientDataFactory.id('not-mongo-id'), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'recipientId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'recipientId');
             });
           });
 
@@ -618,24 +606,24 @@ test.describe('POST transaction/v1/transactions/payment (payment)', () => {
                 ...relatedDocumentIds,
                 projectId: projectDataFactory.id(), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No project found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No project found');
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 projectId: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
               const res = await requestCreatePaymentTransaction(paymentTransactionDataFactory.request({
                 projectId: projectDataFactory.id('not-mongo-id'), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'projectId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'projectId');
             });
           });
         });

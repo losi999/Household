@@ -7,6 +7,7 @@ export type Remove<T> = Record<keyof T, undefined>;
 export type Restrict<T, K extends keyof T> = Omit<T, K> & Partial<Record<K, never>>;
 export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type Mandatory<T, K extends keyof T> = Partial<Omit<T, K>> & Required<Pick<T, K>>;
+export type AtLeastOne<T, K = keyof T>= K extends keyof T ? Required<Pick<T, K>> & Partial<Omit<T, K>> : never;
 export type Branding<K, T> = K & { __brand: T };
 export type RecursivePartial<T> = {
   [P in keyof T]?:

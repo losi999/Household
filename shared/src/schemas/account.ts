@@ -65,30 +65,6 @@ const accountType: ObjectSchema<Api.Account.AccountType> = {
   },
 };
 
-const owner: ObjectSchema<Api.Account.Owner> = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['owner'],
-  properties: {
-    owner: {
-      type: 'string',
-      minLength: 1,
-    },
-  },
-};
-
-const fullName: ObjectSchema<Api.Account.FullName> = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['fullName'],
-  properties: {
-    fullName: {
-      type: 'string',
-      minLength: 1,
-    },
-  },
-};
-
 const balance: ObjectSchema<Api.Account.Balance> = {
   type: 'object',
   additionalProperties: false,
@@ -104,14 +80,12 @@ const base = combine<Api.Account.Base>([
   name,
   currency,
   accountType,
-  owner,
 ]);
 
 export const responseLean = combine<Responses.AccountLean>([
   accountId,
   isOpen,
   base,
-  fullName,
 ]);
 
 export const response = combine<Responses.Account>([
@@ -126,7 +100,7 @@ export const responseList: StrictSchema<Responses.Account[]> = {
 
 export const report = combine<Responses.AccountReport>([
   accountId,
-  fullName,
+  name,
   currency,
 ]);
 

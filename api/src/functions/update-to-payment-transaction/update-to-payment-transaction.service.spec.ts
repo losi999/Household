@@ -2,9 +2,8 @@ import { IUpdateToPaymentTransactionService, updateToPaymentTransactionServiceFa
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getCategoryId, getProjectId, getRecipientId, getAccountId, getProductId, getTransactionId } from '@household/shared/common/utils';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { ILoanTransactionDocumentConverter } from '@household/shared/converters/loan-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
-import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -24,8 +23,7 @@ describe('Update to payment transaction service', () => {
   let mockProductService: MockService<IProductService>;
   let mockTransactionService: MockService<ITransactionService>;
   let mockPaymentTransactionDocumentConverter: MockService<IPaymentTransactionDocumentConverter>;
-  let mockDeferredTransactionDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
-  let mockReimbursementTransactionDocumentConverter: MockService<IReimbursementTransactionDocumentConverter>;
+  let mockLoanTransactionDocumentConverter: MockService<ILoanTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('findAccountsByIds');
@@ -35,10 +33,9 @@ describe('Update to payment transaction service', () => {
     mockProductService = createMockService('findProductById');
     mockTransactionService = createMockService('updateTransaction', 'findTransactionById');
     mockPaymentTransactionDocumentConverter = createMockService('update');
-    mockDeferredTransactionDocumentConverter = createMockService('update');
-    mockReimbursementTransactionDocumentConverter = createMockService('update');
+    mockLoanTransactionDocumentConverter = createMockService('update');
 
-    service = updateToPaymentTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockPaymentTransactionDocumentConverter.service, mockReimbursementTransactionDocumentConverter.service, mockDeferredTransactionDocumentConverter.service);
+    service = updateToPaymentTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockPaymentTransactionDocumentConverter.service, mockLoanTransactionDocumentConverter.service);
   });
 
   let body: Requests.PaymentTransaction;
@@ -108,12 +105,11 @@ describe('Update to payment transaction service', () => {
         product: queriedProduct,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
-      expect.assertions(10);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
+      expect.assertions(9);
     });
 
-    it('if updated to deferred transaction', async () => {
+    it('if updated to loan transaction', async () => {
       body = testDataFactory.transaction.request.payment({
         ...body,
         loanAccountId: getAccountId(queriedLoanAccount),
@@ -127,7 +123,7 @@ describe('Update to payment transaction service', () => {
       mockProjectService.functions.findProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.findProductById.mockResolvedValue(queriedProduct);
-      mockDeferredTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockLoanTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockTransactionService.functions.updateTransaction.mockResolvedValue(undefined);
 
       await service({
@@ -144,7 +140,7 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.findProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update, {
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update, {
         body,
         category: queriedCategory,
         payingAccount: queriedAccount,
@@ -155,11 +151,10 @@ describe('Update to payment transaction service', () => {
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
-      expect.assertions(10);
+      expect.assertions(9);
     });
 
-    it('if updated to reimbursement transaction', async () => {
+    it('if updated to inverted loan transaction', async () => {
       body = testDataFactory.transaction.request.payment({
         ...body,
         accountId: getAccountId(queriedLoanAccount),
@@ -174,7 +169,7 @@ describe('Update to payment transaction service', () => {
       mockProjectService.functions.findProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.findProductById.mockResolvedValue(queriedProduct);
-      mockReimbursementTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
+      mockLoanTransactionDocumentConverter.functions.update.mockReturnValue(updateQuery);
       mockTransactionService.functions.updateTransaction.mockResolvedValue(undefined);
 
       await service({
@@ -191,7 +186,7 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.findProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update, {
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update, {
         body,
         category: queriedCategory,
         ownerAccount: queriedAccount,
@@ -201,9 +196,8 @@ describe('Update to payment transaction service', () => {
         product: queriedProduct,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      expect.assertions(10);
+      expect.assertions(9);
     });
   });
 
@@ -223,10 +217,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById);
       validateFunctionCall(mockProductService.functions.findProductById);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if no transaction found', async () => {
@@ -244,10 +237,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById);
       validateFunctionCall(mockProductService.functions.findProductById);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if account and loanAccount would be the same', async () => {
@@ -272,7 +264,7 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       expect.assertions(12);
     });
     it('if no account found', async () => {
@@ -298,10 +290,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if no loan account found', async () => {
@@ -331,10 +322,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if no category found', async () => {
@@ -360,10 +350,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if no project found', async () => {
@@ -389,10 +378,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if no recipient found', async () => {
@@ -418,10 +406,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if category is "inventory" and no product found', async () => {
@@ -447,10 +434,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if unable to query account', async () => {
@@ -476,10 +462,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if unable to query category', async () => {
@@ -505,10 +490,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if unable to query project', async () => {
@@ -534,10 +518,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if unable to query recipient', async () => {
@@ -563,10 +546,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if unable to query product', async () => {
@@ -592,10 +574,9 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      expect.assertions(12);
+      expect.assertions(11);
     });
 
     it('if account is loan type for payment transaction', async () => {
@@ -626,23 +607,20 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      expect.assertions(12);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
+      expect.assertions(11);
     });
 
-    it('if loanAccount is loan type for reimbursement transaction', async () => {
-      const queriedSecondLoanAccount = testDataFactory.account.document({
-        accountType: AccountType.Loan,
-      });
+    it('if loanAccount is loan type for repayment transaction', async () => {
+      const queriedSecondLoanAccount = testDataFactory.account.document();
       body = testDataFactory.transaction.request.payment({
         ...body,
-        loanAccountId: getAccountId(queriedSecondLoanAccount),
-        accountId: getAccountId(queriedLoanAccount),
+        loanAccountId: getAccountId(queriedAccount),
+        accountId: getAccountId(queriedSecondLoanAccount),
       });
       mockTransactionService.functions.findTransactionById.mockResolvedValue(queriedDocument);
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
-        queriedLoanAccount,
+        queriedAccount,
         queriedSecondLoanAccount,
       ]);
       mockCategoryService.functions.findCategoryById.mockResolvedValue(queriedCategory);
@@ -654,7 +632,7 @@ describe('Update to payment transaction service', () => {
         body,
         transactionId,
         expiresIn: undefined,
-      }).catch(validateError('Account type cannot be loan', 400));
+      }).catch(validateError('One of the accounts must be loan', 400));
       validateFunctionCall(mockTransactionService.functions.findTransactionById, transactionId);
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
@@ -666,9 +644,8 @@ describe('Update to payment transaction service', () => {
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.update);
       validateFunctionCall(mockTransactionService.functions.updateTransaction);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      expect.assertions(12);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
+      expect.assertions(11);
     });
 
     it('if unable to update transaction', async () => {
@@ -704,9 +681,8 @@ describe('Update to payment transaction service', () => {
         product: queriedProduct,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.updateTransaction, transactionId, updateQuery);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.update);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.update);
-      expect.assertions(12);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.update);
+      expect.assertions(11);
     });
   });
 });

@@ -118,15 +118,15 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         });
 
         await models.transactions.updateMany({
-          'deferredSplits.category': categoryId,
+          'loans.category': categoryId,
         }, {
           $unset: {
-            'deferredSplits.$[element].category': 1,
-            'deferredSplits.$[element].quantity': 1,
-            'deferredSplits.$[element].product': 1,
-            'deferredSplits.$[element].invoiceNumber': 1,
-            'deferredSplits.$[element].billingEndDate': 1,
-            'deferredSplits.$[element].billingStartDate': 1,
+            'loans.$[element].category': 1,
+            'loans.$[element].quantity': 1,
+            'loans.$[element].product': 1,
+            'loans.$[element].invoiceNumber': 1,
+            'loans.$[element].billingEndDate': 1,
+            'loans.$[element].billingStartDate': 1,
           },
         }, {
           session,
@@ -236,25 +236,25 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         });
 
         await models.transactions.updateMany({
-          'deferredSplits.category': categoryId,
+          'loans.category': categoryId,
         }, updateQuery.$set.categoryType === CategoryType.Regular ? {
           $unset: {
-            'deferredSplits.$[element].quantity': 1,
-            'deferredSplits.$[element].product': 1,
-            'deferredSplits.$[element].invoiceNumber': 1,
-            'deferredSplits.$[element].billingEndDate': 1,
-            'deferredSplits.$[element].billingStartDate': 1,
+            'loans.$[element].quantity': 1,
+            'loans.$[element].product': 1,
+            'loans.$[element].invoiceNumber': 1,
+            'loans.$[element].billingEndDate': 1,
+            'loans.$[element].billingStartDate': 1,
           },
         } : updateQuery.$set.categoryType === CategoryType.Inventory ? {
           $unset: {
-            'deferredSplits.$[element].invoiceNumber': 1,
-            'deferredSplits.$[element].billingEndDate': 1,
-            'deferredSplits.$[element].billingStartDate': 1,
+            'loans.$[element].invoiceNumber': 1,
+            'loans.$[element].billingEndDate': 1,
+            'loans.$[element].billingStartDate': 1,
           },
         } : {
           $unset: {
-            'deferredSplits.$[element].quantity': 1,
-            'deferredSplits.$[element].product': 1,
+            'loans.$[element].quantity': 1,
+            'loans.$[element].product': 1,
           },
         }, {
           session,
@@ -350,7 +350,7 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
 
         await models.products.updateMany({
           category: {
-            $in: sourceCategoryIds as any,
+            $in: sourceCategoryIds,
           },
         }, {
           $set: {
@@ -394,12 +394,12 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
         });
 
         await models.transactions.updateMany({
-          'deferredSplits.category': {
+          'loans.category': {
             $in: sourceCategoryIds,
           },
         }, {
           $set: {
-            'deferredSplits.$[element].category': targetCategoryId,
+            'loans.$[element].category': targetCategoryId,
           },
         }, {
           session,

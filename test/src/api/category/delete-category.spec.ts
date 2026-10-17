@@ -1,29 +1,24 @@
 import { getCategoryId, getTransactionId } from '@household/shared/common/utils';
 import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { categoryApiTest, categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
+import { transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
-import { mergeExpects, mergeTests } from '@playwright/test';
+import { mergeTests } from '@playwright/test';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
-import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const permissionMap = allowUsers('editor');
-
-const expect = mergeExpects(categoryApiExpect, apiExpect, transactionApiExpect, productApiExpect);
 
 const test = mergeTests(categoryApiTest, accountDbTest, transactionDbTest, categoryDbTest, productDbTest);
 
@@ -37,7 +32,7 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
   test.describe('called as anyonymous', () => {
     test('should return unauthorized', async ({ requestDeleteCategory }) => {
       const res = await requestDeleteCategory(categoryDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      categoryApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -53,16 +48,16 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestDeleteCategory }) => {
           const res = await requestDeleteCategory(categoryDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          categoryApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should delete category', async ({ requestDeleteCategory, saveCategory, findCategoryById }) => {
           await saveCategory(categoryDocument);
 
           const res = await requestDeleteCategory(getCategoryId(categoryDocument));
-          expect(res).toBeNoContentResponse();
+          categoryApiExpect(res).toBeNoContentResponse();
 
-          expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
+          categoryApiExpect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('children should be reassigned', () => {
@@ -83,21 +78,21 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory);
 
             const res = await requestDeleteCategory(getCategoryId(categoryDocument));
-            expect(res).toBeNoContentResponse();
+            categoryApiExpect(res).toBeNoContentResponse();
 
-            expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
-            expect(childCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(childCategory)));
-            expect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
+            categoryApiExpect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
+            categoryApiExpect(childCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(childCategory)));
+            categoryApiExpect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
           });
 
           test('to parent if had parent', async ({ requestDeleteCategory, saveCategories, findCategoryById }) => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory);
 
             const res = await requestDeleteCategory(getCategoryId(childCategory));
-            expect(res).toBeNoContentResponse();
+            categoryApiExpect(res).toBeNoContentResponse();
 
-            expect(await findCategoryById(getCategoryId(childCategory))).toHaveBeenDeletedFromDatabase();
-            expect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), categoryDocument);
+            categoryApiExpect(await findCategoryById(getCategoryId(childCategory))).toHaveBeenDeletedFromDatabase();
+            categoryApiExpect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), categoryDocument);
           });
         });
 
@@ -141,23 +136,23 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
               await saveTransactions(paymentTransactionDocument);
 
               const res = await requestDeleteCategory(getCategoryId(categoryDocument));
-              expect(res).toBeNoContentResponse();
+              categoryApiExpect(res).toBeNoContentResponse();
 
-              expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
-              expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
+              categoryApiExpect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
+              transactionApiExpect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
                 category: {
                   from: categoryDocument,
                 },
               });
             });
 
-            test('deferred transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+            test('loan transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
 
               if (categoryType === CategoryType.Inventory) {
                 await saveProducts(productDocument);
               }
 
-              const deferredTransactionDocument = deferredTransactionDataFactory.document({
+              const loanTransactionDocument = loanTransactionDataFactory.document({
                 account: accountDocument,
                 category: categoryDocument,
                 loanAccount: loanAccountDocument,
@@ -166,26 +161,26 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
 
               await saveCategories(categoryDocument);
               await saveAccounts(accountDocument, loanAccountDocument);
-              await saveTransactions(deferredTransactionDocument);
+              await saveTransactions(loanTransactionDocument);
 
               const res = await requestDeleteCategory(getCategoryId(categoryDocument));
-              expect(res).toBeNoContentResponse();
+              categoryApiExpect(res).toBeNoContentResponse();
 
-              expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
-              expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+              categoryApiExpect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
+              transactionApiExpect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
                 category: {
                   from: categoryDocument,
                 },
               });
             });
 
-            test('reimbursement transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+            test('repayment transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
 
               if (categoryType === CategoryType.Inventory) {
                 await saveProducts(productDocument);
               }
 
-              const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              const repaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: categoryDocument,
                 loanAccount: accountDocument,
@@ -194,13 +189,13 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
 
               await saveCategories(categoryDocument);
               await saveAccounts(accountDocument, loanAccountDocument);
-              await saveTransactions(reimbursementTransactionDocument);
+              await saveTransactions(repaymentTransactionDocument);
 
               const res = await requestDeleteCategory(getCategoryId(categoryDocument));
-              expect(res).toBeNoContentResponse();
+              categoryApiExpect(res).toBeNoContentResponse();
 
-              expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
-              expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+              categoryApiExpect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
+              transactionApiExpect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
                 category: {
                   from: categoryDocument,
                 },
@@ -235,10 +230,10 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
               await saveTransactions(splitTransactionDocument);
 
               const res = await requestDeleteCategory(getCategoryId(categoryDocument));
-              expect(res).toBeNoContentResponse();
+              categoryApiExpect(res).toBeNoContentResponse();
 
-              expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
-              expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
+              categoryApiExpect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
+              transactionApiExpect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
                 category: {
                   from: categoryDocument,
                 },
@@ -251,8 +246,8 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
           test.describe('if categoryId', () => {
             test('is not mongo id', async ({ requestDeleteCategory }) => {
               const res = await requestDeleteCategory('not-valid' as Api.Category.Id);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'categoryId');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHavePatternValidationError('pathParameters', 'categoryId');
             });
           });
         });

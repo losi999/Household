@@ -35,26 +35,22 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
         },
       };
     },
-    toResponse: ({ balance, accountType, currency, owner, name, isOpen, _id }) => {
+    toResponse: ({ balance, accountType, currency, name, isOpen, _id }) => {
       return {
         accountType,
         currency,
-        owner,
         name,
         isOpen,
-        fullName: `${name} (${owner})`,
         accountId: getAccountId(_id),
         balance,
       };
     },
-    toResponseLean: ({ accountType, currency, owner, name, isOpen, _id }) => {
+    toResponseLean: ({ accountType, currency, name, isOpen, _id }) => {
       return {
         accountType,
         currency,
-        owner,
         name,
         isOpen,
-        fullName: `${name} (${owner})`,
         accountId: getAccountId(_id),
       };
     },
@@ -62,7 +58,7 @@ export const accountDocumentConverterFactory = (): IAccountDocumentConverter => 
       return {
         accountId: getAccountId(document),
         currency: document.currency,
-        fullName: `${document.name} (${document.owner})`,
+        name: document.name,
       };
     },
     toResponseList: docs => docs.map(document => instance.toResponse(document)),

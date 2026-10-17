@@ -5,16 +5,14 @@ export namespace Responses {
   export type Account = Api.Account.Base &
     Api.Account.IsOpen &
     Api.Account.AccountId &
-    Api.Account.FullName &
     Api.Account.Balance;
 
   export type AccountLean = Api.Account.Base &
     Api.Account.IsOpen &
-    Api.Account.AccountId &
-    Api.Account.FullName;
+    Api.Account.AccountId;
 
   export type AccountReport = Api.Account.AccountId &
-    Api.Account.FullName &
+    Api.Account.Name &
     Api.Account.Currency;
 
   export type Project = Api.Project.Base &
@@ -47,34 +45,26 @@ export namespace Responses {
 
   export type GenericProduct = Api.Product.ProductId
     & Api.Product.ProductType<Enum.ProductType.Generic> 
-    & Api.Product.Name;
+    & Api.Product.Name
+    & Api.Product.FullName;
   export type SpecificProduct = Api.Product.ProductId
     & Api.Product.ProductType<Enum.ProductType.Specific> 
     & Api.Product.UnitOfMeasurement
     & Api.Product.Measurement
     & Api.Product.Name
     & Api.Product.FullName
-    & {
-      genericProduct: GenericProduct;
-    };
+    & Api.Product.GenericProductId;
   export type VariantProduct = Api.Product.ProductId
     & Api.Product.ProductType<Enum.ProductType.Variant> 
     & Api.Product.Name
-    & {
-      genericProduct: GenericProduct;
-      specificProduct: SpecificProduct;
-    };    
+    & Api.Product.FullName
+    & Api.Product.GenericProductId
+    & Api.Product.SpecificProductId;
 
   export type Product = GenericProduct | SpecificProduct | VariantProduct;
 
   export type ProductReport = Api.Product.ProductId &
     Api.Product.FullName;
-
-  export type ProductTree = (GenericProduct & {
-    children: (Omit<SpecificProduct, 'genericProduct'> & {
-      children: Omit<VariantProduct, 'genericProduct' | 'specificProduct'>[];
-    })[];
-  });
 
   export type PaymentTransaction = Api.Transaction.TransactionId
     & Api.Transaction.Amount
@@ -92,31 +82,14 @@ export namespace Responses {
       recipient: Recipient;
     };
 
-  export type DeferredTransaction = Api.Transaction.TransactionId
+  export type LoanTransaction = Api.Transaction.TransactionId
     & Api.Transaction.Amount
     & Api.Transaction.Description
     & Api.Transaction.IssuedAt<string>
     & Api.Transaction.InvoiceNumber
     & Api.Transaction.InvoiceDate<string>
     & Api.Transaction.Quantity
-    & Api.Transaction.TransactionType<Enum.TransactionType.Deferred>
-    & {
-      product: Product;
-      payingAccount: AccountLean;
-      ownerAccount: AccountLean;
-      category: Category;
-      project: Project;
-      recipient: Recipient;
-    };
-
-  export type ReimbursementTransaction = Api.Transaction.TransactionId
-    & Api.Transaction.Amount
-    & Api.Transaction.Description
-    & Api.Transaction.IssuedAt<string>
-    & Api.Transaction.InvoiceNumber
-    & Api.Transaction.InvoiceDate<string>
-    & Api.Transaction.Quantity
-    & Api.Transaction.TransactionType<Enum.TransactionType.Reimbursement>
+    & Api.Transaction.TransactionType<Enum.TransactionType.Loan>
     & {
       product: Product;
       payingAccount: AccountLean;
@@ -157,7 +130,7 @@ export namespace Responses {
       account: AccountLean;
       recipient: Recipient;
       splits: SplitItem[];
-      deferredSplits: DeferredTransaction[];
+      loans: LoanTransaction[];
     };
 
   export type DraftTransaction = Api.Transaction.TransactionId
@@ -169,7 +142,7 @@ export namespace Responses {
       potentialDuplicates: Transaction[];
     };
 
-  export type Transaction = PaymentTransaction | TransferTransaction | DeferredTransaction | ReimbursementTransaction | SplitTransaction;
+  export type Transaction = PaymentTransaction | TransferTransaction | LoanTransaction | SplitTransaction;
 
   export type TransactionReport = Api.Transaction.TransactionId
     & Api.Transaction.Amount

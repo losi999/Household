@@ -1,0 +1,12 @@
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
+import { type } from '@ngrx/signals';
+import { eventGroup } from '@ngrx/signals/events';
+
+export const transactionApiEvents = eventGroup({
+  source: 'Transaction API',
+  events: {
+    listTransactionsByAccountInitiated: type<Api.Account.AccountId & Api.Pagination<number>>(),
+    listTransactionsByAccountCompleted: type<Pick<Api.Pagination<number>, 'pageNumber'> & { transactions: Responses.Transaction[] }>(),
+  },
+});

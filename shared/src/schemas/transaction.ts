@@ -106,9 +106,9 @@ const inventoryRequest: ObjectSchema<Api.Transaction.Quantity & Api.Product.Prod
   {
     type: 'object',
     additionalProperties: false,
+    // A product can be set without a quantity, but a quantity makes no sense without a product
     dependencies: {
       quantity: ['productId'],
-      productId: ['quantity'],
     },
   },
 ]);
@@ -314,7 +314,7 @@ export const paymentResponse = combine<Responses.PaymentTransaction>([
   ],
 });
 
-export const deferredResponse = combine<Responses.DeferredTransaction>([
+export const loanResponse = combine<Responses.LoanTransaction>([
   transactionId,
   negativeAmount,
   issuedAt,
@@ -326,40 +326,7 @@ export const deferredResponse = combine<Responses.DeferredTransaction>([
     properties: {
       transactionType: {
         type: 'string',
-        enum: [Enum.TransactionType.Deferred],
-      },
-      category: categoryResponse,
-      project: projectResponse,
-      product: productResponse,
-      recipient: recipientResponse,
-      payingAccount: accountResponse,
-      ownerAccount: accountResponse,
-    },
-  },
-], {
-  required: [
-    'amount',
-    'transactionId',
-    'issuedAt',
-    'transactionType',
-    'payingAccount',
-    'ownerAccount',
-  ],
-});
-
-export const reimbursementResponse = combine<Responses.ReimbursementTransaction>([
-  transactionId,
-  negativeAmount,
-  issuedAt,
-  description,
-  invoice,
-  quantity,
-  {
-    type: 'object',
-    properties: {
-      transactionType: {
-        type: 'string',
-        enum: [Enum.TransactionType.Reimbursement],
+        enum: [Enum.TransactionType.Loan],
       },
       category: categoryResponse,
       project: projectResponse,
@@ -443,10 +410,10 @@ export const splitResponse = combine<Responses.SplitTransaction>([
           required: ['amount'],
         }),
       },
-      deferredSplits: {
+      loans: {
         type: 'array',
         minItems: 1,
-        items: deferredResponse,
+        items: loanResponse,
       },
     },
   },
@@ -466,8 +433,7 @@ export const response: StrictSchema<Responses.Transaction> = {
     paymentResponse,
     transferResponse,
     splitResponse,
-    deferredResponse,
-    reimbursementResponse,
+    loanResponse,
   ],
 };
 

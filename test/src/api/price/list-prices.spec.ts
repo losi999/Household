@@ -3,13 +3,10 @@ import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test as priceApiTest, expect as priceApiExpect } from '@household/test/fixtures/price-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { priceApiTest, priceApiExpect } from '@household/test/fixtures/price-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(priceApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -32,7 +29,7 @@ test.describe('GET /price/v1/prices', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestListPrices }) => {
       const res = await requestListPrices();
-      expect(res).toBeUnauthorizedResponse();
+      priceApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -47,18 +44,18 @@ test.describe('GET /price/v1/prices', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestListPrices }) => {
           const res = await requestListPrices();
-          expect(res).toBeForbiddenResponse();
+          priceApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should get a list of prices', async ({ requestListPrices, savePrices }) => {
           await savePrices(priceDocument1, priceDocument2, archivedPriceDocument);
           const res = await requestListPrices();
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
+          priceApiExpect(res).toBeOkResponse();
+          priceApiExpect(res).toMatchSchema(schema);
 
-          expect(res).toContainMatchingPriceDocument(priceDocument1);
-          expect(res).toContainMatchingPriceDocument(priceDocument2);
-          expect(res).toNotContainMatchingPriceDocument(archivedPriceDocument);
+          priceApiExpect(res).toContainMatchingPriceDocument(priceDocument1);
+          priceApiExpect(res).toContainMatchingPriceDocument(priceDocument2);
+          priceApiExpect(res).toNotContainMatchingPriceDocument(archivedPriceDocument);
         });
       }
     });

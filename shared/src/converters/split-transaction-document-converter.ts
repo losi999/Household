@@ -2,7 +2,7 @@ import { generateMongoId } from '@household/shared/common/mongoose-utils';
 import { addSeconds, createDate, getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { ILoanTransactionDocumentConverter } from '@household/shared/converters/loan-transaction-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
@@ -40,7 +40,7 @@ export const splitTransactionDocumentConverterFactory = (
   categoryDocumentConverter: ICategoryDocumentConverter,
   recipientDocumentConverter: IRecipientDocumentConverter,
   productDocumentConverter: IProductDocumentConverter,
-  deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
+  loanTransactionDocumentConverter: ILoanTransactionDocumentConverter,
 ): ISplitTransactionDocumentConverter => {
   const transactionType = TransactionType.Split;
   const defaultUnset: Unset<Documents.Transaction, Documents.SplitTransaction> = {
@@ -90,10 +90,10 @@ export const splitTransactionDocumentConverterFactory = (
         transactionType,
         issuedAt: new Date(body.issuedAt),
         splits: body.splits?.map((s) => createSplitDocumentItem(s, categories[s.categoryId], projects[s.projectId], products[s.productId])),
-        deferredSplits: body.loans?.map((s) => {
+        loans: body.loans?.map((s) => {
           const category = categories[s.categoryId];
 
-          const deferredDocument = deferredTransactionDocumentConverter.create({
+          const loanDocument = loanTransactionDocumentConverter.create({
             body: {
               ...s,
               accountId: body.accountId,
@@ -108,7 +108,7 @@ export const splitTransactionDocumentConverterFactory = (
             recipient,
           }, expiresIn, generateId);
 
-          return deferredDocument;
+          return loanDocument;
         }),
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
@@ -118,10 +118,10 @@ export const splitTransactionDocumentConverterFactory = (
       const optionalSet: UpdateQuery<Documents.Transaction>['$set'] = {
         recipient,
         description,
-        deferredSplits: loans?.map((s) => {
+        loans: loans?.map((s) => {
           const category = categories[s.categoryId];
 
-          const deferredDocument = deferredTransactionDocumentConverter.create({
+          const loanDocument = loanTransactionDocumentConverter.create({
             body: {
               ...s,
               accountId: accountId,
@@ -137,10 +137,10 @@ export const splitTransactionDocumentConverterFactory = (
           }, expiresIn);
 
           if (s.transactionId) {
-            deferredDocument._id = new Types.ObjectId(s.transactionId);
+            loanDocument._id = new Types.ObjectId(s.transactionId);
           }
 
-          return deferredDocument;
+          return loanDocument;
         }),
         splits: splits?.map((s) => createSplitDocumentItem(s, categories[s.categoryId], projects[s.projectId], products[s.productId])),
       };
@@ -194,7 +194,7 @@ export const splitTransactionDocumentConverterFactory = (
         },
       };
     },
-    toResponse: ({ amount, description, transactionType, _id, issuedAt, account, recipient, splits, deferredSplits }) => {
+    toResponse: ({ amount, description, transactionType, _id, issuedAt, account, recipient, splits, loans }) => {
       return {
         amount,
         description,
@@ -214,7 +214,7 @@ export const splitTransactionDocumentConverterFactory = (
           category: s.category ? categoryDocumentConverter.toResponse(s.category) : undefined,
           project: s.project ? projectDocumentConverter.toResponse(s.project) : undefined,
         })),
-        deferredSplits: deferredSplits?.map(s => deferredTransactionDocumentConverter.toResponse(s)),
+        loans: loans?.map(s => loanTransactionDocumentConverter.toResponse(s)),
       };
     },
     toResponseList: (docs) => docs.map(d => instance.toResponse(d)),

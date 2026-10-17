@@ -61,6 +61,12 @@ export const populateAggregate = (localField: string, from: string, pipeline?: P
   },
 ];
 
+// The full name of a product is built from its parents, so they are looked up together with the product
+export const productAggregate: PipelineStage.Lookup['$lookup']['pipeline'] = [
+  ...populateAggregate('genericProduct', 'products'),
+  ...populateAggregate('specificProduct', 'products'),
+];
+
 export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] = [
   ...populateAggregate('recipient', 'recipients'),
   {
@@ -75,7 +81,7 @@ export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] =
           },
           {
             $ifNull: [
-              '$deferredSplits',
+              '$loans',
               [],
             ],
           },
@@ -137,7 +143,7 @@ export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] =
     },
   },
   lookup('projects', 'allProjects'),
-  lookup('products', 'allProducts'),
+  lookup('products', 'allProducts', productAggregate),
   lookup('categories', 'allCategories', [
     {
       $lookup: {
@@ -187,19 +193,19 @@ export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] =
           else: '$$REMOVE',
         },
       },
-      deferredSplits: {
+      loans: {
         $cond: {
           if: {
             $ne: [
               {
-                $type: '$deferredSplits',
+                $type: '$loans',
               },
               'missing',
             ],
           },
           then: {
             $map: {
-              input: '$deferredSplits',
+              input: '$loans',
               as: 's',
               in: {
                 $mergeObjects: [
@@ -286,7 +292,7 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
                               $map: {
                                 input: {
                                   $ifNull: [
-                                    '$deferredSplits',
+                                    '$loans',
                                     [],
                                   ],
                                 },
@@ -383,7 +389,7 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
                       {
                         $ne: [
                           {
-                            $type: '$$this.deferredSplits',
+                            $type: '$$this.loans',
                           },
                           'missing',
                         ],
@@ -393,7 +399,7 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
                   then: {
                     $sum: {
                       $map: {
-                        input: '$$this.deferredSplits',
+                        input: '$$this.loans',
                         as: 'split',
                         in: {
                           $cond: {

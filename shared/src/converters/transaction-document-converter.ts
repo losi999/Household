@@ -1,12 +1,11 @@
 import { getTransactionId } from '@household/shared/common/utils';
 import { IAccountDocumentConverter } from '@household/shared/converters/account-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { ILoanTransactionDocumentConverter } from '@household/shared/converters/loan-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { IProjectDocumentConverter } from '@household/shared/converters/project-document-converter';
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
-import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
 import { TransactionType } from '@household/shared/enums';
@@ -29,8 +28,7 @@ export const transactionDocumentConverterFactory = (
   productDocumentConverter: IProductDocumentConverter,
   paymentTransactionDocumentConverter: IPaymentTransactionDocumentConverter,
   splitTransactionDocumentConverter: ISplitTransactionDocumentConverter,
-  deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
-  reimbursementTransactionDocumentConverter: IReimbursementTransactionDocumentConverter,
+  loanTransactionDocumentConverter: ILoanTransactionDocumentConverter,
   transferTransactionDocumentConverter: ITransferTransactionDocumentConverter,
 ): ITransactionDocumentConverter => {
   const instance: ITransactionDocumentConverter = {
@@ -39,8 +37,7 @@ export const transactionDocumentConverterFactory = (
         case TransactionType.Payment: return paymentTransactionDocumentConverter.toResponse(doc);
         case TransactionType.Split: return splitTransactionDocumentConverter.toResponse(doc);
         case TransactionType.Transfer: return transferTransactionDocumentConverter.toResponse(doc, viewingAccountId);
-        case TransactionType.Deferred: return deferredTransactionDocumentConverter.toResponse(doc);
-        case TransactionType.Reimbursement: return reimbursementTransactionDocumentConverter.toResponse(doc);
+        case TransactionType.Loan: return loanTransactionDocumentConverter.toResponse(doc);
         default: return undefined;
       }
     },

@@ -1,0 +1,21 @@
+<button mat-list-item (click)="onShowMenu()" [disabled]="isDisabled()">
+  @switch (account().accountType) {
+  @case ('bankAccount') {
+  <mat-icon matListItemIcon>account_balance</mat-icon>
+  }
+  @case ('cash') {
+  <mat-icon matListItemIcon>payments</mat-icon>
+  }
+  @case ('creditCard') {
+  <mat-icon matListItemIcon>credit_card</mat-icon>
+  }
+  @case ('loan') {
+  <mat-icon matListItemIcon>request_quote</mat-icon>
+  }
+  @case ('cafeteria') {
+  <mat-icon matListItemIcon>restaurant</mat-icon>
+  }
+  }
+  <div matListItemTitle>{{account().name}}</div>
+  <div matListItemLine>{{balanceTitle()}}: {{account().balance | number:'1.0-2':'hu'}} {{account().currency}}</div>
+</button>

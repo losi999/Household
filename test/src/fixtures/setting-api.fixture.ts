@@ -4,7 +4,7 @@ import { Requests } from '@household/shared/types/requests';
 import { Documents } from '@household/shared/types/documents';
 import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
-import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
 import { APIResponse } from '@playwright/test';
 
 type SettingApiFixture = {
@@ -12,7 +12,7 @@ type SettingApiFixture = {
   requestListSettings(): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<SettingApiFixture>({
+export const settingApiTest = apiTest.extend<SettingApiFixture>({
   requestUpdateSetting: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -43,7 +43,7 @@ export const test = baseTest.extend<SettingApiFixture>({
   },
 });
 
-export const expect = baseExpect.extend({
+export const settingApiExpect = apiExpect.extend({
   async toHaveBeenSavedAsSettingDocument(req: Requests.Setting, settingKey: SettingKey, document: Documents.Setting) {
     if (!document) {
       return {

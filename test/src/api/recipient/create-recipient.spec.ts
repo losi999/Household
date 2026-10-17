@@ -1,16 +1,13 @@
 import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { recipientApiTest, recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { mergeTests } from '@playwright/test';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 
 const permissionMap = allowUsers('editor');
-
-const expect = mergeExpects(recipientApiExpect, apiExpect);
 
 const test = mergeTests(recipientApiTest, recipientDbTest);
 
@@ -24,7 +21,7 @@ test.describe('POST /recipient/v1/recipients', () => {
   test.describe('called as anyonymous', () => {
     test('should return unauthorized', async ({ requestCreateRecipient }) => {
       const res = await requestCreateRecipient(req);
-      expect(res).toBeUnauthorizedResponse();
+      recipientApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -40,15 +37,15 @@ test.describe('POST /recipient/v1/recipients', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestCreateRecipient }) => {
           const res = await requestCreateRecipient(req);
-          expect(res).toBeForbiddenResponse();
+          recipientApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should create recipient', async ({ requestCreateRecipient, findRecipientById }) => {
           const res = await requestCreateRecipient(req);
-          expect(res).toBeCreatedResponse();
+          recipientApiExpect(res).toBeCreatedResponse();
 
           const { recipientId } = (await res.json()) as Api.Recipient.RecipientId;
-          expect(req).toHaveBeenSavedAsRecipientDocument(await findRecipientById(recipientId));
+          recipientApiExpect(req).toHaveBeenSavedAsRecipientDocument(await findRecipientById(recipientId));
         });
 
         test.describe('should return error', () => {
@@ -59,8 +56,8 @@ test.describe('POST /recipient/v1/recipients', () => {
                 extraProperty: 'extra',
               } as any);
             
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 
@@ -70,24 +67,24 @@ test.describe('POST /recipient/v1/recipients', () => {
                 name: undefined,
               }));
 
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
             test('is not string', async ({ requestCreateRecipient }) => {
               const res = await requestCreateRecipient(recipientDataFactory.request({
                 name: <any>1,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
             test('is too short', async ({ requestCreateRecipient }) => {
               const res = await requestCreateRecipient(recipientDataFactory.request({
                 name: '',
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'name', 1);
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
             test('is already in use by a different recipient', async ({ requestCreateRecipient, saveRecipient }) => {
@@ -96,8 +93,8 @@ test.describe('POST /recipient/v1/recipients', () => {
               await saveRecipient(recipientDocument);
 
               const res = await requestCreateRecipient(req);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Duplicate recipient name');
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHaveMessage('Duplicate recipient name');
             });
           });
         });

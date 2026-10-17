@@ -4,12 +4,10 @@ import { userDataFactory } from '@household/test/api/user/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
-import { test as identityTest } from '@household/test/fixtures/identity.fixture';
-import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
+import { identityTest } from '@household/test/fixtures/identity.fixture';
+import { userApiTest, userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { mergeTests } from '@playwright/test';
 
-const expect = mergeExpects(userApiExpect, apiExpect);
 const test = mergeTests(identityTest, userApiTest);
 
 const permissionMap = allowUsers('editor') ;
@@ -28,7 +26,7 @@ test.describe('POST /user/v1/users/{email}/groups/{group}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestAddUserToGroup }) => {
       const res = await requestAddUserToGroup(viewerUser.email, UserType.Editor);
-      expect(res).toBeUnauthorizedResponse();
+      userApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -43,31 +41,31 @@ test.describe('POST /user/v1/users/{email}/groups/{group}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestAddUserToGroup }) => {
           const res = await requestAddUserToGroup(viewerUser.email, UserType.Editor);
-          expect(res).toBeForbiddenResponse();
+          userApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should add user to group', async ({ requestAddUserToGroup, createUser, listGroupsByUser }) => {
           await createUser(viewerUser, undefined, true);
           const res = await requestAddUserToGroup(viewerUser.email, UserType.Editor);
-          expect(res).toBeNoContentResponse();
+          userApiExpect(res).toBeNoContentResponse();
 
-          expect(await listGroupsByUser(viewerUser.email)).toHaveBeenAddedToGroup(UserType.Editor);
+          userApiExpect(await listGroupsByUser(viewerUser.email)).toHaveBeenAddedToGroup(UserType.Editor);
         });
 
         test.describe('should return error', () => {
           test.describe('if email', () => {
             test('is not email', async ({ requestAddUserToGroup }) => {
               const res = await requestAddUserToGroup('not an email', UserType.Editor);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('pathParameters', 'email', 'email');
+              userApiExpect(res).toBeBadRequestResponse();
+              userApiExpect(res).toHaveWrongFormatValidationError('pathParameters', 'email', 'email');
             });
           });
 
           test.describe('if group', () => {
             test('is not a valid enum value', async ({ requestAddUserToGroup }) => {
               const res = await requestAddUserToGroup(viewerUser.email, 'dummy' as any);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveEnumValidationError('pathParameters', 'group');
+              userApiExpect(res).toBeBadRequestResponse();
+              userApiExpect(res).toHaveEnumValidationError('pathParameters', 'group');
             });
           });
         });

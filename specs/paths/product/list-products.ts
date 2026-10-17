@@ -6,7 +6,7 @@ export const listProducts = createPath({
   tags: ['Product'],
   response: {
     statusCode: 200,
-    description: 'List of products grouped by category',
-    schema: Product.groupedResponseList,
+    description: 'List of products ordered by their full name, every product is followed by its children',
+    schema: Product.responseList,
   },
 });
