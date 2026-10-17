@@ -1,8 +1,8 @@
 import { productService } from '@household/shared/dependencies/services/product-service';
 import { IProductService } from '@household/shared/services/product-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 
-export const test = baseTest.extend<Pick<IProductService, 'saveProduct' | 'saveProducts' | 'findProductById'>>({
+export const productDbTest = test.extend<Pick<IProductService, 'saveProduct' | 'saveProducts' | 'findProductById'>>({
   saveProduct: async ({ logServiceCall }, use) => {
     const saveProduct: IProductService['saveProduct'] = async (product) => {
       const result = await productService.saveProduct(product);

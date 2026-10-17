@@ -6,12 +6,10 @@ import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
-import { test as identityTest } from '@household/test/fixtures/identity.fixture';
-import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
+import { identityTest } from '@household/test/fixtures/identity.fixture';
+import { userApiTest, userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { mergeTests } from '@playwright/test';
 
-const expect = mergeExpects(userApiExpect, apiExpect);
 const test = mergeTests(identityTest, userApiTest);
 
 const permissionMap = allowUsers('editor') ;
@@ -43,7 +41,7 @@ test.describe('GET /user/v1/users', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestListUsers }) => {
       const res = await requestListUsers();
-      expect(res).toBeUnauthorizedResponse();
+      userApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -58,7 +56,7 @@ test.describe('GET /user/v1/users', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestListUsers }) => {
           const res = await requestListUsers();
-          expect(res).toBeForbiddenResponse();
+          userApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should get a list of users', async ({ requestListUsers, createUser }) => {
@@ -68,12 +66,12 @@ test.describe('GET /user/v1/users', () => {
           await createUser(hairdresserUser, hairdresserUser.group, true);
 
           const res = await requestListUsers();
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
-          expect(res).toContainMatchingUser(pendingUser);
-          expect(res).toContainMatchingUser(editorUser);
-          expect(res).toContainMatchingUser(viewerUser);
-          expect(res).toContainMatchingUser(hairdresserUser);
+          userApiExpect(res).toBeOkResponse();
+          userApiExpect(res).toMatchSchema(schema);
+          userApiExpect(res).toContainMatchingUser(pendingUser);
+          userApiExpect(res).toContainMatchingUser(editorUser);
+          userApiExpect(res).toContainMatchingUser(viewerUser);
+          userApiExpect(res).toContainMatchingUser(hairdresserUser);
         });
       }
     });

@@ -14,17 +14,14 @@ import { splitTransactionDataFactory } from '@household/test/api/transaction/spl
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
 
-import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
-import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
-import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
-import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
-
-const expect = mergeExpects(transactionApiExpect, apiExpect);
+import { transactionApiTest, transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const permissionMap = forbidUsers();
 
@@ -76,7 +73,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestGetTransaction }) => {
       const res = await requestGetTransaction(getAccountId(accountDocument), paymentTransactionDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      transactionApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -91,7 +88,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
       if (!isAllowed) {
         test('should return forbidden', async ({ requestGetTransaction }) => {
           const res = await requestGetTransaction(getAccountId(accountDocument), paymentTransactionDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          transactionApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should get', () => {
@@ -110,9 +107,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveCategory(regularCategoryDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(paymentResponse);
-              expect(res).toMatchPaymentTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(paymentResponse);
+              transactionApiExpect(res).toMatchPaymentTransactionDocument(document);
             });
 
             test('inventory payment transaction', async ({ requestGetTransaction, saveAccount, saveTransaction, saveCategory, saveProject, saveRecipient, saveProduct }) => {
@@ -131,9 +128,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveProduct(productDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(paymentResponse);
-              expect(res).toMatchPaymentTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(paymentResponse);
+              transactionApiExpect(res).toMatchPaymentTransactionDocument(document);
             });
 
             test('invoice payment transaction', async ({ requestGetTransaction, saveAccount, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
@@ -150,9 +147,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveCategory(invoiceCategoryDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(paymentResponse);
-              expect(res).toMatchPaymentTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(paymentResponse);
+              transactionApiExpect(res).toMatchPaymentTransactionDocument(document);
             });
 
             test('regular loan transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
@@ -170,9 +167,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveCategory(regularCategoryDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(loanResponse);
-              expect(res).toMatchLoanTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(loanResponse);
+              transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
             test('inventory loan transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient, saveProduct }) => {
@@ -192,9 +189,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveProduct(productDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(loanResponse);
-              expect(res).toMatchLoanTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(loanResponse);
+              transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
             test('invoice loan transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
@@ -212,9 +209,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveCategory(invoiceCategoryDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(loanResponse);
-              expect(res).toMatchLoanTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(loanResponse);
+              transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
             test('regular repayment transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
@@ -232,9 +229,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveCategory(regularCategoryDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(loanResponse);
-              expect(res).toMatchLoanTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(loanResponse);
+              transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
             test('inventory repayment transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient, saveProduct }) => {
@@ -254,9 +251,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveProduct(productDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(loanResponse);
-              expect(res).toMatchLoanTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(loanResponse);
+              transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
             test('invoice repayment transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
@@ -274,9 +271,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveCategory(invoiceCategoryDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(loanResponse);
-              expect(res).toMatchLoanTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(loanResponse);
+              transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
             test('paying split transaction', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -326,20 +323,12 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveProduct(productDocument);
               await saveTransactions(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(splitResponse);
-              expect(res).toMatchSplitTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(splitResponse);
+              transactionApiExpect(res).toMatchSplitTransactionDocument(document);
             });
 
             test('transfer transaction', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveCategory, saveProject, saveRecipient }) => {
-              const deferredTransactionDocument = loanTransactionDataFactory.document({
-                account: transferAccountDocument,
-                loanAccount: loanAccountDocument,
-                category: regularCategoryDocument,
-                project: projectDocument,
-                recipient: recipientDocument,
-              });
-
               const document = transferTransactionDataFactory.document({
                 account: accountDocument,
                 transferAccount: transferAccountDocument,
@@ -349,11 +338,11 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               await saveCategory(regularCategoryDocument);
-              await saveTransactions(document, deferredTransactionDocument);
+              await saveTransactions(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(transferResponse);
-              expect(res).toMatchTransferTransactionDocument(document, getAccountId(accountDocument));
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(transferResponse);
+              transactionApiExpect(res).toMatchTransferTransactionDocument(document, getAccountId(accountDocument));
             });
 
             test('loan transfer transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction }) => {
@@ -365,9 +354,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveAccounts(loanAccountDocument, transferAccountDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(transferResponse);
-              expect(res).toMatchTransferTransactionDocument(document, getAccountId(loanAccountDocument));
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(transferResponse);
+              transactionApiExpect(res).toMatchTransferTransactionDocument(document, getAccountId(loanAccountDocument));
             });
           });
 
@@ -387,9 +376,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveCategory(regularCategoryDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(loanResponse);
-              expect(res).toMatchLoanTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(loanResponse);
+              transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
             test('regular repayment transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
@@ -407,9 +396,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveCategory(regularCategoryDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(loanResponse);
-              expect(res).toMatchLoanTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(loanResponse);
+              transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
             test('inventory repayment transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient, saveProduct }) => {
@@ -429,9 +418,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveProduct(productDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(loanResponse);
-              expect(res).toMatchLoanTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(loanResponse);
+              transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
             test('invoice repayment transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
@@ -449,9 +438,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveCategory(invoiceCategoryDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(loanResponse);
-              expect(res).toMatchLoanTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(loanResponse);
+              transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
             test('owning split transaction', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveProject, saveRecipient }) => {
@@ -475,9 +464,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveRecipient(recipientDocument);
               await saveTransactions(document);
               const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(splitResponse);
-              expect(res).toMatchSplitTransactionDocument(document);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(splitResponse);
+              transactionApiExpect(res).toMatchSplitTransactionDocument(document);
             });
 
             test('loan transfer transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction }) => {
@@ -489,9 +478,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveAccounts(loanAccountDocument, transferAccountDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(transferResponse);
-              expect(res).toMatchTransferTransactionDocument(document, getAccountId(loanAccountDocument));
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(transferResponse);
+              transactionApiExpect(res).toMatchTransferTransactionDocument(document, getAccountId(loanAccountDocument));
             });
           });
         });
@@ -500,21 +489,21 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
           test.describe('if transactionId', () => {
             test('is not mongo id', async ({ requestGetTransaction }) => {
               const res = await requestGetTransaction(accountDataFactory.id(), paymentTransactionDataFactory.id('not-valid'));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'transactionId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('pathParameters', 'transactionId');
             });
 
             test('does not belong to any transaction', async ({ requestGetTransaction }) => {
               const res = await requestGetTransaction(accountDataFactory.id(), paymentTransactionDataFactory.id());
-              expect(res).toBeNotFoundResponse();
+              transactionApiExpect(res).toBeNotFoundResponse();
             });
           });
 
           test.describe('if accountId', () => {
             test('is not mongo id', async ({ requestGetTransaction }) => {
               const res = await requestGetTransaction(accountDataFactory.id('not-valid'), paymentTransactionDataFactory.id());
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'accountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('pathParameters', 'accountId');
             });
           });
         });

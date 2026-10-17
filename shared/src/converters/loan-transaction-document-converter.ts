@@ -35,7 +35,7 @@ export interface ILoanTransactionDocumentConverter {
   toResponseList(documents: Documents.LoanTransaction[]): Responses.LoanTransaction[];
 }
 
-export const deferredTransactionDocumentConverterFactory = (
+export const loanTransactionDocumentConverterFactory = (
   accountDocumentConverter: IAccountDocumentConverter,
   projectDocumentConverter: IProjectDocumentConverter,
   categoryDocumentConverter: ICategoryDocumentConverter,

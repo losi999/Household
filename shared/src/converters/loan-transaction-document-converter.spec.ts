@@ -6,7 +6,7 @@ import { createMockService, MockService, validateFunctionCall, validateNthFuncti
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
-import { ILoanTransactionDocumentConverter, deferredTransactionDocumentConverterFactory } from '@household/shared/converters/loan-transaction-document-converter';
+import { ILoanTransactionDocumentConverter, loanTransactionDocumentConverterFactory } from '@household/shared/converters/loan-transaction-document-converter';
 import { CategoryType } from '@household/shared/enums';
 
 describe('Loan transaction document converter', () => {
@@ -25,7 +25,7 @@ describe('Loan transaction document converter', () => {
     mockProductDocumentConverter = createMockService('toResponse');
 
     vi.useFakeTimers().setSystemTime(new Date());
-    converter = deferredTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service);
+    converter = loanTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service);
   });
 
   afterEach(() => {

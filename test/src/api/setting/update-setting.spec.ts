@@ -4,12 +4,9 @@ import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { SettingKey } from '@household/shared/enums';
 
-import { test as settingApiTest, expect as settingApiExpect } from '@household/test/fixtures/setting-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as settingDbTest } from '@household/test/fixtures/setting-db.fixture';
-
-const expect = mergeExpects(settingApiExpect, apiExpect);
+import { settingApiTest, settingApiExpect } from '@household/test/fixtures/setting-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { settingDbTest } from '@household/test/fixtures/setting-db.fixture';
 
 const permissionMap = allowUsers('editor') ;
 
@@ -27,7 +24,7 @@ test.describe('POST /setting/v1/settings/{settingKey}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestUpdateSetting }) => {
       const res = await requestUpdateSetting(settingKey, request);
-      expect(res).toBeUnauthorizedResponse();
+      settingApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -42,15 +39,15 @@ test.describe('POST /setting/v1/settings/{settingKey}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestUpdateSetting }) => {
           const res = await requestUpdateSetting(settingKey, request);
-          expect(res).toBeForbiddenResponse();
+          settingApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should update setting', () => {
           test('with complete body', async ({ requestUpdateSetting, getSettingByKey }) => {
             const res = await requestUpdateSetting(settingKey, request);
-            expect(res).toBeNoContentResponse();
+            settingApiExpect(res).toBeNoContentResponse();
 
-            expect(request).toHaveBeenSavedAsSettingDocument(settingKey, await getSettingByKey(settingKey));
+            settingApiExpect(request).toHaveBeenSavedAsSettingDocument(settingKey, await getSettingByKey(settingKey));
           });
         });
 
@@ -62,8 +59,8 @@ test.describe('POST /setting/v1/settings/{settingKey}', () => {
                 extraProperty: 'extra',
               } as any);
           
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+              settingApiExpect(res).toBeBadRequestResponse();
+              settingApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
           test.describe('if value', () => {
@@ -71,40 +68,40 @@ test.describe('POST /setting/v1/settings/{settingKey}', () => {
               const res = await requestUpdateSetting(settingKey, settingDataFactory.request({
                 value: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'value');
+              settingApiExpect(res).toBeBadRequestResponse();
+              settingApiExpect(res).toHaveRequiredPropertyValidationError('body', 'value');
             });
 
             test('is not string', async ({ requestUpdateSetting }) => {
               const res = await requestUpdateSetting(settingKey, settingDataFactory.request({
                 value: {} as any, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'value', 'string');
+              settingApiExpect(res).toBeBadRequestResponse();
+              settingApiExpect(res).toHaveWrongTypeValidationError('body', 'value', 'string');
             });
 
             test('is not number', async ({ requestUpdateSetting }) => {
               const res = await requestUpdateSetting(settingKey, settingDataFactory.request({
                 value: {} as any, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'value', 'number');
+              settingApiExpect(res).toBeBadRequestResponse();
+              settingApiExpect(res).toHaveWrongTypeValidationError('body', 'value', 'number');
             });
 
             test('is not boolean', async ({ requestUpdateSetting }) => {
               const res = await requestUpdateSetting(settingKey, settingDataFactory.request({
                 value: {} as any, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'value', 'boolean');
+              settingApiExpect(res).toBeBadRequestResponse();
+              settingApiExpect(res).toHaveWrongTypeValidationError('body', 'value', 'boolean');
             });
 
             test('is too short', async ({ requestUpdateSetting }) => {
               const res = await requestUpdateSetting(settingKey, settingDataFactory.request({
                 value: '', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'value', 1);
+              settingApiExpect(res).toBeBadRequestResponse();
+              settingApiExpect(res).toHaveTooShortValidationError('body', 'value', 1);
             });
           });
         });

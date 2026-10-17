@@ -8,16 +8,13 @@ import { loanTransactionDataFactory } from '@household/test/api/transaction/loan
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { allowUsers } from '@household/test/utils';
-import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
-import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
-
-const expect = mergeExpects(productApiExpect, apiExpect, transactionApiExpect);
+import { transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { productApiTest, productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const permissionMap = allowUsers('editor') ;
 
@@ -33,7 +30,7 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestDeleteProduct }) => {
       const res = await requestDeleteProduct(productDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      productApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -48,15 +45,15 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestDeleteProduct }) => {
           const res = await requestDeleteProduct(productDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          productApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should delete product', async ({ requestDeleteProduct, saveProduct, findProductById }) => {
           await saveProduct(productDocument);
           const res = await requestDeleteProduct(getProductId(productDocument));
-          expect(res).toBeNoContentResponse();
+          productApiExpect(res).toBeNoContentResponse();
 
-          expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
+          productApiExpect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('should unset inventory in related', () => {
@@ -88,10 +85,10 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
             await saveProducts(productDocument);
             await saveTransactions(paymentTransactionDocument);
             const res = await requestDeleteProduct(getProductId(productDocument));
-            expect(res).toBeNoContentResponse();
+            productApiExpect(res).toBeNoContentResponse();
             
-            expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
-            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
+            productApiExpect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
@@ -111,10 +108,10 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
             await saveProducts(productDocument);
             await saveTransactions(loanTransactionDocument);
             const res = await requestDeleteProduct(getProductId(productDocument));
-            expect(res).toBeNoContentResponse();
+            productApiExpect(res).toBeNoContentResponse();
             
-            expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
-            expect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
+            productApiExpect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
@@ -134,10 +131,10 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
             await saveProducts(productDocument);
             await saveTransactions(repaymentTransactionDocument);
             const res = await requestDeleteProduct(getProductId(productDocument));
-            expect(res).toBeNoContentResponse();
+            productApiExpect(res).toBeNoContentResponse();
             
-            expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
-            expect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
+            productApiExpect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
@@ -167,10 +164,10 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
             await saveProducts(productDocument);
             await saveTransactions(splitTransactionDocument);
             const res = await requestDeleteProduct(getProductId(productDocument));
-            expect(res).toBeNoContentResponse();
+            productApiExpect(res).toBeNoContentResponse();
             
-            expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
-            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
+            productApiExpect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
@@ -187,8 +184,8 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
 
             await saveProducts(genericProduct, specificProduct);
             const res = await requestDeleteProduct(getProductId(genericProduct));
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Product cannot be deleted if there are child products');
+            productApiExpect(res).toBeBadRequestResponse();
+            productApiExpect(res).toHaveMessage('Product cannot be deleted if there are child products');
           });
 
           test('if specific product has child product', async({ requestDeleteProduct, saveProducts }) => {
@@ -203,15 +200,15 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
 
             await saveProducts(genericProduct, specificProduct, variandProduct);
             const res = await requestDeleteProduct(getProductId(specificProduct));
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Product cannot be deleted if there are child products');
+            productApiExpect(res).toBeBadRequestResponse();
+            productApiExpect(res).toHaveMessage('Product cannot be deleted if there are child products');
           });
 
           test.describe('if productId', () => {
             test('is not mongo id', async ({ requestDeleteProduct }) => {
               const res = await requestDeleteProduct(productDataFactory.id('not-valid'));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'productId');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHavePatternValidationError('pathParameters', 'productId');
             });
           });
         });

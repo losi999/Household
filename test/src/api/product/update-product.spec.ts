@@ -3,13 +3,10 @@ import { Requests } from '@household/shared/types/requests';
 import { Documents } from '@household/shared/types/documents';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { allowUsers } from '@household/test/utils';
-import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
-import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
-
-const expect = mergeExpects(productApiExpect, apiExpect);
+import { productApiTest, productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const permissionMap = allowUsers('editor') ;
 
@@ -35,7 +32,7 @@ test.describe('PUT /product/v1/products/{productId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestUpdateProduct }) => {
       const res = await requestUpdateProduct(productDataFactory.id(), request);
-      expect(res).toBeUnauthorizedResponse();
+      productApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -50,7 +47,7 @@ test.describe('PUT /product/v1/products/{productId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestUpdateProduct }) => {
           const res = await requestUpdateProduct(productDataFactory.id(), request);
-          expect(res).toBeForbiddenResponse();
+          productApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should update', () => {
@@ -62,8 +59,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
 
               await saveProducts(originalProductDocument, genericProductDocument);
               const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-              expect(res).toBeNoContentResponse();
-              expect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)), genericProductDocument);
+              productApiExpect(res).toBeNoContentResponse();
+              productApiExpect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)), genericProductDocument);
             });
 
             test('to variant product', async ({ requestUpdateProduct, saveProducts, findProductById }) => {
@@ -73,8 +70,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
 
               await saveProducts(originalProductDocument, specificProductDocument, genericProductDocument);
               const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-              expect(res).toBeNoContentResponse();
-              expect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)), specificProductDocument);
+              productApiExpect(res).toBeNoContentResponse();
+              productApiExpect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)), specificProductDocument);
             });
           });
 
@@ -88,8 +85,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
 
               await saveProducts(originalProductDocument);
               const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-              expect(res).toBeNoContentResponse();
-              expect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)));
+              productApiExpect(res).toBeNoContentResponse();
+              productApiExpect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)));
             });
 
             test('to variant product', async ({ requestUpdateProduct, saveProducts, findProductById }) => {
@@ -99,8 +96,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
 
               await saveProducts(originalProductDocument, specificProductDocument, genericProductDocument);
               const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-              expect(res).toBeNoContentResponse();
-              expect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)), specificProductDocument);
+              productApiExpect(res).toBeNoContentResponse();
+              productApiExpect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)), specificProductDocument);
             });
           });
 
@@ -115,8 +112,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
 
               await saveProducts(originalProductDocument);
               const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-              expect(res).toBeNoContentResponse();
-              expect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)));
+              productApiExpect(res).toBeNoContentResponse();
+              productApiExpect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)));
             });
 
             test('to specific product', async ({ requestUpdateProduct, saveProducts, findProductById }) => {
@@ -126,8 +123,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
 
               await saveProducts(originalProductDocument, genericProductDocument);
               const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-              expect(res).toBeNoContentResponse();
-              expect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)), genericProductDocument);
+              productApiExpect(res).toBeNoContentResponse();
+              productApiExpect(request).toHaveBeenSavedAsProductDocument(await findProductById(getProductId(originalProductDocument)), genericProductDocument);
             });
           });
         });
@@ -138,8 +135,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
               await saveProducts(genericProductDocument, specificProductDocument);
               
               const res = await requestUpdateProduct(getProductId(genericProductDocument), productDataFactory.request.specific());
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Product type cannot be updated if there are child products');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveMessage('Product type cannot be updated if there are child products');
             });
 
             test('is to be updated on specific product which has children', async ({ requestUpdateProduct, saveProducts }) => {
@@ -151,8 +148,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
               await saveProducts(genericProductDocument, specificProductDocument, variantProductDocument);
               
               const res = await requestUpdateProduct(getProductId(specificProductDocument), productDataFactory.request.generic());
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Product type cannot be updated if there are child products');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveMessage('Product type cannot be updated if there are child products');
             });
           });
 
@@ -163,8 +160,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
                 extraProperty: 'extra',
               } as any);
                   
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
                   
@@ -173,24 +170,24 @@ test.describe('PUT /product/v1/products/{productId}', () => {
               const res = await requestUpdateProduct(productDataFactory.id(), productDataFactory.request.specific({
                 name: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
             test('is not string', async ({ requestUpdateProduct }) => {
               const res = await requestUpdateProduct(productDataFactory.id(), productDataFactory.request.specific({
                 name: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
             test('is too short', async ({ requestUpdateProduct }) => {
               const res = await requestUpdateProduct(productDataFactory.id(), productDataFactory.request.specific({
                 name: '', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'name', 1);
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
             test('is already in use by a different product', async ({ requestUpdateProduct, saveProducts }) => {
@@ -200,8 +197,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
 
               await saveProducts(originalProductDocument, genericProductDocument);
               const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Duplicate product name');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveMessage('Duplicate product name');
             });
           });
 
@@ -210,24 +207,24 @@ test.describe('PUT /product/v1/products/{productId}', () => {
               const res = await requestUpdateProduct(productDataFactory.id(), productDataFactory.request.specific({
                 measurement: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'measurement');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveRequiredPropertyValidationError('body', 'measurement');
             });
 
             test('is not number', async ({ requestUpdateProduct }) => {
               const res = await requestUpdateProduct(productDataFactory.id(), productDataFactory.request.specific({
                 measurement: <any>'1', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'measurement', 'number');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveWrongTypeValidationError('body', 'measurement', 'number');
             });
 
             test('is too small', async ({ requestUpdateProduct }) => {
               const res = await requestUpdateProduct(productDataFactory.id(), productDataFactory.request.specific({
                 measurement: 0, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveExclusiveTooSmallValidationError('body', 'measurement', 0);
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveExclusiveTooSmallValidationError('body', 'measurement', 0);
             });
           });
 
@@ -236,24 +233,24 @@ test.describe('PUT /product/v1/products/{productId}', () => {
               const res = await requestUpdateProduct(productDataFactory.id(), productDataFactory.request.specific({
                 unitOfMeasurement: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'unitOfMeasurement');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveRequiredPropertyValidationError('body', 'unitOfMeasurement');
             });
 
             test('is not string', async ({ requestUpdateProduct }) => {
               const res = await requestUpdateProduct(productDataFactory.id(), productDataFactory.request.specific({
                 unitOfMeasurement: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'unitOfMeasurement', 'string');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveWrongTypeValidationError('body', 'unitOfMeasurement', 'string');
             });
 
             test('is not a valid enum value', async ({ requestUpdateProduct }) => {
               const res = await requestUpdateProduct(productDataFactory.id(), productDataFactory.request.specific({
                 unitOfMeasurement: <any>'not-valid', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveEnumValidationError('body', 'unitOfMeasurement');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveEnumValidationError('body', 'unitOfMeasurement');
             });
           });
           
@@ -262,16 +259,16 @@ test.describe('PUT /product/v1/products/{productId}', () => {
               const res = await requestUpdateProduct(productDataFactory.id(), productDataFactory.request.specific({
                 parentProductId: 'not-mongo-id' as any,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'parentProductId');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHavePatternValidationError('body', 'parentProductId');
             });
           
             test('does not belong to any product', async ({ requestUpdateProduct, saveProduct }) => {
               await saveProduct(originalProductDocument);
 
               const res = await requestUpdateProduct(getProductId(originalProductDocument), productDataFactory.request.specific());
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No product found');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveMessage('No product found');
             });
 
             test.describe('belongs to a', () => {
@@ -291,8 +288,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
             
                 await saveProducts(originalProductDocument, specificProductDocument, genericProductDocument);
                 const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-                expect(res).toBeBadRequestResponse();
-                expect(res).toHaveMessage('Product type of parent must be "generic" when creating "specific" product');
+                productApiExpect(res).toBeBadRequestResponse();
+                productApiExpect(res).toHaveMessage('Product type of parent must be "generic" when creating "specific" product');
               });
                           
               test('variant product when creating specific product', async ({ requestUpdateProduct, saveProducts }) => {
@@ -302,8 +299,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
             
                 await saveProducts(originalProductDocument, variantProductDocument, specificProductDocument, genericProductDocument);
                 const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-                expect(res).toBeBadRequestResponse();
-                expect(res).toHaveMessage('Product type of parent must be "generic" when creating "specific" product');
+                productApiExpect(res).toBeBadRequestResponse();
+                productApiExpect(res).toHaveMessage('Product type of parent must be "generic" when creating "specific" product');
               });
                           
               test('generic product when creating variant product', async ({ requestUpdateProduct, saveProducts }) => {
@@ -313,8 +310,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
             
                 await saveProducts(originalProductDocument, genericProductDocument);
                 const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-                expect(res).toBeBadRequestResponse();
-                expect(res).toHaveMessage('Product type of parent must be "specific" when creating "variant" product');
+                productApiExpect(res).toBeBadRequestResponse();
+                productApiExpect(res).toHaveMessage('Product type of parent must be "specific" when creating "variant" product');
               });
             
               test('variant product when creating variant product', async ({ requestUpdateProduct, saveProducts }) => {
@@ -324,8 +321,8 @@ test.describe('PUT /product/v1/products/{productId}', () => {
             
                 await saveProducts(originalProductDocument, variantProductDocument, specificProductDocument, genericProductDocument);
                 const res = await requestUpdateProduct(getProductId(originalProductDocument), request);
-                expect(res).toBeBadRequestResponse();
-                expect(res).toHaveMessage('Product type of parent must be "specific" when creating "variant" product');
+                productApiExpect(res).toBeBadRequestResponse();
+                productApiExpect(res).toHaveMessage('Product type of parent must be "specific" when creating "variant" product');
               });
             });         
 
@@ -334,13 +331,13 @@ test.describe('PUT /product/v1/products/{productId}', () => {
           test.describe('if productId', () => {
             test('is not mongo id', async ({ requestUpdateProduct }) => {
               const res = await requestUpdateProduct(productDataFactory.id('not-valid'), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'productId');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHavePatternValidationError('pathParameters', 'productId');
             });
 
             test('does not belong to any product', async ({ requestUpdateProduct }) => {
               const res = await requestUpdateProduct(productDataFactory.id(), request);
-              expect(res).toBeNotFoundResponse();
+              productApiExpect(res).toBeNotFoundResponse();
             });
           });
         });

@@ -4,8 +4,8 @@ import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
-import { test as baseTest } from '@household/test/fixtures/api.fixture';
-import { expect as baseExpect, APIResponse } from '@playwright/test';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
+import { APIResponse } from '@playwright/test';
 import { Comparer } from '@household/test/comparer';
 
 type CategoryApiFixture = {
@@ -17,7 +17,7 @@ type CategoryApiFixture = {
   requestMergeCategories(categoryId: Api.Category.Id, sourceCategoryIds: Api.Category.Id[]): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<CategoryApiFixture>({
+export const categoryApiTest = apiTest.extend<CategoryApiFixture>({
   requestGetCategory: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -133,7 +133,7 @@ export const validateCategoryResponse = (response: Responses.Category, document:
   });
 };
 
-export const expect = baseExpect.extend({
+export const categoryApiExpect = apiExpect.extend({
   toHaveBeenDeletedFromDatabase(document: Documents.Category) {
     return {
       pass: !document,

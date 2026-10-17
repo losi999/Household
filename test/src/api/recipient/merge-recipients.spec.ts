@@ -1,8 +1,7 @@
 import { entries, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { recipientApiTest, recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -10,12 +9,10 @@ import { AccountType } from '@household/shared/enums';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
-
-const expect = mergeExpects(apiExpect, recipientApiExpect, transactionApiExpect);
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 
 const permissionMap = allowUsers('editor');
 
@@ -34,7 +31,7 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
   test.describe('called as anyonymous', () => {
     test('should return unauthorized', async ({ requestMergeRecipients }) => {
       const res = await requestMergeRecipients(recipientDataFactory.id(), [recipientDataFactory.id()]);
-      expect(res).toBeUnauthorizedResponse();
+      recipientApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -50,16 +47,16 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestMergeRecipients }) => {
           const res = await requestMergeRecipients(recipientDataFactory.id(), [recipientDataFactory.id()]);
-          expect(res).toBeForbiddenResponse();
+          recipientApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should merge recipients', async ({ requestMergeRecipients, saveRecipients, findRecipientById }) => {
           await saveRecipients(sourceRecipientDocument, targetRecipientDocument);
 
           const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
-          expect(res).toBeNoContentResponse();
+          recipientApiExpect(res).toBeNoContentResponse();
 
-          expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
+          recipientApiExpect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('should reassign recipient in related', () => {
@@ -87,11 +84,11 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
             await saveTransactions(paymentTransactionDocument);
 
             const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
-            expect(res).toBeNoContentResponse();
+            recipientApiExpect(res).toBeNoContentResponse();
 
-            expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
+            recipientApiExpect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
+            transactionApiExpect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
@@ -114,11 +111,11 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
             await saveTransactions(loanTransactionDocument);
 
             const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
-            expect(res).toBeNoContentResponse();
+            recipientApiExpect(res).toBeNoContentResponse();
 
-            expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
+            recipientApiExpect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
+            transactionApiExpect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
@@ -140,11 +137,11 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
             await saveTransactions(repaymentTransactionDocument);
 
             const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
-            expect(res).toBeNoContentResponse();
+            recipientApiExpect(res).toBeNoContentResponse();
 
-            expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
+            recipientApiExpect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
+            transactionApiExpect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
@@ -165,11 +162,11 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
             await saveTransactions(splitTransactionDocument);
 
             const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
-            expect(res).toBeNoContentResponse();
+            recipientApiExpect(res).toBeNoContentResponse();
 
-            expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
+            recipientApiExpect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
+            transactionApiExpect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
@@ -186,35 +183,35 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
               getRecipientId(sourceRecipientDocument),
               recipientDataFactory.id(),
             ]);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Some of the recipients are not found');
+            recipientApiExpect(res).toBeBadRequestResponse();
+            recipientApiExpect(res).toHaveMessage('Some of the recipients are not found');
           });
 
           test.describe('if body', () => {
             test('is not array', async ({ requestMergeRecipients }) => {
               const res = await requestMergeRecipients(recipientDataFactory.id(), {} as any);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
             });
 
             test('has too few items', async ({ requestMergeRecipients }) => {
               const res = await requestMergeRecipients(recipientDataFactory.id(), []);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooFewItemsValidationError('body', 'data', 1);
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHaveTooFewItemsValidationError('body', 'data', 1);
             });
           });
 
           test.describe('if body[0]', () => {
             test('is not string', async ({ requestMergeRecipients }) => {
               const res = await requestMergeRecipients(recipientDataFactory.id(), [1] as any);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'data/0', 'string');
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHaveWrongTypeValidationError('body', 'data/0', 'string');
             });
 
             test('is not a valid mongo id', async ({ requestMergeRecipients }) => {
               const res = await requestMergeRecipients(recipientDataFactory.id(), [recipientDataFactory.id('not-valid')]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'data/0');
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHavePatternValidationError('body', 'data/0');
             });
           });
 
@@ -222,14 +219,14 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
             test('is not mongo id', async ({ requestMergeRecipients }) => {
               const res = await requestMergeRecipients(recipientDataFactory.id('not-mongo-id'), [recipientDataFactory.id()]);
 
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'recipientId');
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHavePatternValidationError('pathParameters', 'recipientId');
             });
 
             test('does not belong to any recipient', async ({ requestMergeRecipients }) => {
               const res = await requestMergeRecipients(recipientDataFactory.id(), [getRecipientId(sourceRecipientDocument)]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Some of the recipients are not found');
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHaveMessage('Some of the recipients are not found');
             });
           });
         });

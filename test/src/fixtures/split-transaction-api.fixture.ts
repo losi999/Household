@@ -2,7 +2,7 @@ import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, ge
 import { Documents } from '@household/shared/types/documents';
 import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
-import { APIResponse, expect as baseExpect } from '@playwright/test';
+import { APIResponse, expect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
 import { Comparer } from '@household/test/comparer';
@@ -46,7 +46,7 @@ export const validateSplitTransactionResponse = (response: Responses.SplitTransa
   });
 };
 
-export const expect = baseExpect.extend({
+export const splitTransactionApiExpect = expect.extend({
   toHaveBeenSavedAsSplitTransactionDocument(req: Requests.SplitTransaction, document: Documents.SplitTransaction) {
     if (!document) {
       return {

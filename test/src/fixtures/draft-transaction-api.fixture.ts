@@ -1,5 +1,5 @@
 import { Api } from '@household/shared/types/api';
-import { APIResponse, expect as baseExpect } from '@playwright/test';
+import { APIResponse, expect } from '@playwright/test';
 import { TransactionType } from '@household/shared/enums';
 import { Comparer } from '@household/test/comparer';
 import { getTransactionId } from '@household/shared/common/utils';
@@ -11,7 +11,7 @@ import { Import } from '@household/shared/types/common';
 import { Documents } from '@household/shared/types/documents';
 import { Responses } from '@household/shared/types/responses';
 
-export const expect = baseExpect.extend({
+export const draftTransactionApiExpect = expect.extend({
   toHaveBeenImportedFromRevolutFile(draftTransactions: Documents.DraftTransaction[], fileId: Api.File.Id, ...revolutRows: Import.Revolut[]) {
 
     const errors = draftTransactions.flatMap((document, index) => {

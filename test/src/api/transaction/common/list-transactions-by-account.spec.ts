@@ -13,17 +13,14 @@ import { loanTransactionDataFactory } from '@household/test/api/transaction/loan
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
 
-import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
-import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
-import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
-import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
-
-const expect = mergeExpects(transactionApiExpect, apiExpect);
+import { transactionApiTest, transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const permissionMap = forbidUsers();
 
@@ -39,7 +36,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestGetTransactionListByAccount }) => {
       const res = await requestGetTransactionListByAccount(getAccountId(accountDocument));
-      expect(res).toBeUnauthorizedResponse();
+      transactionApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -54,7 +51,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestGetTransactionListByAccount }) => {
           const res = await requestGetTransactionListByAccount(getAccountId(accountDocument));
-          expect(res).toBeForbiddenResponse();
+          transactionApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should get a list of transactions', () => {
@@ -158,19 +155,19 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               pageNumber: 1,
               pageSize: 100000, 
             });
-            expect(res).toBeOkResponse();
-            expect(res).toMatchSchema(schema);
-            expect(res).toContainMatchingPaymentTransactionDocument(paymentTransactionDocument);
+            transactionApiExpect(res).toBeOkResponse();
+            transactionApiExpect(res).toMatchSchema(schema);
+            transactionApiExpect(res).toContainMatchingPaymentTransactionDocument(paymentTransactionDocument);
 
-            expect(res).toContainMatchingSplitTransactionDocument(payingSplitTransactionDocument);
+            transactionApiExpect(res).toContainMatchingSplitTransactionDocument(payingSplitTransactionDocument);
 
-            expect(res).toContainMatchingTransferTransactionDocument(payingTransferTransactionDocument, getAccountId(accountDocument));
-            expect(res).toContainMatchingTransferTransactionDocument(receivingTransferTransactionDocument, getAccountId(accountDocument));
-            expect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(accountDocument));
-            expect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(accountDocument));
+            transactionApiExpect(res).toContainMatchingTransferTransactionDocument(payingTransferTransactionDocument, getAccountId(accountDocument));
+            transactionApiExpect(res).toContainMatchingTransferTransactionDocument(receivingTransferTransactionDocument, getAccountId(accountDocument));
+            transactionApiExpect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(accountDocument));
+            transactionApiExpect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(accountDocument));
 
-            expect(res).toContainMatchingLoanTransactionDocument(loanTransactionDocument);            
-            expect(res).toContainMatchingLoanTransactionDocument(repaymentTransactionDocument);
+            transactionApiExpect(res).toContainMatchingLoanTransactionDocument(loanTransactionDocument);            
+            transactionApiExpect(res).toContainMatchingLoanTransactionDocument(repaymentTransactionDocument);
           });
 
           test('of a loan account', async ({ requestGetTransactionListByAccount, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -245,16 +242,16 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               pageNumber: 1,
               pageSize: 100000, 
             });
-            expect(res).toBeOkResponse();
-            expect(res).toMatchSchema(schema);
+            transactionApiExpect(res).toBeOkResponse();
+            transactionApiExpect(res).toMatchSchema(schema);
 
-            expect(res).toContainMatchingSplitTransactionDocument(owningSplitTransactionDocument);
+            transactionApiExpect(res).toContainMatchingSplitTransactionDocument(owningSplitTransactionDocument);
 
-            expect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(loanAccountDocument));
-            expect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(loanAccountDocument));
+            transactionApiExpect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(loanAccountDocument));
+            transactionApiExpect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(loanAccountDocument));
             
-            expect(res).toContainMatchingLoanTransactionDocument(loanTransactionDocument);
-            expect(res).toContainMatchingLoanTransactionDocument(repaymentTransactionDocument);
+            transactionApiExpect(res).toContainMatchingLoanTransactionDocument(loanTransactionDocument);
+            transactionApiExpect(res).toContainMatchingLoanTransactionDocument(repaymentTransactionDocument);
           });
         });
 
@@ -262,8 +259,8 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
           test.describe('if accountId', () => {
             test('is not mongo id', async ({ requestGetTransactionListByAccount }) => {
               const res = await requestGetTransactionListByAccount(accountDataFactory.id('not-mongo-id'));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'accountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('pathParameters', 'accountId');
             });
           });
 
@@ -274,8 +271,8 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 pageSize: 100,
                 extra: 1, 
               } as any);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('queryStringParameters', 'data', 'extra');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveAdditionalPropertiesValidationError('queryStringParameters', 'data', 'extra');
             });
           });
 
@@ -284,8 +281,8 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               const res = await requestGetTransactionListByAccount(accountDataFactory.id(), {
                 pageNumber: 1, 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('queryStringParameters', 'pageNumber', 'pageSize');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('queryStringParameters', 'pageNumber', 'pageSize');
             });
 
             test('is not number', async ({ requestGetTransactionListByAccount }) => {
@@ -293,8 +290,8 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 pageNumber: 1,
                 pageSize: 'asd' as any, 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('queryStringParameters', 'pageSize');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('queryStringParameters', 'pageSize');
             });
 
             test('is too small', async ({ requestGetTransactionListByAccount }) => {
@@ -302,8 +299,8 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 pageNumber: 1,
                 pageSize: 0, 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('queryStringParameters', 'pageSize');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('queryStringParameters', 'pageSize');
             });
           });
 
@@ -312,8 +309,8 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               const res = await requestGetTransactionListByAccount(accountDataFactory.id(), {
                 pageSize: 1, 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('queryStringParameters', 'pageSize', 'pageNumber');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('queryStringParameters', 'pageSize', 'pageNumber');
             });
 
             test('is not number', async ({ requestGetTransactionListByAccount }) => {
@@ -321,8 +318,8 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 pageNumber: 'asd' as any,
                 pageSize: 1, 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('queryStringParameters', 'pageNumber');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('queryStringParameters', 'pageNumber');
             });
 
             test('is too small', async ({ requestGetTransactionListByAccount }) => {
@@ -330,8 +327,8 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 pageNumber: 0,
                 pageSize: 1, 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('queryStringParameters', 'pageNumber');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('queryStringParameters', 'pageNumber');
             });
           });
         });

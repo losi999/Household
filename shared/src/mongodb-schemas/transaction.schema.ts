@@ -100,6 +100,9 @@ const loanItemSchema = new Schema<Documents.LoanTransaction>({
   },
 });
 
+/**
+ * @deprecated
+ */
 const deferredSplitSchema = new Schema<Documents.DeferredTransaction>({
   transactionType: {
     type: String,

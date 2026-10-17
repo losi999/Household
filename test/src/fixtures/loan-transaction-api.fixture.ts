@@ -3,7 +3,7 @@ import { Documents } from '@household/shared/types/documents';
 import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
 import { Comparer } from '@household/test/comparer';
-import { APIResponse, expect as baseExpect } from '@playwright/test';
+import { APIResponse, expect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { validateAccountLeanResponse } from '@household/test/fixtures/account-api.fixture';
 import { validateCategoryResponse } from '@household/test/fixtures/category-api.fixture';
@@ -33,7 +33,7 @@ export const validateLoanTransactionResponse = (response: Responses.LoanTransact
   });
 };
 
-export const expect = baseExpect.extend({
+export const loanTransactionApiExpect = expect.extend({
   toHaveBeenSavedAsLoanTransactionDocument(req: Requests.PaymentTransaction, document: Documents.LoanTransaction) {
     if (!document) {
       return {

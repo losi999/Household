@@ -3,14 +3,11 @@ import { allowUsers } from '@household/test/utils';
 import { entries, getCustomerId } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
-import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { customerApiTest, customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(customerApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -50,7 +47,7 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
         customerDataFactory.id(),
         customerDataFactory.id(), 
       ]);
-      expect(res).toBeUnauthorizedResponse();
+      customerApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -68,7 +65,7 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
             customerDataFactory.id(),
             customerDataFactory.id(), 
           ]);
-          expect(res).toBeForbiddenResponse();
+          customerApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should remove customer from blacklist', async ({ requestRemoveCustomerFromBlacklist, savePrice, saveCustomers, getCustomerById }) => {
@@ -78,9 +75,9 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
             getCustomerId(customerDocumentA),
             getCustomerId(customerDocumentB), 
           ]);
-          expect(res).toBeNoContentResponse();
-          expect(customerDocumentA).toHaveBeenRemovedFromBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
-          expect(customerDocumentB).toHaveBeenRemovedFromBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
+          customerApiExpect(res).toBeNoContentResponse();
+          customerApiExpect(customerDocumentA).toHaveBeenRemovedFromBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
+          customerApiExpect(customerDocumentB).toHaveBeenRemovedFromBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
         });
 
         test('should handle if customers were already removed to blacklist', async ({ requestRemoveCustomerFromBlacklist, savePrice, saveCustomers, getCustomerById }) => {
@@ -90,23 +87,23 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
             getCustomerId(customerDocumentA),
             getCustomerId(customerDocumentB), 
           ]);
-          expect(res).toBeNoContentResponse();
-          expect(customerDocumentA).toHaveBeenRemovedFromBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
-          expect(customerDocumentB).toHaveBeenRemovedFromBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
+          customerApiExpect(res).toBeNoContentResponse();
+          customerApiExpect(customerDocumentA).toHaveBeenRemovedFromBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
+          customerApiExpect(customerDocumentB).toHaveBeenRemovedFromBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
         });
 
         test.describe('should return error', () => {
           test.describe('if body', () => {
             test('is not array', async ({ requestRemoveCustomerFromBlacklist }) => {
               const res = await requestRemoveCustomerFromBlacklist(<any>{});
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
             });
 
             test('is has to few items', async ({ requestRemoveCustomerFromBlacklist }) => {
               const res = await requestRemoveCustomerFromBlacklist([customerDataFactory.id()]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooFewItemsValidationError('body', 'data', 2);
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveTooFewItemsValidationError('body', 'data', 2);
             });
 
             test('has too many items', async ({ requestRemoveCustomerFromBlacklist }) => {
@@ -115,8 +112,8 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
                 customerDataFactory.id(),
                 customerDataFactory.id(), 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooManyItemsValidationError('body', 'data', 2);
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveTooManyItemsValidationError('body', 'data', 2);
             });
 
             test('items are the same', async ({ requestRemoveCustomerFromBlacklist }) => {
@@ -124,8 +121,8 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
                 getCustomerId(customerDocumentA),
                 getCustomerId(customerDocumentA), 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Customer cannot be blacklisted with itself');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveMessage('Customer cannot be blacklisted with itself');
             });
           });
 
@@ -135,8 +132,8 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
                 customerDataFactory.id('not-mongo-id'),
                 customerDataFactory.id(), 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'data/0');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHavePatternValidationError('body', 'data/0');
             });
 
             test('does not belong to any customer', async ({ requestRemoveCustomerFromBlacklist, saveCustomers }) => {
@@ -145,8 +142,8 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
                 getCustomerId(customerDocumentA),
                 getCustomerId(customerDocumentB), 
               ]);
-              expect(res).toBeNotFoundResponse();
-              expect(res).toHaveMessage('No customer found');
+              customerApiExpect(res).toBeNotFoundResponse();
+              customerApiExpect(res).toHaveMessage('No customer found');
             });
           });
 
@@ -156,8 +153,8 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
                 customerDataFactory.id(),
                 customerDataFactory.id('not-mongo-id'), 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'data/1');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHavePatternValidationError('body', 'data/1');
             });
 
             test('does not belong to any customer', async ({ requestRemoveCustomerFromBlacklist, savePrice, saveCustomer }) => {
@@ -167,8 +164,8 @@ test.describe('DELETE customer/v1/customers/blacklist', () => {
                 getCustomerId(customerDocumentA),
                 getCustomerId(customerDocumentB), 
               ]);
-              expect(res).toBeNotFoundResponse();
-              expect(res).toHaveMessage('No customer found');
+              customerApiExpect(res).toBeNotFoundResponse();
+              customerApiExpect(res).toHaveMessage('No customer found');
             });
           });
         });

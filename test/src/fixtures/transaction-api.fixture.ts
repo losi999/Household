@@ -1,12 +1,12 @@
 import { getTransactionId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Api } from '@household/shared/types/api';
-import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
-import { expect as loanTransactionApiExpect } from '@household/test/fixtures/loan-transaction-api.fixture';
-import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
-import { expect as splitTransactionApiExpect } from '@household/test/fixtures/split-transaction-api.fixture';
-import { expect as transferTransactionApiExpect } from '@household/test/fixtures/transfer-transaction-api.fixture';
-import { expect as draftTransactionApiExpect } from '@household/test/fixtures/draft-transaction-api.fixture';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
+import { loanTransactionApiExpect } from '@household/test/fixtures/loan-transaction-api.fixture';
+import { paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
+import { splitTransactionApiExpect } from '@household/test/fixtures/split-transaction-api.fixture';
+import { transferTransactionApiExpect } from '@household/test/fixtures/transfer-transaction-api.fixture';
+import { draftTransactionApiExpect } from '@household/test/fixtures/draft-transaction-api.fixture';
 import { APIResponse, mergeExpects } from '@playwright/test';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
@@ -25,7 +25,7 @@ type TransactionApiFixture = {
   requestGetTransactionListByFile(fileId: Api.File.Id): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<TransactionApiFixture>({
+export const transactionApiTest = apiTest.extend<TransactionApiFixture>({
   requestCreatePaymentTransaction: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
     const fn = async (transaction: Requests.PaymentTransaction) => {
@@ -163,7 +163,7 @@ export const test = baseTest.extend<TransactionApiFixture>({
   },
 });
 
-const transactionApiExpect = baseExpect.extend({
+const baseTransactionApiExpect = apiExpect.extend({
   toHaveBeenDeletedFromDatabase(document: Documents.Transaction) {
     return {
       pass: !document,
@@ -172,4 +172,4 @@ const transactionApiExpect = baseExpect.extend({
   },
 });
 
-export const expect = mergeExpects(transactionApiExpect, loanTransactionApiExpect, paymentTransactionApiExpect, splitTransactionApiExpect, transferTransactionApiExpect, draftTransactionApiExpect);
+export const transactionApiExpect = mergeExpects(baseTransactionApiExpect, loanTransactionApiExpect, paymentTransactionApiExpect, splitTransactionApiExpect, transferTransactionApiExpect, draftTransactionApiExpect);

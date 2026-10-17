@@ -4,12 +4,9 @@ import { settingDataFactory } from '@household/test/api/setting/data-factory';
 import { forbidUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { SettingKey } from '@household/shared/enums';
-import { test as settingApiTest, expect as settingApiExpect } from '@household/test/fixtures/setting-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as settingDbTest } from '@household/test/fixtures/setting-db.fixture';
-
-const expect = mergeExpects(settingApiExpect, apiExpect);
+import { settingApiTest, settingApiExpect } from '@household/test/fixtures/setting-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { settingDbTest } from '@household/test/fixtures/setting-db.fixture';
 
 const permissionMap = forbidUsers();
 
@@ -31,7 +28,7 @@ test.describe('GET /setting/v1/settings', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestListSettings }) => {
       const res = await requestListSettings();
-      expect(res).toBeUnauthorizedResponse();
+      settingApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -46,18 +43,18 @@ test.describe('GET /setting/v1/settings', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestListSettings }) => {
           const res = await requestListSettings();
-          expect(res).toBeForbiddenResponse();
+          settingApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should get a list of settings', async ({ requestListSettings, updateSetting }) => {
           await updateSetting(settingKey1, settingDataFactory.update(settingRequest1));
           await updateSetting(settingKey2, settingDataFactory.update(settingRequest2));
           const res = await requestListSettings();
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
+          settingApiExpect(res).toBeOkResponse();
+          settingApiExpect(res).toMatchSchema(schema);
 
-          expect(res).toContainMatchingSettingDocument(settingDataFactory.document(settingKey1, settingRequest1));
-          expect(res).toContainMatchingSettingDocument(settingDataFactory.document(settingKey2, settingRequest2));
+          settingApiExpect(res).toContainMatchingSettingDocument(settingDataFactory.document(settingKey1, settingRequest1));
+          settingApiExpect(res).toContainMatchingSettingDocument(settingDataFactory.document(settingKey2, settingRequest2));
         });
       }
     });

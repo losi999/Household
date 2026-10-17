@@ -5,7 +5,7 @@ import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
-import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
 import { APIResponse } from '@playwright/test';
 
 type AccountApiFixture = {
@@ -16,7 +16,7 @@ type AccountApiFixture = {
   requestDeleteAccount(accountId: Api.Account.Id): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<AccountApiFixture>({
+export const accountApiTest = apiTest.extend<AccountApiFixture>({
   requestGetAccount: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -109,7 +109,7 @@ export const validateAccountLeanResponse = (response: Responses.AccountLean, doc
   });
 };
 
-export const expect = baseExpect.extend({
+export const accountApiExpect = apiExpect.extend({
   async toHaveBeenSavedAsAccountDocument(req: Requests.Account, document: Documents.Account) {
     if (!document) {
       return {

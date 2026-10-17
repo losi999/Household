@@ -4,12 +4,10 @@ import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { UserType } from '@household/shared/enums';
 
-import { test as identityTest } from '@household/test/fixtures/identity.fixture';
-import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
+import { identityTest } from '@household/test/fixtures/identity.fixture';
+import { userApiTest, userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { mergeTests } from '@playwright/test';
 
-const expect = mergeExpects(userApiExpect, apiExpect);
 const test = mergeTests(identityTest, userApiTest);
 
 const permissionMap = allowUsers('editor') ;
@@ -28,7 +26,7 @@ test.describe('DELETE /user/v1/users/{email}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestDeleteUser }) => {
       const res = await requestDeleteUser(pendingUser.email);
-      expect(res).toBeUnauthorizedResponse();
+      userApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -43,22 +41,22 @@ test.describe('DELETE /user/v1/users/{email}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestDeleteUser }) => {
           const res = await requestDeleteUser(pendingUser.email);
-          expect(res).toBeForbiddenResponse();
+          userApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should delete user', async ({ requestDeleteUser, createUser, getUser }) => {
           await createUser(pendingUser, UserType.Editor, true);
           const res = await requestDeleteUser(pendingUser.email);
-          expect(res).toBeNoContentResponse();
-          expect(await getUser(pendingUser)).toHaveBeenDeleted();
+          userApiExpect(res).toBeNoContentResponse();
+          userApiExpect(await getUser(pendingUser)).toHaveBeenDeleted();
         });
 
         test.describe('should return error', () => {
           test.describe('if userId', () => {
             test('is not email', async ({ requestDeleteUser }) => {
               const res = await requestDeleteUser('not an email');
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('pathParameters', 'email', 'email');
+              userApiExpect(res).toBeBadRequestResponse();
+              userApiExpect(res).toHaveWrongFormatValidationError('pathParameters', 'email', 'email');
             });
           });
         });

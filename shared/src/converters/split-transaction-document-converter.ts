@@ -93,7 +93,7 @@ export const splitTransactionDocumentConverterFactory = (
         loans: body.loans?.map((s) => {
           const category = categories[s.categoryId];
 
-          const deferredDocument = loanTransactionDocumentConverter.create({
+          const loanDocument = loanTransactionDocumentConverter.create({
             body: {
               ...s,
               accountId: body.accountId,
@@ -108,7 +108,7 @@ export const splitTransactionDocumentConverterFactory = (
             recipient,
           }, expiresIn, generateId);
 
-          return deferredDocument;
+          return loanDocument;
         }),
         _id: generateId ? generateMongoId() : undefined,
         expiresAt: expiresIn ? addSeconds(expiresIn) : undefined,
@@ -121,7 +121,7 @@ export const splitTransactionDocumentConverterFactory = (
         loans: loans?.map((s) => {
           const category = categories[s.categoryId];
 
-          const deferredDocument = loanTransactionDocumentConverter.create({
+          const loanDocument = loanTransactionDocumentConverter.create({
             body: {
               ...s,
               accountId: accountId,
@@ -137,10 +137,10 @@ export const splitTransactionDocumentConverterFactory = (
           }, expiresIn);
 
           if (s.transactionId) {
-            deferredDocument._id = new Types.ObjectId(s.transactionId);
+            loanDocument._id = new Types.ObjectId(s.transactionId);
           }
 
-          return deferredDocument;
+          return loanDocument;
         }),
         splits: splits?.map((s) => createSplitDocumentItem(s, categories[s.categoryId], projects[s.projectId], products[s.productId])),
       };

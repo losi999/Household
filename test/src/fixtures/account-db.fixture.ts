@@ -1,8 +1,8 @@
 import { accountService } from '@household/shared/dependencies/services/account-service';
 import { IAccountService } from '@household/shared/services/account-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 
-export const test = baseTest.extend<Pick<IAccountService, 'saveAccount' | 'saveAccounts' | 'findAccountById'>>({
+export const accountDbTest = test.extend<Pick<IAccountService, 'saveAccount' | 'saveAccounts' | 'findAccountById'>>({
   saveAccount: async ({ logServiceCall }, use) => {
     const saveAccount: IAccountService['saveAccount'] = async (account) => {
       const result = await accountService.saveAccount(account);

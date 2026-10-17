@@ -6,7 +6,7 @@ import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
-import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
 import { validateCustomerJobPriceResponse, validateCustomerResponse } from '@household/test/fixtures/customer-api.fixture';
 import { APIResponse } from '@playwright/test';
 
@@ -21,7 +21,7 @@ type CalendarApiFixture = {
   requestResolveCalendarWorkEntry(calendarEntryId: Api.Calendar.Entry.Id, body: Requests.CalendarEntryResolution): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<CalendarApiFixture>({
+export const calendarApiTest = apiTest.extend<CalendarApiFixture>({
   requestCreateCalendarEntry: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -202,7 +202,7 @@ const validateCalendarEntryDocuments = (originalDocument: Documents.CalendarEntr
   }, '_id', 'createdAt', 'updatedAt', 'expiresAt');
 };
 
-export const expect = baseExpect.extend({
+export const calendarApiExpect = apiExpect.extend({
   toHaveBeenSavedAsCalendarDayDocument(req: Requests.CalendarDay, document: Documents.CalendarDay) {
     const comparer = new Comparer(document, {
       dayType: req.dayType,

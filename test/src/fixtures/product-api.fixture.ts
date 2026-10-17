@@ -6,8 +6,8 @@ import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { Documents } from '@household/shared/types/documents';
 import { Comparer } from '@household/test/comparer';
-import { test as baseTest } from '@household/test/fixtures/api.fixture';
-import { expect as baseExpect, APIResponse } from '@playwright/test';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
+import { APIResponse } from '@playwright/test';
 import { ProductType } from '@household/shared/enums';
 
 type ProductApiFixture = {
@@ -18,7 +18,7 @@ type ProductApiFixture = {
   requestListProducts(): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<ProductApiFixture>({
+export const productApiTest = apiTest.extend<ProductApiFixture>({
   requestCreateProduct: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -122,7 +122,7 @@ export const validateProductResponse = (response: Responses.Product, document: D
   });
 };
 
-export const expect = baseExpect.extend({
+export const productApiExpect = apiExpect.extend({
   toHaveBeenSavedAsProductDocument(req: Requests.Product, document: Documents.Product, parentProductDocument?: Documents.Product) {
     if (!document) {
       return {

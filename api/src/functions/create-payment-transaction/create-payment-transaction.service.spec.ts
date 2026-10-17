@@ -46,7 +46,7 @@ describe('Create payment transaction service', () => {
   let queriedRecipient: Documents.Recipient;
   let queriedProduct: Documents.Product;
   const createdPaymentDocument = testDataFactory.transaction.document.payment();
-  const createdDeferredDocument = testDataFactory.transaction.document.loan();
+  const createdLoanDocument = testDataFactory.transaction.document.loan();
 
   beforeEach(() => {
     queriedAccount = testDataFactory.account.document();
@@ -119,14 +119,14 @@ describe('Create payment transaction service', () => {
       mockProjectService.functions.findProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.findProductById.mockResolvedValue(queriedProduct);
-      mockLoanTransactionDocumentConverter.functions.create.mockReturnValue(createdDeferredDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDeferredDocument);
+      mockLoanTransactionDocumentConverter.functions.create.mockReturnValue(createdLoanDocument);
+      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdLoanDocument);
 
       const result = await service({
         body,
         expiresIn: undefined,
       });
-      expect(result).toEqual(getTransactionId(createdDeferredDocument));
+      expect(result).toEqual(getTransactionId(createdLoanDocument));
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.loanAccountId,
@@ -144,7 +144,7 @@ describe('Create payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDeferredDocument);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdLoanDocument);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       expect.assertions(9);
     });
@@ -164,14 +164,14 @@ describe('Create payment transaction service', () => {
       mockProjectService.functions.findProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.findProductById.mockResolvedValue(queriedProduct);
-      mockLoanTransactionDocumentConverter.functions.create.mockReturnValue(createdDeferredDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDeferredDocument);
+      mockLoanTransactionDocumentConverter.functions.create.mockReturnValue(createdLoanDocument);
+      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdLoanDocument);
 
       const result = await service({
         body,
         expiresIn: undefined,
       });
-      expect(result).toEqual(getTransactionId(createdDeferredDocument));
+      expect(result).toEqual(getTransactionId(createdLoanDocument));
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.loanAccountId,
@@ -189,7 +189,7 @@ describe('Create payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDeferredDocument);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdLoanDocument);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       expect.assertions(9);
     });

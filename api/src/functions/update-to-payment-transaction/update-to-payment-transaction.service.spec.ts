@@ -611,7 +611,7 @@ describe('Update to payment transaction service', () => {
       expect.assertions(11);
     });
 
-    it('if loanAccount is loan type for reimbursement transaction', async () => {
+    it('if loanAccount is loan type for repayment transaction', async () => {
       const queriedSecondLoanAccount = testDataFactory.account.document();
       body = testDataFactory.transaction.request.payment({
         ...body,

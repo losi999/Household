@@ -1,6 +1,6 @@
 import { Api } from '@household/shared/types/api';
 import { Comparer } from '@household/test/comparer';
-import { APIResponse, expect as baseExpect } from '@playwright/test';
+import { APIResponse, expect } from '@playwright/test';
 import { TransactionType } from '@household/shared/enums';
 import { createDate, getAccountId, getTransactionId } from '@household/shared/common/utils';
 import { validateAccountLeanResponse } from '@household/test/fixtures/account-api.fixture';
@@ -33,7 +33,7 @@ const validateTransferTransactionDocuments = (originalDocument: Documents.Transf
   }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
 };
 
-export const expect = baseExpect.extend({
+export const transferTransactionApiExpect = expect.extend({
   toHaveBeenSavedAsTransferTransactionDocument(req: Requests.TransferTransaction, document: Documents.TransferTransaction) {
     if (!document) {
       return {

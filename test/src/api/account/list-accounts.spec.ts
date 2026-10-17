@@ -9,13 +9,10 @@ import { AccountType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-
-const expect = mergeExpects(accountApiExpect, apiExpect);
+import { accountApiTest as accountApiTest, accountApiExpect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 
 const permissionMap = forbidUsers();
 
@@ -33,7 +30,7 @@ test.describe('GET /account/v1/accounts', () => {
   let invertedLoanTransferTransactionDocument: Documents.TransferTransaction;
   let loanTransactionDocument: Documents.LoanTransaction;
   let repaymentTransactionDocument: Documents.LoanTransaction;
-  let deferredSplitTransactionDocument: Documents.SplitTransaction;
+  let loanSplitTransactionDocument: Documents.SplitTransaction;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
@@ -50,7 +47,7 @@ test.describe('GET /account/v1/accounts', () => {
       account: accountDocument,
     });
 
-    deferredSplitTransactionDocument = splitTransactionDataFactory.document({
+    loanSplitTransactionDocument = splitTransactionDataFactory.document({
       account: secondaryAccountDocument,
       loans: [
         {
@@ -93,7 +90,7 @@ test.describe('GET /account/v1/accounts', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestListAccounts }) => {
       const res = await requestListAccounts();
-      expect(res).toBeUnauthorizedResponse();
+      accountApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -108,21 +105,21 @@ test.describe('GET /account/v1/accounts', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestListAccounts }) => {
           const res = await requestListAccounts();
-          expect(res).toBeForbiddenResponse();
+          accountApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should get a list of accounts', async ({ requestListAccounts, saveAccounts, saveTransactions }) => {
           const expectedBalance1 = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + loanTransactionDocument.amount;
 
-          const expectedBalance2 = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.loans[0].amount + repaymentTransactionDocument.amount - loanTransactionDocument.amount;
+          const expectedBalance2 = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - loanSplitTransactionDocument.loans[0].amount + repaymentTransactionDocument.amount - loanTransactionDocument.amount;
 
           await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
-          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument, deferredSplitTransactionDocument);
+          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument, loanSplitTransactionDocument);
           const res = await requestListAccounts();
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
-          expect(res).toContainMatchingAccountDocument(accountDocument, expectedBalance1);
-          expect(res).toContainMatchingAccountDocument(loanAccountDocument, expectedBalance2);
+          accountApiExpect(res).toBeOkResponse();
+          accountApiExpect(res).toMatchSchema(schema);
+          accountApiExpect(res).toContainMatchingAccountDocument(accountDocument, expectedBalance1);
+          accountApiExpect(res).toContainMatchingAccountDocument(loanAccountDocument, expectedBalance2);
         });
       }
     });

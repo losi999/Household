@@ -1,8 +1,7 @@
 import { entries, getRecipientId, getTransactionId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { recipientApiTest, recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
@@ -10,12 +9,10 @@ import { AccountType } from '@household/shared/enums';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
-
-const expect = mergeExpects(apiExpect, recipientApiExpect, transactionApiExpect);
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 
 const permissionMap = allowUsers('editor');
 
@@ -32,7 +29,7 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
   test.describe('called as anyonymous', () => {
     test('should return unauthorized', async ({ requestDeleteRecipient }) => {
       const res = await requestDeleteRecipient(recipientDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      recipientApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -48,16 +45,16 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestDeleteRecipient }) => {
           const res = await requestDeleteRecipient(recipientDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          recipientApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should delete recipient', async ({ requestDeleteRecipient, saveRecipient, findRecipientById }) => {
           await saveRecipient(recipientDocument);
 
           const res = await requestDeleteRecipient(getRecipientId(recipientDocument));
-          expect(res).toBeNoContentResponse();
+          recipientApiExpect(res).toBeNoContentResponse();
 
-          expect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
+          recipientApiExpect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('should unset recipient in related', () => {
@@ -83,11 +80,11 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
             await saveTransactions(paymentTransactionDocument);
 
             const res = await requestDeleteRecipient(getRecipientId(recipientDocument));
-            expect(res).toBeNoContentResponse();
+            recipientApiExpect(res).toBeNoContentResponse();
 
-            expect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
+            recipientApiExpect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
+            transactionApiExpect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },
@@ -106,11 +103,11 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
             await saveTransactions(loanTransactionDocument);
 
             const res = await requestDeleteRecipient(getRecipientId(recipientDocument));
-            expect(res).toBeNoContentResponse();
+            recipientApiExpect(res).toBeNoContentResponse();
 
-            expect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
+            recipientApiExpect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
+            transactionApiExpect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },
@@ -128,11 +125,11 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
             await saveTransactions(repaymentTransactionDocument);
 
             const res = await requestDeleteRecipient(getRecipientId(recipientDocument));
-            expect(res).toBeNoContentResponse();
+            recipientApiExpect(res).toBeNoContentResponse();
 
-            expect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
+            recipientApiExpect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
+            transactionApiExpect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },
@@ -150,11 +147,11 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
             await saveTransactions(splitTransactionDocument);
 
             const res = await requestDeleteRecipient(getRecipientId(recipientDocument));
-            expect(res).toBeNoContentResponse();
+            recipientApiExpect(res).toBeNoContentResponse();
 
-            expect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
+            recipientApiExpect(await findRecipientById(getRecipientId(recipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
+            transactionApiExpect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
               recipient: {
                 from: getRecipientId(recipientDocument),
               },
@@ -167,8 +164,8 @@ test.describe('DELETE /recipient/v1/recipients/{recipientId}', () => {
             test('is not mongo id', async ({ requestDeleteRecipient }) => {
               const res = await requestDeleteRecipient(recipientDataFactory.id('not-mongo-id'));
 
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'recipientId');
+              recipientApiExpect(res).toBeBadRequestResponse();
+              recipientApiExpect(res).toHavePatternValidationError('pathParameters', 'recipientId');
             });
           });
         });

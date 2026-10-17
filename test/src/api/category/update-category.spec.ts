@@ -1,18 +1,15 @@
 import { getCategoryId } from '@household/shared/common/utils';
 import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { categoryApiTest, categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { mergeTests } from '@playwright/test';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
 const permissionMap = allowUsers('editor');
-
-const expect = mergeExpects(categoryApiExpect, apiExpect);
 
 const test = mergeTests(categoryApiTest, categoryDbTest);
 
@@ -31,7 +28,7 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
   test.describe('called as anyonymous', () => {
     test('should return unauthorized', async ({ requestUpdateCategory }) => {
       const res = await requestUpdateCategory(categoryDataFactory.id(), req);
-      expect(res).toBeUnauthorizedResponse();
+      categoryApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -47,15 +44,15 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestUpdateCategory }) => {
           const res = await requestUpdateCategory(categoryDataFactory.id(), req);
-          expect(res).toBeForbiddenResponse();
+          categoryApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should update a category', async ({ requestUpdateCategory, saveCategory, findCategoryById }) => {
           await saveCategory(categoryDocument);
 
           const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
-          expect(res).toBeNoContentResponse();
-          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(categoryDocument)));
+          categoryApiExpect(res).toBeNoContentResponse();
+          categoryApiExpect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(categoryDocument)));
         });
 
         test.describe('children should be reassigned', () => {
@@ -83,10 +80,10 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory, otherParentCategory);
 
             const res = await requestUpdateCategory(getCategoryId(childCategory), req);
-            expect(res).toBeNoContentResponse();
+            categoryApiExpect(res).toBeNoContentResponse();
 
-            expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(childCategory)), otherParentCategory, ...otherParentCategory.ancestors);
-            expect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
+            categoryApiExpect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(childCategory)), otherParentCategory, ...otherParentCategory.ancestors);
+            categoryApiExpect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
           });
 
           test('to root from previously set parent', async ({ requestUpdateCategory, saveCategories, findCategoryById }) => {
@@ -97,9 +94,9 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory);
 
             const res = await requestUpdateCategory(getCategoryId(childCategory), req);
-            expect(res).toBeNoContentResponse();
+            categoryApiExpect(res).toBeNoContentResponse();
 
-            expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(childCategory)));
+            categoryApiExpect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(childCategory)));
           });
 
           test('to a parent from previously unset value', async ({ requestUpdateCategory, saveCategories, findCategoryById }) => {
@@ -110,10 +107,10 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
             await saveCategories(categoryDocument, childCategory, grandChildCategory, otherParentCategory);
 
             const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
-            expect(res).toBeNoContentResponse();
-            expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(categoryDocument)), otherParentCategory, ...otherParentCategory.ancestors);
-            expect(childCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(childCategory)), await findCategoryById(getCategoryId(categoryDocument)));
-            expect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
+            categoryApiExpect(res).toBeNoContentResponse();
+            categoryApiExpect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(getCategoryId(categoryDocument)), otherParentCategory, ...otherParentCategory.ancestors);
+            categoryApiExpect(childCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(childCategory)), await findCategoryById(getCategoryId(categoryDocument)));
+            categoryApiExpect(grandChildCategory).toHaveItsParentReassigned(await findCategoryById(getCategoryId(grandChildCategory)), await findCategoryById(getCategoryId(childCategory)));
           });
         });
 
@@ -125,8 +122,8 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
                 extraProperty: 'extra',
               } as any);
           
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
           
@@ -135,24 +132,24 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
               const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
                 name: undefined,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
             test('is not string', async ({ requestUpdateCategory }) => {
               const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
                 name: <any>1,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
             test('is too short', async ({ requestUpdateCategory }) => {
               const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
                 name: '',
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'name', 1);
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
             test('is already in use by a different category', async ({ requestUpdateCategory, saveCategories }) => {
@@ -163,8 +160,8 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
               await saveCategories(duplicateCategoryDocument, categoryDocument);
 
               const res = await requestUpdateCategory(getCategoryId(categoryDocument), req);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Duplicate category name');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveMessage('Duplicate category name');
             });
           });
 
@@ -173,24 +170,24 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
               const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
                 categoryType: undefined,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'categoryType');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveRequiredPropertyValidationError('body', 'categoryType');
             });
 
             test('is not string', async ({ requestUpdateCategory }) => {
               const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
                 categoryType: <any>1,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'categoryType', 'string');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveWrongTypeValidationError('body', 'categoryType', 'string');
             });
 
             test('is not a valid enum value', async ({ requestUpdateCategory }) => {
               const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
                 categoryType: <any>'not-category-type',
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveEnumValidationError('body', 'categoryType');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveEnumValidationError('body', 'categoryType');
             });
           });
 
@@ -199,16 +196,16 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
               const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
                 parentCategoryId: <any>1,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'parentCategoryId', 'string');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveWrongTypeValidationError('body', 'parentCategoryId', 'string');
             });
 
             test('does not match pattern', async ({ requestUpdateCategory }) => {
               const res = await requestUpdateCategory(categoryDataFactory.id(), categoryDataFactory.request({
                 parentCategoryId: <any>'not-mongo-id',
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'parentCategoryId');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHavePatternValidationError('body', 'parentCategoryId');
             });
 
             test('does not belong to any category', async ({ requestUpdateCategory, saveCategory }) => {
@@ -217,8 +214,8 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
               const res = await requestUpdateCategory(getCategoryId(categoryDocument), categoryDataFactory.request({
                 parentCategoryId: categoryDataFactory.id(),
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Parent category not found');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveMessage('Parent category not found');
             });
 
             test('belongs to the category to be updated', async ({ requestUpdateCategory, saveCategory }) => {
@@ -227,8 +224,8 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
               const res = await requestUpdateCategory(getCategoryId(categoryDocument), categoryDataFactory.request({
                 parentCategoryId: getCategoryId(categoryDocument),
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Parent category cannot be the category itself');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveMessage('Parent category cannot be the category itself');
             });
 
             test('is already a descendent category', async ({ requestUpdateCategory, saveCategories }) => {
@@ -241,21 +238,21 @@ test.describe('PUT /category/v1/categories/{categoryId}', () => {
               const res = await requestUpdateCategory(getCategoryId(categoryDocument), categoryDataFactory.request({
                 parentCategoryId: getCategoryId(childCategoryDocument),
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Parent category is already a child of the current category');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveMessage('Parent category is already a child of the current category');
             });
           });
 
           test.describe('if categoryId', () => {
             test('is not mongo id', async ({ requestUpdateCategory }) => {
               const res = await requestUpdateCategory('not-valid' as Api.Category.Id, req);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'categoryId');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHavePatternValidationError('pathParameters', 'categoryId');
             });
 
             test('does not belong to any category', async ({ requestUpdateCategory }) => {
               const res = await requestUpdateCategory(categoryDataFactory.id(), req);
-              expect(res).toBeNotFoundResponse();
+              categoryApiExpect(res).toBeNotFoundResponse();
             });
           });
         });

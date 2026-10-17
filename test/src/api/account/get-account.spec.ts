@@ -8,13 +8,10 @@ import { splitTransactionDataFactory } from '@household/test/api/transaction/spl
 import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { AccountType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
-import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-
-const expect = mergeExpects(accountApiExpect, apiExpect);
+import { accountApiTest as accountApiTest, accountApiExpect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 
 const permissionMap = forbidUsers();
 
@@ -92,7 +89,7 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestGetAccount }) => {
       const res = await requestGetAccount(accountDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      accountApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -107,7 +104,7 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestGetAccount }) => {
           const res = await requestGetAccount(accountDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          accountApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.beforeEach(async ({ saveAccounts, saveTransactions }) => {
@@ -118,30 +115,30 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
           const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + loanTransactionDocument.amount;
 
           const res = await requestGetAccount(getAccountId(accountDocument));
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
-          expect(res).toMatchAccountDocument(accountDocument, expectedBalance);
+          accountApiExpect(res).toBeOkResponse();
+          accountApiExpect(res).toMatchSchema(schema);
+          accountApiExpect(res).toMatchAccountDocument(accountDocument, expectedBalance);
         });
 
         test('should get loan account by id', async ({ requestGetAccount }) => {
           const expectedBalance = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - loanSplitTransactionDocument.loans[0].amount + repaymentTransactionDocument.amount - loanTransactionDocument.amount;
 
           const res = await requestGetAccount(getAccountId(loanAccountDocument));
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
-          expect(res).toMatchAccountDocument(loanAccountDocument, expectedBalance);
+          accountApiExpect(res).toBeOkResponse();
+          accountApiExpect(res).toMatchSchema(schema);
+          accountApiExpect(res).toMatchAccountDocument(loanAccountDocument, expectedBalance);
         });
 
         test.describe('should return error if accountId', () => {
           test('is not mongo id', async ({ requestGetAccount }) => {
             const res = await requestGetAccount(accountDataFactory.id('not-valid'));
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHavePatternValidationError('pathParameters', 'accountId');
+            accountApiExpect(res).toBeBadRequestResponse();
+            accountApiExpect(res).toHavePatternValidationError('pathParameters', 'accountId');
           });
 
           test('does not belong to any account', async ({ requestGetAccount }) => {
             const res = await requestGetAccount(accountDataFactory.id());
-            expect(res).toBeNotFoundResponse();
+            accountApiExpect(res).toBeNotFoundResponse();
           });
         });
       }

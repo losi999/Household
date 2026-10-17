@@ -3,14 +3,11 @@ import { allowUsers } from '@household/test/utils';
 import { entries, getCustomerId } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
-import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { customerApiTest, customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(customerApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -49,7 +46,7 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
         customerDataFactory.id(),
         customerDataFactory.id(), 
       ]);
-      expect(res).toBeUnauthorizedResponse();
+      customerApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -67,7 +64,7 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
             customerDataFactory.id(),
             customerDataFactory.id(), 
           ]);
-          expect(res).toBeForbiddenResponse();
+          customerApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should add customer to blacklist', async ({ requestAddCustomerToBlacklist, savePrice, saveCustomers, getCustomerById }) => {
@@ -77,9 +74,9 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
             getCustomerId(customerDocumentA),
             getCustomerId(customerDocumentB), 
           ]);
-          expect(res).toBeNoContentResponse();
-          expect(customerDocumentA).toHaveBeenAddedToBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
-          expect(customerDocumentB).toHaveBeenAddedToBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
+          customerApiExpect(res).toBeNoContentResponse();
+          customerApiExpect(customerDocumentA).toHaveBeenAddedToBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
+          customerApiExpect(customerDocumentB).toHaveBeenAddedToBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
         });
 
         test('should handle if customers are already added to blacklist', async ({ requestAddCustomerToBlacklist, savePrice, saveCustomers, getCustomerById }) => {
@@ -93,23 +90,23 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
             getCustomerId(customerDocumentA),
             getCustomerId(customerDocumentB), 
           ]);
-          expect(res).toBeNoContentResponse();
-          expect(customerDocumentA).toHaveBeenAddedToBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
-          expect(customerDocumentB).toHaveBeenAddedToBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
+          customerApiExpect(res).toBeNoContentResponse();
+          customerApiExpect(customerDocumentA).toHaveBeenAddedToBlacklist(customerDocumentB, await getCustomerById(getCustomerId(customerDocumentB)));
+          customerApiExpect(customerDocumentB).toHaveBeenAddedToBlacklist(customerDocumentA, await getCustomerById(getCustomerId(customerDocumentA)));
         });
 
         test.describe('should return error', () => {
           test.describe('if body', () => {
             test('is not array', async ({ requestAddCustomerToBlacklist }) => {
               const res = await requestAddCustomerToBlacklist(<any>{});
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
             });
 
             test('is has to few items', async ({ requestAddCustomerToBlacklist }) => {
               const res = await requestAddCustomerToBlacklist([customerDataFactory.id()]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooFewItemsValidationError('body', 'data', 2);
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveTooFewItemsValidationError('body', 'data', 2);
             });
 
             test('has too many items', async ({ requestAddCustomerToBlacklist }) => {
@@ -118,8 +115,8 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
                 customerDataFactory.id(),
                 customerDataFactory.id(), 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooManyItemsValidationError('body', 'data', 2);
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveTooManyItemsValidationError('body', 'data', 2);
             });
 
             test('items are the same', async ({ requestAddCustomerToBlacklist }) => {
@@ -127,8 +124,8 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
                 getCustomerId(customerDocumentA),
                 getCustomerId(customerDocumentA), 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Customer cannot be blacklisted with itself');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHaveMessage('Customer cannot be blacklisted with itself');
             });
           });
 
@@ -138,8 +135,8 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
                 customerDataFactory.id('not-mongo-id'),
                 customerDataFactory.id(), 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'data/0');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHavePatternValidationError('body', 'data/0');
             });
 
             test('does not belong to any customer', async ({ requestAddCustomerToBlacklist, savePrice, saveCustomer }) => {
@@ -149,8 +146,8 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
                 getCustomerId(customerDocumentA),
                 getCustomerId(customerDocumentB), 
               ]);
-              expect(res).toBeNotFoundResponse();
-              expect(res).toHaveMessage('No customer found');
+              customerApiExpect(res).toBeNotFoundResponse();
+              customerApiExpect(res).toHaveMessage('No customer found');
             });
           });
 
@@ -160,8 +157,8 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
                 customerDataFactory.id(),
                 customerDataFactory.id('not-mongo-id'), 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'data/1');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHavePatternValidationError('body', 'data/1');
             });
 
             test('does not belong to any customer', async ({ requestAddCustomerToBlacklist, saveCustomers }) => {
@@ -170,8 +167,8 @@ test.describe('PUT customer/v1/customers/blacklist', () => {
                 getCustomerId(customerDocumentA),
                 getCustomerId(customerDocumentB), 
               ]);
-              expect(res).toBeNotFoundResponse();
-              expect(res).toHaveMessage('No customer found');
+              customerApiExpect(res).toBeNotFoundResponse();
+              customerApiExpect(res).toHaveMessage('No customer found');
             });
           });
         });

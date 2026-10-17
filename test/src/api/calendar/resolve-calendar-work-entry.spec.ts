@@ -6,21 +6,18 @@ import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { CalendarEntryResolutionStatus, SettingKey } from '@household/shared/enums';
 
-import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
-import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
+import { paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
+import { calendarApiTest, calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { mergeTests } from '@playwright/test';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { default as moment } from 'moment-timezone';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as settingDbTest } from '@household/test/fixtures/setting-db.fixture';
-import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
-import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { settingDbTest } from '@household/test/fixtures/setting-db.fixture';
+import { priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
-
-const expect = mergeExpects(calendarApiExpect, apiExpect, paymentTransactionApiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -57,7 +54,7 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestResolveCalendarWorkEntry }) => {
       const res = await requestResolveCalendarWorkEntry(calendarEntryDataFactory.id(), request);
-      expect(res).toBeUnauthorizedResponse();
+      calendarApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -72,7 +69,7 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestResolveCalendarWorkEntry }) => {
           const res = await requestResolveCalendarWorkEntry(calendarEntryDataFactory.id(), request);
-          expect(res).toBeForbiddenResponse();
+          calendarApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should update calendar work entry', () => {
@@ -85,9 +82,9 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
             await savePrice(priceDocument);
             await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-            expect(res).toBeCreatedResponse();
+            calendarApiExpect(res).toBeCreatedResponse();
 
-            expect(calendarWorkEntryDocument).toHaveBeenResolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)), request);
+            calendarApiExpect(calendarWorkEntryDocument).toHaveBeenResolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)), request);
           });
 
           test('with cash payment', async ({ requestResolveCalendarWorkEntry, findTransactionById, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer, getSettingByKey }) => {            
@@ -99,13 +96,13 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
             await savePrice(priceDocument);
             await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-            expect(res).toBeCreatedResponse();
+            calendarApiExpect(res).toBeCreatedResponse();
 
             const updatedCalendarEntryDocument = await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument));
 
             const transactionId = updatedCalendarEntryDocument.resolution.status === CalendarEntryResolutionStatus.Paid ? getTransactionId(updatedCalendarEntryDocument.transaction) : undefined;
 
-            expect(calendarWorkEntryDocument).toHaveBeenResolved(updatedCalendarEntryDocument, request, transactionId);
+            calendarApiExpect(calendarWorkEntryDocument).toHaveBeenResolved(updatedCalendarEntryDocument, request, transactionId);
             
             const expectedIssuedAt = moment.tz(updatedCalendarEntryDocument.day, 'Europe/Budapest'); 
             expectedIssuedAt.set({
@@ -120,7 +117,7 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
               accountId: (await getSettingByKey<Api.Account.Id>(SettingKey.HairdressingIncomeAccount)).value,
               categoryId: (await getSettingByKey<Api.Category.Id>(SettingKey.HairdressingIncomeCategory)).value,
             });
-            expect(paymentRequest).toHaveBeenSavedAsPaymentTransactionDocument(await findTransactionById(transactionId));
+            paymentTransactionApiExpect(paymentRequest).toHaveBeenSavedAsPaymentTransactionDocument(await findTransactionById(transactionId));
           });
 
           test('with no show', async ({ requestResolveCalendarWorkEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {            
@@ -132,9 +129,9 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
             await savePrice(priceDocument);    
             await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-            expect(res).toBeCreatedResponse();
+            calendarApiExpect(res).toBeCreatedResponse();
 
-            expect(calendarWorkEntryDocument).toHaveBeenResolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)), request);
+            calendarApiExpect(calendarWorkEntryDocument).toHaveBeenResolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)), request);
           });
         });
 
@@ -149,22 +146,22 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
           
             await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Calendar entry is already resolved');
+            calendarApiExpect(res).toBeBadRequestResponse();
+            calendarApiExpect(res).toHaveMessage('Calendar entry is already resolved');
           });
 
           test('if entry is personal', async ({ requestResolveCalendarWorkEntry, saveCalendarEntry }) => {              
             await saveCalendarEntry(calendarPersonalEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Calendar entry must be of "work" type');
+            calendarApiExpect(res).toBeBadRequestResponse();
+            calendarApiExpect(res).toHaveMessage('Calendar entry must be of "work" type');
           });
 
           test('if entry is issue', async ({ requestResolveCalendarWorkEntry, saveCalendarEntry }) => {              
             await saveCalendarEntry(calendarIssueEntryDocument);
             const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Calendar entry must be of "work" type');
+            calendarApiExpect(res).toBeBadRequestResponse();
+            calendarApiExpect(res).toHaveMessage('Calendar entry must be of "work" type');
           });
 
           test.describe('if body', () => {
@@ -174,8 +171,8 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
                 extraProperty: 'extra',
               } as any);
             
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
           
@@ -184,24 +181,24 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
               const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
                 status: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'status');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'status');
             });
 
             test('is not string', async ({ requestResolveCalendarWorkEntry }) => {
               const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
                 status: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'status', 'string');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'status', 'string');
             });
 
             test('is not a valid value', async ({ requestResolveCalendarWorkEntry }) => {
               const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
                 status: 'not-valid-enum' as any, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveEnumValidationError('body', 'status');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveEnumValidationError('body', 'status');
             });
           });
 
@@ -210,16 +207,16 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
               const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
                 amount: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
             test('is not number', async ({ requestResolveCalendarWorkEntry }) => {
               const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
                 amount: <any>'1', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
             });
           });
 
@@ -228,30 +225,30 @@ test.describe('POST /calendar/v1/entries/{calendarEntryId}/resolution', () => {
               const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
                 delay: <any>'1', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'delay', 'integer');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'delay', 'integer');
             });
 
             test('is too small', async ({ requestResolveCalendarWorkEntry }) => {
               const res = await requestResolveCalendarWorkEntry(getCalendarEntryId(calendarWorkEntryDocument), calendarEntryDataFactory.resolutionRequest({
                 delay: 0, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveExclusiveTooSmallValidationError('body', 'delay', 0);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveExclusiveTooSmallValidationError('body', 'delay', 0);
             });
           });
 
           test.describe('if calendarEntryId', () => {
             test('is not mongo id', async ({ requestResolveCalendarWorkEntry }) => {
               const res = await requestResolveCalendarWorkEntry(calendarEntryDataFactory.id('not-mongo-id'), calendarEntryDataFactory.resolutionRequest());
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'calendarEntryId');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHavePatternValidationError('pathParameters', 'calendarEntryId');
             });
 
             test('does not belong to any calendar entry', async ({ requestResolveCalendarWorkEntry }) => {
               const res = await requestResolveCalendarWorkEntry(calendarEntryDataFactory.id(), calendarEntryDataFactory.resolutionRequest());
-              expect(res).toBeNotFoundResponse();
-              expect(res).toHaveMessage('No calendar entry found');
+              calendarApiExpect(res).toBeNotFoundResponse();
+              calendarApiExpect(res).toHaveMessage('No calendar entry found');
             });
           }); 
         });
