@@ -91,8 +91,6 @@ export const migrateDatabaseServiceFactory = (mongodbService: IMongodbService, s
         .lean();
     });
 
-    console.log('number of categories to migrate to generic products', childCategories.length);
-
     const categoriesToDelete = childCategories.map(c => c._id.toString());
 
     const genericProducts = childCategories.map<Documents.GenericProduct>((c) => {
@@ -120,8 +118,6 @@ export const migrateDatabaseServiceFactory = (mongodbService: IMongodbService, s
       category: Types.ObjectId;
     })[];
 
-    console.log('old products to migrate to specific products', JSON.stringify(oldProductDocuments, null, 2));
-
     const specificProductUpdates = oldProductDocuments.map<AnyBulkWriteOperation<Documents.SpecificProduct>>((p) => {
       return {
         updateOne: {
@@ -143,8 +139,6 @@ export const migrateDatabaseServiceFactory = (mongodbService: IMongodbService, s
         },
       };
     });
-
-    console.log('old products updated to specific', JSON.stringify(specificProductUpdates, null, 2));
 
     const transactions = await mongodbService.transactions((model, session) => {
       return model.find({
@@ -170,8 +164,6 @@ export const migrateDatabaseServiceFactory = (mongodbService: IMongodbService, s
         strict: false,
       });
     });
-
-    console.log('transactions found to migrate', JSON.stringify(transactions, null, 2));
 
     const transactionUpdates = transactions.map<AnyBulkWriteOperation< Documents.Transaction>>((t) => {
       if (t.transactionType === TransactionType.Payment || t.transactionType === TransactionType.Deferred || t.transactionType === TransactionType.Reimbursement) {
@@ -244,8 +236,6 @@ export const migrateDatabaseServiceFactory = (mongodbService: IMongodbService, s
       throw 'Unexpected transaction type';
     });
 
-    console.log('transaction updated', JSON.stringify(transactionUpdates, null, 2));
-
     await mongodbService.inTransaction(async ({ categories, products, transactions }, session) => {
       const res1 = await products.insertMany(genericProducts, {
         session,
@@ -288,8 +278,6 @@ export const migrateDatabaseServiceFactory = (mongodbService: IMongodbService, s
         populate: populate('payingAccount', 'ownerAccount'),
       }).lean();
     });
-
-    console.log('deferred transactions', JSON.stringify(deferredTransactions, null, 2));
 
     const deferredTransactionUpdates = deferredTransactions.map<AnyBulkWriteOperation<Documents.Transaction>>((t) => {
       if (t.transactionType !== TransactionType.Deferred) {
@@ -343,8 +331,6 @@ export const migrateDatabaseServiceFactory = (mongodbService: IMongodbService, s
       throw 'UNEXPECTED TRANSACTION';
     });
 
-    console.log('deferred updated', JSON.stringify(deferredTransactionUpdates, null, 2));
-
     const deferredSplitTransactions = await mongodbService.transactions((model, session) => {
       return model.find({
         deferredSplits: {
@@ -356,8 +342,6 @@ export const migrateDatabaseServiceFactory = (mongodbService: IMongodbService, s
         populate: populate('deferredSplits.payingAccount', 'deferredSplits.ownerAccount'),
       }).lean();
     });
-
-    console.log('deferred splits', JSON.stringify(deferredSplitTransactions, null, 2));
 
     const deferredSplitUpdates = deferredSplitTransactions.reduce<AnyBulkWriteOperation<Documents.Transaction>[]>((accumulator, currentValue) => {
       if (currentValue.transactionType !== TransactionType.Split) {
@@ -407,8 +391,6 @@ export const migrateDatabaseServiceFactory = (mongodbService: IMongodbService, s
         },
       ];
     }, []);
-
-    console.log('deferred splits updates', JSON.stringify(deferredSplitUpdates, null, 2));
 
     await mongodbService.inTransaction(async({ transactions }, session) => {
       const res1 = await transactions.bulkWrite([

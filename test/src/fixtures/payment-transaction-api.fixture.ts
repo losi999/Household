@@ -113,7 +113,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match payment transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
-  toBeConvertedToPaymentTransaction(originalDocument: Documents.DeferredTransaction, currentDocument: Documents.PaymentTransaction) {
+  toBeConvertedToPaymentTransaction(originalDocument: Documents.LoanTransaction, currentDocument: Documents.PaymentTransaction) {
 
     const comparer = new Comparer(currentDocument, {
       amount: originalDocument.amount,

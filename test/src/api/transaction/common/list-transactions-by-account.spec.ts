@@ -9,8 +9,7 @@ import { productDataFactory } from '@household/test/api/product/data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
 
@@ -120,45 +119,12 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               ],
             });
 
-            const owningSplitTransactionDocument = splitTransactionDataFactory.document({
-              account: transferAccountDocument,
-              recipient: recipientDocument,
-              splits: [
-                {
-                  project: projectDocument,
-                },
-              ],
-              loans: [
-                {
-                  loanAccount: accountDocument,
-                },
-                {
-                  loanAccount: accountDocument,
-                },
-              ],
-            });
-
-            const payingNotRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            const loanTransactionDocument = loanTransactionDataFactory.document({
               account: accountDocument,
               loanAccount: loanAccountDocument,
             });
 
-            const payingRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
-              account: accountDocument,
-              loanAccount: loanAccountDocument,
-            });
-
-            const owningNotRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
-              account: transferAccountDocument,
-              loanAccount: accountDocument,
-            });
-
-            const owningRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
-              account: transferAccountDocument,
-              loanAccount: accountDocument,
-            });
-
-            const owningReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            const repaymentTransactionDocument = loanTransactionDataFactory.document({
               account: loanAccountDocument,
               loanAccount: accountDocument,
             });
@@ -187,7 +153,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
             await saveProject(projectDocument);
             await saveProduct(productDocument);
-            await saveTransactions(paymentTransactionDocument, payingSplitTransactionDocument, owningSplitTransactionDocument, payingTransferTransactionDocument, receivingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingNotRepaidDeferredTransactionDocument, payingRepaidDeferredTransactionDocument, owningNotRepaidDeferredTransactionDocument, owningRepaidDeferredTransactionDocument, owningReimbursementTransactionDocument);
+            await saveTransactions(paymentTransactionDocument, payingSplitTransactionDocument, payingTransferTransactionDocument, receivingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument);
             const res = await requestGetTransactionListByAccount(getAccountId(accountDocument), {
               pageNumber: 1,
               pageSize: 100000, 
@@ -197,19 +163,14 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             expect(res).toContainMatchingPaymentTransactionDocument(paymentTransactionDocument);
 
             expect(res).toContainMatchingSplitTransactionDocument(payingSplitTransactionDocument);
-            expect(res).toContainMatchingSplitTransactionDocument(owningSplitTransactionDocument);
 
             expect(res).toContainMatchingTransferTransactionDocument(payingTransferTransactionDocument, getAccountId(accountDocument));
             expect(res).toContainMatchingTransferTransactionDocument(receivingTransferTransactionDocument, getAccountId(accountDocument));
             expect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(accountDocument));
             expect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(accountDocument));
 
-            expect(res).toContainMatchingDeferredTransactionDocument(payingNotRepaidDeferredTransactionDocument);
-            expect(res).toContainMatchingDeferredTransactionDocument(payingRepaidDeferredTransactionDocument);
-            expect(res).toContainMatchingDeferredTransactionDocument(owningNotRepaidDeferredTransactionDocument);
-            expect(res).toContainMatchingDeferredTransactionDocument(owningRepaidDeferredTransactionDocument);
-            
-            expect(res).toContainMatchingReimbursementTransactionDocument(owningReimbursementTransactionDocument);
+            expect(res).toContainMatchingLoanTransactionDocument(loanTransactionDocument);            
+            expect(res).toContainMatchingLoanTransactionDocument(repaymentTransactionDocument);
           });
 
           test('of a loan account', async ({ requestGetTransactionListByAccount, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -254,17 +215,12 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               ],
             });
 
-            const owningNotRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
+            const loanTransactionDocument = loanTransactionDataFactory.document({
               account: accountDocument,
               loanAccount: loanAccountDocument,
             });
 
-            const owningRepaidDeferredTransactionDocument = deferredTransactionDataFactory.document({
-              account: accountDocument,
-              loanAccount: loanAccountDocument,
-            });
-
-            const payingReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+            const repaymentTransactionDocument = loanTransactionDataFactory.document({
               account: loanAccountDocument,
               loanAccount: accountDocument,
             });
@@ -284,7 +240,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
             await saveProject(projectDocument);
             await saveProduct(productDocument);
-            await saveTransactions(owningSplitTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, owningNotRepaidDeferredTransactionDocument, owningRepaidDeferredTransactionDocument, payingReimbursementTransactionDocument);
+            await saveTransactions(owningSplitTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument);
             const res = await requestGetTransactionListByAccount(getAccountId(loanAccountDocument), {
               pageNumber: 1,
               pageSize: 100000, 
@@ -296,11 +252,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
             expect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(loanAccountDocument));
             expect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(loanAccountDocument));
-
-            expect(res).toContainMatchingDeferredTransactionDocument(owningNotRepaidDeferredTransactionDocument);
-            expect(res).toContainMatchingDeferredTransactionDocument(owningRepaidDeferredTransactionDocument);
-
-            expect(res).toContainMatchingReimbursementTransactionDocument(payingReimbursementTransactionDocument);
+            
+            expect(res).toContainMatchingLoanTransactionDocument(loanTransactionDocument);
+            expect(res).toContainMatchingLoanTransactionDocument(repaymentTransactionDocument);
           });
         });
 

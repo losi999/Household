@@ -143,12 +143,12 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         });
           
         await models.transactions.updateMany({
-          'deferredSplits.product': productId,
+          'loans.product': productId,
         }, {
 
           $unset: {
-            'deferredSplits.$[element].product': 1,
-            'deferredSplits.$[element].quantity': 1,
+            'loans.$[element].product': 1,
+            'loans.$[element].quantity': 1,
           },
         }, {
           session,
@@ -244,12 +244,12 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         });
 
         await models.transactions.updateMany({
-          'deferredSplits.product': {
+          'loans.product': {
             $in: sourceProductIds,
           },
         }, {
           $set: {
-            'deferredSplits.$[element].product': targetProductId,
+            'loans.$[element].product': targetProductId,
           },
         }, {
           session,

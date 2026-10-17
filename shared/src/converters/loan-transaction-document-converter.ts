@@ -12,7 +12,7 @@ import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { UpdateQuery } from 'mongoose';
 
-export interface IReimbursementTransactionDocumentConverter {
+export interface ILoanTransactionDocumentConverter {
   create(data: {
     body: Requests.PaymentTransaction;
     payingAccount: Documents.Account;
@@ -21,7 +21,7 @@ export interface IReimbursementTransactionDocumentConverter {
     recipient: Documents.Recipient;
     project: Documents.Project;
     product: Documents.Product;
-  }, expiresIn: number, generateId?: boolean): Documents.ReimbursementTransaction;
+  }, expiresIn: number, generateId?: boolean): Documents.LoanTransaction;
   update(data: {
     body: Requests.PaymentTransaction;
     payingAccount: Documents.Account;
@@ -31,19 +31,19 @@ export interface IReimbursementTransactionDocumentConverter {
     project: Documents.Project;
     product: Documents.Product;
   }, expiresIn: number): DocumentUpdate<Documents.Transaction>;
-  toResponse(document: Documents.ReimbursementTransaction): Responses.ReimbursementTransaction;
-  toResponseList(documents: Documents.ReimbursementTransaction[]): Responses.ReimbursementTransaction[];
+  toResponse(document: Documents.LoanTransaction): Responses.LoanTransaction;
+  toResponseList(documents: Documents.LoanTransaction[]): Responses.LoanTransaction[];
 }
 
-export const reimbursementTransactionDocumentConverterFactory = (
+export const deferredTransactionDocumentConverterFactory = (
   accountDocumentConverter: IAccountDocumentConverter,
   projectDocumentConverter: IProjectDocumentConverter,
   categoryDocumentConverter: ICategoryDocumentConverter,
   recipientDocumentConverter: IRecipientDocumentConverter,
   productDocumentConverter: IProductDocumentConverter,
-): IReimbursementTransactionDocumentConverter => {
-  const transactionType = TransactionType.Reimbursement;
-  const defaultUnset: Unset<Documents.Transaction, Documents.ReimbursementTransaction> = {
+): ILoanTransactionDocumentConverter => {
+  const transactionType = TransactionType.Loan;
+  const defaultUnset: Unset<Documents.Transaction, Documents.LoanTransaction> = {
     transferAccount: true,
     transferAmount: true,
     file: true,
@@ -54,17 +54,17 @@ export const reimbursementTransactionDocumentConverterFactory = (
     loans: true,
   };
 
-  const instance: IReimbursementTransactionDocumentConverter = {
-    create: ({ body: { amount, description, issuedAt, quantity, invoiceNumber, billingEndDate, billingStartDate }, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn, generateId) => {
+  const instance: ILoanTransactionDocumentConverter = {
+    create: ({ body: { issuedAt, amount, description, quantity, invoiceNumber, billingEndDate, billingStartDate }, payingAccount, ownerAccount, project, category, recipient, product }, expiresIn, generateId) => {
       return {
         amount,
         description,
         payingAccount,
         ownerAccount,
-        recipient,
-        category,
-        project,
-        issuedAt: new Date(issuedAt),
+        recipient: recipient ?? undefined,
+        category: category ?? undefined,
+        project: project ?? undefined,
+        issuedAt: createDate(issuedAt),
         transactionType,
         quantity: category?.categoryType === CategoryType.Inventory ? quantity : undefined,
         product: category?.categoryType === CategoryType.Inventory ? product ?? undefined : undefined,
@@ -130,7 +130,7 @@ export const reimbursementTransactionDocumentConverterFactory = (
         },
       };
     },
-    toResponse: ({ amount, description, invoiceNumber, quantity, transactionType, _id, issuedAt, payingAccount, ownerAccount, billingEndDate, billingStartDate, product, category, project, recipient }) => {
+    toResponse: ({ amount, description, invoiceNumber, quantity, transactionType, issuedAt, payingAccount, ownerAccount, billingEndDate, billingStartDate, product, category, recipient, project, _id }) => {
       return {
         amount,
         description,
@@ -138,9 +138,9 @@ export const reimbursementTransactionDocumentConverterFactory = (
         quantity,
         transactionType,
         transactionId: getTransactionId(_id),
-        issuedAt: issuedAt.toISOString(),
-        payingAccount: accountDocumentConverter.toResponseLean(payingAccount),
-        ownerAccount: accountDocumentConverter.toResponseLean(ownerAccount),
+        issuedAt: issuedAt?.toISOString(),
+        payingAccount: payingAccount ? accountDocumentConverter.toResponseLean(payingAccount) : undefined,
+        ownerAccount: ownerAccount ? accountDocumentConverter.toResponseLean(ownerAccount) : undefined,
         billingEndDate: billingEndDate?.toISOString().split('T')[0],
         billingStartDate: billingStartDate?.toISOString().split('T')[0],
         product: product ? productDocumentConverter.toResponse(product) : undefined,

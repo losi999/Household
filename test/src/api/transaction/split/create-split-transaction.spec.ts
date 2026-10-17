@@ -6,7 +6,7 @@ import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { allowUsers } from '@household/test/utils';
 
@@ -1471,7 +1471,7 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 loans: [
                   {
-                    transactionId: deferredTransactionDataFactory.id('not-mongo-id'), 
+                    transactionId: loanTransactionDataFactory.id('not-mongo-id'), 
                   },
                 ],
               }));

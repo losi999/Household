@@ -2,9 +2,8 @@ import { getTransactionId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Api } from '@household/shared/types/api';
 import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
-import { expect as deferredTransactionApiExpect } from '@household/test/fixtures/deferred-transaction-api.fixture';
+import { expect as loanTransactionApiExpect } from '@household/test/fixtures/loan-transaction-api.fixture';
 import { expect as paymentTransactionApiExpect } from '@household/test/fixtures/payment-transaction-api.fixture';
-import { expect as reimbursementTransactionApiExpect } from '@household/test/fixtures/reimbursement-transaction-api.fixture';
 import { expect as splitTransactionApiExpect } from '@household/test/fixtures/split-transaction-api.fixture';
 import { expect as transferTransactionApiExpect } from '@household/test/fixtures/transfer-transaction-api.fixture';
 import { expect as draftTransactionApiExpect } from '@household/test/fixtures/draft-transaction-api.fixture';
@@ -173,4 +172,4 @@ const transactionApiExpect = baseExpect.extend({
   },
 });
 
-export const expect = mergeExpects(transactionApiExpect, deferredTransactionApiExpect, paymentTransactionApiExpect, reimbursementTransactionApiExpect, splitTransactionApiExpect, transferTransactionApiExpect, draftTransactionApiExpect);
+export const expect = mergeExpects(transactionApiExpect, loanTransactionApiExpect, paymentTransactionApiExpect, splitTransactionApiExpect, transferTransactionApiExpect, draftTransactionApiExpect);

@@ -82,37 +82,14 @@ export namespace Responses {
       recipient: Recipient;
     };
 
-  /**
-     * @deprecated
-     */
-  export type DeferredTransaction = Api.Transaction.TransactionId
+  export type LoanTransaction = Api.Transaction.TransactionId
     & Api.Transaction.Amount
     & Api.Transaction.Description
     & Api.Transaction.IssuedAt<string>
     & Api.Transaction.InvoiceNumber
     & Api.Transaction.InvoiceDate<string>
     & Api.Transaction.Quantity
-    & Api.Transaction.TransactionType<Enum.TransactionType.Deferred>
-    & {
-      product: Product;
-      payingAccount: AccountLean;
-      ownerAccount: AccountLean;
-      category: Category;
-      project: Project;
-      recipient: Recipient;
-    };
-
-  /**
- * @deprecated
- */
-  export type ReimbursementTransaction = Api.Transaction.TransactionId
-    & Api.Transaction.Amount
-    & Api.Transaction.Description
-    & Api.Transaction.IssuedAt<string>
-    & Api.Transaction.InvoiceNumber
-    & Api.Transaction.InvoiceDate<string>
-    & Api.Transaction.Quantity
-    & Api.Transaction.TransactionType<Enum.TransactionType.Reimbursement>
+    & Api.Transaction.TransactionType<Enum.TransactionType.Loan>
     & {
       product: Product;
       payingAccount: AccountLean;
@@ -153,7 +130,7 @@ export namespace Responses {
       account: AccountLean;
       recipient: Recipient;
       splits: SplitItem[];
-      deferredSplits: DeferredTransaction[];
+      loans: LoanTransaction[];
     };
 
   export type DraftTransaction = Api.Transaction.TransactionId
@@ -165,7 +142,7 @@ export namespace Responses {
       potentialDuplicates: Transaction[];
     };
 
-  export type Transaction = PaymentTransaction | TransferTransaction | DeferredTransaction | ReimbursementTransaction | SplitTransaction;
+  export type Transaction = PaymentTransaction | TransferTransaction | LoanTransaction | SplitTransaction;
 
   export type TransactionReport = Api.Transaction.TransactionId
     & Api.Transaction.Amount

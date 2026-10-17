@@ -6,7 +6,7 @@ import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
@@ -36,7 +36,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
   let projectDocument: Documents.Project;
   let recipientDocument: Documents.Recipient;
   let accountDocument: Documents.Account;
-  let secondaryAccountDocument: Documents.Account;
+  let loanAccount: Documents.Account;
   let regularCategoryDocument: Documents.Category;
   let invoiceCategoryDocument: Documents.Category;
   let inventoryCategoryDocument: Documents.Category;
@@ -46,7 +46,9 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
     projectDocument = projectDataFactory.document();
     recipientDocument = recipientDataFactory.document();
     accountDocument = accountDataFactory.document();
-    secondaryAccountDocument = accountDataFactory.document();
+    loanAccount = accountDataFactory.document({
+      accountType: AccountType.Loan,
+    });
 
     regularCategoryDocument = categoryDataFactory.document({
       body: {
@@ -97,19 +99,19 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
           projectId: getProjectId(projectDocument),
           productId: getProductId(productDocument),
           categoryId: getCategoryId(regularCategoryDocument),
-          loanAccountId: getAccountId(secondaryAccountDocument),
+          loanAccountId: getAccountId(loanAccount),
         },
         {
           projectId: getProjectId(projectDocument),
           productId: getProductId(productDocument),
           categoryId: getCategoryId(inventoryCategoryDocument),
-          loanAccountId: getAccountId(secondaryAccountDocument),
+          loanAccountId: getAccountId(loanAccount),
         },
         {
           projectId: getProjectId(projectDocument),
           productId: getProductId(productDocument),
           categoryId: getCategoryId(invoiceCategoryDocument),
-          loanAccountId: getAccountId(secondaryAccountDocument),
+          loanAccountId: getAccountId(loanAccount),
         },
       ],
     });
@@ -139,7 +141,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
         test.describe('should update transaction', () => {
           test('with complete body', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
             await saveTransaction(originalDocument);
-            await saveAccounts(accountDocument, secondaryAccountDocument);
+            await saveAccounts(accountDocument, loanAccount);
             await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
             await saveProject(projectDocument);
             await saveRecipient(recipientDocument);
@@ -150,12 +152,12 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
             expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
           });
 
-          test('keeping existing deferred split', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransactions, getTransactionById }) => {
+          test('keeping existing loan split', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransactions, getTransactionById }) => {
             const splitDocument = splitTransactionDataFactory.document({
               account: accountDocument,
               loans: [
                 {
-                  loanAccount: secondaryAccountDocument,
+                  loanAccount: loanAccount,
                 },
               ],
             });
@@ -166,8 +168,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               splits: undefined,
               loans: [
                 {
-                  loanAccountId: getAccountId(secondaryAccountDocument),
-                  transactionId: getTransactionId(splitDocument.deferredSplits[0]),
+                  loanAccountId: getAccountId(loanAccount),
+                  transactionId: getTransactionId(splitDocument.loans[0]),
                   categoryId: undefined,
                   projectId: undefined,
                   productId: undefined,
@@ -177,7 +179,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
             });
 
             await saveTransactions(splitDocument);
-            await saveAccounts(accountDocument, secondaryAccountDocument);
+            await saveAccounts(accountDocument, loanAccount);
             const res = await requestUpdateToSplitTransaction(getTransactionId(splitDocument), request);
             expect(res).toBeNoContentResponse();
             const transactionId = getTransactionId(splitDocument);
@@ -191,7 +193,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 description: undefined,
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -208,7 +210,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 recipientId: undefined,
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveProduct(productDocument);
@@ -224,7 +226,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 splits: undefined,
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -241,7 +243,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 loans: undefined,
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -263,7 +265,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -287,7 +289,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -312,7 +314,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -335,7 +337,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -357,7 +359,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -379,7 +381,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -401,7 +403,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -425,7 +427,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -450,7 +452,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -473,7 +475,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -495,7 +497,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -517,7 +519,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 ],
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -541,7 +543,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 },
                 loans: [
                   {
-                    loanAccount: secondaryAccountDocument,
+                    loanAccount: loanAccount,
                   },
                 ],
               });
@@ -553,7 +555,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 description: undefined,
               });
               await saveTransaction(splitDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -570,7 +572,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 recipientId: undefined,
               });
               await saveTransaction(splitDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveProduct(productDocument);
@@ -586,7 +588,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 splits: undefined,
               });
               await saveTransaction(splitDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -610,7 +612,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               });
 
               await saveTransactions(splitDocument, repayingTransferTransactionDocument);
-              await saveAccounts(accountDocument, transferAccountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, transferAccountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -709,7 +711,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 accountType: AccountType.Loan,
               });
               await saveTransaction(originalDocument);
-              await saveAccounts(loanAccountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -763,7 +765,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
           test.describe('if recipientId', () => {
             test('does not belong to any recipient', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, saveCategories, saveProject, saveProduct }) => {
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveProduct(productDocument);
@@ -1338,7 +1340,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
 
             test('does not belong to any product', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategory(inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -1347,7 +1349,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
                 loans: [
                   {
                     ...request.loans[0],
-                    loanAccountId: getAccountId(secondaryAccountDocument),
+                    loanAccountId: getAccountId(loanAccount),
                     categoryId: getCategoryId(inventoryCategoryDocument),
                     productId: productDataFactory.id(), 
                   },
@@ -1490,7 +1492,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
           test.describe('if loans.categoryId', () => {
             test('does not belong to any category', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, saveProject, saveRecipient }) => {
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
@@ -1535,7 +1537,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
           test.describe('if loans.projectId', () => {
             test('does not belong to any project', async ({ requestUpdateToSplitTransaction, saveAccounts, saveTransaction, saveCategories, saveRecipient }) => {
               await saveTransaction(originalDocument);
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(accountDocument, loanAccount);
               await saveCategories(regularCategoryDocument);
               await saveRecipient(recipientDocument);
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
@@ -1639,7 +1641,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/split (split)', (
               const res = await requestUpdateToSplitTransaction(getTransactionId(originalDocument), splitTransactionDataFactory.request({
                 loans: [
                   {
-                    transactionId: deferredTransactionDataFactory.id('not-mongo-id'), 
+                    transactionId: loanTransactionDataFactory.id('not-mongo-id'), 
                   },
                 ],
               }));

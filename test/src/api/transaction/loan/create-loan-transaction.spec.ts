@@ -6,7 +6,7 @@ import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { forbidUsers } from '@household/test/utils';
 
 import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
@@ -27,7 +27,7 @@ const permissionMap = forbidUsers('viewer') ;
 
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
-test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
+test.describe('POST transaction/v1/transactions/payment (loan)', () => {
   let request: Requests.PaymentTransaction;
   let projectDocument: Documents.Project;
   let recipientDocument: Documents.Recipient;
@@ -75,7 +75,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
       loanAccountId: getAccountId(secondaryAccountDocument),
     };
 
-    request = deferredTransactionDataFactory.request(relatedDocumentIds);
+    request = loanTransactionDataFactory.request(relatedDocumentIds);
   });
 
   test.describe('called as anonymous', () => {
@@ -111,11 +111,11 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('using invoice category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              request = deferredTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
               });
@@ -128,10 +128,10 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toBeCreatedResponse();
               
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
             test('using inventory category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
-              request = deferredTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument),
               });
@@ -145,13 +145,13 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
           });
 
           test.describe('without optional properties', () => {
             test('description', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              request = deferredTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               });
@@ -164,10 +164,10 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
             test(CategoryType.Inventory, async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              request = deferredTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 productId: undefined,
                 quantity: undefined,
@@ -182,11 +182,11 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test(CategoryType.Invoice, async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              request = deferredTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
                 invoiceNumber: undefined,
@@ -202,11 +202,11 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('invoice.invoiceNumber', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              request = deferredTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
                 invoiceNumber: undefined,
@@ -220,11 +220,11 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('categoryId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveProject, saveRecipient }) => {
-              request = deferredTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: undefined,
               });
@@ -236,11 +236,11 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('recipientId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject }) => {
-              request = deferredTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: undefined,
               });
@@ -252,11 +252,11 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('projectId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveRecipient }) => {
-              request = deferredTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: undefined,
               });
@@ -268,7 +268,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toBeCreatedResponse();
 
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsDeferredTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
           });
         });
@@ -276,7 +276,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
         test.describe('should return error', () => {
           test.describe('if body', () => {
             test('has additional properties', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 extra: 123, 
               } as any));
               expect(res).toBeBadRequestResponse();
@@ -286,7 +286,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
           test.describe('if amount', () => {
             test('is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 amount: undefined, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -294,7 +294,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not number', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 amount: <any>'1', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -302,7 +302,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is bigger than 0', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 amount: 1, 
               }));
@@ -313,7 +313,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
           test.describe('if description', () => {
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 description: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -321,7 +321,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is too short', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 description: '', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -331,7 +331,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
           test.describe('if quantity', () => {
             test('is present and productId is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 productId: undefined,
                 quantity: 1, 
               }));
@@ -340,7 +340,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not number', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 quantity: <any>'a', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -348,7 +348,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is too small', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 quantity: 0, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -358,7 +358,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
           test.describe('if productId', () => {
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 productId: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -366,7 +366,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 productId: productDataFactory.id('not-valid'), 
               }));
               expect(res).toBeBadRequestResponse();
@@ -378,7 +378,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               await saveCategory(inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument), 
               }));
@@ -389,7 +389,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
           test.describe('if invoiceNumber', () => {
             test('is present and billingEndDate, billingStartDate are missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingEndDate: undefined,
                 billingStartDate: undefined, 
               }));
@@ -397,7 +397,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
             });
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 invoiceNumber: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -405,7 +405,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is too short', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 invoiceNumber: '', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -415,7 +415,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
           test.describe('if billingEndDate', () => {
             test('is present and billingStartDate is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingStartDate: undefined, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -423,7 +423,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingEndDate: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -431,7 +431,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not date format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingEndDate: 'not-date', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -439,7 +439,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is later than billingStartDate', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingEndDate: '2022-06-01',
                 billingStartDate: '2022-06-03', 
               }));
@@ -450,7 +450,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
           test.describe('if billingStartDate', () => {
             test('is present and billingEndDate is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingEndDate: undefined, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -458,7 +458,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingStartDate: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -466,7 +466,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not date format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingStartDate: 'not-date', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -476,7 +476,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
 
           test.describe('if issuedAt', () => {
             test('is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 issuedAt: undefined, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -484,7 +484,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 issuedAt: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -492,7 +492,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not date-time format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 issuedAt: 'not-date-time', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -505,7 +505,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 accountId: accountDataFactory.id(), 
               }));
@@ -514,7 +514,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 accountId: undefined, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -522,7 +522,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 accountId: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -530,7 +530,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 accountId: accountDataFactory.id('not-mongo-id'), 
               }));
               expect(res).toBeBadRequestResponse();
@@ -544,7 +544,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 loanAccountId: accountDataFactory.id(), 
               }));
@@ -552,8 +552,22 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               expect(res).toHaveMessage('No account found');
             });
 
+            test('belongs to a non-loan account', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject, saveRecipient }) => {
+              const nonLoanAccount = accountDataFactory.document();
+              await saveAccounts(accountDocument, nonLoanAccount);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loanAccountId: getAccountId(nonLoanAccount), 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('One of the accounts must be loan');
+            });
+
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 loanAccountId: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -561,7 +575,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 loanAccountId: accountDataFactory.id('not-mongo-id'), 
               }));
               expect(res).toBeBadRequestResponse();
@@ -574,7 +588,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: categoryDataFactory.id(), 
               }));
@@ -583,7 +597,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 categoryId: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -591,7 +605,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 categoryId: categoryDataFactory.id('not-mongo-id'), 
               }));
               expect(res).toBeBadRequestResponse();
@@ -604,7 +618,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: recipientDataFactory.id(), 
               }));
@@ -613,7 +627,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 recipientId: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -621,7 +635,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 recipientId: recipientDataFactory.id('not-mongo-id'), 
               }));
               expect(res).toBeBadRequestResponse();
@@ -634,7 +648,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
               await saveAccounts(accountDocument, secondaryAccountDocument);
               await saveCategory(regularCategoryDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: projectDataFactory.id(), 
               }));
@@ -643,7 +657,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 projectId: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -651,7 +665,7 @@ test.describe('POST transaction/v1/transactions/payment (deferred)', () => {
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(deferredTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 projectId: projectDataFactory.id('not-mongo-id'), 
               }));
               expect(res).toBeBadRequestResponse();

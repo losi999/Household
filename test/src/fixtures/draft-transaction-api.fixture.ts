@@ -4,8 +4,7 @@ import { TransactionType } from '@household/shared/enums';
 import { Comparer } from '@household/test/comparer';
 import { getTransactionId } from '@household/shared/common/utils';
 import { validatePaymentTransactionResponse } from '@household/test/fixtures/payment-transaction-api.fixture';
-import { validateDeferredTransactionResponse } from '@household/test/fixtures/deferred-transaction-api.fixture';
-import { validateReimbursementTransactionResponse } from '@household/test/fixtures/reimbursement-transaction-api.fixture';
+import { validateLoanTransactionResponse } from '@household/test/fixtures/loan-transaction-api.fixture';
 import { validateSplitTransactionResponse } from '@household/test/fixtures/split-transaction-api.fixture';
 import { validateTransferTransactionResponse } from '@household/test/fixtures/transfer-transaction-api.fixture';
 import { Import } from '@household/shared/types/common';
@@ -107,10 +106,8 @@ export const expect = baseExpect.extend({
         switch(duplicateResponse.transactionType) {
           case TransactionType.Payment:
             return validatePaymentTransactionResponse(duplicateResponse, duplicateDocument as Documents.PaymentTransaction);
-          case TransactionType.Deferred:
-            return validateDeferredTransactionResponse(duplicateResponse, duplicateDocument as Documents.DeferredTransaction);
-          case TransactionType.Reimbursement:
-            return validateReimbursementTransactionResponse(duplicateResponse, duplicateDocument as Documents.ReimbursementTransaction);
+          case TransactionType.Loan:
+            return validateLoanTransactionResponse(duplicateResponse, duplicateDocument as Documents.LoanTransaction);
           case TransactionType.Split:
             return validateSplitTransactionResponse(duplicateResponse, duplicateDocument as Documents.SplitTransaction);
           case TransactionType.Transfer:

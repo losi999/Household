@@ -10,7 +10,7 @@ import { validateAccountLeanResponse } from '@household/test/fixtures/account-ap
 import { validateRecipientResponse } from '@household/test/fixtures/recipient-api.fixture';
 import { validateCategoryResponse } from '@household/test/fixtures/category-api.fixture';
 import { validateProductResponse } from '@household/test/fixtures/product-api.fixture';
-import { validateDeferredTransactionResponse } from '@household/test/fixtures/deferred-transaction-api.fixture';
+import { validateLoanTransactionResponse } from '@household/test/fixtures/loan-transaction-api.fixture';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 
@@ -38,10 +38,10 @@ export const validateSplitTransactionResponse = (response: Responses.SplitTransa
         invoiceNumber: splitDocument.invoiceNumber,
       });
     }) ?? [],
-    deferredSplits: response.deferredSplits?.map((deferredSplitResponseItem, index) => {
-      const deferredSplitDocument = document.deferredSplits[index];
+    loans: response.loans?.map((loanSplitResponseItem, index) => {
+      const loanSplitDocument = document.loans[index];
 
-      return validateDeferredTransactionResponse(deferredSplitResponseItem, deferredSplitDocument);
+      return validateLoanTransactionResponse(loanSplitResponseItem, loanSplitDocument);
     }) ?? [],
   });
 };
@@ -84,11 +84,11 @@ export const expect = baseExpect.extend({
           invoiceNumber: splitDocument.category?.categoryType === CategoryType.Invoice ? splitRequest.invoiceNumber : undefined,
         });
       }),
-      deferredSplits: document.deferredSplits?.map((splitDocument, index) => {
+      loans: document.loans?.map((splitDocument, index) => {
         const splitRequest = req.loans[index];
 
         return new Comparer(splitDocument, {
-          transactionType: TransactionType.Deferred,
+          transactionType: TransactionType.Loan,
           issuedAt: createDate(req.issuedAt).toISOString(),
           payingAccount: req.accountId,
           ownerAccount: splitRequest.loanAccountId,
@@ -163,8 +163,8 @@ export const expect = baseExpect.extend({
           invoiceNumber: expectedInvoiceNumber,
         });
       }),
-      deferredSplits: currentDocument.deferredSplits.map((splitDocument, index) => {
-        const originalSplit = originalDocument.deferredSplits[index];
+      loans: currentDocument.loans.map((splitDocument, index) => {
+        const originalSplit = originalDocument.loans[index];
         let expectedQuantity: number;
         let expectedInvoiceNumber: string;
         let expectedBillingStartDate: string;
@@ -222,7 +222,7 @@ export const expect = baseExpect.extend({
       transactionType: originalDocument.transactionType,
       recipient: getRecipientId(originalDocument.recipient),
       splits: currentDocument.splits.map((splitDocument, index) => {
-        const originalSplit = originalDocument.splits[index] ?? originalDocument.deferredSplits.find(x => getAccountId(x.ownerAccount) === deletedAccountId);
+        const originalSplit = originalDocument.splits[index] ?? originalDocument.loans.find(x => getAccountId(x.ownerAccount) === deletedAccountId);
 
         return new Comparer(splitDocument, {
           amount: originalSplit.amount,
@@ -236,8 +236,8 @@ export const expect = baseExpect.extend({
           invoiceNumber: originalSplit.invoiceNumber,
         });
       }),
-      deferredSplits: currentDocument.deferredSplits.map((splitDocument) => {
-        const originalSplit = originalDocument.deferredSplits.find(s => getTransactionId(s) === getTransactionId(splitDocument));
+      loans: currentDocument.loans.map((splitDocument) => {
+        const originalSplit = originalDocument.loans.find(s => getTransactionId(s) === getTransactionId(splitDocument));
 
         return new Comparer(splitDocument, {
           amount: originalSplit.amount,

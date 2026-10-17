@@ -13,7 +13,7 @@ import { validateRecipientResponse } from '@household/test/fixtures/recipient-ap
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 
-export const validateDeferredTransactionResponse = (response: Responses.DeferredTransaction, document: Documents.DeferredTransaction) => {
+export const validateLoanTransactionResponse = (response: Responses.LoanTransaction, document: Documents.LoanTransaction) => {
   return new Comparer(response, {
     transactionId: getTransactionId(document),
     amount: document.amount,
@@ -34,7 +34,7 @@ export const validateDeferredTransactionResponse = (response: Responses.Deferred
 };
 
 export const expect = baseExpect.extend({
-  toHaveBeenSavedAsDeferredTransactionDocument(req: Requests.PaymentTransaction, document: Documents.DeferredTransaction) {
+  toHaveBeenSavedAsLoanTransactionDocument(req: Requests.PaymentTransaction, document: Documents.LoanTransaction) {
     if (!document) {
       return {
         pass: false,
@@ -43,7 +43,7 @@ export const expect = baseExpect.extend({
     }
 
     const comparer = new Comparer(document, {
-      transactionType: TransactionType.Deferred,
+      transactionType: TransactionType.Loan,
       description: req.description,
       amount: req.amount,
       issuedAt: createDate(req.issuedAt).toISOString(),
@@ -63,10 +63,10 @@ export const expect = baseExpect.extend({
 
     return {
       pass: !errors.length,
-      message: () => `Expected deferred transaction to be stored in database, but it was not:\n${errors.join('\n')}`,
+      message: () => `Expected loan transaction to be stored in database, but it was not:\n${errors.join('\n')}`,
     };
   },
-  toHaveRelatedDocumentsChangedInDeferredTransaction(originalDocument: Documents.DeferredTransaction, currentDocument: Documents.DeferredTransaction, reassignments: {
+  toHaveRelatedDocumentsChangedInLoanTransaction(originalDocument: Documents.LoanTransaction, currentDocument: Documents.LoanTransaction, reassignments: {
     recipient?: Reassignment<Api.Recipient.Id>;
     project?: Reassignment<Api.Project.Id>;
     product?: Reassignment<Api.Product.Id>;
@@ -113,34 +113,34 @@ export const expect = baseExpect.extend({
 
     return {
       pass: errors.length === 0,
-      message: () => `Expected document to match deferred transaction, but it did not:\n${errors.join('\n')}`,
+      message: () => `Expected document to match loan transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainMatchingDeferredTransactionDocument(received: APIResponse, document: Documents.DeferredTransaction) {
-    const response = await received.json() as Responses.DeferredTransaction[];
+  async toContainMatchingLoanTransactionDocument(received: APIResponse, document: Documents.LoanTransaction) {
+    const response = await received.json() as Responses.LoanTransaction[];
 
     const matchingResponse = response.find(r => r.transactionId === getTransactionId(document));
 
     if (!matchingResponse) {
       return {
         pass: false,
-        message: () => `Expected response to contain a deferred transaction with id ${getTransactionId(document)}, but it was not found`,
+        message: () => `Expected response to contain a loan transaction with id ${getTransactionId(document)}, but it was not found`,
       };
     }
 
-    const comparer = validateDeferredTransactionResponse(matchingResponse, document);
+    const comparer = validateLoanTransactionResponse(matchingResponse, document);
     
     const errors = comparer.validate();
         
     return {
       pass: errors.length === 0,
-      message: () => `Expected response to match deferred transaction document, but it did not:\n${errors.join('\n')}`,
+      message: () => `Expected response to match loan transaction document, but it did not:\n${errors.join('\n')}`,
     };  
   },
-  async toMatchDeferredTransactionDocument(res: APIResponse, document: Documents.DeferredTransaction) {
-    const response = await res.json() as Responses.DeferredTransaction;
+  async toMatchLoanTransactionDocument(res: APIResponse, document: Documents.LoanTransaction) {
+    const response = await res.json() as Responses.LoanTransaction;
 
-    const comparer = validateDeferredTransactionResponse(response, document);
+    const comparer = validateLoanTransactionResponse(response, document);
     
     const errors = comparer.validate();
         

@@ -4,9 +4,8 @@ import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { allowUsers } from '@household/test/utils';
 import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
@@ -147,8 +146,8 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
             });
           });
 
-          test('deferred transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
-            const deferredTransactionDocument = deferredTransactionDataFactory.document({
+          test('loan transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const loanTransactionDocument = loanTransactionDataFactory.document({
               account: accountDocument,
               category: categoryDocument,
               product: sourceProductDocument,
@@ -158,13 +157,13 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
             await saveAccounts(accountDocument, loanAccountDocument);
             await saveCategory(categoryDocument);
             await saveProducts(sourceProductDocument, targetProductDocument);
-            await saveTransactions(deferredTransactionDocument);
+            await saveTransactions(loanTransactionDocument);
 
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
             expect(res).toBeNoContentResponse();
 
             expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
-            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+            expect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
               product: {
                 from: getProductId(sourceProductDocument),
                 to: getProductId(targetProductDocument),
@@ -172,8 +171,8 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
             });
           });
 
-          test('reimbursement transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
-            const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          test('repayment transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const repaymentTransactionDocument = loanTransactionDataFactory.document({
               account: loanAccountDocument,
               category: categoryDocument,
               product: sourceProductDocument,
@@ -183,13 +182,13 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
             await saveAccounts(accountDocument, loanAccountDocument);
             await saveCategory(categoryDocument);
             await saveProducts(sourceProductDocument, targetProductDocument);
-            await saveTransactions(reimbursementTransactionDocument);
+            await saveTransactions(repaymentTransactionDocument);
 
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
             expect(res).toBeNoContentResponse();
 
             expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
-            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+            expect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
               product: {
                 from: getProductId(sourceProductDocument),
                 to: getProductId(targetProductDocument),

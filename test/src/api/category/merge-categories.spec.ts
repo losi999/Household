@@ -13,9 +13,8 @@ import { mergeExpects, mergeTests } from '@playwright/test';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
 import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
@@ -137,12 +136,12 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
               });
             });
 
-            test('deferred transaction', async ({ requestMergeCategories, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+            test('loan transaction', async ({ requestMergeCategories, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
               if (categoryType === CategoryType.Inventory) {
                 await saveProducts(productDocument);
               }
 
-              const deferredTransactionDocument = deferredTransactionDataFactory.document({
+              const loanTransactionDocument = loanTransactionDataFactory.document({
                 account: accountDocument,
                 category: sourceCategoryDocument,
                 loanAccount: loanAccountDocument,
@@ -151,13 +150,13 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
 
               await saveCategories(sourceCategoryDocument, targetCategoryDocument);
               await saveAccounts(accountDocument, loanAccountDocument);
-              await saveTransactions(deferredTransactionDocument);
+              await saveTransactions(loanTransactionDocument);
 
               const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
               expect(res).toBeNoContentResponse();
 
               expect(await findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
-              expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+              expect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
                 category: {
                   from: sourceCategoryDocument,
                   to: targetCategoryDocument,
@@ -165,12 +164,12 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
               });
             });
 
-            test('reimbursement transaction', async ({ requestMergeCategories, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+            test('repayment transaction', async ({ requestMergeCategories, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
               if (categoryType === CategoryType.Inventory) {
                 await saveProducts(productDocument);
               }
 
-              const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              const repaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: sourceCategoryDocument,
                 loanAccount: accountDocument,
@@ -179,13 +178,13 @@ test.describe('POST category/v1/categories/{categoryId}/merge', () => {
 
               await saveCategories(sourceCategoryDocument, targetCategoryDocument);
               await saveAccounts(accountDocument, loanAccountDocument);
-              await saveTransactions(reimbursementTransactionDocument);
+              await saveTransactions(repaymentTransactionDocument);
 
               const res = await requestMergeCategories(getCategoryId(targetCategoryDocument), [getCategoryId(sourceCategoryDocument)]);
               expect(res).toBeNoContentResponse();
 
               expect(await findCategoryById(getCategoryId(sourceCategoryDocument))).toHaveBeenDeletedFromDatabase();
-              expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+              expect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
                 category: {
                   from: sourceCategoryDocument,
                   to: targetCategoryDocument,

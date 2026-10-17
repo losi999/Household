@@ -15,14 +15,6 @@ export const isPaymentTransaction = (transaction: Responses.Transaction): transa
   return transaction?.transactionType === 'payment';
 };
 
-export const isDeferredTransactionResponse = (transaction: any): transaction is Responses.DeferredTransaction => {
-  return (transaction as Responses.DeferredTransaction)?.transactionType === 'deferred';
-};
-
-export const isDeferredTransaction = (transaction: Documents.Transaction | Documents.SplitItem): transaction is Documents.DeferredTransaction => {
-  return (transaction as Documents.DeferredTransaction).transactionType === 'deferred';
-};
-
 export const isInvoiceCategory = (category: Responses.Category): boolean => {
   return category?.categoryType === CategoryType.Invoice;
 };

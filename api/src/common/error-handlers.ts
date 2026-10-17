@@ -88,6 +88,12 @@ export const httpErrors = {
         throw httpError(statusCode, 'Account type cannot be loan');
       }
     },
+    loanAccountRequired: (ctx: Documents.Account[], statusCode = 400) => {
+      if (ctx.every(a => a.accountType !== AccountType.Loan)) {
+        log('One of the accounts must be loan', ctx);
+        throw httpError(statusCode, 'One of the accounts must be loan');
+      }
+    },
   },
   project: {
     save: (doc: Documents.Project, statusCode = 500): CatchAndThrow => (error) => {

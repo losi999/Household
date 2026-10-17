@@ -4,9 +4,8 @@ import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { allowUsers } from '@household/test/utils';
 import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
@@ -99,8 +98,8 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
             });
           });
 
-          test('deferred transaction', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
-            const deferredTransactionDocument = deferredTransactionDataFactory.document({
+          test('loan transaction', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const loanTransactionDocument = loanTransactionDataFactory.document({
               account: accountDocument,
               category: categoryDocument,
               product: productDocument,
@@ -110,20 +109,20 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
             await saveAccounts(accountDocument, loanAccountDocument);
             await saveCategory(categoryDocument);
             await saveProducts(productDocument);
-            await saveTransactions(deferredTransactionDocument);
+            await saveTransactions(loanTransactionDocument);
             const res = await requestDeleteProduct(getProductId(productDocument));
             expect(res).toBeNoContentResponse();
             
             expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
-            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+            expect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },
             });
           });
 
-          test('reimbursement transaction', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
-            const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          test('repayment transaction', async ({ requestDeleteProduct, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const repaymentTransactionDocument = loanTransactionDataFactory.document({
               account: loanAccountDocument,
               category: categoryDocument,
               product: productDocument,
@@ -133,12 +132,12 @@ test.describe('DELETE /product/v1/products/{productId}', () => {
             await saveAccounts(accountDocument, loanAccountDocument);
             await saveCategory(categoryDocument);
             await saveProducts(productDocument);
-            await saveTransactions(reimbursementTransactionDocument);
+            await saveTransactions(repaymentTransactionDocument);
             const res = await requestDeleteProduct(getProductId(productDocument));
             expect(res).toBeNoContentResponse();
             
             expect(await findProductById(getProductId(productDocument))).toHaveBeenDeletedFromDatabase();
-            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+            expect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
               product: {
                 from: getProductId(productDocument),
               },

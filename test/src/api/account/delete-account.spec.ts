@@ -2,9 +2,8 @@ import { entries, getAccountId, getTransactionId } from '@household/shared/commo
 import { AccountType } from '@household/shared/enums';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { allowUsers } from '@household/test/utils';
@@ -156,39 +155,8 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          test('paying deferred transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
-            const transactionDocument = deferredTransactionDataFactory.document({
-              account: accountDocument,
-              loanAccount: secondaryAccountDocument,
-            });
-            
-            await saveAccounts(accountDocument, secondaryAccountDocument);
-            await saveTransactions(transactionDocument);
-            const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
-            
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
-          });
-
-          test('owning deferred transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
-            const transactionDocument = deferredTransactionDataFactory.document({
-              account: secondaryAccountDocument,
-              loanAccount: accountDocument,
-            });
-            
-            await saveAccounts(accountDocument, secondaryAccountDocument);
-            await saveTransactions(transactionDocument);
-            const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
-            
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(transactionDocument).toBeConvertedToPaymentTransaction(await findTransactionById(getTransactionId(transactionDocument)));
-
-          });
-
-          test('paying deferred transaction to loan account', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
-            const transactionDocument = deferredTransactionDataFactory.document({
+          test('loan transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
+            const transactionDocument = loanTransactionDataFactory.document({
               account: accountDocument,
               loanAccount: loanAccountDocument,
             });
@@ -202,8 +170,8 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          test('owning reimbursement transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
-            const transactionDocument = reimbursementTransactionDataFactory.document({
+          test('repayment transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
+            const transactionDocument = loanTransactionDataFactory.document({
               account: loanAccountDocument,
               loanAccount: accountDocument,
             });
@@ -217,32 +185,9 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          test('paying reimbursement transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
-            const transactionDocument = reimbursementTransactionDataFactory.document({
-              account: loanAccountDocument,
-              loanAccount: accountDocument,
-            });
-            
-            await saveAccounts(loanAccountDocument, accountDocument);
-            await saveTransactions(transactionDocument);
-            const res = await requestDeleteAccount(getAccountId(loanAccountDocument));
-            expect(res).toBeNoContentResponse();
-            
-            expect(await findAccountById(getAccountId(loanAccountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
-          });
-
-          test('deferred split transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
+          test('split transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
             const transactionDocument = splitTransactionDataFactory.document({
-              account: secondaryAccountDocument,
-              loans: [
-                {
-                  loanAccount: accountDocument,
-                },
-                {
-                  loanAccount: loanAccountDocument,
-                },
-              ],
+              account: accountDocument,
             });
             
             await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);

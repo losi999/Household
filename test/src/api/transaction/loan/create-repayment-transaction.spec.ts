@@ -6,7 +6,6 @@ import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { forbidUsers } from '@household/test/utils';
 
 import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
@@ -20,6 +19,7 @@ import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.f
 import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 
 const expect = mergeExpects(transactionApiExpect, apiExpect);
 
@@ -27,12 +27,12 @@ const permissionMap = forbidUsers('viewer') ;
 
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
-test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => {
+test.describe('POST transaction/v1/transactions/payment (repayment)', () => {
   let request: Requests.PaymentTransaction;
   let projectDocument: Documents.Project;
   let recipientDocument: Documents.Recipient;
+  let loanAccountDocument: Documents.Account;
   let accountDocument: Documents.Account;
-  let secondaryAccountDocument: Documents.Account;
   let regularCategoryDocument: Documents.Category;
   let invoiceCategoryDocument: Documents.Category;
   let inventoryCategoryDocument: Documents.Category;
@@ -42,10 +42,10 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
   test.beforeEach(async () => {
     projectDocument = projectDataFactory.document();
     recipientDocument = recipientDataFactory.document();
-    accountDocument = accountDataFactory.document({
+    loanAccountDocument = accountDataFactory.document({
       accountType: AccountType.Loan,
     });
-    secondaryAccountDocument = accountDataFactory.document();
+    accountDocument = accountDataFactory.document();
     regularCategoryDocument = categoryDataFactory.document({
       body: {
         categoryType: CategoryType.Regular,
@@ -67,15 +67,15 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
     productDocument = productDataFactory.document.generic();
 
     relatedDocumentIds = {
-      accountId: getAccountId(accountDocument),
+      accountId: getAccountId(loanAccountDocument),
       categoryId: getCategoryId(regularCategoryDocument),
       projectId: getProjectId(projectDocument),
       productId: getProductId(productDocument),
       recipientId: getRecipientId(recipientDocument),
-      loanAccountId: getAccountId(secondaryAccountDocument),
+      loanAccountId: getAccountId(accountDocument),
     };
 
-    request = reimbursementTransactionDataFactory.request(relatedDocumentIds);
+    request = loanTransactionDataFactory.request(relatedDocumentIds);
   });
 
   test.describe('called as anonymous', () => {
@@ -102,38 +102,38 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
         test.describe('should create transaction', () => {
           test.describe('with complete body', () => {
             test('using regular category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('using invoice category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              request = reimbursementTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
               });
 
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(invoiceCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
             test('using inventory category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
-              request = reimbursementTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument),
               });
 
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
@@ -141,46 +141,46 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
           });
 
           test.describe('without optional properties', () => {
             test('description', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              request = reimbursementTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 description: undefined,
               });
 
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
             test(CategoryType.Inventory, async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              request = reimbursementTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 productId: undefined,
                 quantity: undefined,
                 categoryId: getCategoryId(inventoryCategoryDocument),
               });
 
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test(CategoryType.Invoice, async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              request = reimbursementTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
                 invoiceNumber: undefined,
@@ -188,76 +188,76 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
                 billingStartDate: undefined,
               });
 
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(invoiceCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('invoice.invoiceNumber', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
-              request = reimbursementTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(invoiceCategoryDocument),
                 invoiceNumber: undefined,
               });
 
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(invoiceCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('categoryId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveProject, saveRecipient }) => {
-              request = reimbursementTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: undefined,
               });
 
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('recipientId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject }) => {
-              request = reimbursementTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: undefined,
               });
 
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('projectId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveRecipient }) => {
-              request = reimbursementTransactionDataFactory.request({
+              request = loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: undefined,
               });
 
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(regularCategoryDocument);
               await saveRecipient(recipientDocument);
               const res = await requestCreatePaymentTransaction(request);
               expect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsReimbursementTransactionDocument(await getTransactionById(transactionId));
+              expect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
             });
           });
         });
@@ -265,7 +265,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
         test.describe('should return error', () => {
           test.describe('if body', () => {
             test('has additional properties', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 extra: 123, 
               } as any));
               expect(res).toBeBadRequestResponse();
@@ -275,7 +275,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if amount', () => {
             test('is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 amount: undefined, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -283,7 +283,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not number', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 amount: <any>'1', 
               }));
@@ -292,7 +292,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is bigger than 0', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 amount: 1, 
               }));
@@ -303,7 +303,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if description', () => {
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 description: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -311,7 +311,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is too short', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 description: '', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -321,7 +321,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if quantity', () => {
             test('is present and productId is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 productId: undefined,
                 quantity: 1, 
               }));
@@ -330,7 +330,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not number', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 quantity: <any>'a', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -338,7 +338,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is too small', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 quantity: 0, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -348,7 +348,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if productId', () => {
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 productId: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -356,7 +356,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 productId: productDataFactory.id('not-valid'), 
               }));
               expect(res).toBeBadRequestResponse();
@@ -364,11 +364,11 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('does not belong to any product', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject, saveRecipient }) => {
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(inventoryCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: getCategoryId(inventoryCategoryDocument), 
               }));
@@ -379,7 +379,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if invoiceNumber', () => {
             test('is present and billingEndDate, billingStartDate are missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingEndDate: undefined,
                 billingStartDate: undefined, 
               }));
@@ -387,7 +387,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
               expect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
             });
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 invoiceNumber: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -395,7 +395,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is too short', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 invoiceNumber: '', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -405,7 +405,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if billingEndDate', () => {
             test('is present and billingStartDate is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingStartDate: undefined, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -413,7 +413,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingEndDate: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -421,7 +421,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not date format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingEndDate: 'not-date', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -429,7 +429,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is later than billingStartDate', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingEndDate: '2022-06-01',
                 billingStartDate: '2022-06-03', 
               }));
@@ -440,7 +440,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if billingStartDate', () => {
             test('is present and billingEndDate is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingEndDate: undefined, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -448,7 +448,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingStartDate: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -456,7 +456,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not date format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 billingStartDate: 'not-date', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -466,7 +466,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if issuedAt', () => {
             test('is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 issuedAt: undefined, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -474,7 +474,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 issuedAt: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -482,7 +482,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not date-time format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 issuedAt: 'not-date-time', 
               }));
               expect(res).toBeBadRequestResponse();
@@ -495,7 +495,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 accountId: accountDataFactory.id(), 
               }));
@@ -503,8 +503,22 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
               expect(res).toHaveMessage('No account found');
             });
 
+            test('belongs to a non-loan account', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject, saveRecipient }) => {
+              const nonLoanAccountDocument = accountDataFactory.document();
+              await saveAccounts(nonLoanAccountDocument, accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                accountId: getAccountId(nonLoanAccountDocument), 
+              }));
+              expect(res).toBeBadRequestResponse();
+              expect(res).toHaveMessage('One of the accounts must be loan');
+            });
+
             test('is missing', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 accountId: undefined, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -512,7 +526,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 accountId: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -520,7 +534,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 accountId: accountDataFactory.id('not-mongo-id'), 
               }));
               expect(res).toBeBadRequestResponse();
@@ -529,28 +543,12 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
           });
 
           test.describe('if loanAccountId', () => {
-            test('belongs to a loan type account', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject, saveRecipient }) => {
-              const loanAccountDocument = accountDataFactory.document({
-                accountType: AccountType.Loan,
-              });
-              await saveAccounts(loanAccountDocument, accountDocument);
-              await saveCategory(regularCategoryDocument);
-              await saveProject(projectDocument);
-              await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
-                ...relatedDocumentIds,
-                loanAccountId: getAccountId(loanAccountDocument), 
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Account type cannot be loan');
-            });
-
             test('does not belong to any account', async ({ requestCreatePaymentTransaction, saveAccount, saveCategory, saveProject, saveRecipient }) => {
-              await saveAccount(accountDocument);
+              await saveAccount(loanAccountDocument);
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 loanAccountId: accountDataFactory.id(), 
               }));
@@ -559,7 +557,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 loanAccountId: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -567,7 +565,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 loanAccountId: accountDataFactory.id('not-mongo-id'), 
               }));
               expect(res).toBeBadRequestResponse();
@@ -577,10 +575,10 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if categoryId', () => {
             test('does not belong to any category', async ({ requestCreatePaymentTransaction, saveAccounts, saveProject, saveRecipient }) => {
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 categoryId: categoryDataFactory.id(), 
               }));
@@ -589,7 +587,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 categoryId: <any> 1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -597,7 +595,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 categoryId: categoryDataFactory.id('not-mongo-id'), 
               }));
               expect(res).toBeBadRequestResponse();
@@ -607,10 +605,10 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if recipientId', () => {
             test('does not belong to any recipient', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject }) => {
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(regularCategoryDocument);
               await saveProject(projectDocument);
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 recipientId: recipientDataFactory.id(), 
               }));
@@ -619,7 +617,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 recipientId: <any>1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -627,7 +625,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 recipientId: recipientDataFactory.id('not-mongo-id'), 
               }));
               expect(res).toBeBadRequestResponse();
@@ -637,10 +635,10 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
 
           test.describe('if projectId', () => {
             test('does not belong to any project', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveRecipient }) => {
-              await saveAccounts(accountDocument, secondaryAccountDocument);
+              await saveAccounts(loanAccountDocument, accountDocument);
               await saveCategory(regularCategoryDocument);
               await saveRecipient(recipientDocument);
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 ...relatedDocumentIds,
                 projectId: projectDataFactory.id(), 
               }));
@@ -649,7 +647,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not string', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 projectId: <any> 1, 
               }));
               expect(res).toBeBadRequestResponse();
@@ -657,7 +655,7 @@ test.describe('POST transaction/v1/transactions/payment (reimbursement)', () => 
             });
 
             test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
-              const res = await requestCreatePaymentTransaction(reimbursementTransactionDataFactory.request({
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
                 projectId: projectDataFactory.id('not-mongo-id'), 
               }));
               expect(res).toBeBadRequestResponse();

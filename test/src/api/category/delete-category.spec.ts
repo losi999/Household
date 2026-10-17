@@ -12,8 +12,7 @@ import { mergeExpects, mergeTests } from '@playwright/test';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
@@ -151,13 +150,13 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
               });
             });
 
-            test('deferred transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+            test('loan transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
 
               if (categoryType === CategoryType.Inventory) {
                 await saveProducts(productDocument);
               }
 
-              const deferredTransactionDocument = deferredTransactionDataFactory.document({
+              const loanTransactionDocument = loanTransactionDataFactory.document({
                 account: accountDocument,
                 category: categoryDocument,
                 loanAccount: loanAccountDocument,
@@ -166,26 +165,26 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
 
               await saveCategories(categoryDocument);
               await saveAccounts(accountDocument, loanAccountDocument);
-              await saveTransactions(deferredTransactionDocument);
+              await saveTransactions(loanTransactionDocument);
 
               const res = await requestDeleteCategory(getCategoryId(categoryDocument));
               expect(res).toBeNoContentResponse();
 
               expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
-              expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+              expect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
                 category: {
                   from: categoryDocument,
                 },
               });
             });
 
-            test('reimbursement transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
+            test('repayment transaction', async ({ requestDeleteCategory, saveAccounts, saveTransactions, findTransactionById, saveCategories, findCategoryById, saveProducts }) => {
 
               if (categoryType === CategoryType.Inventory) {
                 await saveProducts(productDocument);
               }
 
-              const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              const repaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: categoryDocument,
                 loanAccount: accountDocument,
@@ -194,13 +193,13 @@ test.describe('DELETE /category/v1/categories/{categoryId}', () => {
 
               await saveCategories(categoryDocument);
               await saveAccounts(accountDocument, loanAccountDocument);
-              await saveTransactions(reimbursementTransactionDocument);
+              await saveTransactions(repaymentTransactionDocument);
 
               const res = await requestDeleteCategory(getCategoryId(categoryDocument));
               expect(res).toBeNoContentResponse();
 
               expect(await findCategoryById(getCategoryId(categoryDocument))).toHaveBeenDeletedFromDatabase();
-              expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+              expect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
                 category: {
                   from: categoryDocument,
                 },

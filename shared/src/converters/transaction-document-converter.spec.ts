@@ -7,9 +7,8 @@ import { createMockService, MockService, validateFunctionCall } from '@household
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { ILoanTransactionDocumentConverter } from '@household/shared/converters/loan-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
-import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
 import { ISplitTransactionDocumentConverter } from '@household/shared/converters/split-transaction-document-converter';
 import { ITransferTransactionDocumentConverter } from '@household/shared/converters/transfer-transaction-document-converter';
 
@@ -22,8 +21,7 @@ describe('Transaction document converter', () => {
   let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
   let mockPaymentTransactionDocumentConverter: MockService<IPaymentTransactionDocumentConverter>;
   let mockSplitTransactionDocumentConverter: MockService<ISplitTransactionDocumentConverter>;
-  let mockDeferredTransactionDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
-  let mockReimbursementTransactionDocumentConverter: MockService<IReimbursementTransactionDocumentConverter>;
+  let mockLoanTransactionDocumentConverter: MockService<ILoanTransactionDocumentConverter>;
   let mockTransferTransactionDocumentConverter: MockService<ITransferTransactionDocumentConverter>;
 
   beforeEach(() => {
@@ -34,12 +32,11 @@ describe('Transaction document converter', () => {
     mockProductDocumentConverter = createMockService('toResponse', 'toReport');
     mockPaymentTransactionDocumentConverter = createMockService('toResponse');
     mockSplitTransactionDocumentConverter = createMockService('toResponse');
-    mockDeferredTransactionDocumentConverter = createMockService('toResponse');
-    mockReimbursementTransactionDocumentConverter = createMockService('toResponse');
+    mockLoanTransactionDocumentConverter = createMockService('toResponse');
     mockTransferTransactionDocumentConverter = createMockService('toResponse');
     vi.useFakeTimers();
     vi.setSystemTime(new Date());
-    converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockPaymentTransactionDocumentConverter.service, mockSplitTransactionDocumentConverter.service, mockDeferredTransactionDocumentConverter.service, mockReimbursementTransactionDocumentConverter.service, mockTransferTransactionDocumentConverter.service);
+    converter = transactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockPaymentTransactionDocumentConverter.service, mockSplitTransactionDocumentConverter.service, mockLoanTransactionDocumentConverter.service, mockTransferTransactionDocumentConverter.service);
   });
 
   afterEach(() => {
@@ -51,38 +48,32 @@ describe('Transaction document converter', () => {
   const paymentResponse = testDataFactory.transaction.response.payment();
   const splitDocument = testDataFactory.transaction.document.split();
   const splitResponse = testDataFactory.transaction.response.split();
-  const deferredDocument = testDataFactory.transaction.document.deferred();
-  const deferredResponse = testDataFactory.transaction.response.deferred();
-  const reimbursementDocument = testDataFactory.transaction.document.reimbursement();
-  const reimbursementResponse = testDataFactory.transaction.response.reimbursement();
+  const loanDocument = testDataFactory.transaction.document.loan();
+  const loanResponse = testDataFactory.transaction.response.loan();
   const transferDocument = testDataFactory.transaction.document.transfer();
   const transferResponse = testDataFactory.transaction.response.transfer();
   describe('toResponseList', () => {
     it('should return response list', async () => {
       mockPaymentTransactionDocumentConverter.functions.toResponse.mockReturnValue(paymentResponse);
       mockSplitTransactionDocumentConverter.functions.toResponse.mockReturnValue(splitResponse);
-      mockDeferredTransactionDocumentConverter.functions.toResponse.mockReturnValue(deferredResponse);
-      mockReimbursementTransactionDocumentConverter.functions.toResponse.mockReturnValue(reimbursementResponse);
+      mockLoanTransactionDocumentConverter.functions.toResponse.mockReturnValue(loanResponse);
       mockTransferTransactionDocumentConverter.functions.toResponse.mockReturnValue(transferResponse);
 
       const result = converter.toResponseList([
         paymentDocument,
         splitDocument,
-        deferredDocument,
-        reimbursementDocument,
+        loanDocument,
         transferDocument,
       ], viewingAccountId);
       expect(result).toEqual([
         paymentResponse,
         splitResponse,
-        deferredResponse,
-        reimbursementResponse,
+        loanResponse,
         transferResponse,
       ]);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.toResponse, paymentDocument);
       validateFunctionCall(mockSplitTransactionDocumentConverter.functions.toResponse, splitDocument);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse, deferredDocument);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse, reimbursementDocument);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.toResponse, loanDocument);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse, transferDocument, viewingAccountId);
     });
   });
@@ -95,8 +86,7 @@ describe('Transaction document converter', () => {
       expect(result).toEqual(paymentResponse);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.toResponse, paymentDocument);
       validateFunctionCall(mockSplitTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse);
     });
 
@@ -107,32 +97,18 @@ describe('Transaction document converter', () => {
       expect(result).toEqual(splitResponse);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockSplitTransactionDocumentConverter.functions.toResponse, splitDocument);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse);
     });
 
-    it('should return deferred response', async () => {
-      mockDeferredTransactionDocumentConverter.functions.toResponse.mockReturnValue(deferredResponse);
+    it('should return loan response', async () => {
+      mockLoanTransactionDocumentConverter.functions.toResponse.mockReturnValue(loanResponse);
 
-      const result = converter.toResponse(deferredDocument);
-      expect(result).toEqual(deferredResponse);
+      const result = converter.toResponse(loanDocument);
+      expect(result).toEqual(loanResponse);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockSplitTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse, deferredDocument);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse);
-    });
-
-    it('should return reimbursement response', async () => {
-      mockReimbursementTransactionDocumentConverter.functions.toResponse.mockReturnValue(reimbursementResponse);
-
-      const result = converter.toResponse(reimbursementDocument);
-      expect(result).toEqual(reimbursementResponse);
-      validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockSplitTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse, reimbursementDocument);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.toResponse, loanDocument);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse);
     });
 
@@ -143,8 +119,7 @@ describe('Transaction document converter', () => {
       expect(result).toEqual(transferResponse);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockSplitTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.toResponse);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.toResponse);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.toResponse);
       validateFunctionCall(mockTransferTransactionDocumentConverter.functions.toResponse, transferDocument, viewingAccountId);
     });
   });

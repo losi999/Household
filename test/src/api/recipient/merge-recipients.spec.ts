@@ -8,8 +8,7 @@ import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { AccountType } from '@household/shared/enums';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { mergeExpects, mergeTests } from '@playwright/test';
 import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
@@ -100,9 +99,9 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
             });
           });
 
-          test('deferred transaction', async ({ requestMergeRecipients, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
+          test('loan transaction', async ({ requestMergeRecipients, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
 
-            const deferredTransactionDocument = deferredTransactionDataFactory.document({
+            const loanTransactionDocument = loanTransactionDataFactory.document({
               account: accountDocument,
               recipient: sourceRecipientDocument,
               loanAccount: loanAccountDocument,
@@ -112,14 +111,14 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
               sourceRecipientDocument,
               targetRecipientDocument,
             );
-            await saveTransactions(deferredTransactionDocument);
+            await saveTransactions(loanTransactionDocument);
 
             const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
             expect(res).toBeNoContentResponse();
 
             expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+            expect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),
@@ -127,8 +126,8 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
             });
           });
 
-          test('reimbursement transaction', async ({ requestMergeRecipients, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
-            const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          test('repayment transaction', async ({ requestMergeRecipients, saveAccounts, saveTransactions, findTransactionById, saveRecipients, findRecipientById }) => {
+            const repaymentTransactionDocument = loanTransactionDataFactory.document({
               account: loanAccountDocument,
               recipient: sourceRecipientDocument,
               loanAccount: accountDocument,
@@ -138,14 +137,14 @@ test.describe('POST /recipient/v1/recipients/{recipientId}/merge', () => {
               sourceRecipientDocument,
               targetRecipientDocument,
             );
-            await saveTransactions(reimbursementTransactionDocument);
+            await saveTransactions(repaymentTransactionDocument);
 
             const res = await requestMergeRecipients(getRecipientId(targetRecipientDocument), [getRecipientId(sourceRecipientDocument)]);
             expect(res).toBeNoContentResponse();
 
             expect(await findRecipientById(getRecipientId(sourceRecipientDocument))).toHaveBeenDeletedFromDatabase();
 
-            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+            expect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
               recipient: {
                 from: getRecipientId(sourceRecipientDocument),
                 to: getRecipientId(targetRecipientDocument),

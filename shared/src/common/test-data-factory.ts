@@ -994,65 +994,12 @@ const createPaymentTransactionResponse: DataFactoryFunction<Responses.PaymentTra
   };
 };
 
-const createDeferredTransactionDocument: DataFactoryFunction<Documents.DeferredTransaction> = (doc) => {
+const createLoanTransactionDocument: DataFactoryFunction<Documents.LoanTransaction> = (doc) => {
   const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
 
   return {
     _id: createId(),
-    transactionType: TransactionType.Deferred,
-    amount: faker.number.float({
-      min: -10000,
-      max: 0,
-    }),
-    description,
-    quantity,
-    invoiceNumber,
-    billingEndDate: createDate(billingEndDate),
-    billingStartDate: createDate(billingStartDate),
-    issuedAt: createDate(issuedAt),
-    product: createGenericProductDocument(),
-    payingAccount: createAccountDocument(),
-    category: createCategoryDocument(),
-    project: createProjectDocument(),
-    recipient: createRecipientDocument(),
-    ownerAccount: createAccountDocument(),
-    expiresAt: undefined,
-    ...doc,
-  };
-};
-
-const createDeferredTransactionResponse: DataFactoryFunction<Responses.DeferredTransaction> = (resp) => {
-  const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
-
-  return {
-    transactionId: createTransactionId(),
-    transactionType: TransactionType.Deferred,
-    amount: faker.number.float({
-      min: -10000,
-      max: 0,
-    }),
-    description,
-    quantity,
-    invoiceNumber,
-    billingEndDate,
-    billingStartDate,
-    issuedAt,
-    product: createGenericProductResponse(),
-    ownerAccount: createAccountResponse(),
-    payingAccount: createAccountResponse(),
-    category: createCategoryResponse(),
-    project: createProjectResponse(),
-    recipient: createRecipientResponse(),
-    ...resp,
-  };
-};
-
-const createReimbursementTransactionDocument: DataFactoryFunction<Documents.ReimbursementTransaction> = (doc) => {
-  const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
-
-  return {
-    _id: createId(),
-    transactionType: TransactionType.Reimbursement,
+    transactionType: TransactionType.Loan,
     amount: faker.number.float({
       min: -10000,
       max: 0,
@@ -1074,12 +1021,12 @@ const createReimbursementTransactionDocument: DataFactoryFunction<Documents.Reim
   };
 };
 
-const createReimbursementTransactionResponse: DataFactoryFunction<Responses.ReimbursementTransaction> = (resp) => {
+const createLoanTransactionResponse: DataFactoryFunction<Responses.LoanTransaction> = (resp) => {
   const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
 
   return {
     transactionId: createTransactionId(),
-    transactionType: TransactionType.Reimbursement,
+    transactionType: TransactionType.Loan,
     amount: faker.number.float({
       min: -10000,
       max: 0,
@@ -1203,12 +1150,12 @@ const createSplitDocumentItem: DataFactoryFunction<Documents.SplitItem> = (doc) 
 };
 
 const createSplitTransactionDocument = (doc?: RecursivePartial<Omit<Documents.SplitTransaction, 'amount'>>): Documents.SplitTransaction => {
-  const deferredDocuments = Object.hasOwn(doc ?? {}, 'deferredSplits') ? doc.deferredSplits?.map(d => createDeferredTransactionDocument(d)) : [createDeferredTransactionDocument()];
+  const loanDocuments = Object.hasOwn(doc ?? {}, 'loans') ? doc.loans?.map(d => createLoanTransactionDocument(d)) : [createLoanTransactionDocument()];
 
   const splitDocuments = Object.hasOwn(doc ?? {}, 'splits') ? doc.splits?.map(l => createSplitDocumentItem(l)) : [createSplitDocumentItem()];
 
   const amount = [
-    ...(deferredDocuments ?? []),
+    ...(loanDocuments ?? []),
     ...(splitDocuments ?? []),
   ].reduce((accumulator, currentValue) => {
     return accumulator + currentValue.amount;
@@ -1230,8 +1177,8 @@ const createSplitTransactionDocument = (doc?: RecursivePartial<Omit<Documents.Sp
     ...doc,
     amount,
     splits: splitDocuments,
-    deferredSplits: deferredDocuments,
-    loans: [], // TODO
+    loans: loanDocuments,
+    deferredSplits: undefined,
   };
 };
 
@@ -1253,12 +1200,12 @@ const createSplitResponseItem: DataFactoryFunction<Responses.SplitItem> = (resp)
 };
 
 const createSplitTransactionResponse = (resp?: RecursivePartial<Omit<Responses.SplitTransaction, 'amount'>>): Responses.SplitTransaction => {
-  const deferredResponses = Object.hasOwn(resp ?? {}, 'deferredSplits') ? resp.deferredSplits?.map(d => createDeferredTransactionResponse(d)) : [createDeferredTransactionResponse()];
+  const loanResponses = Object.hasOwn(resp ?? {}, 'loans') ? resp.loans?.map(d => createLoanTransactionResponse(d)) : [createLoanTransactionResponse()];
 
   const splitResponses = Object.hasOwn(resp ?? {}, 'splits') ? resp.splits?.map(l => createSplitResponseItem(l)) : [createSplitResponseItem()];
 
   const amount = [
-    ...(deferredResponses ?? []),
+    ...(loanResponses ?? []),
     ...(splitResponses ?? []),
   ].reduce((accumulator, currentValue) => {
     return accumulator + currentValue.amount;
@@ -1279,7 +1226,7 @@ const createSplitTransactionResponse = (resp?: RecursivePartial<Omit<Responses.S
     ...resp,
     amount,
     splits: splitResponses,
-    deferredSplits: deferredResponses,
+    loans: loanResponses,
   };
 };
 
@@ -1543,8 +1490,7 @@ export const testDataFactory = {
     },
     document: {
       payment: createPaymentTransactionDocument,
-      deferred: createDeferredTransactionDocument,
-      reimbursement: createReimbursementTransactionDocument,
+      loan: createLoanTransactionDocument,
       transfer: createTransferTransactionDocument,
       split: createSplitTransactionDocument,
       draft: createDraftTransactionDocument,
@@ -1552,8 +1498,7 @@ export const testDataFactory = {
     },
     response: {
       payment: createPaymentTransactionResponse,
-      deferred: createDeferredTransactionResponse,
-      reimbursement: createReimbursementTransactionResponse,
+      loan: createLoanTransactionResponse,
       transfer: createTransferTransactionResponse,
       split: createSplitTransactionResponse,
       draft: createDraftTransactionResponse,

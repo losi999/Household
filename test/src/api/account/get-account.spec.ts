@@ -5,8 +5,7 @@ import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { AccountType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
 import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
@@ -31,11 +30,9 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
   let invertedTransferTransactionDocument: Documents.TransferTransaction;
   let loanTransferTransactionDocument: Documents.TransferTransaction;
   let invertedLoanTransferTransactionDocument: Documents.TransferTransaction;
-  let payingDeferredTransactionDocument: Documents.DeferredTransaction;
-  let owningDeferredTransactionDocument: Documents.DeferredTransaction;
-  let payingDeferredToLoanTransactionDocument: Documents.DeferredTransaction;
-  let owningReimbursementTransactionDocument: Documents.ReimbursementTransaction;
-  let deferredSplitTransactionDocument: Documents.SplitTransaction;
+  let loanTransactionDocument: Documents.LoanTransaction;
+  let repaymentTransactionDocument: Documents.LoanTransaction;
+  let loanSplitTransactionDocument: Documents.SplitTransaction;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
@@ -52,12 +49,9 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
       account: accountDocument,
     });
 
-    deferredSplitTransactionDocument = splitTransactionDataFactory.document({
+    loanSplitTransactionDocument = splitTransactionDataFactory.document({
       account: secondaryAccountDocument,
       loans: [
-        {
-          loanAccount: accountDocument,
-        },
         {
           loanAccount: loanAccountDocument,
         },
@@ -84,22 +78,12 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
       transferAccount: accountDocument,
     });
 
-    payingDeferredTransactionDocument = deferredTransactionDataFactory.document({
-      account: accountDocument,
-      loanAccount: secondaryAccountDocument,
-    });
-
-    payingDeferredToLoanTransactionDocument = deferredTransactionDataFactory.document({
+    loanTransactionDocument = loanTransactionDataFactory.document({
       account: accountDocument,
       loanAccount: loanAccountDocument,
     });
 
-    owningDeferredTransactionDocument = deferredTransactionDataFactory.document({
-      account: secondaryAccountDocument,
-      loanAccount: accountDocument,
-    });
-
-    owningReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+    repaymentTransactionDocument = loanTransactionDataFactory.document({
       account: loanAccountDocument,
       loanAccount: accountDocument,
     });
@@ -128,10 +112,10 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
       } else {
         test.beforeEach(async ({ saveAccounts, saveTransactions }) => {
           await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
-          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, payingDeferredTransactionDocument, owningDeferredTransactionDocument, payingDeferredToLoanTransactionDocument, owningReimbursementTransactionDocument, deferredSplitTransactionDocument);
+          await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument, loanSplitTransactionDocument);
         });
         test('should get account by id', async ({ requestGetAccount }) => {
-          const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + payingDeferredTransactionDocument.amount + payingDeferredToLoanTransactionDocument.amount;
+          const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + loanTransactionDocument.amount;
 
           const res = await requestGetAccount(getAccountId(accountDocument));
           expect(res).toBeOkResponse();
@@ -140,7 +124,7 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
         });
 
         test('should get loan account by id', async ({ requestGetAccount }) => {
-          const expectedBalance = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - deferredSplitTransactionDocument.deferredSplits[1].amount + owningReimbursementTransactionDocument.amount - payingDeferredToLoanTransactionDocument.amount;
+          const expectedBalance = loanTransferTransactionDocument.transferAmount + invertedLoanTransferTransactionDocument.amount - loanSplitTransactionDocument.loans[0].amount + repaymentTransactionDocument.amount - loanTransactionDocument.amount;
 
           const res = await requestGetAccount(getAccountId(loanAccountDocument));
           expect(res).toBeOkResponse();

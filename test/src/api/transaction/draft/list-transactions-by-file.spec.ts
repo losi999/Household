@@ -8,8 +8,7 @@ import { allowUsers } from '@household/test/utils';
 import { AccountType } from '@household/shared/enums';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 
 import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
 import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
@@ -35,8 +34,8 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
   let duplicateSplitDocument: Documents.SplitTransaction;
   let duplicateTransferDocument: Documents.TransferTransaction;
   let duplicateInvertedTransferDocument: Documents.TransferTransaction;
-  let duplicateDeferredDocument: Documents.DeferredTransaction;
-  let duplicateReimbursementDocument: Documents.ReimbursementTransaction;
+  let duplicateLoanDocument: Documents.LoanTransaction;
+  let duplicateRepaymentDocument: Documents.LoanTransaction;
 
   test.beforeEach(async () => {
     fileDocument = fileDataFactory.document();
@@ -94,7 +93,7 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
       account: accountDocument,
       transferAccount: loanAccountDocument,
     });
-    duplicateDeferredDocument = deferredTransactionDataFactory.document({
+    duplicateLoanDocument = loanTransactionDataFactory.document({
       body: {
         amount: Math.abs(duplicatedDraftDocument.amount) * -1,
         issuedAt: addSeconds(3600, duplicatedDraftDocument.issuedAt).toISOString(),
@@ -102,7 +101,7 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
       account: accountDocument,
       loanAccount: loanAccountDocument,
     });
-    duplicateReimbursementDocument = reimbursementTransactionDataFactory.document({
+    duplicateRepaymentDocument = loanTransactionDataFactory.document({
       body: {
         amount: Math.abs(duplicatedDraftDocument.amount) * -1,
         issuedAt: addSeconds(3600, duplicatedDraftDocument.issuedAt).toISOString(),
@@ -134,14 +133,14 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
         });
       } else {
         test('should get a list of draft transactions', async ({ requestGetTransactionListByFile, saveAccounts, saveTransactions }) => {
-          await saveTransactions(draftDocument, duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateDeferredDocument, duplicateReimbursementDocument);
+          await saveTransactions(draftDocument, duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateLoanDocument, duplicateRepaymentDocument);
           await saveAccounts(accountDocument, loanAccountDocument);
           const res = await requestGetTransactionListByFile(getFileId(fileDocument));
           expect(res).toBeOkResponse();
           expect(res).toMatchSchema(schema);
 
           expect(res).toContainMatchingDraftTransactionDocument(draftDocument);
-          expect(res).toContainMatchingDraftTransactionDocument(duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateDeferredDocument, duplicateReimbursementDocument);
+          expect(res).toContainMatchingDraftTransactionDocument(duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateLoanDocument, duplicateRepaymentDocument);
         });
 
         test.describe('should return error', () => {

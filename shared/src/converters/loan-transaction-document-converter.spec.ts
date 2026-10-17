@@ -6,11 +6,11 @@ import { createMockService, MockService, validateFunctionCall, validateNthFuncti
 import { IRecipientDocumentConverter } from '@household/shared/converters/recipient-document-converter';
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
-import { IDeferredTransactionDocumentConverter, deferredTransactionDocumentConverterFactory } from '@household/shared/converters/deferred-transaction-document-converter';
+import { ILoanTransactionDocumentConverter, deferredTransactionDocumentConverterFactory } from '@household/shared/converters/loan-transaction-document-converter';
 import { CategoryType } from '@household/shared/enums';
 
-describe('Deferred transaction document converter', () => {
-  let converter: IDeferredTransactionDocumentConverter;
+describe('Loan transaction document converter', () => {
+  let converter: ILoanTransactionDocumentConverter;
   let mockAccountDocumentConverter: MockService<IAccountDocumentConverter>;
   let mockProjectDocumentConverter: MockService<IProjectDocumentConverter>;
   let mockRecipientDocumentConverter: MockService<IRecipientDocumentConverter>;
@@ -72,7 +72,7 @@ describe('Deferred transaction document converter', () => {
         product,
       }, undefined);
 
-      expect(result).toEqual(testDataFactory.transaction.document.deferred({
+      expect(result).toEqual(testDataFactory.transaction.document.loan({
         payingAccount,
         ownerAccount,
         category: regularCategory,
@@ -105,7 +105,7 @@ describe('Deferred transaction document converter', () => {
         recipient,
         product,
       }, expiresIn);
-      expect(result).toEqual(testDataFactory.transaction.document.deferred({
+      expect(result).toEqual(testDataFactory.transaction.document.loan({
         payingAccount,
         ownerAccount,
         category: regularCategory,
@@ -138,7 +138,7 @@ describe('Deferred transaction document converter', () => {
         recipient,
         product,
       }, undefined);
-      expect(result).toEqual(testDataFactory.transaction.document.deferred({
+      expect(result).toEqual(testDataFactory.transaction.document.loan({
         payingAccount,
         ownerAccount,
         category: inventoryCategory,
@@ -170,7 +170,7 @@ describe('Deferred transaction document converter', () => {
         recipient,
         product,
       }, undefined);
-      expect(result).toEqual(testDataFactory.transaction.document.deferred({
+      expect(result).toEqual(testDataFactory.transaction.document.loan({
         payingAccount,
         ownerAccount,
         category: invoiceCategory,
@@ -199,7 +199,7 @@ describe('Deferred transaction document converter', () => {
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
       mockProductDocumentConverter.functions.toResponse.mockReturnValue(productResponse);
 
-      const doc = testDataFactory.transaction.document.deferred({
+      const doc = testDataFactory.transaction.document.loan({
         payingAccount,
         ownerAccount,
         project,
@@ -211,7 +211,7 @@ describe('Deferred transaction document converter', () => {
       const { amount, description, issuedAt, billingEndDate, billingStartDate, quantity, invoiceNumber } = doc;
 
       const result = converter.toResponse(doc);
-      expect(result).toEqual(testDataFactory.transaction.response.deferred({
+      expect(result).toEqual(testDataFactory.transaction.response.loan({
         transactionId: getTransactionId(doc),
         description,
         amount,
@@ -247,7 +247,7 @@ describe('Deferred transaction document converter', () => {
       mockRecipientDocumentConverter.functions.toResponse.mockReturnValue(recipientResponse);
       mockProductDocumentConverter.functions.toResponse.mockReturnValue(productResponse);
 
-      const doc = testDataFactory.transaction.document.deferred({
+      const doc = testDataFactory.transaction.document.loan({
         payingAccount,
         ownerAccount,
         project,
@@ -260,7 +260,7 @@ describe('Deferred transaction document converter', () => {
 
       const result = converter.toResponseList([doc]);
       expect(result).toEqual([
-        testDataFactory.transaction.response.deferred({
+        testDataFactory.transaction.response.loan({
           transactionId: getTransactionId(doc),
           description,
           amount,
