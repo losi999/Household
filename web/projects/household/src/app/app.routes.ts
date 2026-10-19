@@ -40,7 +40,6 @@ export const routes: Routes = [
   },
   {
     path: 'accounts/:accountId',
-    title: 'Tranzakciók',
     loadComponent: () => import('@household/app/transaction/transaction-home/transaction-home').then(m => m.TransactionHome),
     canMatch: [authenticatedGuard],
   },

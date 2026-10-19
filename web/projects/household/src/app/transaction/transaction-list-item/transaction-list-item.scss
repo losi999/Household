@@ -9,12 +9,50 @@ mat-card {
 
   mat-card-header {
     align-items: center;
+
+    mat-card-title {
+      font-weight: bold;
+    }
+  }
+
+  .description {
+    margin: 5px 0;
   }
 
   .splits {
     padding: 10px;
     border-radius: 10px;
     background-color: var(--mat-sys-secondary-container);
+  }
+
+  .transfer {
+    color: var(--mat-sys-primary);
+    padding: 10px;
+    border-radius: 10px;
+    background-color: var(--mat-sys-secondary-container);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+
+    @media (max-width: 425px) {
+      display: block;
+
+      .arrow {
+        rotate: 90deg;
+      }
+    }
+  }
+
+  .additional {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 3px;
+    row-gap: 10px;
+
+    @media (max-width: 425px) {
+      & {
+        grid-template-columns: 1fr;
+      }
+    }
   }
 
   .header-text {

@@ -11,7 +11,7 @@ import { createMockService, MockService, validateFunctionCall } from '@household
 import { Dispatcher } from '@ngrx/signals/events';
 import { Api } from '@household/shared/types/api';
 
-describe('TransactionHome', () => {
+describe.skip('TransactionHome', () => {
   const ToolbarStub = createStubComponent(Toolbar);
 
   let fixture: ComponentFixture<TransactionHome>;

@@ -1,11 +1,13 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Toolbar } from '@household/app/shared/toolbar/toolbar';
 import { TransactionList } from '@household/app/transaction/transaction-list/transaction-list';
 import { Api } from '@household/shared/types/api';
+import { AccountStore } from '@household/state/account/account-store';
 import { transactionApiEvents } from '@household/state/transaction/transaction-events';
 import { TransactionStore } from '@household/state/transaction/transaction-store';
 import { injectDispatch } from '@ngrx/signals/events';
@@ -25,7 +27,9 @@ const TRANSACTION_PAGE_SIZE = 25;
   templateUrl: './transaction-home.html',
 })
 export class TransactionHome {
+  private readonly title = inject(Title);
   readonly transactionStore = inject(TransactionStore);
+  private readonly accountStore = inject(AccountStore);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly transactionApiEvents = injectDispatch(transactionApiEvents);
   private readonly router = inject(Router);
@@ -33,7 +37,15 @@ export class TransactionHome {
   private loadedPage: number;
 
   constructor() {
+    effect(() => {
+      const account = this.accountStore.accountList().find(a => a.accountId === accountId);
+      
+      this.title.setTitle(account?.name ?? 'Tranzakciók');
+    });
+
     const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Api.Account.Id;
+
+    // this.title.setTitle(this.accountStore.accountList().find(a => a.accountId === accountId).name);
 
     this.activatedRoute.queryParamMap.pipe(
       map((params) => {

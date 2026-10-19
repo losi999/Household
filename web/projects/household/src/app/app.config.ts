@@ -1,4 +1,4 @@
-import { ApplicationConfig, inject, isDevMode, LOCALE_ID, provideBrowserGlobalErrorListeners, provideEnvironmentInitializer } from '@angular/core';
+import { ApplicationConfig, inject, isDevMode, LOCALE_ID, provideAppInitializer, provideBrowserGlobalErrorListeners, provideEnvironmentInitializer } from '@angular/core';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
@@ -8,14 +8,20 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { API_URL, authInterceptor, AuthStore, NavigationStore, NotificationStore, progressInterceptor, ProgressStore } from '@household/shared-ui';
 import { jwtDecode } from 'jwt-decode';
-import { provideProjectStoreInitialState } from '@household/state/project/project-store';
+import { ProjectStore, provideProjectStoreInitialState } from '@household/state/project/project-store';
 import { registerLocaleData } from '@angular/common';
 import localeHu from '@angular/common/locales/hu';
-import { provideRecipientStoreInitialState } from '@household/state/recipient/recipient-store';
-import { provideCategoryStoreInitialState } from '@household/state/category/category-store';
-import { provideAccountStoreInitialState } from '@household/state/account/account-store';
+import { provideRecipientStoreInitialState, RecipientStore } from '@household/state/recipient/recipient-store';
+import { CategoryStore, provideCategoryStoreInitialState } from '@household/state/category/category-store';
+import { AccountStore, provideAccountStoreInitialState } from '@household/state/account/account-store';
 import { provideTransactionStoreInitialState } from '@household/state/transaction/transaction-store';
-import { provideProductStoreInitialState } from '@household/state/product/product-store';
+import { ProductStore, provideProductStoreInitialState } from '@household/state/product/product-store';
+import { injectDispatch } from '@ngrx/signals/events';
+import { projectApiEvents } from '@household/state/project/project-events';
+import { accountApiEvents } from '@household/state/account/account-events';
+import { productApiEvents } from '@household/state/product/product-events';
+import { recipientApiEvents } from '@household/state/recipient/recipient-events';
+import { categoryApiEvents } from '@household/state/category/category-events';
 
 registerLocaleData(localeHu);
 
@@ -61,6 +67,18 @@ export const appConfig: ApplicationConfig = {
       registrationStrategy: 'registerWhenStable:30000',
     }),
     provideNativeDateAdapter(),
+    provideAppInitializer(() => {
+      // inject(ProjectStore);
+      // injectDispatch(projectApiEvents).listProjectsInitiated();
+      // inject(AccountStore);
+      // injectDispatch(accountApiEvents).listAccountsInitiated();
+      // inject(ProductStore);
+      // injectDispatch(productApiEvents).listProductsInitiated();
+      // inject(RecipientStore);
+      // injectDispatch(recipientApiEvents).listRecipientsInitiated();
+      // inject(CategoryStore);
+      // injectDispatch(categoryApiEvents).listCategoriesInitiated();
+    }),
     provideEnvironmentInitializer(() => {
       inject(NavigationStore);
       inject(AuthStore);

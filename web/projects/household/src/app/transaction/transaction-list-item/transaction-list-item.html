@@ -1,19 +1,45 @@
+@let tx = transaction();
 <mat-card appearance="outlined">
   <mat-card-header>
     <div class="header-text">
-      <mat-card-title>{{transaction().issuedAt | date: 'MMMM d., EEEE'}}</mat-card-title>
-      <mat-card-subtitle>{{transaction().issuedAt | date: 'HH:mm'}}</mat-card-subtitle>
+      <mat-card-title>{{tx.issuedAt | date: 'MMMM d., EEEE'}}</mat-card-title>
+      <mat-card-subtitle>{{tx.issuedAt | date: 'HH:mm'}}</mat-card-subtitle>
     </div>
-    <div class="amount">
-      {{transaction().amount | number:'1.0-2':'hu'}} {{currency()}}
+    <div class="amount" [style.color]="amountColor()">
+      {{amount() | number:'1.0-2':'hu'}} {{currency()}}
     </div>
   </mat-card-header>
   <mat-card-content>
+    <div class="description">
+      {{tx.description}}
+    </div>
+    <!-- @if (tx.transactionType === 'split') {
     <div class="splits">
       <div>split1</div>
       <div>split2</div>
       <div>split3</div>
     </div>
+    } -->
+    @if (tx.transactionType === 'transfer') {
+    <div class="transfer">
+      <shared-icon-text icon="account_balance" [text]="tx.account.name" />
+      <mat-icon class="arrow">{{amount() < 0 ? 'arrow_forward' : 'arrow_backward' }}</mat-icon>
+          <shared-icon-text icon="account_balance" [text]="tx.transferAccount.name" />
+    </div>
+    }
+    @if (tx.transactionType !== 'transfer') {
+    <mat-divider />
+    <div class="additional">
+      <shared-icon-text icon="store" [text]="tx.recipient?.name" />
+      @if (tx.transactionType !== 'split') {
+      <shared-icon-text icon="stacks" [text]="tx.project?.name" />
+      <shared-icon-text icon="category" [text]="tx.category?.name" />
+      <shared-icon-text icon="barcode" [text]="tx.product?.fullName" />
+      <shared-icon-text icon="add_shopping_cart" [text]="tx.quantity?.toString()" />
+      }
+    </div>
+    }
+
   </mat-card-content>
   <mat-card-actions>
     <a matIconButton><mat-icon>format_list_bulleted</mat-icon></a>
