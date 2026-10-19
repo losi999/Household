@@ -47,7 +47,7 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
     });
 
     loanSplitTransactionDocument = splitTransactionDataFactory.document({
-      account: secondaryAccountDocument,
+      account: accountDocument,
       loans: [
         {
           loanAccount: loanAccountDocument,
@@ -112,7 +112,7 @@ test.describe('GET /account/v1/accounts/{accountId}', () => {
           await saveTransactions(paymentTransactionDocument, splitTransactionDocument, transferTransactionDocument, invertedTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument, loanSplitTransactionDocument);
         });
         test('should get account by id', async ({ requestGetAccount }) => {
-          const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + loanTransactionDocument.amount;
+          const expectedBalance = paymentTransactionDocument.amount + transferTransactionDocument.amount + invertedTransferTransactionDocument.transferAmount + splitTransactionDocument.amount + loanTransferTransactionDocument.amount + invertedLoanTransferTransactionDocument.transferAmount + loanTransactionDocument.amount + loanSplitTransactionDocument.amount;
 
           const res = await requestGetAccount(getAccountId(accountDocument));
           accountApiExpect(res).toBeOkResponse();

@@ -116,6 +116,23 @@ export const loanTransactionApiExpect = expect.extend({
       message: () => `Expected document to match loan transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
+  async toNotContainMatchingLoanTransactionDocument(received: APIResponse, document: Documents.LoanTransaction) {
+    const response = await received.json() as Responses.LoanTransaction[];
+
+    const matchingResponse = response.find(r => r.transactionId === getTransactionId(document));
+
+    if (matchingResponse) {
+      return {
+        pass: false,
+        message: () => `Expected response to not contain a loan transaction with id ${getTransactionId(document)}, but it was found`,
+      };
+    }
+        
+    return {
+      pass: true,
+      message: () => '',
+    };  
+  },
   async toContainMatchingLoanTransactionDocument(received: APIResponse, document: Documents.LoanTransaction) {
     const response = await received.json() as Responses.LoanTransaction[];
 

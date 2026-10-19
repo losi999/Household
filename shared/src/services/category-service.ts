@@ -63,12 +63,6 @@ export const categoryServiceFactory = (mongodbService: IMongodbService): ICatego
           session,
         });
 
-        await models.products.deleteMany({
-          category: categoryId,
-        }, {
-          session,
-        }) ;
-
         await models.categories.updateMany({
           ancestors: categoryId,
         }, {

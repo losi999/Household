@@ -55,7 +55,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
         });
       } else {
         test.describe('should get a list of transactions', () => {
-          test('of a non-loan account', async ({ requestGetTransactionListByAccount, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProduct }) => {
+          test('of a non-loan account', async ({ requestGetTransactionListByAccount, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProducts }) => {
             const loanAccountDocument = accountDataFactory.document({
               accountType: AccountType.Loan,
             });
@@ -77,22 +77,31 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 categoryType: CategoryType.Invoice,
               },
             });
-            const productDocument = productDataFactory.document.generic();
+            const genericProductDocument = productDataFactory.document.generic();
+            const specificProductDocument = productDataFactory.document.specific({
+              genericProduct: genericProductDocument,
+            });
+            const variantProductDocument = productDataFactory.document.variant({
+              specificProduct: specificProductDocument,
+              genericProduct: genericProductDocument,
+            });
 
             const paymentTransactionDocument = paymentTransactionDataFactory.document({
               account: accountDocument,
               recipient: recipientDocument,
               project: projectDocument,
               category: inventoryCategoryDocument,
-              product: productDocument,
+              product: specificProductDocument,
             });
 
-            const payingSplitTransactionDocument = splitTransactionDataFactory.document({
+            const splitTransactionDocument = splitTransactionDataFactory.document({
               account: accountDocument,
               recipient: recipientDocument,
               splits: [
                 {
                   project: projectDocument,
+                  category: inventoryCategoryDocument,
+                  product: variantProductDocument,
                 },
                 {
                   category: regularCategoryDocument,
@@ -100,7 +109,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
                 {
                   category: inventoryCategoryDocument,
-                  product: productDocument,
+                  product: genericProductDocument,
                 },
                 {
                   category: invoiceCategoryDocument,
@@ -149,8 +158,8 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             await saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
             await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
             await saveProject(projectDocument);
-            await saveProduct(productDocument);
-            await saveTransactions(paymentTransactionDocument, payingSplitTransactionDocument, payingTransferTransactionDocument, receivingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument);
+            await saveProducts(genericProductDocument, specificProductDocument, variantProductDocument);
+            await saveTransactions(paymentTransactionDocument, splitTransactionDocument, payingTransferTransactionDocument, receivingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument);
             const res = await requestGetTransactionListByAccount(getAccountId(accountDocument), {
               pageNumber: 1,
               pageSize: 100000, 
@@ -159,7 +168,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             transactionApiExpect(res).toMatchSchema(schema);
             transactionApiExpect(res).toContainMatchingPaymentTransactionDocument(paymentTransactionDocument);
 
-            transactionApiExpect(res).toContainMatchingSplitTransactionDocument(payingSplitTransactionDocument);
+            transactionApiExpect(res).toContainMatchingSplitTransactionDocument(splitTransactionDocument);
 
             transactionApiExpect(res).toContainMatchingTransferTransactionDocument(payingTransferTransactionDocument, getAccountId(accountDocument));
             transactionApiExpect(res).toContainMatchingTransferTransactionDocument(receivingTransferTransactionDocument, getAccountId(accountDocument));
@@ -167,7 +176,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             transactionApiExpect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(accountDocument));
 
             transactionApiExpect(res).toContainMatchingLoanTransactionDocument(loanTransactionDocument);            
-            transactionApiExpect(res).toContainMatchingLoanTransactionDocument(repaymentTransactionDocument);
+            transactionApiExpect(res).toNotContainMatchingLoanTransactionDocument(repaymentTransactionDocument);
           });
 
           test('of a loan account', async ({ requestGetTransactionListByAccount, saveAccounts, saveTransactions, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -194,7 +203,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             });
             const productDocument = productDataFactory.document.generic();
 
-            const owningSplitTransactionDocument = splitTransactionDataFactory.document({
+            const loanSplitTransactionDocument = splitTransactionDataFactory.document({
               account: accountDocument,
               recipient: recipientDocument,
               splits: [
@@ -237,7 +246,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
             await saveProject(projectDocument);
             await saveProduct(productDocument);
-            await saveTransactions(owningSplitTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument);
+            await saveTransactions(loanSplitTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument);
             const res = await requestGetTransactionListByAccount(getAccountId(loanAccountDocument), {
               pageNumber: 1,
               pageSize: 100000, 
@@ -245,7 +254,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             transactionApiExpect(res).toBeOkResponse();
             transactionApiExpect(res).toMatchSchema(schema);
 
-            transactionApiExpect(res).toContainMatchingSplitTransactionDocument(owningSplitTransactionDocument);
+            transactionApiExpect(res).toContainMatchingSplitTransactionDocument(loanSplitTransactionDocument);
 
             transactionApiExpect(res).toContainMatchingTransferTransactionDocument(loanTransferTransactionDocument, getAccountId(loanAccountDocument));
             transactionApiExpect(res).toContainMatchingTransferTransactionDocument(invertedLoanTransferTransactionDocument, getAccountId(loanAccountDocument));

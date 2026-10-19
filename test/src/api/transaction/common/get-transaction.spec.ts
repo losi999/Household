@@ -36,7 +36,9 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
   let regularCategoryDocument: Documents.Category;
   let inventoryCategoryDocument: Documents.Category;
   let invoiceCategoryDocument: Documents.Category;
-  let productDocument: Documents.Product;
+  let genericProductDocument: Documents.GenericProduct;
+  let specificProductDocument: Documents.SpecificProduct;
+  let variantProductDocument: Documents.VariantProduct;
 
   test.beforeEach(async () => {
     accountDocument = accountDataFactory.document();
@@ -67,7 +69,14 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
       },
     });
 
-    productDocument = productDataFactory.document.generic();
+    genericProductDocument = productDataFactory.document.generic();
+    specificProductDocument = productDataFactory.document.specific({
+      genericProduct: genericProductDocument,
+    });
+    variantProductDocument = productDataFactory.document.variant({
+      genericProduct: genericProductDocument,
+      specificProduct: specificProductDocument,
+    });
   });
 
   test.describe('called as anonymous', () => {
@@ -118,14 +127,14 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
                 category: inventoryCategoryDocument,
                 project: projectDocument,
                 recipient: recipientDocument,
-                product: productDocument,
+                product: genericProductDocument,
               });
 
               await saveAccount(accountDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               await saveCategory(inventoryCategoryDocument);
-              await saveProduct(productDocument);
+              await saveProduct(genericProductDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
               transactionApiExpect(res).toBeOkResponse();
@@ -172,13 +181,13 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
-            test('inventory loan transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient, saveProduct }) => {
+            test('inventory loan transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient, saveProducts }) => {
               const document = loanTransactionDataFactory.document({
                 account: accountDocument,
                 category: inventoryCategoryDocument,
                 project: projectDocument,
                 recipient: recipientDocument,
-                product: productDocument,
+                product: specificProductDocument,
                 loanAccount: loanAccountDocument,
               });
 
@@ -186,7 +195,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               await saveCategory(inventoryCategoryDocument);
-              await saveProduct(productDocument);
+              await saveProducts(genericProductDocument, specificProductDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
               transactionApiExpect(res).toBeOkResponse();
@@ -234,13 +243,13 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
-            test('inventory repayment transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient, saveProduct }) => {
+            test('inventory repayment transaction', async ({ requestGetTransaction, saveAccounts, saveTransaction, saveCategory, saveProject, saveRecipient, saveProducts }) => {
               const document = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 category: inventoryCategoryDocument,
                 project: projectDocument,
                 recipient: recipientDocument,
-                product: productDocument,
+                product: variantProductDocument,
                 loanAccount: accountDocument,
               });
 
@@ -248,7 +257,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               await saveCategory(inventoryCategoryDocument);
-              await saveProduct(productDocument);
+              await saveProducts(genericProductDocument, specificProductDocument, variantProductDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
               transactionApiExpect(res).toBeOkResponse();
@@ -289,7 +298,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
                   },
                   {
                     category: inventoryCategoryDocument,
-                    product: productDocument,
+                    product: genericProductDocument,
                   },
                   {
                     category: invoiceCategoryDocument,
@@ -306,7 +315,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
                   },
                   {
                     category: inventoryCategoryDocument,
-                    product: productDocument,
+                    product: genericProductDocument,
                     loanAccount: loanAccountDocument,
                   },
                   {
@@ -320,7 +329,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
-              await saveProduct(productDocument);
+              await saveProduct(genericProductDocument);
               await saveTransactions(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
               transactionApiExpect(res).toBeOkResponse();
@@ -407,7 +416,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
                 category: inventoryCategoryDocument,
                 project: projectDocument,
                 recipient: recipientDocument,
-                product: productDocument,
+                product: genericProductDocument,
                 loanAccount: accountDocument,
               });
 
@@ -415,7 +424,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
               await saveCategory(inventoryCategoryDocument);
-              await saveProduct(productDocument);
+              await saveProduct(genericProductDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(loanAccountDocument), getTransactionId(document));
               transactionApiExpect(res).toBeOkResponse();
@@ -443,7 +452,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               transactionApiExpect(res).toMatchLoanTransactionDocument(document);
             });
 
-            test('owning split transaction', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveProject, saveRecipient }) => {
+            test('loan split transaction', async ({ requestGetTransaction, saveAccounts, saveTransactions, saveProject, saveRecipient }) => {
               const document = splitTransactionDataFactory.document({
                 account: accountDocument,
                 recipient: recipientDocument,
