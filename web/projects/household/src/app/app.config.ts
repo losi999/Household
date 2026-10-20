@@ -68,16 +68,16 @@ export const appConfig: ApplicationConfig = {
     }),
     provideNativeDateAdapter(),
     provideAppInitializer(() => {
-      // inject(ProjectStore);
-      // injectDispatch(projectApiEvents).listProjectsInitiated();
-      // inject(AccountStore);
-      // injectDispatch(accountApiEvents).listAccountsInitiated();
-      // inject(ProductStore);
-      // injectDispatch(productApiEvents).listProductsInitiated();
-      // inject(RecipientStore);
-      // injectDispatch(recipientApiEvents).listRecipientsInitiated();
-      // inject(CategoryStore);
-      // injectDispatch(categoryApiEvents).listCategoriesInitiated();
+      inject(ProjectStore);
+      injectDispatch(projectApiEvents).listProjectsInitiated();
+      inject(AccountStore);
+      injectDispatch(accountApiEvents).listAccountsInitiated();
+      inject(ProductStore);
+      injectDispatch(productApiEvents).listProductsInitiated();
+      inject(RecipientStore);
+      injectDispatch(recipientApiEvents).listRecipientsInitiated();
+      inject(CategoryStore);
+      injectDispatch(categoryApiEvents).listCategoriesInitiated();
     }),
     provideEnvironmentInitializer(() => {
       inject(NavigationStore);

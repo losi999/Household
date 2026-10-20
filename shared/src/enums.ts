@@ -1,7 +1,7 @@
 export enum CategoryType {
   Regular = 'regular',
   Invoice = 'invoice',
-  Inventory = 'inventory', // TODO
+  Inventory = 'inventory',
 }
 
 export enum ProductType {
@@ -33,7 +33,13 @@ export enum TransactionType {
   Payment = 'payment',
   Split = 'split',
   Transfer = 'transfer',
+  /**
+   * @deprecated
+   */
   Deferred = 'deferred',
+  /**
+   * @deprecated
+   */
   Reimbursement = 'reimbursement',
   Draft = 'draft',
   Loan = 'loan',

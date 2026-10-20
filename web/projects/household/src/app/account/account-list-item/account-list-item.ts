@@ -2,6 +2,7 @@ import { DecimalPipe } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { AccountTypeIconPipe } from '@household/app/account/account-type-icon-pipe';
 import { AccountType } from '@household/shared/enums';
 import { Responses } from '@household/shared/types/responses';
 import { accountEvents } from '@household/state/account/account-events';
@@ -13,6 +14,7 @@ import { injectDispatch } from '@ngrx/signals/events';
     MatIconModule,
     MatListModule,
     DecimalPipe,
+    AccountTypeIconPipe,
   ],
   selector: 'household-account-list-item',
   styleUrl: './account-list-item.scss',

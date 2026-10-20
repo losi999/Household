@@ -12,6 +12,7 @@ import { Api } from '@household/shared/types/api';
 import { AccountStore } from '@household/state/account/account-store';
 import { IconText } from '@household/shared-ui';
 import { MatDividerModule } from '@angular/material/divider';
+import { AccountTypeIconPipe } from '@household/app/account/account-type-icon-pipe';
 
 @Component({
   imports: [
@@ -22,6 +23,7 @@ import { MatDividerModule } from '@angular/material/divider';
     DecimalPipe,
     IconText,
     MatDividerModule,
+    AccountTypeIconPipe,
   ],
   selector: 'household-transaction-list-item',
   styleUrl: './transaction-list-item.scss',

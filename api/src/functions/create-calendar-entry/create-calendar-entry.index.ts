@@ -10,7 +10,6 @@ import { calendarEntryDocumentConverter } from '@household/shared/dependencies/c
 import { calendarEntryService } from '@household/shared/dependencies/services/calendar-entry-service';
 import { customerService } from '@household/shared/dependencies/services/customer-service';
 import { priceService } from '@household/shared/dependencies/services/price-service';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const createCalendarEntryService = createCalendarEntryServiceFactory(calendarEntryService, calendarEntryDocumentConverter, customerService, priceService);
 
@@ -22,8 +21,5 @@ export default index({
       body,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

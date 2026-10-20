@@ -2,11 +2,12 @@
 <mat-card appearance="outlined">
   <mat-card-header>
     <div class="header-text">
-      <mat-card-title>{{tx.issuedAt | date: 'MMMM d., EEEE'}}</mat-card-title>
+      <mat-card-subtitle>{{tx.issuedAt | date: 'YYYY'}}</mat-card-subtitle>
+      <mat-card-title>{{tx.issuedAt | date: 'MMM d., EEEE'}}</mat-card-title>
       <mat-card-subtitle>{{tx.issuedAt | date: 'HH:mm'}}</mat-card-subtitle>
     </div>
     <div class="amount" [style.color]="amountColor()">
-      {{amount() | number:'1.0-2':'hu'}} {{currency()}}
+      {{amount()*1000 | number:'1.0-2':'hu'}} {{currency()}}
     </div>
   </mat-card-header>
   <mat-card-content>
@@ -22,9 +23,11 @@
     } -->
     @if (tx.transactionType === 'transfer') {
     <div class="transfer">
-      <shared-icon-text icon="account_balance" [text]="tx.account.name" />
-      <mat-icon class="arrow">{{amount() < 0 ? 'arrow_forward' : 'arrow_backward' }}</mat-icon>
-          <shared-icon-text icon="account_balance" [text]="tx.transferAccount.name" />
+      <mat-icon>{{tx.account | accountTypeIcon}}</mat-icon>
+      {{tx.account.name}}
+      <mat-icon class="arrow"> {{amount() < 0 ? 'stat_minus_3' : 'stat_3' }}</mat-icon>
+          <mat-icon>{{tx.transferAccount | accountTypeIcon}}</mat-icon>
+          {{tx.transferAccount.name}}
     </div>
     }
     @if (tx.transactionType !== 'transfer') {

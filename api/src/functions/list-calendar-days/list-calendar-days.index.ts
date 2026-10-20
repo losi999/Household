@@ -9,7 +9,6 @@ import { UserType } from '@household/shared/enums';
 import { calendarEntryService } from '@household/shared/dependencies/services/calendar-entry-service';
 import { calendarDayDocumentConverter } from '@household/shared/dependencies/converters/calendar-day-document-converter';
 import { calendarDayService } from '@household/shared/dependencies/services/calendar-day-service';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const listCalendarDaysService = listCalendarDaysServiceFactory(calendarEntryService, calendarDayService, calendarDayDocumentConverter);
 
@@ -21,8 +20,5 @@ export default index({
       queryStringParameters,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

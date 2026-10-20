@@ -14,7 +14,6 @@ import { paymentTransactionDocumentConverter } from '@household/shared/dependenc
 import { loanTransactionDocumentConverter } from '@household/shared/dependencies/converters/loan-transaction-document-converter';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const createPaymentTransactionService = createPaymentTransactionServiceFactory(accountService, projectService, categoryService, recipientService, productService, transactionService, paymentTransactionDocumentConverter, loanTransactionDocumentConverter);
 
@@ -26,8 +25,5 @@ export default index({
       body,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });
