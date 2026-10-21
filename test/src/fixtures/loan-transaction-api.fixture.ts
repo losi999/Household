@@ -24,7 +24,7 @@ export const validateLoanTransactionResponse = (response: Responses.LoanTransact
     payingAccount: validateAccountLeanResponse(response.payingAccount, document.payingAccount),
     ownerAccount: validateAccountLeanResponse(response.ownerAccount, document.ownerAccount),
     recipient: validateRecipientResponse(response.recipient, document.recipient),
-    category: validateCategoryResponse(response.category, document.category),
+    category: validateCategoryResponse(response.category, document.category, ...document.category?.ancestors ?? []),
     product: validateProductResponse(response.product, document.product),
     quantity: document.quantity,
     billingStartDate: document.billingStartDate?.toISOString().split('T')[0],

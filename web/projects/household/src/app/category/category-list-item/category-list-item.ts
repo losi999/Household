@@ -2,6 +2,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { CategoryTypeIconPipe } from '@household/app/category/category-type-icon-pipe';
 import { Responses } from '@household/shared/types/responses';
 import { categoryEvents } from '@household/state/category/category-events';
 import { CategoryStore } from '@household/state/category/category-store';
@@ -12,6 +13,7 @@ import { injectDispatch } from '@ngrx/signals/events';
     MatButtonModule,
     MatListModule,
     MatIconModule,
+    CategoryTypeIconPipe,
   ],
   selector: 'household-category-list-item',
   styleUrl: './category-list-item.scss',

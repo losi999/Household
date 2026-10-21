@@ -36,6 +36,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
   let regularCategoryDocument: Documents.Category;
   let inventoryCategoryDocument: Documents.Category;
   let invoiceCategoryDocument: Documents.Category;
+  let childCategoryDocument: Documents.Category;
   let genericProductDocument: Documents.GenericProduct;
   let specificProductDocument: Documents.SpecificProduct;
   let variantProductDocument: Documents.VariantProduct;
@@ -55,6 +56,13 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
       body: {
         categoryType: CategoryType.Regular,
       },
+    });
+
+    childCategoryDocument = categoryDataFactory.document({
+      body: {
+        categoryType: CategoryType.Regular,
+      },
+      parentCategory: regularCategoryDocument,
     });
 
     inventoryCategoryDocument = categoryDataFactory.document({
@@ -102,10 +110,10 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
       } else {
         test.describe('should get', () => {
           test.describe('of a non-loan account', () => {
-            test('regular payment transaction', async ({ requestGetTransaction, saveAccount, saveTransaction, saveCategory, saveProject, saveRecipient }) => {
+            test('regular payment transaction', async ({ requestGetTransaction, saveAccount, saveTransaction, saveCategories, saveProject, saveRecipient }) => {
               const document = paymentTransactionDataFactory.document({
                 account: accountDocument,
-                category: regularCategoryDocument,
+                category: childCategoryDocument,
                 project: projectDocument,
                 recipient: recipientDocument,
               });
@@ -113,7 +121,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveAccount(accountDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              await saveCategory(regularCategoryDocument);
+              await saveCategories(childCategoryDocument, regularCategoryDocument);
               await saveTransaction(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));
               transactionApiExpect(res).toBeOkResponse();
@@ -292,6 +300,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
                 splits: [
                   {
                     project: projectDocument,
+                    category: childCategoryDocument,
                   },
                   {
                     category: regularCategoryDocument,
@@ -308,6 +317,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
                   {
                     project: projectDocument,
                     loanAccount: loanAccountDocument,
+                    category: childCategoryDocument,
                   },
                   {
                     category: regularCategoryDocument,
@@ -328,7 +338,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions/{transactio
               await saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
               await saveProject(projectDocument);
               await saveRecipient(recipientDocument);
-              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+              await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument, childCategoryDocument);
               await saveProduct(genericProductDocument);
               await saveTransactions(document);
               const res = await requestGetTransaction(getAccountId(accountDocument), getTransactionId(document));

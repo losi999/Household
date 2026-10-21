@@ -1,48 +1,180 @@
+<ng-template #description let-description="description">
+  <div class="description">
+    <shared-icon-text icon="description" [text]="description" />
+  </div>
+</ng-template>
+
+<ng-template #additional let-recipient="recipient" let-category="category" let-project="project">
+  <div class="additional">
+    @if (recipient) {
+      <shared-icon-text icon="store" [text]="recipient.name" />
+    }
+    @if (project) {
+      <shared-icon-text icon="stacks" [text]="project.name" />
+    }
+    @if (category?.categoryType === 'regular') {
+      <shared-icon-text [icon]="category | categoryTypeIcon" [text]="category.fullName" />
+    }
+  </div>
+</ng-template>
+
+<ng-template #inventory let-product="product" let-quantity="quantity">
+  @if (product) {
+    <div class="inventory">
+      @if (quantity) {
+        <shared-icon-text icon="add_shopping_cart" [text]="quantity.toString()" />
+      }
+      <shared-icon-text icon="barcode" [text]="product.fullName" />
+    </div>
+  }
+</ng-template>
+
+<ng-template
+  #invoice
+  let-category="category"
+  let-billingStartDate="billingStartDate"
+  let-billingEndDate="billingEndDate"
+  let-invoiceNumber="invoiceNumber"
+>
+  @if (category?.categoryType === 'invoice') {
+    <div class="invoice">
+      <shared-icon-text [icon]="category | categoryTypeIcon" [text]="category.fullName" />
+      @if (billingStartDate && billingEndDate) {
+        <shared-icon-text
+          icon="calendar_month"
+          [text]="
+            (billingStartDate | date: 'yyyy. MMM dd.') +
+            ' - ' +
+            (billingEndDate | date: 'yyyy. MMM dd.')
+          "
+        />
+      }
+      @if (invoiceNumber) {
+        <shared-icon-text icon="receipt" [text]="invoiceNumber" />
+      }
+    </div>
+  }
+</ng-template>
+
+<ng-template #splitItem let-split="split" let-currency="currency">
+  <div class="split-title">
+    @if (split.ownerAccount) {
+      <shared-icon-text
+        [icon]="split.ownerAccount | accountTypeIcon"
+        [text]="split.ownerAccount.name"
+      />
+    }
+    <div [style.grid-column]="'2 / 3'" [style.color]="split.amount < 0 ? 'red' : 'green'">
+      {{ split.amount }} {{ currency }}
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="description; context: { description: split.description }" />
+  <ng-container
+    *ngTemplateOutlet="
+      additional;
+      context: {
+        category: split.category,
+        project: split.project,
+      }
+    "
+  />
+  <ng-container
+    *ngTemplateOutlet="inventory; context: { product: split.product, quantity: split.quantity }"
+  />
+  <ng-container
+    *ngTemplateOutlet="
+      invoice;
+      context: {
+        category: split.category,
+        billingStartDate: split.billingStartDate,
+        billingEndDate: split.billingEndDate,
+        invoiceNumber: split.invoiceNumber,
+      }
+    "
+  />
+</ng-template>
+
 @let tx = transaction();
 <mat-card appearance="outlined">
   <mat-card-header>
     <div class="header-text">
-      <mat-card-subtitle>{{tx.issuedAt | date: 'YYYY'}}</mat-card-subtitle>
-      <mat-card-title>{{tx.issuedAt | date: 'MMM d., EEEE'}}</mat-card-title>
-      <mat-card-subtitle>{{tx.issuedAt | date: 'HH:mm'}}</mat-card-subtitle>
+      @if (showYear()) {
+        <mat-card-subtitle>{{ tx.issuedAt | date: 'yyyy' }}</mat-card-subtitle>
+      }
+      <mat-card-title>{{ tx.issuedAt | date: 'MMM d., EEEE' }}</mat-card-title>
+      <mat-card-subtitle>{{ tx.issuedAt | date: 'HH:mm' }}</mat-card-subtitle>
     </div>
     <div class="amount" [style.color]="amountColor()">
-      {{amount()*1000 | number:'1.0-2':'hu'}} {{currency()}}
+      {{ amount() | number: '1.0-2' : 'hu' }} {{ currency() }}
     </div>
   </mat-card-header>
   <mat-card-content>
-    <div class="description">
-      {{tx.description}}
-    </div>
-    <!-- @if (tx.transactionType === 'split') {
-    <div class="splits">
-      <div>split1</div>
-      <div>split2</div>
-      <div>split3</div>
-    </div>
-    } -->
-    @if (tx.transactionType === 'transfer') {
-    <div class="transfer">
-      <mat-icon>{{tx.account | accountTypeIcon}}</mat-icon>
-      {{tx.account.name}}
-      <mat-icon class="arrow"> {{amount() < 0 ? 'stat_minus_3' : 'stat_3' }}</mat-icon>
-          <mat-icon>{{tx.transferAccount | accountTypeIcon}}</mat-icon>
-          {{tx.transferAccount.name}}
-    </div>
+    @if (tx.transactionType === 'loan') {
+      <shared-icon-text [icon]="tx.ownerAccount | accountTypeIcon" [text]="tx.ownerAccount.name" />
     }
-    @if (tx.transactionType !== 'transfer') {
-    <mat-divider />
-    <div class="additional">
-      <shared-icon-text icon="store" [text]="tx.recipient?.name" />
-      @if (tx.transactionType !== 'split') {
-      <shared-icon-text icon="stacks" [text]="tx.project?.name" />
-      <shared-icon-text icon="category" [text]="tx.category?.name" />
-      <shared-icon-text icon="barcode" [text]="tx.product?.fullName" />
-      <shared-icon-text icon="add_shopping_cart" [text]="tx.quantity?.toString()" />
-      }
-    </div>
+    <ng-container *ngTemplateOutlet="description; context: { description: tx.description }" />
+    @if (tx.transactionType === 'payment' || tx.transactionType === 'loan') {
+      <ng-container
+        *ngTemplateOutlet="
+          additional;
+          context: {
+            recipient: tx.recipient,
+            project: tx.project,
+            category: tx.category,
+          }
+        "
+      />
+      <ng-container
+        *ngTemplateOutlet="inventory; context: { product: tx.product, quantity: tx.quantity }"
+      />
+      <ng-container
+        *ngTemplateOutlet="
+          invoice;
+          context: {
+            category: tx.category,
+            billingStartDate: tx.billingStartDate,
+            billingEndDate: tx.billingEndDate,
+            invoiceNumber: tx.invoiceNumber,
+          }
+        "
+      />
     }
 
+    @if (tx.transactionType === 'split') {
+      <ng-container
+        *ngTemplateOutlet="
+          additional;
+          context: {
+            recipient: tx.recipient,
+          }
+        "
+      />
+      <div class="splits">
+        @for (split of tx.splits; track $index) {
+          <ng-container
+            *ngTemplateOutlet="splitItem; context: { split: split, currency: tx.account.currency }"
+          />
+        }
+        @for (split of tx.loans; track $index) {
+          <ng-container
+            *ngTemplateOutlet="splitItem; context: { split: split, currency: tx.account.currency }"
+          />
+        }
+      </div>
+    }
+
+    @if (tx.transactionType === 'transfer') {
+      <div class="transfer">
+        <shared-icon-text [icon]="tx.account | accountTypeIcon" [text]="tx.account.name" />
+        <span class="arrow">
+          <mat-icon> {{ amount() < 0 ? 'stat_minus_3' : 'stat_3' }}</mat-icon>
+        </span>
+        <shared-icon-text
+          [icon]="tx.transferAccount | accountTypeIcon"
+          [text]="tx.transferAccount.name"
+        />
+      </div>
+    }
   </mat-card-content>
   <mat-card-actions>
     <a matIconButton><mat-icon>format_list_bulleted</mat-icon></a>

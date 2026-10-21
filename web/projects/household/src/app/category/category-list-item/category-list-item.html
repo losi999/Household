@@ -1,14 +1,4 @@
 <button mat-list-item (click)="onShowMenu()" [disabled]="isDisabled()">
-  @switch (category().categoryType) {
-  @case ('regular') {
-  <mat-icon matListItemIcon>category</mat-icon>
-  }
-  @case ('inventory') {
-  <mat-icon matListItemIcon>inventory_2</mat-icon>
-  }
-  @case ('invoice') {
-  <mat-icon matListItemIcon>receipt_long</mat-icon>
-  }
-  }
+  <mat-icon matListItemIcon>{{category() | categoryTypeIcon}}</mat-icon>
   <div matListItemTitle>{{category().fullName}}</div>
 </button>

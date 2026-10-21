@@ -67,6 +67,12 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                 categoryType: CategoryType.Regular,
               },
             });
+            const childCategoryDocument = categoryDataFactory.document({
+              body: {
+                categoryType: CategoryType.Regular,
+              },
+              parentCategory: regularCategoryDocument,
+            });
             const inventoryCategoryDocument = categoryDataFactory.document({
               body: {
                 categoryType: CategoryType.Inventory,
@@ -104,7 +110,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
                   product: variantProductDocument,
                 },
                 {
-                  category: regularCategoryDocument,
+                  category: childCategoryDocument,
                 },
 
                 {
@@ -118,6 +124,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
               loans: [
                 {
                   loanAccount: loanAccountDocument,
+                  category: childCategoryDocument,
                 },
                 {
                   loanAccount: loanAccountDocument,
@@ -128,6 +135,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
             const loanTransactionDocument = loanTransactionDataFactory.document({
               account: accountDocument,
               loanAccount: loanAccountDocument,
+              category: childCategoryDocument,
             });
 
             const repaymentTransactionDocument = loanTransactionDataFactory.document({
@@ -156,7 +164,7 @@ test.describe('GET /transaction/v1/accounts/{accountId}/transactions', () => {
 
             await saveRecipient(recipientDocument);
             await saveAccounts(accountDocument, loanAccountDocument, transferAccountDocument);
-            await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument);
+            await saveCategories(regularCategoryDocument, invoiceCategoryDocument, inventoryCategoryDocument, childCategoryDocument);
             await saveProject(projectDocument);
             await saveProducts(genericProductDocument, specificProductDocument, variantProductDocument);
             await saveTransactions(paymentTransactionDocument, splitTransactionDocument, payingTransferTransactionDocument, receivingTransferTransactionDocument, loanTransferTransactionDocument, invertedLoanTransferTransactionDocument, loanTransactionDocument, repaymentTransactionDocument);

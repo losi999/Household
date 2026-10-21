@@ -25,12 +25,11 @@ export const validateSplitTransactionResponse = (response: Responses.SplitTransa
     recipient: validateRecipientResponse(response.recipient, document.recipient),
     splits: response.splits?.map((splitResponseItem, index) => {
       const splitDocument = document.splits[index];
-
       return new Comparer(splitResponseItem, {
         amount: splitDocument.amount,
         description: splitDocument.description,
         project: validateProjectResponse(splitResponseItem.project, splitDocument.project),
-        category: validateCategoryResponse(splitResponseItem.category, splitDocument.category),
+        category: validateCategoryResponse(splitResponseItem.category, splitDocument.category, ...splitDocument.category?.ancestors ?? []),
         product: validateProductResponse(splitResponseItem.product, splitDocument.product),
         quantity: splitDocument.quantity,
         billingStartDate: splitDocument.billingStartDate?.toISOString().split('T')[0],

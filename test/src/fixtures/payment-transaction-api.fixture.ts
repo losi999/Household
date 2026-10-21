@@ -23,7 +23,7 @@ export const validatePaymentTransactionResponse = (response: Responses.PaymentTr
     project: validateProjectResponse(response.project, document.project),
     account: validateAccountLeanResponse(response.account, document.account),
     recipient: validateRecipientResponse(response.recipient, document.recipient),
-    category: validateCategoryResponse(response.category, document.category),
+    category: validateCategoryResponse(response.category, document.category, ...document.category?.ancestors ?? []),
     product: validateProductResponse(response.product, document.product),
     quantity: document.quantity,
     billingStartDate: document.billingStartDate?.toISOString().split('T')[0],

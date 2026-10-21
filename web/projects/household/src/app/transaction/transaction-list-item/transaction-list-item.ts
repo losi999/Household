@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, input } from '@angular/core';
 import { Responses } from '@household/shared/types/responses';
 import { MatCardModule } from '@angular/material/card';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AccountType, TransactionType } from '@household/shared/enums';
@@ -13,6 +13,8 @@ import { AccountStore } from '@household/state/account/account-store';
 import { IconText } from '@household/shared-ui';
 import { MatDividerModule } from '@angular/material/divider';
 import { AccountTypeIconPipe } from '@household/app/account/account-type-icon-pipe';
+import { createDate } from '@household/shared/common/utils';
+import { CategoryTypeIconPipe } from '@household/app/category/category-type-icon-pipe';
 
 @Component({
   imports: [
@@ -24,6 +26,8 @@ import { AccountTypeIconPipe } from '@household/app/account/account-type-icon-pi
     IconText,
     MatDividerModule,
     AccountTypeIconPipe,
+    CategoryTypeIconPipe,
+    NgTemplateOutlet,
   ],
   selector: 'household-transaction-list-item',
   styleUrl: './transaction-list-item.scss',
@@ -37,6 +41,10 @@ export class TransactionListItem {
 
   private account: Responses.Account;
   private readonly accountId: Api.Account.Id;
+
+  showYear = computed(() => {
+    return createDate(this.transaction().issuedAt).getFullYear() !== new Date().getFullYear();
+  });
 
   amount = computed(() => {
     const transaction = this.transaction();
@@ -103,10 +111,5 @@ export class TransactionListItem {
 
   constructor() {
     this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Api.Account.Id;
-
-    effect(() => {
-      this.account = this.accountStore.accountList().find(a => a.accountId === this.accountId);
-      console.log(this.account?.accountType);
-    });
   }
 }

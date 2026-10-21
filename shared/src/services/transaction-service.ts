@@ -13,24 +13,37 @@ const populateTransaction: PopulateOptions[] = populate('project',
   'transferAccount',
   'payingAccount',
   'ownerAccount',
-  'category',
+  {
+    path: 'category',
+    populate: populate('ancestors'),
+  },
   {
     path: 'product',
     populate: populate('genericProduct', 'specificProduct'),
   },
   {
     path: 'splits',
-    populate: populate('category', 'project', {
-      path: 'product',
-      populate: populate('genericProduct', 'specificProduct'),
-    }),
+    populate: populate('project',
+      {
+        path: 'category',
+        populate: populate('ancestors'),
+      }, 
+      {
+        path: 'product',
+        populate: populate('genericProduct', 'specificProduct'),
+      }),
   },
   {
     path: 'loans',
-    populate: populate('payingAccount', 'ownerAccount', 'category', 'project', {
-      path: 'product',
-      populate: populate('genericProduct', 'specificProduct'),
-    }),
+    populate: populate('payingAccount', 'ownerAccount', 'project', 
+      {
+        path: 'category',
+        populate: populate('ancestors'),
+      }, 
+      {
+        path: 'product',
+        populate: populate('genericProduct', 'specificProduct'),
+      }),
   },
 );
 
