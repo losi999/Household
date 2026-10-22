@@ -9,60 +9,47 @@
 
 :root {
   --content-max-width: 1024px;
+  --household-tertiary: #386A20;
+  --household-tertiary-container: #b8f397
 }
 
 html {
   height: 100%;
-  @include mat.theme(
-    (
-      color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$red-palette,
+  @include mat.theme((color: (primary: mat.$azure-palette,
+        tertiary: mat.$spring-green-palette,
       ),
       typography: Roboto,
       density: 0,
-    )
-  );
+    ));
 
-  @include mat.dialog-overrides(
-    (
-      container-max-width: var(--content-max-width),
-    )
-  );
+  @include mat.dialog-overrides((container-max-width: var(--content-max-width),
+    ));
 }
 
 button,
 a {
   touch-action: manipulation;
+
   &.danger {
-    @include mat.button-overrides(
-      (
-        filled-container-color: var(--mat-sys-error),
+    @include mat.button-overrides((filled-container-color: var(--mat-sys-error),
         protected-label-text-color: var(--mat-sys-error),
         outlined-label-text-color: var(--mat-sys-error),
         outlined-outline-color: var(--mat-sys-error),
         tonal-container-color: var(--mat-sys-error-container),
         tonal-label-text-color: var(--mat-sys-error),
         text-label-text-color: var(--mat-sys-error),
-      )
-    );
+      ));
 
-    @include mat.icon-button-overrides(
-      (
-        icon-color: var(--mat-sys-error),
-      )
-    );
+    @include mat.icon-button-overrides((icon-color: var(--mat-sys-error),
+      ));
   }
 
-  @include mat.button-overrides(
-    (
-      filled-container-shape: var(--mat-sys-corner-medium),
+  @include mat.button-overrides((filled-container-shape: var(--mat-sys-corner-medium),
       outlined-container-shape: var(--mat-sys-corner-medium),
       protected-container-shape: var(--mat-sys-corner-medium),
       text-container-shape: var(--mat-sys-corner-medium),
       tonal-container-shape: var(--mat-sys-corner-medium),
-    )
-  );
+    ));
 }
 
 mat-icon {
@@ -88,4 +75,13 @@ body {
   margin: 0;
   height: 100%;
 }
+
+.red-text {
+  color: var(--mat-sys-error) !important;
+}
+
+.green-text {
+  color: var(--household-tertiary) !important;
+}
+
 /* You can add global styles to this file, and also import other style files */

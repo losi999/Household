@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Toolbar } from '@household/app/shared/toolbar/toolbar';
 import { TransactionList } from '@household/app/transaction/transaction-list/transaction-list';
 import { Api } from '@household/shared/types/api';
@@ -21,6 +21,7 @@ const TRANSACTION_PAGE_SIZE = 25;
     MatIconModule,
     MatButtonModule,
     TransactionList,
+    RouterLink,
   ],
   selector: 'household-transaction-home',
   styleUrl: './transaction-home.scss',
@@ -34,18 +35,16 @@ export class TransactionHome {
   private readonly transactionApiEvents = injectDispatch(transactionApiEvents);
   private readonly router = inject(Router);
 
+  readonly accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Api.Account.Id;
+
   private loadedPage: number;
 
   constructor() {
     effect(() => {
-      const account = this.accountStore.accountList().find(a => a.accountId === accountId);
+      const account = this.accountStore.accountList().find(a => a.accountId === this.accountId);
       
       this.title.setTitle(account?.name ?? 'Tranzakciók');
     });
-
-    const accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Api.Account.Id;
-
-    // this.title.setTitle(this.accountStore.accountList().find(a => a.accountId === accountId).name);
 
     this.activatedRoute.queryParamMap.pipe(
       map((params) => {
@@ -59,7 +58,7 @@ export class TransactionHome {
       if (!this.loadedPage) {
         // The page is loaded, everything up to the page in the url is needed
         this.transactionApiEvents.listTransactionsByAccountInitiated({
-          accountId,
+          accountId: this.accountId,
           pageNumber: 1,
           pageSize: page * TRANSACTION_PAGE_SIZE,
         });
@@ -67,7 +66,7 @@ export class TransactionHome {
       } else if (page > this.loadedPage) {
         // The page in the url was increased, only that page is missing
         this.transactionApiEvents.listTransactionsByAccountInitiated({
-          accountId,
+          accountId: this.accountId,
           pageNumber: page,
           pageSize: TRANSACTION_PAGE_SIZE,
         });

@@ -29,6 +29,7 @@ describe('Account store', () => {
     initialState = {
       accountList: [],
       isInProgress: [],
+      pendingAccount: undefined,
       ...initial,
     };
 
@@ -66,14 +67,17 @@ describe('Account store', () => {
   it('should initialize with the provided state', () => {
     const accountList = [testDataFactory.account.response()];
     const isInProgress = [testDataFactory.account.id()];
+    const pendingAccount = testDataFactory.account.response();
 
     setup({
       accountList,
       isInProgress,
+      pendingAccount,
     });
 
     expect(store.accountList()).toEqual(accountList);
     expect(store.isInProgress()).toEqual(isInProgress);
+    expect(store.pendingAccount()).toEqual(pendingAccount);
   });
 
   it('should initialize with the default state', () => {
@@ -81,6 +85,7 @@ describe('Account store', () => {
 
     expect(store.accountList()).toEqual([]);
     expect(store.isInProgress()).toEqual([]);
+    expect(store.pendingAccount()).toBeUndefined();
   });
 
   it('should have the reducer wired in', () => {
@@ -101,6 +106,18 @@ describe('Account store', () => {
     dispatcher.dispatch(accountEvents.createAccount());
 
     expect(mockMatDialog.functions.open).toHaveBeenCalledWith(AccountDialog, expect.anything());
+  });
+
+  it('should have the account selection working with the dialog and the reducer', () => {
+    setup();
+    const account = testDataFactory.account.response();
+    mockMatDialog.functions.open.mockReturnValue({
+      afterClosed: () => of(account),
+    } as any);
+
+    dispatcher.dispatch(accountEvents.selectAccount(undefined));
+
+    expect(store.pendingAccount()).toEqual(account);
   });
 
   it('should have the submenu handler wired in', () => {

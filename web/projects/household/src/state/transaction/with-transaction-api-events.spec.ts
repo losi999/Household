@@ -19,7 +19,7 @@ describe('withTransactionApiEvents', () => {
   const setup = () => {
     TestBed.resetTestingModule();
 
-    mockTransactionService = createMockService('listTransactionsByAccount');
+    mockTransactionService = createMockService('listTransactionsByAccount', 'deleteTransaction');
 
     TestBed.configureTestingModule({
       providers: [
@@ -119,6 +119,40 @@ describe('withTransactionApiEvents', () => {
         pageNumber: 2,
         transactions: secondTransactionList,
       }), undefined);
+    });
+  });
+
+  describe('dispatching deleteTransactionInitiated', () => {
+    const transactionId = testDataFactory.transaction.id();
+
+    it('should call API and dispatch response', () => {
+      mockTransactionService.functions.deleteTransaction.mockReturnValue(of(undefined));
+
+      dispatcher.dispatch(transactionApiEvents.deleteTransactionInitiated({
+        transactionId,
+      }));
+
+      validateFunctionCall(mockTransactionService.functions.deleteTransaction, transactionId);
+      validateDispatcher(dispatchSpy, transactionApiEvents.deleteTransactionCompleted({
+        transactionId,
+      }));
+    });
+
+    it('should call API and show notification if there is an error', () => {
+      mockTransactionService.functions.deleteTransaction.mockReturnValue(throwError(() => ({
+        error: {
+          message: 'There is an error',
+        },
+      })));
+
+      dispatcher.dispatch(transactionApiEvents.deleteTransactionInitiated({
+        transactionId,
+      }));
+
+      validateFunctionCall(mockTransactionService.functions.deleteTransaction, transactionId);
+      validateDispatcher(dispatchSpy, transactionApiEvents.deleteTransactionFailed({
+        transactionId,
+      }), notificationEvents.showMessage('Hiba történt'));
     });
   });
 });

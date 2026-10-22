@@ -1,24 +1,28 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, ParamMap, Params, Router } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, ParamMap, Params, provideRouter, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { TransactionHome } from './transaction-home';
 import { createStubComponent, elementSelectorFactory, IElementSelector, MockSignalStore, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
 import { Toolbar } from '@household/app/shared/toolbar/toolbar';
 import { TransactionStore } from '@household/state/transaction/transaction-store';
+import { AccountStore } from '@household/state/account/account-store';
 import { transactionApiEvents } from '@household/state/transaction/transaction-events';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
-import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { validateFunctionCall } from '@household/shared/common/unit-testing';
 import { Dispatcher } from '@ngrx/signals/events';
+import { Mock } from 'vitest';
 import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
 
-describe.skip('TransactionHome', () => {
+describe('TransactionHome', () => {
   const ToolbarStub = createStubComponent(Toolbar);
 
   let fixture: ComponentFixture<TransactionHome>;
   let selector: IElementSelector;
   let mockTransactionStore: MockSignalStore<typeof TransactionStore>;
+  let mockAccountStore: MockSignalStore<typeof AccountStore>;
   let mockDispatcher: Dispatcher;
-  let mockRouter: MockService<Router>;
+  let navigateSpy: Mock;
   let mockActivatedRoute: ActivatedRoute;
   let queryParamMap: BehaviorSubject<ParamMap>;
 
@@ -44,10 +48,10 @@ describe.skip('TransactionHome', () => {
   const render = async (params?: {
     accountId?: Api.Account.Id;
     queryParams?: Params;
+    accountList?: Responses.Account[];
   }) => {
     TestBed.resetTestingModule();
 
-    mockRouter = createMockService('navigate');
     queryParamMap = new BehaviorSubject(convertToParamMap(params?.queryParams ?? {}));
     mockActivatedRoute = {
       snapshot: {
@@ -68,14 +72,12 @@ describe.skip('TransactionHome', () => {
       imports: [TransactionHome],
       providers: [
         provideMockSignalStore(TransactionStore, 'transactionList'),
+        provideMockSignalStore(AccountStore, 'accountList'),
         provideMockDispatcher(),
+        provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: mockActivatedRoute,
-        },
-        {
-          provide: Router,
-          useValue: mockRouter.service,
         },
       ],
     })
@@ -90,9 +92,12 @@ describe.skip('TransactionHome', () => {
       .compileComponents();
 
     mockTransactionStore = TestBed.inject<MockSignalStore<typeof TransactionStore>>(TransactionStore);
+    mockAccountStore = TestBed.inject<MockSignalStore<typeof AccountStore>>(AccountStore);
     mockDispatcher = TestBed.inject(Dispatcher);
+    navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
     mockTransactionStore.transactionList.set([]);
+    mockAccountStore.accountList.set(params?.accountList ?? []);
 
     fixture = TestBed.createComponent(TransactionHome);
 
@@ -205,7 +210,7 @@ describe.skip('TransactionHome', () => {
 
       getLoadMoreButton().nativeElement.click();
 
-      validateFunctionCall(mockRouter.functions.navigate, [], {
+      validateFunctionCall(navigateSpy, [], {
         relativeTo: mockActivatedRoute,
         queryParams: {
           page: 2,
@@ -224,7 +229,7 @@ describe.skip('TransactionHome', () => {
 
       getLoadMoreButton().nativeElement.click();
 
-      validateFunctionCall(mockRouter.functions.navigate, [], {
+      validateFunctionCall(navigateSpy, [], {
         relativeTo: mockActivatedRoute,
         queryParams: {
           page: 4,
@@ -235,11 +240,46 @@ describe.skip('TransactionHome', () => {
     });
   });
 
+  describe('add button', () => {
+    const getAddButton = () => selector.getElementByTestId<HTMLAnchorElement>('add');
+
+    it('should link to the new transaction page of the account in the url', async () => {
+      await render();
+
+      expect(getAddButton().nativeElement.getAttribute('href')).toBe(`/accounts/${accountId}/transactions/new`);
+    });
+
+    it('should link to the new transaction page of another account', async () => {
+      const otherAccountId = testDataFactory.account.id();
+
+      await render({
+        accountId: otherAccountId,
+      });
+
+      expect(getAddButton().nativeElement.getAttribute('href')).toBe(`/accounts/${otherAccountId}/transactions/new`);
+    });
+  });
+
   describe('toolbar', () => {
-    it('should be rendered with the title', async () => {
+    it('should be rendered with the default title if the account is not found', async () => {
       await render();
 
       expect(selector.getComponent(ToolbarStub).componentInstance.title()).toBe('Tranzakciók');
+    });
+
+    it('should be rendered with the name of the account in the url', async () => {
+      const account = testDataFactory.account.response({
+        accountId,
+      });
+
+      await render({
+        accountList: [
+          testDataFactory.account.response(),
+          account,
+        ],
+      });
+
+      expect(selector.getComponent(ToolbarStub).componentInstance.title()).toBe(account.name);
     });
   });
 });

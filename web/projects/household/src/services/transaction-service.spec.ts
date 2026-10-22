@@ -76,4 +76,39 @@ describe('TransactionService', () => {
       expect(error).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('deleteTransaction', () => {
+    const transactionId = testDataFactory.transaction.id();
+    const deleteUrl = `${apiUrl}/transaction/v1/transactions/${transactionId}`;
+
+    it('should send a DELETE request', () => {
+      setup();
+
+      const next = vi.fn();
+      service.deleteTransaction(transactionId).subscribe(next);
+
+      const req = httpMock.expectOne(deleteUrl);
+      expect(req.request.method).toBe('DELETE');
+
+      req.flush(null);
+
+      expect(next).toHaveBeenCalledTimes(1);
+    });
+
+    it('should propagate the error', () => {
+      setup();
+
+      const error = vi.fn();
+      service.deleteTransaction(transactionId).subscribe({
+        error,
+      });
+
+      httpMock.expectOne(deleteUrl).flush('error', {
+        status: 500,
+        statusText: 'Server Error',
+      });
+
+      expect(error).toHaveBeenCalledTimes(1);
+    });
+  });
 });

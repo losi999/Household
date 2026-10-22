@@ -1,3 +1,6 @@
+// The dialog classes the event handlers reference import the store, which imports the event handlers back.
+// Loading the store first resolves that cycle in the same order as the application does.
+import '@household/state/account/account-store';
 import { TestBed } from '@angular/core/testing';
 import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
@@ -8,6 +11,8 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { accountApiEvents, accountEvents } from '@household/state/account/account-events';
 import { withAccountEvents } from '@household/state/account/with-account-events';
 import { AccountDialog } from '@household/app/account/account-dialog/account-dialog';
+import { AccountSelectDialog } from '@household/app/account/account-select-dialog/account-select-dialog';
+import { toSearchable } from '@household/shared/common/utils';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of } from 'rxjs';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
@@ -228,7 +233,7 @@ describe('withAccountEvents', () => {
       label: 'Tranzakciók',
     },
     {
-      link: '/',
+      link: `accounts/${accountId}/transactions/new`,
       icon: 'post_add',
       label: 'Új tranzakció',
     },
@@ -393,6 +398,59 @@ describe('withAccountEvents', () => {
       dispatcher.dispatch(accountEvents.openAccountListItemSubmenu(account));
 
       validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, account.name, items);
+      validateDispatcher(dispatchSpy);
+    });
+  });
+
+  describe('dispatching selectAccount', () => {
+    const accountResponse = testDataFactory.account.response();
+    const selectableAccounts = [toSearchable(testDataFactory.account.response(), ['name'])];
+
+    it('should open dialog and dispatch if submitted', () => {
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(accountResponse),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(accountEvents.selectAccount(selectableAccounts));
+
+      validateFunctionCall(mockMatDialog.functions.open, AccountSelectDialog, {
+        disableClose: true,
+        data: selectableAccounts,
+        height: '80vh',
+        width: '90vw',
+      });
+      validateDispatcher(dispatchSpy, accountEvents.accountSelected(accountResponse));
+    });
+
+    it('should open dialog and not dispatch anything if cancelled', () => {
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(accountEvents.selectAccount(selectableAccounts));
+
+      validateFunctionCall(mockMatDialog.functions.open, AccountSelectDialog, {
+        disableClose: true,
+        data: selectableAccounts,
+        height: '80vh',
+        width: '90vw',
+      });
+      validateDispatcher(dispatchSpy);
+    });
+
+    it('should open dialog without data if there are no selectable accounts given', () => {
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(accountEvents.selectAccount(undefined));
+
+      validateFunctionCall(mockMatDialog.functions.open, AccountSelectDialog, {
+        disableClose: true,
+        data: undefined,
+        height: '80vh',
+        width: '90vw',
+      });
       validateDispatcher(dispatchSpy);
     });
   });

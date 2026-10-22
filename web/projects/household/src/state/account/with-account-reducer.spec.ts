@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore, withState } from '@ngrx/signals';
-import { accountApiEvents } from '@household/state/account/account-events';
+import { accountApiEvents, accountEvents } from '@household/state/account/account-events';
 import { AccountState } from '@household/state/account/account-store';
 import { withAccountReducer } from '@household/state/account/with-account-reducer';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
@@ -21,6 +21,7 @@ describe('withAccountReducer', () => {
 
   const validateState = (currentValue?: Partial<AccountState>) => {
     expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
+    expect(store.pendingAccount(), 'pendingAccount').toEqual(Object.hasOwn(currentValue ?? {}, 'pendingAccount') ? currentValue.pendingAccount : initialState.pendingAccount);
     expect(store.accountList(), 'accountList').toEqual(Object.hasOwn(currentValue ?? {}, 'accountList') ? currentValue.accountList : initialState.accountList);
   };
 
@@ -30,6 +31,7 @@ describe('withAccountReducer', () => {
     initialState = {
       accountList: [],
       isInProgress: [],
+      pendingAccount: undefined,
       ...initial,
     };
 
@@ -39,6 +41,32 @@ describe('withAccountReducer', () => {
 
   beforeEach(() => {
     setup();
+  });
+
+  describe('selectAccount', () => {
+    it('should clear the pending account', () => {
+      setup({
+        pendingAccount: testDataFactory.account.response(),
+      });
+
+      dispatcher.dispatch(accountEvents.selectAccount([toSearchable(testDataFactory.account.response(), ['name'])]));
+
+      validateState({
+        pendingAccount: undefined,
+      });
+    });
+  });
+
+  describe('accountSelected', () => {
+    it('should store the selected account as the pending account', () => {
+      const accountResponse = testDataFactory.account.response();
+
+      dispatcher.dispatch(accountEvents.accountSelected(accountResponse));
+
+      validateState({
+        pendingAccount: accountResponse,
+      });
+    });
   });
 
   describe('listAccountsCompleted', () => {

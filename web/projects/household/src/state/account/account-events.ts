@@ -1,6 +1,7 @@
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
+import { Searchable } from '@household/shared/types/common';
 import { type } from '@ngrx/signals';
 import { eventGroup } from '@ngrx/signals/events';
 
@@ -13,6 +14,8 @@ export const accountEvents = eventGroup({
     openAccount: type<Responses.Account>(),
     closeAccount: type<Responses.Account>(),
     openAccountListItemSubmenu: type<Responses.Account>(),
+    selectAccount: type<Searchable<Responses.Account>[] | undefined>(),
+    accountSelected: type<Responses.Account>(),
   },
 });
 

@@ -17,4 +17,8 @@ export class TransactionService {
       },
     });
   }
+
+  deleteTransaction(transactionId: Api.Transaction.Id) {
+    return this.httpClient.delete<void>(`${this.apiUrl}/transaction/v1/transactions/${transactionId}`);
+  }
 }

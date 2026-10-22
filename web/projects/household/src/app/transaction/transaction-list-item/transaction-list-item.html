@@ -1,7 +1,9 @@
 <ng-template #description let-description="description">
-  <div class="description">
-    <shared-icon-text icon="description" [text]="description" />
-  </div>
+  @if (description) {
+    <div class="description">
+      <shared-icon-text icon="description" [text]="description" />
+    </div>
+  }
 </ng-template>
 
 <ng-template #additional let-recipient="recipient" let-category="category" let-project="project">
@@ -59,13 +61,15 @@
 <ng-template #splitItem let-split="split" let-currency="currency">
   <mat-expansion-panel [expanded]="true">
     <mat-expansion-panel-header>
-      <mat-panel-title [style.color]="'red'">{{ split.amount }} {{ currency }}</mat-panel-title>
+      <mat-panel-title class="red-text">{{ split.amount }} {{ currency }}</mat-panel-title>
       @if (split.ownerAccount) {
         <mat-panel-description>
-          <shared-icon-text
-            [icon]="split.ownerAccount | accountTypeIcon"
-            [text]="split.ownerAccount.name"
-          />
+          <div class="loan">
+            <shared-icon-text
+              [icon]="split.ownerAccount | accountTypeIcon"
+              [text]="split.ownerAccount.name"
+            />
+          </div>
         </mat-panel-description>
       }
     </mat-expansion-panel-header>
@@ -81,7 +85,8 @@
         "
       />
       <ng-container
-        *ngTemplateOutlet="inventory; context: { product: split.product, quantity: split.quantity }"
+        [ngTemplateOutlet]="inventory"
+        [ngTemplateOutletContext]="{ product: split.product, quantity: split.quantity }"
       />
       <ng-container
         *ngTemplateOutlet="
@@ -108,13 +113,53 @@
       <mat-card-title>{{ tx.issuedAt | date: 'MMM d., EEEE' }}</mat-card-title>
       <mat-card-subtitle>{{ tx.issuedAt | date: 'HH:mm' }}</mat-card-subtitle>
     </div>
-    <div class="amount" [style.color]="amountColor()">
-      {{ amount() | number: '1.0-2' : 'hu' }} {{ currency() }}
+    <div class="amounts">
+      <div class="amount" [class]="`${amountColor()}-text`">
+        {{ amount() | number: '1.0-2' : 'hu' }} {{ currency() }}
+      </div>
+      @if (tx.transactionType === 'transfer' && tx.amount !== tx.transferAmount * -1) {
+        <div class="transfer-amount" [class]="`${amountColor()}-text`">
+          {{ tx.transferAmount | number: '1.0-2' : 'hu' }} {{ tx.transferAccount.currency }}
+        </div>
+      }
     </div>
   </mat-card-header>
   <mat-card-content>
+    @if (tx.transactionType === 'transfer') {
+      <div class="transfer">
+        <shared-icon-text [icon]="tx.account | accountTypeIcon" [text]="tx.account.name" />
+        <span class="arrow">
+          <mat-icon> {{ amount() < 0 ? 'stat_minus_3' : 'stat_3' }}</mat-icon>
+        </span>
+        <shared-icon-text
+          [icon]="tx.transferAccount | accountTypeIcon"
+          [text]="tx.transferAccount.name"
+        />
+      </div>
+    }
     @if (tx.transactionType === 'loan') {
-      <shared-icon-text [icon]="tx.ownerAccount | accountTypeIcon" [text]="tx.ownerAccount.name" />
+      @if (tx.ownerAccount.accountId === accountId) {
+        <div class="loan">
+          <shared-icon-text
+            [icon]="tx.payingAccount | accountTypeIcon"
+            [text]="tx.payingAccount.name"
+          />
+        </div>
+      } @else if (tx.payingAccount.accountType === 'loan') {
+        <div class="repayment">
+          <shared-icon-text
+            [icon]="tx.ownerAccount | accountTypeIcon"
+            [text]="tx.ownerAccount.name"
+          />
+        </div>
+      } @else {
+        <div class="loan">
+          <shared-icon-text
+            [icon]="tx.ownerAccount | accountTypeIcon"
+            [text]="tx.ownerAccount.name"
+          />
+        </div>
+      }
     }
     <ng-container *ngTemplateOutlet="description; context: { description: tx.description }" />
     @if (tx.transactionType === 'payment' || tx.transactionType === 'loan') {
@@ -185,22 +230,17 @@
         }
       </mat-accordion>
     }
-
-    @if (tx.transactionType === 'transfer') {
-      <div class="transfer">
-        <shared-icon-text [icon]="tx.account | accountTypeIcon" [text]="tx.account.name" />
-        <span class="arrow">
-          <mat-icon> {{ amount() < 0 ? 'stat_minus_3' : 'stat_3' }}</mat-icon>
-        </span>
-        <shared-icon-text
-          [icon]="tx.transferAccount | accountTypeIcon"
-          [text]="tx.transferAccount.name"
-        />
-      </div>
-    }
   </mat-card-content>
   <mat-card-actions>
     <a matIconButton><mat-icon>format_list_bulleted</mat-icon></a>
-    <button matIconButton class="danger"><mat-icon>delete</mat-icon></button>
+    <button
+      matIconButton
+      class="danger"
+      data-testId="delete"
+      [disabled]="isDisabled()"
+      (click)="onDelete()"
+    >
+      <mat-icon>delete</mat-icon>
+    </button>
   </mat-card-actions>
 </mat-card>

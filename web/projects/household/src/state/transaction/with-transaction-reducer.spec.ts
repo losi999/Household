@@ -18,6 +18,7 @@ describe('withTransactionReducer', () => {
   let dispatcher: Dispatcher;
 
   const validateState = (currentValue?: Partial<TransactionState>) => {
+    expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
     expect(store.transactionList(), 'transactionList').toEqual(Object.hasOwn(currentValue ?? {}, 'transactionList') ? currentValue.transactionList : initialState.transactionList);
   };
 
@@ -26,6 +27,7 @@ describe('withTransactionReducer', () => {
 
     initialState = {
       transactionList: [],
+      isInProgress: [],
       ...initial,
     };
 
@@ -126,6 +128,77 @@ describe('withTransactionReducer', () => {
           transaction1,
           transaction2,
         ],
+      });
+    });
+  });
+
+  describe('deleteTransactionInitiated', () => {
+    it('should mark the transaction as in progress', () => {
+      const transaction = testDataFactory.transaction.response.payment();
+      const otherTransactionId = testDataFactory.transaction.id();
+      setup({
+        isInProgress: [otherTransactionId],
+        transactionList: [transaction],
+      });
+
+      dispatcher.dispatch(transactionApiEvents.deleteTransactionInitiated({
+        transactionId: transaction.transactionId,
+      }));
+
+      validateState({
+        isInProgress: [
+          otherTransactionId,
+          transaction.transactionId,
+        ],
+      });
+    });
+  });
+
+  describe('deleteTransactionFailed', () => {
+    it('should clear the in progress flag of the transaction', () => {
+      const transaction = testDataFactory.transaction.response.payment();
+      const otherTransactionId = testDataFactory.transaction.id();
+      setup({
+        isInProgress: [
+          otherTransactionId,
+          transaction.transactionId,
+        ],
+        transactionList: [transaction],
+      });
+
+      dispatcher.dispatch(transactionApiEvents.deleteTransactionFailed({
+        transactionId: transaction.transactionId,
+      }));
+
+      validateState({
+        isInProgress: [otherTransactionId],
+      });
+    });
+  });
+
+  describe('deleteTransactionCompleted', () => {
+    it('should remove the transaction and clear its in progress flag', () => {
+      const transactionToDelete = testDataFactory.transaction.response.payment();
+      const otherTransaction = testDataFactory.transaction.response.transfer();
+      const otherTransactionId = testDataFactory.transaction.id();
+      setup({
+        isInProgress: [
+          otherTransactionId,
+          transactionToDelete.transactionId,
+        ],
+        transactionList: [
+          transactionToDelete,
+          otherTransaction,
+        ],
+      });
+
+      dispatcher.dispatch(transactionApiEvents.deleteTransactionCompleted({
+        transactionId: transactionToDelete.transactionId,
+      }));
+
+      validateState({
+        isInProgress: [otherTransactionId],
+        transactionList: [otherTransaction],
       });
     });
   });

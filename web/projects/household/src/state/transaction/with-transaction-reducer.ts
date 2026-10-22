@@ -16,6 +16,31 @@ export const withTransactionReducer = () => {
 
         return {};
       }),
+      on(transactionApiEvents.deleteTransactionInitiated, ({ payload: { transactionId } }) => {
+        return (state) => {
+          return {
+            isInProgress: [
+              ...state.isInProgress,
+              transactionId,
+            ],
+          };
+        };
+      }),
+      on(transactionApiEvents.deleteTransactionFailed, ({ payload: { transactionId } }) => {
+        return (state) => {
+          return {
+            isInProgress: state.isInProgress.filter(id => id !== transactionId),
+          };
+        };
+      }),
+      on(transactionApiEvents.deleteTransactionCompleted, ({ payload: { transactionId } }) => {
+        return (state) => {
+          return {
+            isInProgress: state.isInProgress.filter(id => id !== transactionId),
+            transactionList: state.transactionList.filter(transaction => transaction.transactionId !== transactionId),
+          };
+        };
+      }),
       on(transactionApiEvents.listTransactionsByAccountCompleted, ({ payload: { pageNumber, transactions } }) => {
         return (state) => {
           if (pageNumber === 1) {

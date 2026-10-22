@@ -4,7 +4,7 @@ import { transactionApiEvents } from '@household/state/transaction/transaction-e
 import { notificationEvents } from '@household/shared-ui';
 import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
-import { catchError, concatMap, map } from 'rxjs';
+import { catchError, concatMap, map, mergeMap } from 'rxjs';
 
 export const withTransactionApiEvents = () => {
   return signalStoreFeature(
@@ -26,6 +26,23 @@ export const withTransactionApiEvents = () => {
               })),
               catchError(() => {
                 return [notificationEvents.showMessage('Hiba történt')];
+              }),
+            );
+          }),
+        ),
+        deleteTransaction: events.on(transactionApiEvents.deleteTransactionInitiated).pipe(
+          mergeMap(({ payload: { transactionId } }) => {
+            return transactionService.deleteTransaction(transactionId).pipe(
+              map(() => transactionApiEvents.deleteTransactionCompleted({
+                transactionId,
+              })),
+              catchError(() => {
+                return [
+                  transactionApiEvents.deleteTransactionFailed({
+                    transactionId,
+                  }),
+                  notificationEvents.showMessage('Hiba történt'),
+                ];
               }),
             );
           }),

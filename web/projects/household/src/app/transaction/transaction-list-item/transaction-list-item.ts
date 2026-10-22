@@ -6,16 +6,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AccountType, TransactionType } from '@household/shared/enums';
 import { ActivatedRoute } from '@angular/router';
-import { transactionApiEvents } from '@household/state/transaction/transaction-events';
-import { injectDispatch } from '@ngrx/signals/events';
 import { Api } from '@household/shared/types/api';
-import { AccountStore } from '@household/state/account/account-store';
 import { IconText } from '@household/shared-ui';
 import { MatDividerModule } from '@angular/material/divider';
 import { AccountTypeIconPipe } from '@household/app/account/account-type-icon-pipe';
 import { createDate } from '@household/shared/common/utils';
 import { CategoryTypeIconPipe } from '@household/app/category/category-type-icon-pipe';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { transactionEvents } from '@household/state/transaction/transaction-events';
+import { TransactionStore } from '@household/state/transaction/transaction-store';
+import { injectDispatch } from '@ngrx/signals/events';
 
 @Component({
   imports: [
@@ -38,10 +38,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 export class TransactionListItem {
   transaction = input.required<Responses.Transaction>();
   private readonly activatedRoute = inject(ActivatedRoute);
-  private readonly transactionApiEvents = injectDispatch(transactionApiEvents);
-  private readonly accountStore = inject(AccountStore);
+  private readonly transactionEvents = injectDispatch(transactionEvents);
+  private readonly transactionStore = inject(TransactionStore);
 
-  private account: Responses.Account;
   readonly accountId: Api.Account.Id;
 
   showYear = computed(() => {
@@ -111,7 +110,15 @@ export class TransactionListItem {
     }
   });
 
+  isDisabled = computed(() => {
+    return this.transactionStore.isInProgress().includes(this.transaction().transactionId);
+  });
+
   constructor() {
     this.accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Api.Account.Id;
+  }
+
+  onDelete() {
+    this.transactionEvents.deleteTransaction(this.transaction());
   }
 }

@@ -3,9 +3,10 @@ import { TransactionService } from '@household/services/transaction-service';
 import { provideTransactionStoreInitialState, TransactionState, TransactionStore } from '@household/state/transaction/transaction-store';
 import { Dispatcher } from '@ngrx/signals/events';
 import { createMockService, MockService } from '@household/shared/common/unit-testing';
-import { transactionApiEvents } from '@household/state/transaction/transaction-events';
+import { transactionApiEvents, transactionEvents } from '@household/state/transaction/transaction-events';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of } from 'rxjs';
+import { DialogService } from '@household/shared-ui';
 
 // The behavior of each store feature is covered in its own spec (with-transaction-reducer.spec.ts,
 // with-transaction-api-events.spec.ts). This spec only verifies that the store provides its initial state and has every
@@ -15,22 +16,29 @@ describe('Transaction store', () => {
   let store: InstanceType<typeof TransactionStore>;
   let dispatcher: Dispatcher;
   let mockTransactionService: MockService<TransactionService>;
+  let mockDialogService: MockService<DialogService>;
 
   const setup = (initial?: Partial<TransactionState>) => {
     TestBed.resetTestingModule();
 
     initialState = {
       transactionList: [],
+      isInProgress: [],
       ...initial,
     };
 
-    mockTransactionService = createMockService('listTransactionsByAccount');
+    mockTransactionService = createMockService('listTransactionsByAccount', 'deleteTransaction');
+    mockDialogService = createMockService('openConfirmationDialog');
 
     TestBed.configureTestingModule({
       providers: [
         {
           provide: TransactionService,
           useValue: mockTransactionService.service,
+        },
+        {
+          provide: DialogService,
+          useValue: mockDialogService.service,
         },
         provideTransactionStoreInitialState(initialState),
       ],
@@ -54,6 +62,7 @@ describe('Transaction store', () => {
     setup();
 
     expect(store.transactionList()).toEqual([]);
+    expect(store.isInProgress()).toEqual([]);
   });
 
   it('should have the reducer wired in', () => {
@@ -85,5 +94,20 @@ describe('Transaction store', () => {
       pageSize: 25,
     });
     expect(store.transactionList()).toEqual([transaction]);
+  });
+
+  it('should have the UI event handlers, the API event handlers and the reducer working together', () => {
+    const transaction = testDataFactory.transaction.response.payment();
+    setup({
+      transactionList: [transaction],
+    });
+    mockDialogService.functions.openConfirmationDialog.mockReturnValue(of(true));
+    mockTransactionService.functions.deleteTransaction.mockReturnValue(of(undefined));
+
+    dispatcher.dispatch(transactionEvents.deleteTransaction(transaction));
+
+    expect(mockTransactionService.functions.deleteTransaction).toHaveBeenCalledWith(transaction.transactionId);
+    expect(store.transactionList()).toEqual([]);
+    expect(store.isInProgress()).toEqual([]);
   });
 });

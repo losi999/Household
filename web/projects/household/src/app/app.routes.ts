@@ -44,6 +44,12 @@ export const routes: Routes = [
     canMatch: [authenticatedGuard],
   },
   {
+    path: 'accounts/:accountId/transactions/new',
+    title: 'Új tranzakció',
+    loadComponent: () => import('@household/app/transaction/transaction-create/transaction-create').then(m => m.TransactionCreate),
+    canMatch: [authenticatedGuard],
+  },
+  {
     path: 'accounts/:accountId/balance',
     title: 'Egyenleg kalkulátor',
     loadComponent: () => import('@household/app/account/account-balance-calculator/account-balance-calculator').then(m => m.AccountBalanceCalculator),

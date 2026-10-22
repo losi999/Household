@@ -1,0 +1,150 @@
+<household-toolbar title="Új tranzakció"> </household-toolbar>
+<mat-stepper orientation="vertical" linear [selectedIndex]="2">
+  <mat-step [completed]="issuedAtForm().valid()" label="Időpont">
+    <mat-form-field>
+      <mat-label>Dátum</mat-label>
+      <input matInput [matDatepicker]="date" [formField]="issuedAtForm.date" />
+      <mat-datepicker-toggle matPrefix [for]="date" tabindex="-1" />
+      <mat-datepicker #date />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Idő</mat-label>
+      <input matInput [matTimepicker]="time" [formField]="issuedAtForm.time" />
+      <mat-timepicker-toggle matIconSuffix [for]="time" />
+      <mat-timepicker #time />
+    </mat-form-field>
+    <div>
+      <button matButton matStepperNext>Tovább</button>
+    </div>
+  </mat-step>
+  <mat-step [completed]="accountsForm().valid()" label="Számla">
+    <div class="accounts">
+      @if (accountsForm().value().account) {
+        <div class="selected">
+          <div class="label">Fizető számla</div>
+          <shared-icon-text
+            [text]="accountsForm().value().account?.name"
+            [icon]="accountsForm().value().account | accountTypeIcon"
+          />
+          <button
+            matIconButton
+            data-testId="select-account-button"
+            (click)="onSelectAccount('account')"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+      }
+      @if (!accountsForm().value().transferAccount && !accountsForm().value().loanAccount) {
+        <button
+          matButton="tonal"
+          data-testId="add-transfer-account-button"
+          (click)="onSelectAccount('transferAccount')"
+        >
+          <mat-icon>account_balance</mat-icon>Átvitel számla kiválasztása
+        </button>
+        <button
+          matButton="tonal"
+          data-testId="add-loan-account-button"
+          (click)="onSelectAccount('loanAccount')"
+        >
+          <mat-icon>request_quote</mat-icon>Kölcsön számla kiválasztása
+        </button>
+      } @else {
+        <button matIconButton (click)="onSwitchAccounts()"><mat-icon>sync</mat-icon></button>
+        @if (accountsForm().value().transferAccount) {
+          <div class="selected">
+            <div class="label">Átvitel számla</div>
+            <shared-icon-text
+              [text]="accountsForm().value().transferAccount?.name"
+              [icon]="accountsForm().value().transferAccount | accountTypeIcon"
+            />
+            <button matIconButton [matMenuTriggerFor]="transferMenu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #transferMenu="matMenu" yPosition="above" xPosition="before">
+              <button
+                mat-menu-item
+                data-testId="edit-parent-button"
+                (click)="onSelectAccount('transferAccount')"
+              >
+                <mat-icon>edit</mat-icon>Módosítás
+              </button>
+              <button
+                mat-menu-item
+                data-testId="remove-parent-button"
+                (click)="onRemoveAccount('transferAccount')"
+              >
+                <mat-icon>close</mat-icon>Eltávolítás
+              </button>
+            </mat-menu>
+          </div>
+        } @else {
+          <div class="selected">
+            <div class="label">Kölcsön számla</div>
+            <shared-icon-text
+              [text]="accountsForm().value().loanAccount?.name"
+              [icon]="accountsForm().value().loanAccount | accountTypeIcon"
+            />
+            <button matIconButton [matMenuTriggerFor]="loanMenu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #loanMenu="matMenu" yPosition="above" xPosition="before">
+              <button
+                mat-menu-item
+                data-testId="edit-parent-button"
+                (click)="onSelectAccount('loanAccount')"
+              >
+                <mat-icon>edit</mat-icon>Módosítás
+              </button>
+              <button
+                mat-menu-item
+                data-testId="remove-parent-button"
+                (click)="onRemoveAccount('loanAccount')"
+              >
+                <mat-icon>close</mat-icon>Eltávolítás
+              </button>
+            </mat-menu>
+          </div>
+        }
+      }
+    </div>
+    <div>
+      <button matButton matStepperPrevious>Vissza</button>
+    </div>
+    <div>
+      <button matButton matStepperNext>Tovább</button>
+    </div>
+  </mat-step>
+  <mat-step [completed]="amountForm().valid()" label="Összeg">
+    @if (accountsForm().value().transferAccount) {
+      <shared-amount-input
+        [currency]="accountsForm().value().account.currency"
+        [formField]="amountForm.amount"
+        [isPositive]="false"
+        [signDisabled]="true"
+      />
+      @if (
+        accountsForm().value().account.currency !== accountsForm().value().transferAccount.currency
+      ) {
+        <shared-amount-input
+          [currency]="accountsForm().value().transferAccount.currency"
+          [formField]="amountForm.transferAmount"
+          [signDisabled]="true"
+        />
+      }
+    } @else {
+      <shared-amount-input
+        [currency]="accountsForm().value().account.currency"
+        [formField]="amountForm.amount"
+      />
+    }
+  </mat-step>
+  <mat-step label="Részletek"> </mat-step>
+</mat-stepper>
+<pre>
+  {{ issuedAtForm().value() | json }}
+</pre>
+<pre>
+  {{ accountsForm().value() | json }}
+</pre>

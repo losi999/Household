@@ -7,6 +7,7 @@ import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
 import { EMPTY, exhaustMap, filter, map } from 'rxjs';
 import { AccountType } from '@household/shared/enums';
+import { AccountSelectDialog, AccountSelectDialogData, AccountSelectDialogResult } from '@household/app/account/account-select-dialog/account-select-dialog';
 
 // Only accounts have these menu items, so they are not part of the common items of the BottomSheetService
 export const openAccountMenuItem = {
@@ -96,6 +97,21 @@ export const withAccountEvents = () => {
             );
           }),
         ),
+        openAccountSelectDialog: events.on(accountEvents.selectAccount)
+          .pipe(
+            exhaustMap(({ payload }) => {
+              return dialog.open<AccountSelectDialog, AccountSelectDialogData, AccountSelectDialogResult>(AccountSelectDialog, {
+                disableClose: true,
+                data: payload,
+                width: '90vw',
+                height: '80vh',
+              }).afterClosed();
+            }),
+            filter(res => !!res),
+            map((response) => {
+              return accountEvents.accountSelected(response);
+            }),
+          ),
         openAccountListItemSubmenu: events.on(accountEvents.openAccountListItemSubmenu)
           .pipe(
             exhaustMap(({ payload }) => {             
@@ -106,7 +122,7 @@ export const withAccountEvents = () => {
                   label: 'Tranzakciók',
                 },
                 {
-                  link: '/',
+                  link: `accounts/${payload.accountId}/transactions/new`,
                   icon: 'post_add',
                   label: 'Új tranzakció',
                 },
