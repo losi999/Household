@@ -19,15 +19,14 @@ mat-card {
     margin: 5px;
   }
 
-  .splits {
-    padding: 10px;
-    border-radius: 10px;
-    background-color: var(--mat-sys-surface-variant);
+  mat-expansion-panel-header {
+    padding: 0 10px;
+  }
 
-    .split-title {
-      display: grid;
-      margin: 5px 0;
-      grid-template-columns: 1fr auto;
+  mat-expansion-panel {
+
+    ::ng-deep .mat-expansion-panel-body {
+      padding: 0 5px 5px;
     }
   }
 

@@ -57,41 +57,45 @@
 </ng-template>
 
 <ng-template #splitItem let-split="split" let-currency="currency">
-  <div class="split-title">
-    @if (split.ownerAccount) {
-      <shared-icon-text
-        [icon]="split.ownerAccount | accountTypeIcon"
-        [text]="split.ownerAccount.name"
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title [style.color]="'red'">{{ split.amount }} {{ currency }}</mat-panel-title>
+      @if (split.ownerAccount) {
+        <mat-panel-description>
+          <shared-icon-text
+            [icon]="split.ownerAccount | accountTypeIcon"
+            [text]="split.ownerAccount.name"
+          />
+        </mat-panel-description>
+      }
+    </mat-expansion-panel-header>
+    <div matExpansionPanelContent>
+      <ng-container *ngTemplateOutlet="description; context: { description: split.description }" />
+      <ng-container
+        *ngTemplateOutlet="
+          additional;
+          context: {
+            category: split.category,
+            project: split.project,
+          }
+        "
       />
-    }
-    <div [style.grid-column]="'2 / 3'" [style.color]="split.amount < 0 ? 'red' : 'green'">
-      {{ split.amount }} {{ currency }}
+      <ng-container
+        *ngTemplateOutlet="inventory; context: { product: split.product, quantity: split.quantity }"
+      />
+      <ng-container
+        *ngTemplateOutlet="
+          invoice;
+          context: {
+            category: split.category,
+            billingStartDate: split.billingStartDate,
+            billingEndDate: split.billingEndDate,
+            invoiceNumber: split.invoiceNumber,
+          }
+        "
+      />
     </div>
-  </div>
-  <ng-container *ngTemplateOutlet="description; context: { description: split.description }" />
-  <ng-container
-    *ngTemplateOutlet="
-      additional;
-      context: {
-        category: split.category,
-        project: split.project,
-      }
-    "
-  />
-  <ng-container
-    *ngTemplateOutlet="inventory; context: { product: split.product, quantity: split.quantity }"
-  />
-  <ng-container
-    *ngTemplateOutlet="
-      invoice;
-      context: {
-        category: split.category,
-        billingStartDate: split.billingStartDate,
-        billingEndDate: split.billingEndDate,
-        invoiceNumber: split.invoiceNumber,
-      }
-    "
-  />
+  </mat-expansion-panel>
 </ng-template>
 
 @let tx = transaction();
@@ -149,18 +153,37 @@
           }
         "
       />
-      <div class="splits">
-        @for (split of tx.splits; track $index) {
-          <ng-container
-            *ngTemplateOutlet="splitItem; context: { split: split, currency: tx.account.currency }"
-          />
+      <mat-accordion>
+        @if (tx.account.accountId === accountId) {
+          @for (split of tx.splits; track $index) {
+            <ng-container
+              *ngTemplateOutlet="
+                splitItem;
+                context: { split: split, currency: tx.account.currency }
+              "
+            />
+          }
+          @for (split of tx.loans; track $index) {
+            <ng-container
+              *ngTemplateOutlet="
+                splitItem;
+                context: { split: split, currency: tx.account.currency }
+              "
+            />
+          }
+        } @else {
+          @for (split of tx.loans; track $index) {
+            @if (split.ownerAccount.accountId === accountId) {
+              <ng-container
+                *ngTemplateOutlet="
+                  splitItem;
+                  context: { split: split, currency: tx.account.currency }
+                "
+              />
+            }
+          }
         }
-        @for (split of tx.loans; track $index) {
-          <ng-container
-            *ngTemplateOutlet="splitItem; context: { split: split, currency: tx.account.currency }"
-          />
-        }
-      </div>
+      </mat-accordion>
     }
 
     @if (tx.transactionType === 'transfer') {

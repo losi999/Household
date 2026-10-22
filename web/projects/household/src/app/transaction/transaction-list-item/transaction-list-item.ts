@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { Responses } from '@household/shared/types/responses';
 import { MatCardModule } from '@angular/material/card';
 import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
@@ -15,6 +15,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { AccountTypeIconPipe } from '@household/app/account/account-type-icon-pipe';
 import { createDate } from '@household/shared/common/utils';
 import { CategoryTypeIconPipe } from '@household/app/category/category-type-icon-pipe';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
   imports: [
@@ -28,6 +29,7 @@ import { CategoryTypeIconPipe } from '@household/app/category/category-type-icon
     AccountTypeIconPipe,
     CategoryTypeIconPipe,
     NgTemplateOutlet,
+    MatExpansionModule,
   ],
   selector: 'household-transaction-list-item',
   styleUrl: './transaction-list-item.scss',
@@ -40,7 +42,7 @@ export class TransactionListItem {
   private readonly accountStore = inject(AccountStore);
 
   private account: Responses.Account;
-  private readonly accountId: Api.Account.Id;
+  readonly accountId: Api.Account.Id;
 
   showYear = computed(() => {
     return createDate(this.transaction().issuedAt).getFullYear() !== new Date().getFullYear();
@@ -100,7 +102,7 @@ export class TransactionListItem {
         return transaction.amount < 0 ? 'green' : 'red';
       }
       case TransactionType.Loan: {
-        if (transaction.payingAccount.accountId === this.accountId && transaction.payingAccount.accountType !== AccountType.Loan) {
+        if (transaction.payingAccount.accountId === this.accountId && transaction.payingAccount.accountType === AccountType.Loan) {
           return 'green';
         } 
 
