@@ -41,8 +41,8 @@ export class CategoryDialog {
 
   constructor () {
     effect(() => {
-      if (this.categoryStore.pendingParentCategory()) {
-        this.parentCategory.set(this.categoryStore.pendingParentCategory());
+      if (this.categoryStore.selectedCategory()) {
+        this.parentCategory.set(this.categoryStore.selectedCategory());
       }
     });
   }

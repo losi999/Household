@@ -1,4 +1,4 @@
-import { recipientApiEvents } from '@household/state/recipient/recipient-events';
+import { recipientApiEvents, recipientEvents } from '@household/state/recipient/recipient-events';
 import { RecipientState } from '@household/state/recipient/recipient-store';
 import { toSearchable } from '@household/shared/common/utils';
 import { signalStoreFeature } from '@ngrx/signals';
@@ -7,6 +7,16 @@ import { on, withReducer } from '@ngrx/signals/events';
 export const withRecipientReducer = () => {
   return signalStoreFeature(
     withReducer<RecipientState>(
+      on(recipientEvents.selectRecipient, () => {
+        return {
+          selectedRecipient: undefined,
+        };
+      }),
+      on(recipientEvents.recipientSelected, ({ payload }) => {
+        return {
+          selectedRecipient: payload,
+        };
+      }),
       on(recipientApiEvents.listRecipientsCompleted, ({ payload }) => {
         return {
           recipientList: payload.map(p => {

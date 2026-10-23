@@ -52,8 +52,8 @@ export class ProductDialog {
 
   constructor() {
     effect(() => {
-      if (this.productStore.pendingParentProduct()) {
-        this.parentProduct.set(this.productStore.pendingParentProduct());
+      if (this.productStore.selectedProduct()) {
+        this.parentProduct.set(this.productStore.selectedProduct());
       }
     });
   }

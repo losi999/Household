@@ -21,7 +21,7 @@ describe('withAccountReducer', () => {
 
   const validateState = (currentValue?: Partial<AccountState>) => {
     expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
-    expect(store.pendingAccount(), 'pendingAccount').toEqual(Object.hasOwn(currentValue ?? {}, 'pendingAccount') ? currentValue.pendingAccount : initialState.pendingAccount);
+    expect(store.selectedAccount(), 'selectedAccount').toEqual(Object.hasOwn(currentValue ?? {}, 'selectedAccount') ? currentValue.selectedAccount : initialState.selectedAccount);
     expect(store.accountList(), 'accountList').toEqual(Object.hasOwn(currentValue ?? {}, 'accountList') ? currentValue.accountList : initialState.accountList);
   };
 
@@ -31,7 +31,7 @@ describe('withAccountReducer', () => {
     initialState = {
       accountList: [],
       isInProgress: [],
-      pendingAccount: undefined,
+      selectedAccount: undefined,
       ...initial,
     };
 
@@ -44,27 +44,27 @@ describe('withAccountReducer', () => {
   });
 
   describe('selectAccount', () => {
-    it('should clear the pending account', () => {
+    it('should clear the selected account', () => {
       setup({
-        pendingAccount: testDataFactory.account.response(),
+        selectedAccount: testDataFactory.account.response(),
       });
 
       dispatcher.dispatch(accountEvents.selectAccount([toSearchable(testDataFactory.account.response(), ['name'])]));
 
       validateState({
-        pendingAccount: undefined,
+        selectedAccount: undefined,
       });
     });
   });
 
   describe('accountSelected', () => {
-    it('should store the selected account as the pending account', () => {
+    it('should store the selected account', () => {
       const accountResponse = testDataFactory.account.response();
 
       dispatcher.dispatch(accountEvents.accountSelected(accountResponse));
 
       validateState({
-        pendingAccount: accountResponse,
+        selectedAccount: accountResponse,
       });
     });
   });

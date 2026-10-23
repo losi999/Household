@@ -1,5 +1,14 @@
 @use '@angular/material' as mat;
 
+// mat-stepper {
+//   @include mat.stepper-overrides(
+//     (
+//       header-selected-state-icon-background-color: transparent,
+//     )
+//   );
+// }
+
+.details,
 .accounts {
   display: grid;
   row-gap: 10px;
@@ -23,7 +32,7 @@
     border-radius: 10px;
     color: var(--mat-sys-primary);
     background-color: var(--mat-sys-primary-container);
-    height: 48px;
+    min-height: 48px;
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -32,5 +41,32 @@
       grid-column: 1 / 3;
       font-size: var(--mat-sys-body-small-size);
     }
+  }
+}
+
+.accounts {
+  .switch-accounts {
+    justify-self: center;
+  }
+}
+
+.transfer {
+  display: grid;
+
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--mat-sys-primary),
+    )
+  );
+
+  .amount {
+    padding: 10px 5px;
+    border-radius: 10px;
+    color: var(--mat-sys-primary);
+    background-color: var(--mat-sys-primary-container);
+  }
+
+  .direction {
+    justify-self: center;
   }
 }

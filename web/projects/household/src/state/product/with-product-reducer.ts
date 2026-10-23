@@ -65,12 +65,12 @@ export const withProductReducer = () => {
     withReducer<ProductState>(
       on(productEvents.selectProduct, productEvents.createProduct, productEvents.updateProduct, () => {
         return {
-          pendingParentProduct: undefined,
+          selectedProduct: undefined,
         };
       }),
       on(productEvents.productSelected, ({ payload }) => {
         return {
-          pendingParentProduct: payload,
+          selectedProduct: payload,
         };
       }),
       on(productApiEvents.listProductsCompleted, ({ payload }) => {

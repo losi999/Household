@@ -2,6 +2,7 @@
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
+import { Searchable } from '@household/shared/types/common';
 import { type } from '@ngrx/signals';
 import { eventGroup } from '@ngrx/signals/events';
 
@@ -13,6 +14,8 @@ export const recipientEvents = eventGroup({
     deleteRecipient: type<Responses.Recipient>(),
     mergeRecipients: type<Responses.Recipient>(),
     openRecipientListItemSubmenu: type<Responses.Recipient>(),
+    selectRecipient: type<Searchable<Responses.Recipient>[] | undefined>(),
+    recipientSelected: type<Responses.Recipient>(),
   },
 });
 

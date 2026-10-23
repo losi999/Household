@@ -12,13 +12,13 @@ const CATEGORY_STORE_INITIAL_STATE = new InjectionToken<CategoryState>('CATEGORY
 export type CategoryState = {
   categoryList: Searchable<Responses.Category>[];
   isInProgress: Api.Category.Id[];
-  pendingParentCategory: Responses.Category;
+  selectedCategory: Responses.Category;
 };
 
 export const provideCategoryStoreInitialState = (state: CategoryState = {
   isInProgress: [],
   categoryList: [],
-  pendingParentCategory: undefined,
+  selectedCategory: undefined,
 }): ValueProvider => {
   return {
     provide: CATEGORY_STORE_INITIAL_STATE,

@@ -28,6 +28,7 @@ describe('Project store', () => {
     initialState = {
       isInProgress: [],
       projectList: [],
+      selectedProject: undefined,
       ...initial,
     };
 
@@ -70,14 +71,17 @@ describe('Project store', () => {
       },
     ];
     const isInProgress = [testDataFactory.project.id()];
+    const selectedProject = testDataFactory.project.response();
 
     setup({
       projectList,
       isInProgress,
+      selectedProject,
     });
 
     expect(store.projectList()).toEqual(projectList);
     expect(store.isInProgress()).toEqual(isInProgress);
+    expect(store.selectedProject()).toEqual(selectedProject);
   });
 
   it('should initialize with the default state', () => {
@@ -85,6 +89,19 @@ describe('Project store', () => {
 
     expect(store.projectList()).toEqual([]);
     expect(store.isInProgress()).toEqual([]);
+    expect(store.selectedProject()).toBeUndefined();
+  });
+
+  it('should have the project selection working with the dialog and the reducer', () => {
+    setup();
+    const project = testDataFactory.project.response();
+    mockMatDialog.functions.open.mockReturnValue({
+      afterClosed: () => of(project),
+    } as any);
+
+    dispatcher.dispatch(projectEvents.selectProject(undefined));
+
+    expect(store.selectedProject()).toEqual(project);
   });
 
   it('should have the reducer wired in', () => {

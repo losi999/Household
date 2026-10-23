@@ -30,7 +30,7 @@ describe('Category store', () => {
     initialState = {
       isInProgress: [],
       categoryList: [],
-      pendingParentCategory: undefined,
+      selectedCategory: undefined,
       ...initial,
     };
 
@@ -67,17 +67,17 @@ describe('Category store', () => {
 
   it('should initialize with the provided state', () => {
     const categoryList = [toSearchable(testDataFactory.category.response(), ['fullName'], CATEGORY_FULL_NAME_SEPARATOR)];
-    const pendingParentCategory = testDataFactory.category.response();
+    const selectedCategory = testDataFactory.category.response();
     const isInProgress = [testDataFactory.category.id()];
 
     setup({
       categoryList,
-      pendingParentCategory,
+      selectedCategory,
       isInProgress,
     });
 
     expect(store.categoryList()).toEqual(categoryList);
-    expect(store.pendingParentCategory()).toEqual(pendingParentCategory);
+    expect(store.selectedCategory()).toEqual(selectedCategory);
     expect(store.isInProgress()).toEqual(isInProgress);
   });
 
@@ -85,7 +85,7 @@ describe('Category store', () => {
     setup();
 
     expect(store.categoryList()).toEqual([]);
-    expect(store.pendingParentCategory()).toBeUndefined();
+    expect(store.selectedCategory()).toBeUndefined();
     expect(store.isInProgress()).toEqual([]);
   });
 
@@ -95,7 +95,7 @@ describe('Category store', () => {
 
     dispatcher.dispatch(categoryEvents.categorySelected(categoryResponse));
 
-    expect(store.pendingParentCategory()).toEqual(categoryResponse);
+    expect(store.selectedCategory()).toEqual(categoryResponse);
   });
 
   it('should have the UI event handlers wired in', () => {

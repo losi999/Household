@@ -14,6 +14,8 @@ import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of } from 'rxjs';
 import { RecipientDialog } from '@household/app/recipient/recipient-dialog/recipient-dialog';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { RecipientSelectDialog } from '@household/app/recipient/recipient-select-dialog/recipient-select-dialog';
+import { toSearchable } from '@household/shared/common/utils';
 import { RecipientMergeDialog } from '@household/app/recipient/recipient-merge-dialog/recipient-merge-dialog';
 
 describe('withRecipientEvents', () => {
@@ -258,6 +260,59 @@ describe('withRecipientEvents', () => {
         BottomSheetService.Merge,
         BottomSheetService.Delete,
       ]);
+      validateDispatcher(dispatchSpy);
+    });
+  });
+
+  describe('dispatching selectRecipient', () => {
+    const recipientResponse = testDataFactory.recipient.response();
+    const selectableRecipients = [toSearchable(testDataFactory.recipient.response(), ['name'])];
+
+    it('should open dialog and dispatch if submitted', () => {
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(recipientResponse),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(recipientEvents.selectRecipient(selectableRecipients));
+
+      validateFunctionCall(mockMatDialog.functions.open, RecipientSelectDialog, {
+        disableClose: true,
+        data: selectableRecipients,
+        height: '80vh',
+        width: '90vw',
+      });
+      validateDispatcher(dispatchSpy, recipientEvents.recipientSelected(recipientResponse));
+    });
+
+    it('should open dialog and not dispatch anything if cancelled', () => {
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(recipientEvents.selectRecipient(selectableRecipients));
+
+      validateFunctionCall(mockMatDialog.functions.open, RecipientSelectDialog, {
+        disableClose: true,
+        data: selectableRecipients,
+        height: '80vh',
+        width: '90vw',
+      });
+      validateDispatcher(dispatchSpy);
+    });
+
+    it('should open dialog without data if there is nothing to select from given', () => {
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(recipientEvents.selectRecipient(undefined));
+
+      validateFunctionCall(mockMatDialog.functions.open, RecipientSelectDialog, {
+        disableClose: true,
+        data: undefined,
+        height: '80vh',
+        width: '90vw',
+      });
       validateDispatcher(dispatchSpy);
     });
   });

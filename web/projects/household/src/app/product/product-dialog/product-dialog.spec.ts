@@ -86,7 +86,7 @@ describe('ProductDialog', () => {
   };
 
   const selectParent = async (parent: Responses.Product) => {
-    mockProductStore.pendingParentProduct.set(parent);
+    mockProductStore.selectedProduct.set(parent);
 
     await fixture.whenStable();
   };

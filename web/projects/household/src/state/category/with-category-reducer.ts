@@ -12,12 +12,12 @@ export const withCategoryReducer = () => {
     withReducer<CategoryState>(
       on(categoryEvents.selectCategory, categoryEvents.createCategory, categoryEvents.updateCategory, () => {
         return {
-          pendingParentCategory: undefined,
+          selectedCategory: undefined,
         };
       }),
       on(categoryEvents.categorySelected, ({ payload }) => {
         return {
-          pendingParentCategory: payload,
+          selectedCategory: payload,
         };
       }),
       on(categoryApiEvents.listCategoriesCompleted, ({ payload }) => {

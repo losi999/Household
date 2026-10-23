@@ -21,7 +21,7 @@ describe('withProductReducer', () => {
   let dispatcher: Dispatcher;
 
   const validateState = (currentValue?: Partial<ProductState>) => {
-    expect(store.pendingParentProduct(), 'pendingParentProduct').toEqual(Object.hasOwn(currentValue ?? {}, 'pendingParentProduct') ? currentValue.pendingParentProduct : initialState.pendingParentProduct);
+    expect(store.selectedProduct(), 'selectedProduct').toEqual(Object.hasOwn(currentValue ?? {}, 'selectedProduct') ? currentValue.selectedProduct : initialState.selectedProduct);
     expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
     expect(store.productList(), 'productList').toEqual(Object.hasOwn(currentValue ?? {}, 'productList') ? currentValue.productList : initialState.productList);
   };
@@ -31,7 +31,7 @@ describe('withProductReducer', () => {
 
     initialState = {
       isInProgress: [],
-      pendingParentProduct: undefined,
+      selectedProduct: undefined,
       productList: [],
       ...initial,
     };
@@ -45,9 +45,9 @@ describe('withProductReducer', () => {
   });
 
   describe('createProduct', () => {
-    it('should clear the pending parent product', () => {
+    it('should clear the selected product', () => {
       setup({
-        pendingParentProduct: testDataFactory.product.response.generic({
+        selectedProduct: testDataFactory.product.response.generic({
           name: 'parent',
         }),
       });
@@ -55,15 +55,15 @@ describe('withProductReducer', () => {
       dispatcher.dispatch(productEvents.createProduct());
 
       validateState({
-        pendingParentProduct: undefined,
+        selectedProduct: undefined,
       });
     });
   });
 
   describe('updateProduct', () => {
-    it('should clear the pending parent product', () => {
+    it('should clear the selected product', () => {
       setup({
-        pendingParentProduct: testDataFactory.product.response.generic({
+        selectedProduct: testDataFactory.product.response.generic({
           name: 'parent',
         }),
       });
@@ -73,15 +73,15 @@ describe('withProductReducer', () => {
       })));
 
       validateState({
-        pendingParentProduct: undefined,
+        selectedProduct: undefined,
       });
     });
   });
 
   describe('selectProduct', () => {
-    it('should clear the pending parent product', () => {
+    it('should clear the selected product', () => {
       setup({
-        pendingParentProduct: testDataFactory.product.response.generic({
+        selectedProduct: testDataFactory.product.response.generic({
           name: 'parent',
         }),
       });
@@ -89,13 +89,13 @@ describe('withProductReducer', () => {
       dispatcher.dispatch(productEvents.selectProduct(undefined));
 
       validateState({
-        pendingParentProduct: undefined,
+        selectedProduct: undefined,
       });
     });
   });
 
   describe('productSelected', () => {
-    it('should store the selected product as the pending parent product', () => {
+    it('should store the selected product', () => {
       const product = testDataFactory.product.response.generic({
         name: 'parent',
       });
@@ -103,7 +103,7 @@ describe('withProductReducer', () => {
       dispatcher.dispatch(productEvents.productSelected(product));
 
       validateState({
-        pendingParentProduct: product,
+        selectedProduct: product,
       });
     });
   });

@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore, withState } from '@ngrx/signals';
-import { projectApiEvents } from '@household/state/project/project-events';
+import { projectApiEvents, projectEvents } from '@household/state/project/project-events';
 import { ProjectState } from '@household/state/project/project-store';
 import { withProjectReducer } from '@household/state/project/with-project-reducer';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { toSearchable } from '@household/shared/common/utils';
 
 const createTestStore = (state: ProjectState) => {
   return signalStore({
@@ -19,6 +20,7 @@ describe('withProjectReducer', () => {
 
   const validateState = (currentValue?: Partial<ProjectState>) => {
     expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
+    expect(store.selectedProject(), 'selectedProject').toEqual(Object.hasOwn(currentValue ?? {}, 'selectedProject') ? currentValue.selectedProject : initialState.selectedProject);
     expect(store.projectList(), 'projectList').toEqual(Object.hasOwn(currentValue ?? {}, 'projectList') ? currentValue.projectList : initialState.projectList);
   };
 
@@ -28,6 +30,7 @@ describe('withProjectReducer', () => {
     initialState = {
       isInProgress: [],
       projectList: [],
+      selectedProject: undefined,
       ...initial,
     };
 
@@ -37,6 +40,32 @@ describe('withProjectReducer', () => {
 
   beforeEach(() => {
     setup();
+  });
+
+  describe('selectProject', () => {
+    it('should clear the selected project', () => {
+      setup({
+        selectedProject: testDataFactory.project.response(),
+      });
+
+      dispatcher.dispatch(projectEvents.selectProject([toSearchable(testDataFactory.project.response(), ['name'])]));
+
+      validateState({
+        selectedProject: undefined,
+      });
+    });
+  });
+
+  describe('projectSelected', () => {
+    it('should store the selected project', () => {
+      const projectResponse = testDataFactory.project.response();
+
+      dispatcher.dispatch(projectEvents.projectSelected(projectResponse));
+
+      validateState({
+        selectedProject: projectResponse,
+      });
+    });
   });
 
   describe('listProjectsCompleted', () => {

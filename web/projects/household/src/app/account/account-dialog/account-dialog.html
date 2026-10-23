@@ -1,20 +1,46 @@
-<div mat-dialog-title>{{account ? 'Számla szerkesztése' : 'Új számla'}}</div>
+<div mat-dialog-title>{{ account ? 'Számla szerkesztése' : 'Új számla' }}</div>
 <div mat-dialog-content>
   <div>
     <shared-clearable-input data-testId="name" label="Név" [formField]="accountForm.name" />
   </div>
   <div>
-    <shared-clearable-input data-testId="currency" label="Pénznem" [formField]="accountForm.currency" />
+    <shared-clearable-input
+      data-testId="currency"
+      label="Pénznem"
+      [formField]="accountForm.currency"
+    />
   </div>
-  <mat-button-toggle-group [formField]="accountForm.accountType" vertical="true" hideSingleSelectionIndicator>
-    <mat-button-toggle data-testId="account-type-bank-account" value="bankAccount"><mat-icon>account_balance</mat-icon>Bankszámla</mat-button-toggle>
-    <mat-button-toggle data-testId="account-type-cash" value="cash"><mat-icon>payments</mat-icon>Készpénz</mat-button-toggle>
-    <mat-button-toggle data-testId="account-type-credit-card" value="creditCard"><mat-icon>credit_card</mat-icon>Hitelkártya</mat-button-toggle>
-    <mat-button-toggle data-testId="account-type-loan" value="loan"><mat-icon>request_quote</mat-icon>Kölcsön</mat-button-toggle>
-    <mat-button-toggle data-testId="account-type-cafeteria" value="cafeteria"><mat-icon>restaurant</mat-icon>Cafeteria</mat-button-toggle>
+  <mat-button-toggle-group
+    [formField]="accountForm.accountType"
+    vertical="true"
+    hideSingleSelectionIndicator
+  >
+    <mat-button-toggle data-testId="account-type-bank-account" value="bankAccount">
+      <mat-icon>account_balance</mat-icon>Bankszámla
+    </mat-button-toggle>
+    <mat-button-toggle data-testId="account-type-cash" value="cash">
+      <mat-icon>payments</mat-icon>Készpénz
+    </mat-button-toggle>
+    <mat-button-toggle data-testId="account-type-credit-card" value="creditCard">
+      <mat-icon>credit_card</mat-icon>Hitelkártya
+    </mat-button-toggle>
+    <mat-button-toggle data-testId="account-type-loan" value="loan">
+      <mat-icon>request_quote</mat-icon>Kölcsön
+    </mat-button-toggle>
+    <mat-button-toggle data-testId="account-type-cafeteria" value="cafeteria">
+      <mat-icon>restaurant</mat-icon>Cafeteria
+    </mat-button-toggle>
   </mat-button-toggle-group>
 </div>
 <div mat-dialog-actions>
-  <button matButton="filled" cdkFocusInitial data-testId="save-button" [disabled]="accountForm().invalid()" (click)="onSave()">Mentés</button>
+  <button
+    matButton="filled"
+    cdkFocusInitial
+    data-testId="save-button"
+    [disabled]="accountForm().invalid()"
+    (click)="onSave()"
+  >
+    Mentés
+  </button>
   <button matButton="text" type="button" mat-dialog-close>Mégse</button>
 </div>

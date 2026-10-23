@@ -26,7 +26,7 @@ describe('Product store', () => {
 
     initialState = {
       isInProgress: [],
-      pendingParentProduct: undefined,
+      selectedProduct: undefined,
       productList: [],
       ...initial,
     };
@@ -65,17 +65,17 @@ describe('Product store', () => {
   it('should initialize with the provided state', () => {
     const productList = [testDataFactory.product.response.generic()];
     const isInProgress = [testDataFactory.product.id()];
-    const pendingParentProduct = testDataFactory.product.response.generic();
+    const selectedProduct = testDataFactory.product.response.generic();
 
     setup({
       productList,
       isInProgress,
-      pendingParentProduct,
+      selectedProduct,
     });
 
     expect(store.productList()).toEqual(productList);
     expect(store.isInProgress()).toEqual(isInProgress);
-    expect(store.pendingParentProduct()).toEqual(pendingParentProduct);
+    expect(store.selectedProduct()).toEqual(selectedProduct);
   });
 
   it('should initialize with the default state', () => {
@@ -83,7 +83,7 @@ describe('Product store', () => {
 
     expect(store.productList()).toEqual([]);
     expect(store.isInProgress()).toEqual([]);
-    expect(store.pendingParentProduct()).toBeUndefined();
+    expect(store.selectedProduct()).toBeUndefined();
   });
 
   it('should have the reducer wired in', () => {

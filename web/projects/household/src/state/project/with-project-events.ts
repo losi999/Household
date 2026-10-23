@@ -6,6 +6,7 @@ import { DialogService, BottomSheetService, dispatchIfConfirmed } from '@househo
 import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
 import { exhaustMap, filter, map } from 'rxjs';
+import { ProjectSelectDialog, ProjectSelectDialogData, ProjectSelectDialogResult } from '@household/app/project/project-select-dialog/project-select-dialog';
 import { ProjectMergeDialog, ProjectMergeDialogData, ProjectMergeDialogResult } from '@household/app/project/project-merge-dialog/project-merge-dialog';
 
 export const withProjectEvents = () => {
@@ -91,6 +92,21 @@ export const withProjectEvents = () => {
             filter(req => !!req),
             map((request) => {
               return projectApiEvents.mergeProjectsInitiated(request);
+            }),
+          ),
+        openProjectSelectDialog: events.on(projectEvents.selectProject)
+          .pipe(
+            exhaustMap(({ payload }) => {
+              return dialog.open<ProjectSelectDialog, ProjectSelectDialogData, ProjectSelectDialogResult>(ProjectSelectDialog, {
+                disableClose: true,
+                data: payload,
+                width: '90vw',
+                height: '80vh',
+              }).afterClosed();
+            }),
+            filter(res => !!res),
+            map((response) => {
+              return projectEvents.projectSelected(response);
             }),
           ),
       };

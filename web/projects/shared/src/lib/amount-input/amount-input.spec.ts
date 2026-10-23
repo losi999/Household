@@ -203,4 +203,99 @@ describe('AmountInput', () => {
     });
   });
 
+  describe('sign of the value', () => {
+    const getInput = () => {
+      return selector.getComponent<MatInput, HTMLInputElement>(MatInput, MatFormField).nativeElement;
+    };
+
+    const type = async (text: string) => {
+      getInput().value = text;
+      getInput().dispatchEvent(new Event('input'));
+
+      await fixture.whenStable();
+    };
+
+    it('should be shown as a non-negative number in the input if the value is negative', async () => {
+      fixture.componentRef.setInput('isPositive', false);
+      fixture.componentRef.setInput('value', -10);
+
+      await fixture.whenStable();
+
+      expect(getInput().value).toBe('10');
+      expect(fixture.componentInstance.value()).toBe(-10);
+    });
+
+    it('should make the typed number the value as is if the sign is positive', async () => {
+      await type('10');
+
+      expect(getInput().value).toBe('10');
+      expect(fixture.componentInstance.value()).toBe(10);
+    });
+
+    it('should make the typed number negative in the value if the sign is negative', async () => {
+      fixture.componentRef.setInput('isPositive', false);
+
+      await fixture.whenStable();
+      await type('10');
+
+      expect(getInput().value).toBe('10');
+      expect(fixture.componentInstance.value()).toBe(-10);
+    });
+
+    it('should not keep a typed negative number in the input and use the sign of the flag for the value', async () => {
+      await type('-10');
+
+      expect(getInput().value).toBe('10');
+      expect(fixture.componentInstance.value()).toBe(10);
+    });
+
+    it('should not keep a typed negative number in the input if the sign is negative', async () => {
+      fixture.componentRef.setInput('isPositive', false);
+
+      await fixture.whenStable();
+      await type('-10');
+
+      expect(getInput().value).toBe('10');
+      expect(fixture.componentInstance.value()).toBe(-10);
+    });
+
+    it('should not make zero negative', async () => {
+      fixture.componentRef.setInput('isPositive', false);
+
+      await fixture.whenStable();
+      await type('0');
+
+      expect(fixture.componentInstance.value()).toBe(0);
+    });
+
+    it('should change the sign of the value if the sign is changed from outside', async () => {
+      fixture.componentRef.setInput('value', 10);
+
+      await fixture.whenStable();
+
+      fixture.componentRef.setInput('isPositive', false);
+
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe(-10);
+      expect(getInput().value).toBe('10');
+
+      fixture.componentRef.setInput('isPositive', true);
+
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe(10);
+      expect(getInput().value).toBe('10');
+    });
+
+    it('should keep the input non-negative when the sign is inversed with the button', async () => {
+      await type('10');
+
+      selector.getComponent<MatPrefix, HTMLButtonElement>(MatPrefix, MatFormField).nativeElement.click();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe(-10);
+      expect(getInput().value).toBe('10');
+    });
+  });
 });

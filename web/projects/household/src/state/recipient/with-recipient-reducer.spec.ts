@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore, withState } from '@ngrx/signals';
-import { recipientApiEvents } from '@household/state/recipient/recipient-events';
+import { recipientApiEvents, recipientEvents } from '@household/state/recipient/recipient-events';
 import { RecipientState } from '@household/state/recipient/recipient-store';
 import { withRecipientReducer } from '@household/state/recipient/with-recipient-reducer';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { toSearchable } from '@household/shared/common/utils';
 
 const createTestStore = (state: RecipientState) => {
   return signalStore({
@@ -19,6 +20,7 @@ describe('withRecipientReducer', () => {
 
   const validateState = (currentValue?: Partial<RecipientState>) => {
     expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
+    expect(store.selectedRecipient(), 'selectedRecipient').toEqual(Object.hasOwn(currentValue ?? {}, 'selectedRecipient') ? currentValue.selectedRecipient : initialState.selectedRecipient);
     expect(store.recipientList(), 'recipientList').toEqual(Object.hasOwn(currentValue ?? {}, 'recipientList') ? currentValue.recipientList : initialState.recipientList);
   };
 
@@ -28,6 +30,7 @@ describe('withRecipientReducer', () => {
     initialState = {
       isInProgress: [],
       recipientList: [],
+      selectedRecipient: undefined,
       ...initial,
     };
 
@@ -37,6 +40,32 @@ describe('withRecipientReducer', () => {
 
   beforeEach(() => {
     setup();
+  });
+
+  describe('selectRecipient', () => {
+    it('should clear the selected recipient', () => {
+      setup({
+        selectedRecipient: testDataFactory.recipient.response(),
+      });
+
+      dispatcher.dispatch(recipientEvents.selectRecipient([toSearchable(testDataFactory.recipient.response(), ['name'])]));
+
+      validateState({
+        selectedRecipient: undefined,
+      });
+    });
+  });
+
+  describe('recipientSelected', () => {
+    it('should store the selected recipient', () => {
+      const recipientResponse = testDataFactory.recipient.response();
+
+      dispatcher.dispatch(recipientEvents.recipientSelected(recipientResponse));
+
+      validateState({
+        selectedRecipient: recipientResponse,
+      });
+    });
   });
 
   describe('listRecipientsCompleted', () => {

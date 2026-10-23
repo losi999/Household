@@ -2,6 +2,7 @@
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
+import { Searchable } from '@household/shared/types/common';
 import { type } from '@ngrx/signals';
 import { eventGroup } from '@ngrx/signals/events';
 
@@ -13,6 +14,8 @@ export const projectEvents = eventGroup({
     deleteProject: type<Responses.Project>(),
     mergeProjects: type<Responses.Project>(),
     openProjectListItemSubmenu: type<Responses.Project>(),
+    selectProject: type<Searchable<Responses.Project>[] | undefined>(),
+    projectSelected: type<Responses.Project>(),
   },
 });
 

@@ -18,8 +18,12 @@ describe('AccountSelectDialog', () => {
   let mockDialogRef: MockService<MatDialogRef<AccountSelectDialog>>;
   let mockAccountStore: MockSignalStore<typeof AccountStore>;
 
-  const account1 = toSearchable(testDataFactory.account.response(), ['name']);
-  const account2 = toSearchable(testDataFactory.account.response(), ['name']);
+  const account1 = toSearchable(testDataFactory.account.response({
+    name: 'Megtakarítás',
+  }), ['name']);
+  const account2 = toSearchable(testDataFactory.account.response({
+    name: 'Bankszámla',
+  }), ['name']);
 
   const getSearchInput = () => {
     return selector.getComponent(ClearableInputStub, MatDialogContent);
@@ -119,7 +123,7 @@ describe('AccountSelectDialog', () => {
     it('should be filtered based on search input value', async () => {
       await render(); 
  
-      getSearchInput().componentInstance.value.set(account1.name.split(' ')[0]);
+      getSearchInput().componentInstance.value.set('megtak');
 
       await fixture.whenStable();
 

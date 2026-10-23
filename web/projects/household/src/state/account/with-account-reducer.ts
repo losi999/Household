@@ -9,12 +9,12 @@ export const withAccountReducer = () => {
     withReducer<AccountState>(
       on(accountEvents.selectAccount, () => {
         return {
-          pendingAccount: undefined,
+          selectedAccount: undefined,
         };
       }),
       on(accountEvents.accountSelected, ({ payload }) => {
         return {
-          pendingAccount: payload,
+          selectedAccount: payload,
         };
       }),
       on(accountApiEvents.listAccountsCompleted, ({ payload }) => {

@@ -28,6 +28,7 @@ describe('Recipient store', () => {
     initialState = {
       isInProgress: [],
       recipientList: [],
+      selectedRecipient: undefined,
       ...initial,
     };
 
@@ -70,14 +71,17 @@ describe('Recipient store', () => {
       },
     ];
     const isInProgress = [testDataFactory.recipient.id()];
+    const selectedRecipient = testDataFactory.recipient.response();
 
     setup({
       recipientList,
       isInProgress,
+      selectedRecipient,
     });
 
     expect(store.recipientList()).toEqual(recipientList);
     expect(store.isInProgress()).toEqual(isInProgress);
+    expect(store.selectedRecipient()).toEqual(selectedRecipient);
   });
 
   it('should initialize with the default state', () => {
@@ -85,6 +89,19 @@ describe('Recipient store', () => {
 
     expect(store.recipientList()).toEqual([]);
     expect(store.isInProgress()).toEqual([]);
+    expect(store.selectedRecipient()).toBeUndefined();
+  });
+
+  it('should have the recipient selection working with the dialog and the reducer', () => {
+    setup();
+    const recipient = testDataFactory.recipient.response();
+    mockMatDialog.functions.open.mockReturnValue({
+      afterClosed: () => of(recipient),
+    } as any);
+
+    dispatcher.dispatch(recipientEvents.selectRecipient(undefined));
+
+    expect(store.selectedRecipient()).toEqual(recipient);
   });
 
   it('should have the reducer wired in', () => {

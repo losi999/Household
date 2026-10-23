@@ -1,4 +1,4 @@
-import { projectApiEvents } from '@household/state/project/project-events';
+import { projectApiEvents, projectEvents } from '@household/state/project/project-events';
 import { ProjectState } from '@household/state/project/project-store';
 import { toSearchable } from '@household/shared/common/utils';
 import { signalStoreFeature } from '@ngrx/signals';
@@ -7,6 +7,16 @@ import { on, withReducer } from '@ngrx/signals/events';
 export const withProjectReducer = () => {
   return signalStoreFeature(
     withReducer<ProjectState>(
+      on(projectEvents.selectProject, () => {
+        return {
+          selectedProject: undefined,
+        };
+      }),
+      on(projectEvents.projectSelected, ({ payload }) => {
+        return {
+          selectedProject: payload,
+        };
+      }),
       on(projectApiEvents.listProjectsCompleted, ({ payload }) => {
         return {
           projectList: payload.map(p => {

@@ -29,7 +29,7 @@ describe('Account store', () => {
     initialState = {
       accountList: [],
       isInProgress: [],
-      pendingAccount: undefined,
+      selectedAccount: undefined,
       ...initial,
     };
 
@@ -67,17 +67,17 @@ describe('Account store', () => {
   it('should initialize with the provided state', () => {
     const accountList = [testDataFactory.account.response()];
     const isInProgress = [testDataFactory.account.id()];
-    const pendingAccount = testDataFactory.account.response();
+    const selectedAccount = testDataFactory.account.response();
 
     setup({
       accountList,
       isInProgress,
-      pendingAccount,
+      selectedAccount,
     });
 
     expect(store.accountList()).toEqual(accountList);
     expect(store.isInProgress()).toEqual(isInProgress);
-    expect(store.pendingAccount()).toEqual(pendingAccount);
+    expect(store.selectedAccount()).toEqual(selectedAccount);
   });
 
   it('should initialize with the default state', () => {
@@ -85,7 +85,7 @@ describe('Account store', () => {
 
     expect(store.accountList()).toEqual([]);
     expect(store.isInProgress()).toEqual([]);
-    expect(store.pendingAccount()).toBeUndefined();
+    expect(store.selectedAccount()).toBeUndefined();
   });
 
   it('should have the reducer wired in', () => {
@@ -117,7 +117,7 @@ describe('Account store', () => {
 
     dispatcher.dispatch(accountEvents.selectAccount(undefined));
 
-    expect(store.pendingAccount()).toEqual(account);
+    expect(store.selectedAccount()).toEqual(account);
   });
 
   it('should have the submenu handler wired in', () => {

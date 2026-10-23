@@ -14,6 +14,8 @@ import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { of } from 'rxjs';
 import { ProjectDialog } from '@household/app/project/project-dialog/project-dialog';
 import { MatBottomSheetRef } from '@angular/material/bottom-sheet';
+import { ProjectSelectDialog } from '@household/app/project/project-select-dialog/project-select-dialog';
+import { toSearchable } from '@household/shared/common/utils';
 import { ProjectMergeDialog } from '@household/app/project/project-merge-dialog/project-merge-dialog';
 
 describe('withProjectEvents', () => {
@@ -258,6 +260,59 @@ describe('withProjectEvents', () => {
         BottomSheetService.Merge,
         BottomSheetService.Delete,
       ]);
+      validateDispatcher(dispatchSpy);
+    });
+  });
+
+  describe('dispatching selectProject', () => {
+    const projectResponse = testDataFactory.project.response();
+    const selectableProjects = [toSearchable(testDataFactory.project.response(), ['name'])];
+
+    it('should open dialog and dispatch if submitted', () => {
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(projectResponse),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(projectEvents.selectProject(selectableProjects));
+
+      validateFunctionCall(mockMatDialog.functions.open, ProjectSelectDialog, {
+        disableClose: true,
+        data: selectableProjects,
+        height: '80vh',
+        width: '90vw',
+      });
+      validateDispatcher(dispatchSpy, projectEvents.projectSelected(projectResponse));
+    });
+
+    it('should open dialog and not dispatch anything if cancelled', () => {
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(projectEvents.selectProject(selectableProjects));
+
+      validateFunctionCall(mockMatDialog.functions.open, ProjectSelectDialog, {
+        disableClose: true,
+        data: selectableProjects,
+        height: '80vh',
+        width: '90vw',
+      });
+      validateDispatcher(dispatchSpy);
+    });
+
+    it('should open dialog without data if there is nothing to select from given', () => {
+      mockMatDialog.functions.open.mockReturnValue({
+        afterClosed: () => of(undefined),
+      } as MatDialogRef<any>);
+
+      dispatcher.dispatch(projectEvents.selectProject(undefined));
+
+      validateFunctionCall(mockMatDialog.functions.open, ProjectSelectDialog, {
+        disableClose: true,
+        data: undefined,
+        height: '80vh',
+        width: '90vw',
+      });
       validateDispatcher(dispatchSpy);
     });
   });

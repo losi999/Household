@@ -22,7 +22,7 @@ describe('withCategoryReducer', () => {
   const validateState = (currentValue?: Partial<CategoryState>) => {
     expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
     expect(store.categoryList(), 'categoryList').toEqual(Object.hasOwn(currentValue ?? {}, 'categoryList') ? currentValue.categoryList : initialState.categoryList);
-    expect(store.pendingParentCategory(), 'pendingParentCategory').toEqual(Object.hasOwn(currentValue ?? {}, 'pendingParentCategory') ? currentValue.pendingParentCategory : initialState.pendingParentCategory);
+    expect(store.selectedCategory(), 'selectedCategory').toEqual(Object.hasOwn(currentValue ?? {}, 'selectedCategory') ? currentValue.selectedCategory : initialState.selectedCategory);
   };
 
   const setup = (initial?: Partial<CategoryState>) => {
@@ -31,7 +31,7 @@ describe('withCategoryReducer', () => {
     initialState = {
       isInProgress: [],
       categoryList: [],
-      pendingParentCategory: undefined,
+      selectedCategory: undefined,
       ...initial,
     };
 
@@ -44,37 +44,37 @@ describe('withCategoryReducer', () => {
   });
 
   describe('createCategory', () => {
-    it('should clear the pending parent category', () => {
+    it('should clear the selected category', () => {
       setup({
-        pendingParentCategory: testDataFactory.category.response(),
+        selectedCategory: testDataFactory.category.response(),
       });
 
       dispatcher.dispatch(categoryEvents.createCategory());
 
       validateState({
-        pendingParentCategory: undefined,
+        selectedCategory: undefined,
       });
     });
   });
 
   describe('updateCategory', () => {
-    it('should clear the pending parent category', () => {
+    it('should clear the selected category', () => {
       setup({
-        pendingParentCategory: testDataFactory.category.response(),
+        selectedCategory: testDataFactory.category.response(),
       });
 
       dispatcher.dispatch(categoryEvents.updateCategory(testDataFactory.category.response()));
 
       validateState({
-        pendingParentCategory: undefined,
+        selectedCategory: undefined,
       });
     });
   });
 
   describe('selectCategory', () => {
-    it('should clear the pending parent category', () => {
+    it('should clear the selected category', () => {
       setup({
-        pendingParentCategory: testDataFactory.category.response(),
+        selectedCategory: testDataFactory.category.response(),
       });
 
       dispatcher.dispatch(categoryEvents.selectCategory([
@@ -84,19 +84,19 @@ describe('withCategoryReducer', () => {
       ]));
 
       validateState({
-        pendingParentCategory: undefined,
+        selectedCategory: undefined,
       });
     });
   });
 
   describe('categorySelected', () => {
-    it('should store the selected category as the pending parent category', () => {
+    it('should store the selected category', () => {
       const categoryResponse = testDataFactory.category.response();
 
       dispatcher.dispatch(categoryEvents.categorySelected(categoryResponse));
 
       validateState({
-        pendingParentCategory: categoryResponse,
+        selectedCategory: categoryResponse,
       });
     });
   });
