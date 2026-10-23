@@ -1,0 +1,20 @@
+<household-toolbar title="Bejelentkezés" />
+<main>
+  <mat-form-field appearance="outline">
+    <mat-label>E-mail cím</mat-label>
+    <input matInput placeholder="E-mail cím" type="email" data-testId="email" [formField]="loginForm.email">
+    @for(error of loginForm.email().errors(); track $index) {
+    <mat-error data-testId="email-error">
+      {{error.message}}
+    </mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Jelszó</mat-label>
+    <input matInput placeholder="Jelszó" type="password" data-testId="password" [formField]="loginForm.password">
+    @for(error of loginForm.password().errors(); track $index) {
+    <mat-error data-testId="password-error">{{error.message}}</mat-error>
+    }
+  </mat-form-field>
+  <button matButton="filled" data-testId="submit" (click)="onSubmit()" [disabled]="loginForm().invalid()">Bejelentkezés</button>
+</main>

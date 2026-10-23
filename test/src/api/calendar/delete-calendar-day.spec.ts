@@ -2,13 +2,10 @@ import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
 import { calendarDayDataFactory } from '@household/test/api/calendar/data-factory';
 
-import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
+import { calendarApiTest, calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -26,7 +23,7 @@ test.describe('DELETE /calendar/v1/days/{day}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestDeleteCalendarDay }) => {
       const res = await requestDeleteCalendarDay(day);
-      expect(res).toBeUnauthorizedResponse();
+      calendarApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -41,14 +38,14 @@ test.describe('DELETE /calendar/v1/days/{day}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestDeleteCalendarDay }) => {
           const res = await requestDeleteCalendarDay(day);
-          expect(res).toBeForbiddenResponse();
+          calendarApiExpect(res).toBeForbiddenResponse();
         });
       } else {  
         test('should delete calendar day', async ({ requestDeleteCalendarDay, findCalendarDayByDay, saveCalendarDay }) => {
           await saveCalendarDay(calendarDayDocument);
           const res = await requestDeleteCalendarDay(day);
-          expect(res).toBeNoContentResponse();
-          expect(await findCalendarDayByDay(day)).toHaveBeenDeletedFromDatabase();
+          calendarApiExpect(res).toBeNoContentResponse();
+          calendarApiExpect(await findCalendarDayByDay(day)).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('should return error', () => {
@@ -59,15 +56,15 @@ test.describe('DELETE /calendar/v1/days/{day}', () => {
 
             await saveCalendarDay(calendarDayDocument);
             const res = await requestDeleteCalendarDay(day);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Selected calendar day is a national holiday');
+            calendarApiExpect(res).toBeBadRequestResponse();
+            calendarApiExpect(res).toHaveMessage('Selected calendar day is a national holiday');
           });
 
           test.describe('if day', () => {
             test('is not date', async ({ requestDeleteCalendarDay }) => {
               const res = await requestDeleteCalendarDay('not-date');
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('pathParameters', 'day', 'date');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongFormatValidationError('pathParameters', 'day', 'date');
             });
           });
         });

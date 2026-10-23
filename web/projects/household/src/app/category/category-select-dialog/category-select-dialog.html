@@ -1,0 +1,16 @@
+<div mat-dialog-title>
+  Kategória
+</div>
+<div mat-dialog-content>
+  <div class="search">
+    <shared-clearable-input label="Keresés" [(value)]="searchValue" />
+  </div>
+  <mat-action-list>
+    @for (category of selectableCategories(); track category) {
+    <button mat-list-item (click)="onSelect(category)"> {{category.fullName}} </button>
+    }
+  </mat-action-list>
+</div>
+<div mat-dialog-actions>
+  <button matButton="text" type="button" mat-dialog-close>Mégse</button>
+</div>

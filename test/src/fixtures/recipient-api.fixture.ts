@@ -5,8 +5,8 @@ import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
-import { test as baseTest } from '@household/test/fixtures/api.fixture';
-import { expect as baseExpect, APIResponse } from '@playwright/test';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
+import { APIResponse } from '@playwright/test';
 
 type RecipientApiFixture = {
   requestGetRecipient(recipientId: Api.Recipient.Id): Promise<APIResponse>;
@@ -17,7 +17,7 @@ type RecipientApiFixture = {
   requestMergeRecipients(recipientId: Api.Recipient.Id, sourceRecipientIds: Api.Recipient.Id[]): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<RecipientApiFixture>({
+export const recipientApiTest = apiTest.extend<RecipientApiFixture>({
   requestGetRecipient: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -110,7 +110,7 @@ export const validateRecipientResponse = (response: Responses.Recipient, documen
   });
 };
 
-export const expect = baseExpect.extend({
+export const recipientApiExpect = apiExpect.extend({
   async toHaveBeenSavedAsRecipientDocument(req: Requests.Recipient, document: Documents.Recipient) {
     if (!document) {
       return {

@@ -41,6 +41,7 @@ export const transferTransactionDocumentConverterFactory = (accountDocumentConve
     project: true,
     quantity: true,
     recipient: true,
+    loans: true,
   };
 
   const instance: ITransferTransactionDocumentConverter = {

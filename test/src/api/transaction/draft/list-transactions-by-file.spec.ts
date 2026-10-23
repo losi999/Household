@@ -5,29 +5,41 @@ import { addSeconds, entries, getFileId } from '@household/shared/common/utils';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { allowUsers } from '@household/test/utils';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 
-import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { transactionApiTest, transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(transactionApiExpect, apiExpect);
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
+import { projectDataFactory } from '@household/test/api/project/data-factory';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
+import { projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 
 const permissionMap = allowUsers('editor') ;
 
-const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest);
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
 test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
   let fileDocument: Documents.File;
   let accountDocument: Documents.Account;
   let loanAccountDocument: Documents.Account;
+  let projectDocument: Documents.Project;
+  let recipientDocument: Documents.Recipient;
+  let regularCategoryDocument: Documents.Category;
+  let inventoryCategoryDocument: Documents.Category;
+  let invoiceCategoryDocument: Documents.Category;
+  let genericProductDocument: Documents.GenericProduct;
+  let specificProductDocument: Documents.SpecificProduct;
+  let variantProductDocument: Documents.VariantProduct;
   let draftDocument: Documents.DraftTransaction;
   let duplicatedDraftDocument: Documents.DraftTransaction;
   let duplicatePaymentDocument: Documents.PaymentTransaction;
@@ -35,10 +47,41 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
   let duplicateSplitDocument: Documents.SplitTransaction;
   let duplicateTransferDocument: Documents.TransferTransaction;
   let duplicateInvertedTransferDocument: Documents.TransferTransaction;
-  let duplicateDeferredDocument: Documents.DeferredTransaction;
-  let duplicateReimbursementDocument: Documents.ReimbursementTransaction;
+  let duplicateLoanDocument: Documents.LoanTransaction;
+  let duplicateRepaymentDocument: Documents.LoanTransaction;
 
   test.beforeEach(async () => {
+    recipientDocument = recipientDataFactory.document();
+
+    projectDocument = projectDataFactory.document();
+
+    regularCategoryDocument = categoryDataFactory.document({
+      body: {
+        categoryType: CategoryType.Regular,
+      },
+    });
+
+    inventoryCategoryDocument = categoryDataFactory.document({
+      body: {
+        categoryType: CategoryType.Inventory,
+      },
+    });
+
+    invoiceCategoryDocument = categoryDataFactory.document({
+      body: {
+        categoryType: CategoryType.Invoice,
+      },
+    });
+
+    genericProductDocument = productDataFactory.document.generic();
+    specificProductDocument = productDataFactory.document.specific({
+      genericProduct: genericProductDocument,
+    });
+    variantProductDocument = productDataFactory.document.variant({
+      genericProduct: genericProductDocument,
+      specificProduct: specificProductDocument,
+    });
+
     fileDocument = fileDataFactory.document();
     accountDocument = accountDataFactory.document();
     loanAccountDocument = accountDataFactory.document({
@@ -56,6 +99,10 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
         issuedAt: addSeconds(3600, duplicatedDraftDocument.issuedAt).toISOString(),
       },
       account: accountDocument,
+      project: projectDocument,
+      recipient: recipientDocument,
+      category: inventoryCategoryDocument,
+      product: specificProductDocument,
     });
     duplicateInvertedPaymentDocument = paymentTransactionDataFactory.document({
       body: {
@@ -63,6 +110,8 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
         issuedAt: addSeconds(3600, duplicatedDraftDocument.issuedAt).toISOString(),
       },
       account: accountDocument,
+      category: inventoryCategoryDocument,
+      product: variantProductDocument,
     });
     duplicateSplitDocument = splitTransactionDataFactory.document({
       body: {
@@ -71,6 +120,7 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
       splits: [
         {
           amount: duplicatedDraftDocument.amount,
+          category: invoiceCategoryDocument,
         },
       ],
       loans: undefined,
@@ -94,28 +144,31 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
       account: accountDocument,
       transferAccount: loanAccountDocument,
     });
-    duplicateDeferredDocument = deferredTransactionDataFactory.document({
+    duplicateLoanDocument = loanTransactionDataFactory.document({
       body: {
         amount: Math.abs(duplicatedDraftDocument.amount) * -1,
         issuedAt: addSeconds(3600, duplicatedDraftDocument.issuedAt).toISOString(),
       },
       account: accountDocument,
       loanAccount: loanAccountDocument,
+      category: inventoryCategoryDocument,
+      product: genericProductDocument,
     });
-    duplicateReimbursementDocument = reimbursementTransactionDataFactory.document({
+    duplicateRepaymentDocument = loanTransactionDataFactory.document({
       body: {
         amount: Math.abs(duplicatedDraftDocument.amount) * -1,
         issuedAt: addSeconds(3600, duplicatedDraftDocument.issuedAt).toISOString(),
       },
       account: loanAccountDocument,
       loanAccount: accountDocument,
+      category: regularCategoryDocument,
     });
   });
 
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestGetTransactionListByFile }) => {
       const res = await requestGetTransactionListByFile(getFileId(fileDocument));
-      expect(res).toBeUnauthorizedResponse();
+      transactionApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -130,26 +183,30 @@ test.describe('GET /transaction/v1/files/{fileId}/transactions', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestGetTransactionListByFile }) => {
           const res = await requestGetTransactionListByFile(getFileId(fileDocument));
-          expect(res).toBeForbiddenResponse();
+          transactionApiExpect(res).toBeForbiddenResponse();
         });
       } else {
-        test('should get a list of draft transactions', async ({ requestGetTransactionListByFile, saveAccounts, saveTransactions }) => {
-          await saveTransactions(draftDocument, duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateDeferredDocument, duplicateReimbursementDocument);
+        test('should get a list of draft transactions', async ({ requestGetTransactionListByFile, saveAccounts, saveProject, saveProducts, saveRecipient, saveCategories, saveTransactions }) => {
           await saveAccounts(accountDocument, loanAccountDocument);
+          await saveProject(projectDocument);
+          await saveRecipient(recipientDocument);
+          await saveCategories(regularCategoryDocument, inventoryCategoryDocument, invoiceCategoryDocument);
+          await saveProducts(genericProductDocument, specificProductDocument, variantProductDocument);
+          await saveTransactions(draftDocument, duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateLoanDocument, duplicateRepaymentDocument);
           const res = await requestGetTransactionListByFile(getFileId(fileDocument));
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
+          transactionApiExpect(res).toBeOkResponse();
+          transactionApiExpect(res).toMatchSchema(schema);
 
-          expect(res).toContainMatchingDraftTransactionDocument(draftDocument);
-          expect(res).toContainMatchingDraftTransactionDocument(duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateDeferredDocument, duplicateReimbursementDocument);
+          transactionApiExpect(res).toContainMatchingDraftTransactionDocument(draftDocument);
+          transactionApiExpect(res).toContainMatchingDraftTransactionDocument(duplicatedDraftDocument, duplicatePaymentDocument, duplicateInvertedPaymentDocument, duplicateSplitDocument, duplicateTransferDocument, duplicateInvertedTransferDocument, duplicateLoanDocument, duplicateRepaymentDocument);
         });
 
         test.describe('should return error', () => {
           test.describe('if fileId', () => {
             test('is not mongo id', async ({ requestGetTransactionListByFile }) => {
               const res = await requestGetTransactionListByFile(fileDataFactory.id('not-mongo-id'));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'fileId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('pathParameters', 'fileId');
             });
           });
         });

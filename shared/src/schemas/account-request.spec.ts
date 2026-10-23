@@ -59,20 +59,5 @@ describe('Account schema', () => {
       }), 'accountType');
 
     });
-
-    describe('if data.owner', () => {
-      tester.required(testDataFactory.account.request({
-        owner: undefined,
-      }), 'owner');
-
-      tester.type(testDataFactory.account.request({
-        owner: 1 as any,
-      }), 'owner', 'string');
-
-      tester.minLength(testDataFactory.account.request({
-        owner: '',
-      }), 'owner', 1);
-
-    });
   });
 });

@@ -139,10 +139,35 @@ export const request: StrictSchema<Requests.Product> = {
   ],
 };
 
+export const genericProductId: ObjectSchema<Api.Product.GenericProductId> = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['genericProductId'],
+  properties: {
+    genericProductId: {
+      type: 'string',
+      pattern: MONGO_ID_PATTERN,
+    },
+  },
+};
+
+export const specificProductId: ObjectSchema<Api.Product.SpecificProductId> = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['specificProductId'],
+  properties: {
+    specificProductId: {
+      type: 'string',
+      pattern: MONGO_ID_PATTERN,
+    },
+  },
+};
+
 export const genericResponse = combine<Responses.GenericProduct>([
   name,
   productId,
   genericProductType,
+  fullName,
 ]);
 
 export const specificResponse = combine<Responses.SpecificProduct>([
@@ -151,30 +176,17 @@ export const specificResponse = combine<Responses.SpecificProduct>([
   unitOfMeasurement,
   measurement,
   specificProductType,
-  {
-    type: 'object',
-    required: ['genericProduct'],
-    properties: {
-      genericProduct: genericResponse,
-    },
-  },
+  fullName,
+  genericProductId,
 ]);
 
 export const variantResponse = combine<Responses.VariantProduct>([
   name,
   productId,
   variantProductType,
-  {
-    type: 'object',
-    required: [
-      'genericProduct',
-      'specificProduct',
-    ],
-    properties: {
-      genericProduct: genericResponse,
-      specificProduct: specificResponse,
-    },
-  },
+  fullName,
+  genericProductId,
+  specificProductId,
 ]);
 
 export const response: StrictSchema<Responses.Product> = {
@@ -191,42 +203,9 @@ export const report = combine<Responses.ProductReport>([
   fullName,
 ]);
 
-export const groupedResponse = combine<Responses.ProductTree>([
-  genericResponse,
-  {
-    type: 'object',
-    properties: {
-      children: {
-        type: 'array',
-        items: combine<Responses.ProductTree['children'][number]>([
-          productId,
-          name,
-          unitOfMeasurement,
-          measurement,
-          specificProductType,
-          fullName,
-          {
-            type: 'object',
-            properties: {
-              children: {
-                type: 'array',
-                items: combine<Responses.ProductTree['children'][number]['children'][number]>([
-                  productId,
-                  name,
-                  variantProductType,
-                ]),
-              },
-            },
-          },
-        ]),
-      },
-    },
-  },
-]);
-
-export const groupedResponseList: StrictSchema<Responses.ProductTree[]> = {
+export const responseList: StrictSchema<Responses.Product[]> = {
   type: 'array',
-  items: groupedResponse,
+  items: response,
 };
 
 export const idList: StrictSchema<Api.Product.Id[]> = {

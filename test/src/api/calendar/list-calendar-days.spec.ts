@@ -6,17 +6,14 @@ import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { responseList as schema } from '@household/shared/schemas/calendar-day';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
-import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
-import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
-import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { calendarApiTest, calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
+import { calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -83,7 +80,7 @@ test.describe('GET /calendar/v1/days', () => {
         dateFrom: calendarDayDataFactory.pastDay(),
         dateTo: calendarDayDataFactory.futureDay(), 
       });
-      expect(res).toBeUnauthorizedResponse();
+      calendarApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -101,7 +98,7 @@ test.describe('GET /calendar/v1/days', () => {
             dateFrom: calendarDayDataFactory.pastDay(),
             dateTo: calendarDayDataFactory.futureDay(), 
           });
-          expect(res).toBeForbiddenResponse();
+          calendarApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe.serial('should return', () => {
@@ -121,9 +118,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument);
               });
 
               test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarEntry }) => {
@@ -134,9 +131,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument);
               });
 
               test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarEntry, saveCustomers }) => {
@@ -149,9 +146,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument);
               });
             });
 
@@ -171,9 +168,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
               });
 
               test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
@@ -185,9 +182,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
               });
 
               test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarDay, saveCalendarEntry, saveCustomers }) => {
@@ -201,9 +198,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
               });
             });
           });
@@ -224,9 +221,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument);
               });
 
               test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarEntry }) => {
@@ -237,9 +234,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);  
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);  
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument);
               });
 
               test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarEntry, saveCustomers }) => {
@@ -252,9 +249,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument);
               });
             });
 
@@ -274,9 +271,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
               });
 
               test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
@@ -288,9 +285,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
               });
 
               test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarDay, saveCalendarEntry, saveCustomers }) => {
@@ -304,9 +301,9 @@ test.describe('GET /calendar/v1/days', () => {
                   dateFrom: day,
                   dateTo: day, 
                 });
-                expect(res).toBeOkResponse();
-                expect(res).toMatchSchema(schema);
-                expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
+                calendarApiExpect(res).toBeOkResponse();
+                calendarApiExpect(res).toMatchSchema(schema);
+                calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
               });
             });
           });
@@ -328,9 +325,9 @@ test.describe('GET /calendar/v1/days', () => {
                 dateFrom: day,
                 dateTo: day, 
               });
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
-              expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
+              calendarApiExpect(res).toBeOkResponse();
+              calendarApiExpect(res).toMatchSchema(schema);
+              calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
             });
 
             test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
@@ -342,9 +339,9 @@ test.describe('GET /calendar/v1/days', () => {
                 dateFrom: day,
                 dateTo: day, 
               });
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
-              expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
+              calendarApiExpect(res).toBeOkResponse();
+              calendarApiExpect(res).toMatchSchema(schema);
+              calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
             });
 
             test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarDay, saveCalendarEntry, saveCustomers }) => {
@@ -358,9 +355,9 @@ test.describe('GET /calendar/v1/days', () => {
                 dateFrom: day,
                 dateTo: day, 
               });
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
-              expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
+              calendarApiExpect(res).toBeOkResponse();
+              calendarApiExpect(res).toMatchSchema(schema);
+              calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
             });
           });
 
@@ -382,9 +379,9 @@ test.describe('GET /calendar/v1/days', () => {
                 dateFrom: day,
                 dateTo: day, 
               });
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
-              expect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
+              calendarApiExpect(res).toBeOkResponse();
+              calendarApiExpect(res).toMatchSchema(schema);
+              calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarPersonalEntryDocument, calendarDayDocument);
             });
 
             test('with an issue entry', async ({ requestListCalendarDays, clearCalendarDay, saveCalendarDay, saveCalendarEntry }) => {
@@ -396,9 +393,9 @@ test.describe('GET /calendar/v1/days', () => {
                 dateFrom: day,
                 dateTo: day, 
               });
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
-              expect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
+              calendarApiExpect(res).toBeOkResponse();
+              calendarApiExpect(res).toMatchSchema(schema);
+              calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarIssueEntryDocument, calendarDayDocument);
             });
 
             test('with a work entry', async ({ requestListCalendarDays, savePrice, clearCalendarDay, saveCalendarDay, saveCalendarEntry, saveCustomers }) => {
@@ -412,9 +409,9 @@ test.describe('GET /calendar/v1/days', () => {
                 dateFrom: day,
                 dateTo: day, 
               });
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
-              expect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
+              calendarApiExpect(res).toBeOkResponse();
+              calendarApiExpect(res).toMatchSchema(schema);
+              calendarApiExpect(res).toContainMatchingCalendarDayDocument(day, calendarWorkEntryDocument, calendarDayDocument);
             });
           });
         });
@@ -425,8 +422,8 @@ test.describe('GET /calendar/v1/days', () => {
               const res = await requestListCalendarDays({
                 dateTo: calendarDayDataFactory.futureDay(), 
               } as Api.Calendar.DateRange);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('queryStringParameters', 'dateFrom');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('queryStringParameters', 'dateFrom');
             });
 
             test('is not a date', async ({ requestListCalendarDays }) => {
@@ -434,8 +431,8 @@ test.describe('GET /calendar/v1/days', () => {
                 dateFrom: 'not a date',
                 dateTo: calendarDayDataFactory.futureDay(), 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('queryStringParameters', 'dateFrom', 'date');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongFormatValidationError('queryStringParameters', 'dateFrom', 'date');
             });
           }); 
 
@@ -444,8 +441,8 @@ test.describe('GET /calendar/v1/days', () => {
               const res = await requestListCalendarDays({
                 dateFrom: calendarDayDataFactory.pastDay(), 
               } as Api.Calendar.DateRange);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('queryStringParameters', 'dateTo');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('queryStringParameters', 'dateTo');
             });
 
             test('is not a date', async ({ requestListCalendarDays }) => {
@@ -453,8 +450,8 @@ test.describe('GET /calendar/v1/days', () => {
                 dateFrom: calendarDayDataFactory.pastDay(),
                 dateTo: 'not a date', 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('queryStringParameters', 'dateTo', 'date');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongFormatValidationError('queryStringParameters', 'dateTo', 'date');
             });
 
             test('is earlier than dateFrom', async ({ requestListCalendarDays }) => {
@@ -462,8 +459,8 @@ test.describe('GET /calendar/v1/days', () => {
                 dateFrom: calendarDayDataFactory.futureDay(),
                 dateTo: calendarDayDataFactory.pastDay(), 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooEarlyDateValidationError('queryStringParameters', 'dateTo', false);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveTooEarlyDateValidationError('queryStringParameters', 'dateTo', false);
             });
           }); 
         });

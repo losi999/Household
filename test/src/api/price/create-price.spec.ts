@@ -2,14 +2,11 @@ import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test as priceApiTest, expect as priceApiExpect } from '@household/test/fixtures/price-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { priceApiTest, priceApiExpect } from '@household/test/fixtures/price-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { priceDbTest } from '@household/test/fixtures/price-db.fixture';
 import { Requests } from '@household/shared/types/requests';
 import { Api } from '@household/shared/types/api';
-
-const expect = mergeExpects(priceApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser') ;
 
@@ -25,7 +22,7 @@ test.describe('POST price/v1/prices', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestCreatePrice }) => {
       const res = await requestCreatePrice(request);
-      expect(res).toBeUnauthorizedResponse();
+      priceApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -40,16 +37,16 @@ test.describe('POST price/v1/prices', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestCreatePrice }) => {
           const res = await requestCreatePrice(request);
-          expect(res).toBeForbiddenResponse();
+          priceApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should create price', () => {
           test('with complete body', async ({ requestCreatePrice, findPriceById }) => {
             const res = await requestCreatePrice(request);
-            expect(res).toBeCreatedResponse();
+            priceApiExpect(res).toBeCreatedResponse();
 
             const { priceId } = (await res.json()) as Api.Price.PriceId;
-            expect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(priceId));
+            priceApiExpect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(priceId));
           });
         });
 
@@ -63,10 +60,10 @@ test.describe('POST price/v1/prices', () => {
 
           await savePrice(archivedPriceDocument);
           const res = await requestCreatePrice(request);
-          expect(res).toBeCreatedResponse();
+          priceApiExpect(res).toBeCreatedResponse();
 
           const { priceId } = (await res.json()) as Api.Price.PriceId;
-          expect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(priceId));
+          priceApiExpect(request).toHaveBeenSavedAsPriceDocument(await findPriceById(priceId));
         });
 
         test.describe('should return error', () => {
@@ -77,8 +74,8 @@ test.describe('POST price/v1/prices', () => {
                 extraProperty: 'extra',
               } as any);
           
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 
@@ -87,24 +84,24 @@ test.describe('POST price/v1/prices', () => {
               const res = await requestCreatePrice(priceDataFactory.request({
                 name: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
             test('is not string', async ({ requestCreatePrice }) => {
               const res = await requestCreatePrice(priceDataFactory.request({
                 name: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
             test('is too short', async ({ requestCreatePrice }) => {
               const res = await requestCreatePrice(priceDataFactory.request({
                 name: '', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'name', 1);
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
             test('is already in use by a different price', async ({ requestCreatePrice, savePrice }) => {
@@ -112,8 +109,8 @@ test.describe('POST price/v1/prices', () => {
 
               await savePrice(priceDocument);
               const res = await requestCreatePrice(request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Duplicate price name');
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveMessage('Duplicate price name');
             });
           });
 
@@ -122,24 +119,24 @@ test.describe('POST price/v1/prices', () => {
               const res = await requestCreatePrice(priceDataFactory.request({
                 amount: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
             test('is not integer', async ({ requestCreatePrice }) => {
               const res = await requestCreatePrice(priceDataFactory.request({
                 amount: 1.5, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'integer');
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveWrongTypeValidationError('body', 'amount', 'integer');
             });
 
             test('is too small', async ({ requestCreatePrice }) => {
               const res = await requestCreatePrice(priceDataFactory.request({
                 amount: 0, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveExclusiveTooSmallValidationError('body', 'amount', 0);
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveExclusiveTooSmallValidationError('body', 'amount', 0);
             });
           });
 
@@ -148,24 +145,24 @@ test.describe('POST price/v1/prices', () => {
               const res = await requestCreatePrice(priceDataFactory.request({
                 unitOfMeasurement: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'unitOfMeasurement');
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveRequiredPropertyValidationError('body', 'unitOfMeasurement');
             });
 
             test('is not string', async ({ requestCreatePrice }) => {
               const res = await requestCreatePrice(priceDataFactory.request({
                 unitOfMeasurement: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'unitOfMeasurement', 'string');
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveWrongTypeValidationError('body', 'unitOfMeasurement', 'string');
             });
 
             test('is not a valid enum value', async ({ requestCreatePrice }) => {
               const res = await requestCreatePrice(priceDataFactory.request({
                 unitOfMeasurement: <any>'not-enum', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveEnumValidationError('body', 'unitOfMeasurement');
+              priceApiExpect(res).toBeBadRequestResponse();
+              priceApiExpect(res).toHaveEnumValidationError('body', 'unitOfMeasurement');
             });
           });
         });

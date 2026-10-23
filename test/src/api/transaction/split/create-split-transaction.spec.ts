@@ -6,23 +6,20 @@ import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { allowUsers } from '@household/test/utils';
 
-import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
-import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
-import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
-import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
+import { transactionApiTest, transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
-
-const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
 
@@ -113,7 +110,7 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestCreateSplitTransaction }) => {
       const res = await requestCreateSplitTransaction(request);
-      expect(res).toBeUnauthorizedResponse();
+      transactionApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -128,7 +125,7 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestCreateSplitTransaction }) => {
           const res = await requestCreateSplitTransaction(request);
-          expect(res).toBeForbiddenResponse();
+          transactionApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should create transaction', () => {
@@ -139,9 +136,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
             await saveRecipient(recipientDocument);
             await saveProduct(productDocument);
             const res = await requestCreateSplitTransaction(request);
-            expect(res).toBeCreatedResponse();
+            transactionApiExpect(res).toBeCreatedResponse();
             const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-            expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+            transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
           });
 
           test.describe('without optional properties', () => {
@@ -156,9 +153,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('recipientId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveProduct }) => {
@@ -171,9 +168,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveProject(projectDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -187,9 +184,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans', async ({ requestCreateSplitTransaction, saveAccount, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -203,9 +200,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.description', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -224,9 +221,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.inventory', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -247,9 +244,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.invoice', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -271,9 +268,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.invoice.invoiceNumber', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -293,9 +290,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.categoryId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -314,9 +311,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('splits.projectId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -336,9 +333,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.description', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -357,9 +354,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.inventory', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -380,9 +377,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.invoice', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -405,9 +402,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.invoice.invoiceNumber', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -428,9 +425,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.categoryId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -449,9 +446,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
 
             test('loans.projectId', async ({ requestCreateSplitTransaction, saveAccounts, getTransactionById, saveCategories, saveProject, saveRecipient, saveProduct }) => {
@@ -471,9 +468,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               await saveRecipient(recipientDocument);
               await saveProduct(productDocument);
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeCreatedResponse();
+              transactionApiExpect(res).toBeCreatedResponse();
               const { transactionId } = await res.json() as Api.Transaction.TransactionId;
-              expect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
+              transactionApiExpect(request).toHaveBeenSavedAsSplitTransactionDocument(await getTransactionById(transactionId));
             });
           });
         });
@@ -484,8 +481,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 extra: 123, 
               } as any));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
             });
 
             test('misses both splits and loans', async ({ requestCreateSplitTransaction }) => {
@@ -494,9 +491,9 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 splits: undefined,
                 loans: undefined,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'splits');
-              expect(res).toHaveRequiredPropertyValidationError('body', 'loans');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'splits');
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'loans');
             });
           });
 
@@ -505,16 +502,16 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 description: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
             test('is too short', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 description: '', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'description', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
@@ -523,24 +520,24 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 issuedAt: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'issuedAt');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'issuedAt');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 issuedAt: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'issuedAt', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'issuedAt', 'string');
             });
 
             test('is not date-time format', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 issuedAt: 'not-date-time', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'issuedAt', 'date-time');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'issuedAt', 'date-time');
             });
           });
 
@@ -558,8 +555,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 ...request,
                 accountId: getAccountId(loanAccountDocument),  
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Account type cannot be loan');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('Account type cannot be loan');
             });
 
             test('does not belong to any account', async ({ requestCreateSplitTransaction, saveCategories, saveProject, saveRecipient }) => {
@@ -570,32 +567,32 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 ...request,
                 accountId: accountDataFactory.id(), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Some of the accounts are not found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('Some of the accounts are not found');
             });
 
             test('is missing', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 accountId: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'accountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'accountId');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 accountId: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'accountId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'accountId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 accountId: accountDataFactory.id('not-mongo-id'), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'accountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'accountId');
             });
           });
 
@@ -609,24 +606,24 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 ...request,
                 recipientId: recipientDataFactory.id(), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No recipient found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No recipient found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 recipientId: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'recipientId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'recipientId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 recipientId: recipientDataFactory.id('not-mongo-id'), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'recipientId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'recipientId');
             });
           });
 
@@ -634,8 +631,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
             test('is not an array', async ({ requestCreateSplitTransaction }) => {
               request.splits = {} as any;
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'splits', 'array');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'splits', 'array');
             });
 
             test('is empty array', async ({ requestCreateSplitTransaction }) => {
@@ -643,8 +640,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 splits: [],
               }));
 
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooFewItemsValidationError('body', 'splits', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooFewItemsValidationError('body', 'splits', 1);
             });
           });
 
@@ -652,8 +649,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
             test('is not object', async ({ requestCreateSplitTransaction }) => {
               request.splits = [1 as any];
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'splits/0', 'object');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'splits/0', 'object');
             });
 
             test('has additional properties', async ({ requestCreateSplitTransaction }) => {
@@ -663,8 +660,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 },
               ] as any;
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'splits/0', 'extra');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'splits/0', 'extra');
             });
           });
 
@@ -677,8 +674,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
             test('is not number', async ({ requestCreateSplitTransaction }) => {
@@ -689,7 +686,7 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toBeBadRequestResponse();
             });
           });
 
@@ -702,8 +699,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
             test('is too short', async ({ requestCreateSplitTransaction }) => {
@@ -714,8 +711,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'description', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
@@ -729,8 +726,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
             });
 
             test('is not number', async ({ requestCreateSplitTransaction }) => {
@@ -741,8 +738,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
             test('is too small', async ({ requestCreateSplitTransaction }) => {
@@ -753,25 +750,12 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
             });
           });
 
           test.describe('if splits.productId', () => {
-            test('is present and quantity is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
-                splits: [
-                  {
-                    productId: productDataFactory.id(),
-                    quantity: undefined, 
-                  },
-                ],
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
-            });
-
             test('is not string', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 splits: [
@@ -780,8 +764,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
@@ -792,8 +776,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'productId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'productId');
             });
 
             test('does not belong to any product', async ({ requestCreateSplitTransaction, saveAccount, saveCategory, saveProject, saveRecipient }) => {
@@ -812,8 +796,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 ],
                 loans: undefined,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No product found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No product found');
             });
           });
 
@@ -827,8 +811,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -839,8 +823,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
             });
 
             test('is too short', async ({ requestCreateSplitTransaction }) => {
@@ -851,8 +835,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
             });
           });
 
@@ -865,8 +849,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -877,8 +861,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
             });
 
             test('is not date format', async ({ requestCreateSplitTransaction }) => {
@@ -889,8 +873,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
             });
 
             test('is later than billingStartDate', async ({ requestCreateSplitTransaction }) => {
@@ -902,8 +886,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
             });
           });
 
@@ -916,8 +900,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -928,8 +912,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
             });
 
             test('is not date format', async ({ requestCreateSplitTransaction }) => {
@@ -940,8 +924,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
             });
           });
 
@@ -960,8 +944,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 ],
                 loans: undefined,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Some of the categories are not found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('Some of the categories are not found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -972,8 +956,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
@@ -984,8 +968,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'categoryId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'categoryId');
             });
           });
 
@@ -1004,8 +988,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 ],
                 loans: undefined,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Some of the projects are not found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('Some of the projects are not found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -1016,8 +1000,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
@@ -1028,8 +1012,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'projectId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'projectId');
             });
           });
 
@@ -1037,8 +1021,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
             test('is not an array', async ({ requestCreateSplitTransaction }) => {
               request.loans = {} as any;
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'loans', 'array');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'loans', 'array');
             });
 
             test('is empty array', async ({ requestCreateSplitTransaction }) => {
@@ -1046,8 +1030,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 loans: [],
               }));
 
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooFewItemsValidationError('body', 'loans', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooFewItemsValidationError('body', 'loans', 1);
             });
           });
 
@@ -1055,8 +1039,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
             test('is not object', async ({ requestCreateSplitTransaction }) => {
               request.loans = [1 as any];
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'loans/0', 'object');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'loans/0', 'object');
             });
 
             test('has additional properties', async ({ requestCreateSplitTransaction }) => {
@@ -1066,8 +1050,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 },
               ] as any;
               const res = await requestCreateSplitTransaction(request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'loans/0', 'extra');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'loans/0', 'extra');
             });
           });
 
@@ -1080,8 +1064,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
             test('is not number', async ({ requestCreateSplitTransaction }) => {
@@ -1092,7 +1076,7 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toBeBadRequestResponse();
             });
           });
 
@@ -1105,8 +1089,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
             test('is too short', async ({ requestCreateSplitTransaction }) => {
@@ -1117,8 +1101,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'description', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
@@ -1132,8 +1116,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
             });
 
             test('is not number', async ({ requestCreateSplitTransaction }) => {
@@ -1144,8 +1128,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
             test('is too small', async ({ requestCreateSplitTransaction }) => {
@@ -1156,25 +1140,12 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
             });
           });
 
           test.describe('if loans.productId', () => {
-            test('is present and quantity is missing', async ({ requestCreateSplitTransaction }) => {
-              const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
-                loans: [
-                  {
-                    productId: productDataFactory.id(),
-                    quantity: undefined, 
-                  },
-                ],
-              }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'productId', 'quantity');
-            });
-
             test('is not string', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 loans: [
@@ -1183,8 +1154,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
@@ -1195,8 +1166,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'productId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'productId');
             });
 
             test('does not belong to any product', async ({ requestCreateSplitTransaction, saveAccounts, saveCategory, saveProject, saveRecipient }) => {
@@ -1215,8 +1186,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 ],
                 splits: undefined,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No product found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No product found');
             });
           });
 
@@ -1230,8 +1201,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -1242,8 +1213,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
             });
 
             test('is too short', async ({ requestCreateSplitTransaction }) => {
@@ -1254,8 +1225,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
             });
           });
 
@@ -1268,8 +1239,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -1280,8 +1251,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
             });
 
             test('is not date format', async ({ requestCreateSplitTransaction }) => {
@@ -1292,8 +1263,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
             });
 
             test('is later than billingStartDate', async ({ requestCreateSplitTransaction }) => {
@@ -1305,8 +1276,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
             });
           });
 
@@ -1319,8 +1290,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -1331,8 +1302,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
             });
 
             test('is not date format', async ({ requestCreateSplitTransaction }) => {
@@ -1343,8 +1314,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
             });
           });
 
@@ -1363,8 +1334,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 ],
                 splits: undefined,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Some of the categories are not found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('Some of the categories are not found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -1375,8 +1346,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
@@ -1387,8 +1358,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'categoryId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'categoryId');
             });
           });
 
@@ -1407,8 +1378,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 ],
                 splits: undefined,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Some of the projects are not found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('Some of the projects are not found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -1419,8 +1390,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
@@ -1431,8 +1402,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'projectId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'projectId');
             });
           });
 
@@ -1451,8 +1422,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                 ],
                 splits: undefined,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Some of the accounts are not found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('Some of the accounts are not found');
             });
 
             test('is not string', async ({ requestCreateSplitTransaction }) => {
@@ -1463,8 +1434,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'loanAccountId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'loanAccountId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
@@ -1475,8 +1446,8 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'loanAccountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'loanAccountId');
             });
           });
 
@@ -1489,20 +1460,20 @@ test.describe('POST transaction/v1/transactions/split (split)', () => {
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'transactionId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'transactionId', 'string');
             });
 
             test('is not mongo id format', async ({ requestCreateSplitTransaction }) => {
               const res = await requestCreateSplitTransaction(splitTransactionDataFactory.request({
                 loans: [
                   {
-                    transactionId: deferredTransactionDataFactory.id('not-mongo-id'), 
+                    transactionId: loanTransactionDataFactory.id('not-mongo-id'), 
                   },
                 ],
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'transactionId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'transactionId');
             });
           });
         });

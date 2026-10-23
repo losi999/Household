@@ -6,7 +6,6 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { default as pathParameters } from '@household/shared/schemas/get-transaction';
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { default as index } from '@household/api/handlers/index.handler';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const getTransactionService = getTransactionServiceFactory(transactionService, transactionDocumentConverter);
 
@@ -17,8 +16,5 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

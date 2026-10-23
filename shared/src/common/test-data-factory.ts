@@ -1,4 +1,4 @@
-import { addDays, addSeconds, createDate, dateToISODateString } from '@household/shared/common/utils';
+import { addDays, addSeconds, createDate, dateToISODateString, getSpecificProductFullName, getVariantProductFullName } from '@household/shared/common/utils';
 import { AccountType, CalendarDayType, CalendarEntryResolutionStatus, CalendarEntryType, CategoryType, FileType, ProductType, SettingKey, TransactionType, UserType } from '@household/shared/enums';
 import { DataFactoryFunction, DocumentUpdate, RecursivePartial } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
@@ -621,7 +621,6 @@ const createAccountRequest: DataFactoryFunction<Requests.Account> = (req) => {
     accountType: faker.helpers.arrayElement(Object.values(AccountType).filter(a => a !== AccountType.Loan)),
     name: `${faker.finance.accountName()} ${faker.finance.accountNumber()}`,
     currency: faker.finance.currencySymbol(),
-    owner: faker.person.firstName(),
     ...req,
   };
 };
@@ -642,7 +641,6 @@ const createAccountResponse: DataFactoryFunction<Responses.Account> = (resp) => 
   return {
     ...base,
     balance: faker.number.int(),
-    fullName: `${resp?.name ?? base.name} (${resp?.owner ?? base.owner})`,
     accountId: createAccountId(),
     isOpen: faker.datatype.boolean(),
     ...resp,
@@ -655,7 +653,7 @@ const createAccountReport: DataFactoryFunction<Responses.AccountReport> = (rep) 
   return {
     accountId: createAccountId(),
     currency: faker.finance.currencySymbol(),
-    fullName: `${base.name} (${base.owner})`,
+    name: base.name,
     ...rep,
   };
 };
@@ -729,7 +727,7 @@ const createCategoryResponse: DataFactoryFunction<Responses.Category> = (resp) =
     categoryId: createCategoryId(),
     name,
     categoryType,
-    fullName: name,
+    fullName: resp?.fullName ?? resp?.name ?? name,
     parentCategory: undefined,
     ancestors: [],
     ...resp,
@@ -797,7 +795,6 @@ const createSpecificProductDocument: DataFactoryFunction<Documents.SpecificProdu
     _id: createId(),
     ...base,
     expiresAt: undefined,
-    fullName: `${doc?.name ?? base.name} ${doc?.measurement ?? base.measurement} ${doc?.unitOfMeasurement ?? base.unitOfMeasurement}`,
     genericProduct: createGenericProductDocument(),
     ...doc,
   };
@@ -822,42 +819,42 @@ const createGenericProductResponse: DataFactoryFunction<Responses.GenericProduct
   return {
     productId: createProductId(),
     ...base,
+    fullName: resp?.name ?? base.name,
     ...resp,
   };
 };
 
-const createSpecificProductResponse: DataFactoryFunction<Responses.SpecificProduct> = (resp) => {
-  const { parentProductId, ...base } = createSpecificProductRequest();
-  
+const createSpecificProductResponse = (input?: {
+  response?: Partial<Responses.SpecificProduct>;
+  genericProduct?: Responses.GenericProduct;
+}): Responses.SpecificProduct => {
+  const { genericProductId, fullName, productId, ...restOfInput } = input?.response ?? {};
+  const { parentProductId, ...base } = createSpecificProductRequest(restOfInput);
+  const { name } = createGenericProductRequest();
+
   return {
-    productId: createProductId(),
+    productId: productId ?? createProductId(),
     ...base,
-    fullName: `${resp?.name ?? base.name} ${resp?.measurement ?? base.measurement} ${resp?.unitOfMeasurement ?? base.unitOfMeasurement}`,
-    genericProduct: createGenericProductResponse(),
-    ...resp,
+    genericProductId: genericProductId ?? input?.genericProduct?.productId ?? parentProductId,
+    fullName: fullName ?? getSpecificProductFullName(input?.genericProduct?.fullName ?? name, base),
   };
 };
 
-const createVariantProductResponse: DataFactoryFunction<Responses.VariantProduct> = (resp) => {
-  const { parentProductId, ...base } = createVariantProductRequest();
-  
+const createVariantProductResponse = (input?: {
+  response?: Partial<Responses.VariantProduct>;
+  specificProduct?: Responses.SpecificProduct
+}): Responses.VariantProduct => {
+  const { genericProductId, specificProductId, fullName, productId, ...restOfInput } = input?.response ?? {};
+  const { parentProductId, ...base } = createVariantProductRequest(restOfInput);
+
+  const specific = input?.specificProduct ?? createSpecificProductResponse();
+
   return {
-    productId: createProductId(),
+    productId: productId ?? createProductId(),
     ...base,
-    genericProduct: createGenericProductResponse(),
-    specificProduct: createSpecificProductResponse(),
-    ...resp,
-  };
-};
-
-const createProductGroupedResponse: DataFactoryFunction<Responses.ProductTree> = (resp) => {
-  const genericBase = createGenericProductRequest();
-
-  return {
-    productId: createProductId(),
-    ...genericBase,
-    children: [],
-    ...resp,
+    genericProductId: genericProductId ?? specific.genericProductId,
+    specificProductId: specificProductId ?? specific.productId,
+    fullName: fullName ?? getVariantProductFullName(specific.fullName, base.name),
   };
 };
 
@@ -997,65 +994,12 @@ const createPaymentTransactionResponse: DataFactoryFunction<Responses.PaymentTra
   };
 };
 
-const createDeferredTransactionDocument: DataFactoryFunction<Documents.DeferredTransaction> = (doc) => {
+const createLoanTransactionDocument: DataFactoryFunction<Documents.LoanTransaction> = (doc) => {
   const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
 
   return {
     _id: createId(),
-    transactionType: TransactionType.Deferred,
-    amount: faker.number.float({
-      min: -10000,
-      max: 0,
-    }),
-    description,
-    quantity,
-    invoiceNumber,
-    billingEndDate: createDate(billingEndDate),
-    billingStartDate: createDate(billingStartDate),
-    issuedAt: createDate(issuedAt),
-    product: createGenericProductDocument(),
-    payingAccount: createAccountDocument(),
-    category: createCategoryDocument(),
-    project: createProjectDocument(),
-    recipient: createRecipientDocument(),
-    ownerAccount: createAccountDocument(),
-    expiresAt: undefined,
-    ...doc,
-  };
-};
-
-const createDeferredTransactionResponse: DataFactoryFunction<Responses.DeferredTransaction> = (resp) => {
-  const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
-
-  return {
-    transactionId: createTransactionId(),
-    transactionType: TransactionType.Deferred,
-    amount: faker.number.float({
-      min: -10000,
-      max: 0,
-    }),
-    description,
-    quantity,
-    invoiceNumber,
-    billingEndDate,
-    billingStartDate,
-    issuedAt,
-    product: createGenericProductResponse(),
-    ownerAccount: createAccountResponse(),
-    payingAccount: createAccountResponse(),
-    category: createCategoryResponse(),
-    project: createProjectResponse(),
-    recipient: createRecipientResponse(),
-    ...resp,
-  };
-};
-
-const createReimbursementTransactionDocument: DataFactoryFunction<Documents.ReimbursementTransaction> = (doc) => {
-  const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
-
-  return {
-    _id: createId(),
-    transactionType: TransactionType.Reimbursement,
+    transactionType: TransactionType.Loan,
     amount: faker.number.float({
       min: -10000,
       max: 0,
@@ -1077,12 +1021,12 @@ const createReimbursementTransactionDocument: DataFactoryFunction<Documents.Reim
   };
 };
 
-const createReimbursementTransactionResponse: DataFactoryFunction<Responses.ReimbursementTransaction> = (resp) => {
+const createLoanTransactionResponse: DataFactoryFunction<Responses.LoanTransaction> = (resp) => {
   const { description, quantity, invoiceNumber, billingEndDate, billingStartDate, issuedAt } = createPaymentTransactionRequest();
 
   return {
     transactionId: createTransactionId(),
-    transactionType: TransactionType.Reimbursement,
+    transactionType: TransactionType.Loan,
     amount: faker.number.float({
       min: -10000,
       max: 0,
@@ -1206,12 +1150,12 @@ const createSplitDocumentItem: DataFactoryFunction<Documents.SplitItem> = (doc) 
 };
 
 const createSplitTransactionDocument = (doc?: RecursivePartial<Omit<Documents.SplitTransaction, 'amount'>>): Documents.SplitTransaction => {
-  const deferredDocuments = Object.hasOwn(doc ?? {}, 'deferredSplits') ? doc.deferredSplits?.map(d => createDeferredTransactionDocument(d)) : [createDeferredTransactionDocument()];
+  const loanDocuments = Object.hasOwn(doc ?? {}, 'loans') ? doc.loans?.map(d => createLoanTransactionDocument(d)) : [createLoanTransactionDocument()];
 
   const splitDocuments = Object.hasOwn(doc ?? {}, 'splits') ? doc.splits?.map(l => createSplitDocumentItem(l)) : [createSplitDocumentItem()];
 
   const amount = [
-    ...(deferredDocuments ?? []),
+    ...(loanDocuments ?? []),
     ...(splitDocuments ?? []),
   ].reduce((accumulator, currentValue) => {
     return accumulator + currentValue.amount;
@@ -1233,7 +1177,8 @@ const createSplitTransactionDocument = (doc?: RecursivePartial<Omit<Documents.Sp
     ...doc,
     amount,
     splits: splitDocuments,
-    deferredSplits: deferredDocuments,
+    loans: loanDocuments,
+    deferredSplits: undefined,
   };
 };
 
@@ -1255,12 +1200,12 @@ const createSplitResponseItem: DataFactoryFunction<Responses.SplitItem> = (resp)
 };
 
 const createSplitTransactionResponse = (resp?: RecursivePartial<Omit<Responses.SplitTransaction, 'amount'>>): Responses.SplitTransaction => {
-  const deferredResponses = Object.hasOwn(resp ?? {}, 'deferredSplits') ? resp.deferredSplits?.map(d => createDeferredTransactionResponse(d)) : [createDeferredTransactionResponse()];
+  const loanResponses = Object.hasOwn(resp ?? {}, 'loans') ? resp.loans?.map(d => createLoanTransactionResponse(d)) : [createLoanTransactionResponse()];
 
   const splitResponses = Object.hasOwn(resp ?? {}, 'splits') ? resp.splits?.map(l => createSplitResponseItem(l)) : [createSplitResponseItem()];
 
   const amount = [
-    ...(deferredResponses ?? []),
+    ...(loanResponses ?? []),
     ...(splitResponses ?? []),
   ].reduce((accumulator, currentValue) => {
     return accumulator + currentValue.amount;
@@ -1281,7 +1226,7 @@ const createSplitTransactionResponse = (resp?: RecursivePartial<Omit<Responses.S
     ...resp,
     amount,
     splits: splitResponses,
-    deferredSplits: deferredResponses,
+    loans: loanResponses,
   };
 };
 
@@ -1534,7 +1479,6 @@ export const testDataFactory = {
       specific: createSpecificProductResponse,
       variant: createVariantProductResponse,
     },
-    groupedResponse: createProductGroupedResponse,
     report: createProductReport,
   },
   transaction: {
@@ -1546,8 +1490,7 @@ export const testDataFactory = {
     },
     document: {
       payment: createPaymentTransactionDocument,
-      deferred: createDeferredTransactionDocument,
-      reimbursement: createReimbursementTransactionDocument,
+      loan: createLoanTransactionDocument,
       transfer: createTransferTransactionDocument,
       split: createSplitTransactionDocument,
       draft: createDraftTransactionDocument,
@@ -1555,8 +1498,7 @@ export const testDataFactory = {
     },
     response: {
       payment: createPaymentTransactionResponse,
-      deferred: createDeferredTransactionResponse,
-      reimbursement: createReimbursementTransactionResponse,
+      loan: createLoanTransactionResponse,
       transfer: createTransferTransactionResponse,
       split: createSplitTransactionResponse,
       draft: createDraftTransactionResponse,

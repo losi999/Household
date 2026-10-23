@@ -200,7 +200,10 @@ describe('Price store', () => {
 
       dispatcher.dispatch(priceEvents.openPriceListItemSubmenu(priceResponse)); 
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, priceResponse.name, 'edit', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, priceResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, priceEvents.updatePrice(priceResponse));
       validateState();
     });
@@ -212,7 +215,10 @@ describe('Price store', () => {
 
       dispatcher.dispatch(priceEvents.openPriceListItemSubmenu(priceResponse)); 
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, priceResponse.name, 'edit', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, priceResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy, priceEvents.deletePrice(priceResponse));
       validateState();
     });
@@ -224,7 +230,10 @@ describe('Price store', () => {
 
       dispatcher.dispatch(priceEvents.openPriceListItemSubmenu(priceResponse)); 
 
-      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, priceResponse.name, 'edit', 'delete');
+      validateFunctionCall(mockBottomSheetService.functions.openBottomSubmenu, priceResponse.name, [
+        BottomSheetService.Edit,
+        BottomSheetService.Delete,
+      ]);
       validateDispatcher(dispatchSpy);
       validateState();
     });

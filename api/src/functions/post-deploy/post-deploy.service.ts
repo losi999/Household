@@ -9,6 +9,6 @@ export interface IPostDeployService {
 
 export const postDeployServiceFactory = (mongodbService: IMongodbService, infrastructureService: IInfrastructureService): IPostDeployService =>
   async ({ stackName }) => {
+    await infrastructureService.executePostDeployFunctions(stackName);
     await mongodbService.syncIndexes();
-    return infrastructureService.executePostDeployFunctions(stackName);
   };

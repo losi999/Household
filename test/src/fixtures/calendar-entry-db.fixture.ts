@@ -1,8 +1,8 @@
 import { calendarEntryService } from '@household/shared/dependencies/services/calendar-entry-service';
 import { ICalendarEntryService } from '@household/shared/services/calendar-entry-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 
-export const test = baseTest.extend<Pick<ICalendarEntryService, 'saveCalendarEntry' | 'getCalendarEntryById'>>({
+export const calendarEntryDbTest = test.extend<Pick<ICalendarEntryService, 'saveCalendarEntry' | 'getCalendarEntryById'>>({
   saveCalendarEntry: async ({ logServiceCall }, use) => {
     const saveCalendarEntry: ICalendarEntryService['saveCalendarEntry'] = async (calendarEntry) => {
       const result = await calendarEntryService.saveCalendarEntry(calendarEntry);

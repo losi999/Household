@@ -25,8 +25,13 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
   const instance: IProductService = {
     listProducts: () => {
       return mongodbService.products((model, session) => {
+        // The full name of a product is built from its parents, so they are loaded together with the product
         return model.find({})
           .session(session)
+          .populate([
+            'genericProduct',
+            'specificProduct',
+          ])
           .sort({
             productType: 1,
             name: 1,
@@ -138,12 +143,12 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         });
           
         await models.transactions.updateMany({
-          'deferredSplits.product': productId,
+          'loans.product': productId,
         }, {
 
           $unset: {
-            'deferredSplits.$[element].product': 1,
-            'deferredSplits.$[element].quantity': 1,
+            'loans.$[element].product': 1,
+            'loans.$[element].quantity': 1,
           },
         }, {
           session,
@@ -239,12 +244,12 @@ export const productServiceFactory = (mongodbService: IMongodbService): IProduct
         });
 
         await models.transactions.updateMany({
-          'deferredSplits.product': {
+          'loans.product': {
             $in: sourceProductIds,
           },
         }, {
           $set: {
-            'deferredSplits.$[element].product': targetProductId,
+            'loans.$[element].product': targetProductId,
           },
         }, {
           session,

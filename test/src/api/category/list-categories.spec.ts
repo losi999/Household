@@ -1,17 +1,14 @@
 import { responseList as schema } from '@household/shared/schemas/category';
 import { entries } from '@household/shared/common/utils';
 import { forbidUsers } from '@household/test/utils';
-import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { categoryApiTest, categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { CategoryType } from '@household/shared/enums';
 import { Documents } from '@household/shared/types/documents';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { mergeTests } from '@playwright/test';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
 const permissionMap = forbidUsers();
-
-const expect = mergeExpects(categoryApiExpect, apiExpect);
 
 const test = mergeTests(categoryApiTest, categoryDbTest);
 
@@ -34,7 +31,7 @@ test.describe('GET /category/v1/categories', () => {
   test.describe('called as anyonymous', () => {
     test('should return unauthorized', async ({ requestListCategories }) => {
       const res = await requestListCategories();
-      expect(res).toBeUnauthorizedResponse();
+      categoryApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -50,17 +47,17 @@ test.describe('GET /category/v1/categories', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestListCategories }) => {
           const res = await requestListCategories();
-          expect(res).toBeForbiddenResponse();
+          categoryApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should get a list of categories', async ({ requestListCategories, saveCategories }) => {
           await saveCategories(parentCategoryDocument, childCategoryDocument);
 
           const res = await requestListCategories();
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
-          expect(res).toContainMatchingCategoryDocument(parentCategoryDocument);
-          expect(res).toContainMatchingCategoryDocument(childCategoryDocument, parentCategoryDocument);
+          categoryApiExpect(res).toBeOkResponse();
+          categoryApiExpect(res).toMatchSchema(schema);
+          categoryApiExpect(res).toContainMatchingCategoryDocument(parentCategoryDocument);
+          categoryApiExpect(res).toContainMatchingCategoryDocument(childCategoryDocument, parentCategoryDocument);
         });
       }
     });

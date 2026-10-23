@@ -6,14 +6,11 @@ import { paymentTransactionDataFactory } from '@household/test/api/transaction/p
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { allowUsers } from '@household/test/utils';
 
-import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { transactionApiTest, transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 import { Requests } from '@household/shared/types/requests';
-
-const expect = mergeExpects(transactionApiExpect, apiExpect);
 
 const permissionMap = allowUsers('editor') ;
 
@@ -47,7 +44,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestUpdateToTransferTransaction }) => {
       const res = await requestUpdateToTransferTransaction(transferTransactionDataFactory.id(), request);
-      expect(res).toBeUnauthorizedResponse();
+      transactionApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -62,7 +59,7 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
       if (!isAllowed) {
         test('should return forbidden', async ({ requestUpdateToTransferTransaction }) => {
           const res = await requestUpdateToTransferTransaction(transferTransactionDataFactory.id(), request);
-          expect(res).toBeForbiddenResponse();
+          transactionApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should update transaction', () => {
@@ -70,8 +67,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
             await saveTransaction(originalDocument);
             await saveAccounts(accountDocument, transferAccountDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
-            expect(res).toBeNoContentResponse();
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
+            transactionApiExpect(res).toBeNoContentResponse();
+            transactionApiExpect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
           });
 
           test('between a non-loan and a loan account', async ({ requestUpdateToTransferTransaction, saveAccounts, saveTransaction, getTransactionById }) => {
@@ -87,8 +84,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
             await saveTransaction(originalDocument);
             await saveAccounts(accountDocument, loanAccountDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
-            expect(res).toBeNoContentResponse();
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
+            transactionApiExpect(res).toBeNoContentResponse();
+            transactionApiExpect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
           });
 
           test('between two loan accounts', async ({ requestUpdateToTransferTransaction, saveAccounts, saveTransaction, getTransactionById }) => {
@@ -108,8 +105,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
             await saveTransaction(originalDocument);
             await saveAccounts(accountDocument, transferAccountDocument);
             const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
-            expect(res).toBeNoContentResponse();
-            expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
+            transactionApiExpect(res).toBeNoContentResponse();
+            transactionApiExpect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
           });
 
           test.describe('without optional properties', () => {
@@ -122,8 +119,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               await saveAccount(accountDocument);
               await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeNoContentResponse();
-              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
+              transactionApiExpect(res).toBeNoContentResponse();
+              transactionApiExpect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
 
             test('transferAmount', async ({ requestUpdateToTransferTransaction, saveAccount, saveTransaction, getTransactionById }) => {
@@ -135,8 +132,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               await saveAccount(accountDocument);
               await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), request);
-              expect(res).toBeNoContentResponse();
-              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
+              transactionApiExpect(res).toBeNoContentResponse();
+              transactionApiExpect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(originalDocument)));
             });
           });
 
@@ -162,8 +159,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               await saveAccount(accountDocument);
               await saveAccount(transferAccountDocument);
               const res = await requestUpdateToTransferTransaction(getTransactionId(transferDocument), request);
-              expect(res).toBeNoContentResponse();
-              expect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(transferDocument)));
+              transactionApiExpect(res).toBeNoContentResponse();
+              transactionApiExpect(request).toHaveBeenSavedAsTransferTransactionDocument(await getTransactionById(getTransactionId(transferDocument)));
             });
           });
         });
@@ -172,13 +169,13 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
           test.describe('if transactionId', () => {
             test('is not mongo id', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(transferTransactionDataFactory.id('not-valid'), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'transactionId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('pathParameters', 'transactionId');
             });
 
             test('does not belong to any transaction', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(transferTransactionDataFactory.id(), request);
-              expect(res).toBeNotFoundResponse();
+              transactionApiExpect(res).toBeNotFoundResponse();
             });
           });
 
@@ -187,8 +184,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 extra: 123, 
               } as any));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
             });
           });
 
@@ -197,16 +194,16 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 amount: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'amount');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'amount');
             });
 
             test('is not number', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 amount: <any>'1', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
             });
           });
 
@@ -215,16 +212,16 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 description: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
             test('is too short', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 description: '', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'description', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
 
@@ -233,24 +230,24 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 issuedAt: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'issuedAt');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'issuedAt');
             });
 
             test('is not string', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 issuedAt: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'issuedAt', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'issuedAt', 'string');
             });
 
             test('is not date-time format', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 issuedAt: 'not-date-time', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'issuedAt', 'date-time');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'issuedAt', 'date-time');
             });
           });
 
@@ -262,31 +259,31 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
                 ...relatedDocumentIds,
                 accountId: accountDataFactory.id(), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No account found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No account found');
             });
             test('is missing', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 accountId: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'accountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'accountId');
             });
 
             test('is not string', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 accountId: <any> 1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'accountId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'accountId', 'string');
             });
 
             test('is not mongo id format', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 accountId: accountDataFactory.id('not-mongo-id'), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'accountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'accountId');
             });
           });
 
@@ -296,8 +293,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
                 ...relatedDocumentIds,
                 transferAccountId: getAccountId(accountDocument), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Cannot transfer to same account');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('Cannot transfer to same account');
             });
 
             test('does not belong to any account', async ({ requestUpdateToTransferTransaction, saveAccount, saveTransaction }) => {
@@ -307,32 +304,32 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
                 ...relatedDocumentIds,
                 transferAccountId: accountDataFactory.id(), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No account found');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No account found');
             });
 
             test('is missing', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 transferAccountId: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'transferAccountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'transferAccountId');
             });
 
             test('is not string', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 transferAccountId: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'transferAccountId', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'transferAccountId', 'string');
             });
 
             test('is not mongo id format', async ({ requestUpdateToTransferTransaction }) => {
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 transferAccountId: accountDataFactory.id('not-mongo-id'), 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'transferAccountId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'transferAccountId');
             });
           });
 
@@ -341,8 +338,8 @@ test.describe('PUT transaction/v1/transactions/{transactionId}/transfer (transfe
               const res = await requestUpdateToTransferTransaction(getTransactionId(originalDocument), transferTransactionDataFactory.request({
                 transferAmount: <any>'1', 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'transferAmount', 'number');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'transferAmount', 'number');
             });
           });
         });

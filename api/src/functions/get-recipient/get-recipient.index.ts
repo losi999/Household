@@ -6,7 +6,6 @@ import { apiRequestValidator } from '@household/api/dependencies/handlers/api-re
 import { recipientId as pathParameters } from '@household/shared/schemas/recipient';
 import { recipientService } from '@household/shared/dependencies/services/recipient-service';
 import { default as index } from '@household/api/handlers/index.handler';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const getRecipientService = getRecipientServiceFactory(recipientService, recipientDocumentConverter);
 
@@ -17,8 +16,5 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

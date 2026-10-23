@@ -1,8 +1,8 @@
 import { IIdentityService } from '@household/shared/services/identity-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 import { identityService } from '@household/shared/dependencies/services/identity-service';
 
-export const test = baseTest.extend<Pick<IIdentityService, 'deleteUser' | 'createUser' | 'listGroupsByUser' | 'getUser'>>({
+export const identityTest = test.extend<Pick<IIdentityService, 'deleteUser' | 'createUser' | 'listGroupsByUser' | 'getUser'>>({
   deleteUser: async ({ logServiceCall }, use) => {
     const deleteUser: IIdentityService['deleteUser'] = async (ctx) => {
       const result = await identityService.deleteUser(ctx);

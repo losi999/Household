@@ -5,7 +5,7 @@ import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Documents } from '@household/shared/types/documents';
 import { Responses } from '@household/shared/types/responses';
-import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
 import { Comparer } from '@household/test/comparer';
 import { APIResponse } from '@playwright/test';
 
@@ -16,7 +16,7 @@ type FileApiFixture = {
   requestDeleteFile(fileId: Api.File.Id): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<FileApiFixture>({
+export const fileApiTest = apiTest.extend<FileApiFixture>({
   requestCreateUploadUrl: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -67,7 +67,7 @@ export const test = baseTest.extend<FileApiFixture>({
   },
 });
 
-export const expect = baseExpect.extend({
+export const fileApiExpect = apiExpect.extend({
   async toHaveBeenSavedAsFileDocument(req: Requests.File, document: Documents.File) {
     if (!document) {
       return {

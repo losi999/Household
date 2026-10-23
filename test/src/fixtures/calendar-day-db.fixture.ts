@@ -1,8 +1,8 @@
 import { calendarDayService } from '@household/shared/dependencies/services/calendar-day-service';
 import { ICalendarDayService } from '@household/shared/services/calendar-day-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 
-export const test = baseTest.extend<Pick<ICalendarDayService, 'saveCalendarDay' | 'findCalendarDayByDay' | 'clearCalendarDay'>>({
+export const calendarDayDbTest = test.extend<Pick<ICalendarDayService, 'saveCalendarDay' | 'findCalendarDayByDay' | 'clearCalendarDay'>>({
   saveCalendarDay: async ({ logServiceCall }, use) => {
     const saveCalendarDay: ICalendarDayService['saveCalendarDay'] = async (calendarDay) => {
       const result = await calendarDayService.saveCalendarDay(calendarDay);

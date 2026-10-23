@@ -4,12 +4,12 @@
   "main": "index.js",
   "type": "module",
   "devDependencies": {
-    "@playwright/test": "1.59.1",
+    "@playwright/test": "1.64.1",
     "@types/node": "25.5.0"
   },
   "scripts": {
-    "start": "playwright test --ui",
-    "test": "playwright test --help",
+    "start": "playwright test --ui --trace on",
+    "test": "playwright install",
     "test:account": "playwright test src/api/account",
     "test:category": "playwright test src/api/category",
     "test:project": "playwright test src/api/project",
@@ -22,10 +22,9 @@
     "test:customer": "playwright test src/api/customer",
     "test:calendar": "playwright test src/api/calendar",
     "test:transaction-common": "playwright test src/api/transaction/common",
-    "test:transaction-deferred": "playwright test src/api/transaction/deferred",
+    "test:transaction-loan": "playwright test src/api/transaction/loan",
     "test:transaction-payment": "playwright test src/api/transaction/payment",
     "test:transaction-split": "playwright test src/api/transaction/split",
-    "test:transaction-reimbursement": "playwright test src/api/transaction/reimbursement",
     "test:transaction-transfer": "playwright test src/api/transaction/transfer",
     "test:transaction-draft": "playwright test src/api/transaction/draft"
   }

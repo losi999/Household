@@ -1,11 +1,11 @@
 import { entries, getRecipientId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test as recipientApiTest, expect as recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { recipientApiTest, recipientApiExpect } from '@household/test/fixtures/recipient-api.fixture';
+import { apiExpect } from '@household/test/fixtures/api.fixture';
 import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
-import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
 import { mergeTests } from '@playwright/test';
 
 const permissionMap = allowUsers('editor');

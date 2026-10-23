@@ -1,11 +1,51 @@
-import { matchAnyProperty, populateAggregate, transactionAggregate } from '@household/shared/common/aggregate-helpers';
-import { populate } from '@household/shared/common/utils';
-import { TransactionType } from '@household/shared/enums';
+import { populateAggregate, productAggregate } from '@household/shared/common/aggregate-helpers';
+import { populate } from '@household/shared/common/mongoose-utils';
+import { AccountType, TransactionType } from '@household/shared/enums';
 import { IMongodbService } from '@household/shared/services/mongodb-service';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
-import { PipelineStage, Types } from 'mongoose';
+import { PipelineStage, PopulateOptions, Types } from 'mongoose';
 import { Documents } from '@household/shared/types/documents';
+
+const populateTransaction: PopulateOptions[] = populate('project',
+  'recipient',
+  'account',
+  'transferAccount',
+  'payingAccount',
+  'ownerAccount',
+  {
+    path: 'category',
+    populate: populate('ancestors'),
+  },
+  {
+    path: 'product',
+    populate: populate('genericProduct', 'specificProduct'),
+  },
+  {
+    path: 'splits',
+    populate: populate('project',
+      {
+        path: 'category',
+        populate: populate('ancestors'),
+      }, 
+      {
+        path: 'product',
+        populate: populate('genericProduct', 'specificProduct'),
+      }),
+  },
+  {
+    path: 'loans',
+    populate: populate('payingAccount', 'ownerAccount', 'project', 
+      {
+        path: 'category',
+        populate: populate('ancestors'),
+      }, 
+      {
+        path: 'product',
+        populate: populate('genericProduct', 'specificProduct'),
+      }),
+  },
+);
 
 export interface ITransactionService {
   saveTransaction(doc: Documents.Transaction): Promise<Documents.Transaction>;
@@ -52,23 +92,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         return mongodbService.transactions(async (model, session) => {
           return await model.findById(transactionId)
             .setOptions({
-              populate: populate('project',
-                'recipient',
-                'account',
-                'transferAccount',
-                'payingAccount',
-                'ownerAccount',
-                'category',
-                'category.ancestors',
-                'product',
-                'splits.category',
-                'splits.project',
-                'splits.product',
-                'deferredSplits.payingAccount',
-                'deferredSplits.ownerAccount',
-                'deferredSplits.category',
-                'deferredSplits.project',
-                'deferredSplits.product'),
+              populate: populateTransaction,
               lean: true,
               session,
             }) as T;
@@ -80,27 +104,39 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
         return undefined;
       }
 
-      const [transaction] = await mongodbService.transactions(async (model, session) => {
-        return model.aggregate<Documents.Transaction>(
-          [
+      return mongodbService.transactions((model, session) => {
+        return model.findOne({
+          $and: [
             {
-              $match: {
-                _id: new Types.ObjectId(transactionId),
-              },
+              _id: transactionId,
             },
-            matchAnyProperty(new Types.ObjectId(accountId), [
-              'account',
-              'transferAccount',
-              'payingAccount',
-              'ownerAccount',
-              'deferredSplits.ownerAccount',
-            ]),
-            ...transactionAggregate,
+            {
+              $or: [
+                {
+                  account: accountId,
+                },
+                {
+                  transferAccount: accountId,
+                },
+                {
+                  payingAccount: accountId,
+                },
+
+                {
+                  ownerAccount: accountId,
+                },
+                {
+                  'loans.ownerAccount': accountId,
+                },
+              ],
+            },
           ],
-        ).session(session);
+        }, {}, {
+          session,
+          lean: true,
+          populate: populateTransaction,
+        });
       });
-      
-      return transaction;
     },
     deleteTransaction: (transactionId) => {
       return mongodbService.inTransaction(async (models, session) => {
@@ -218,7 +254,7 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
               },
             ]),
             ...populateAggregate('project', 'projects'),
-            ...populateAggregate('product', 'products'),
+            ...populateAggregate('product', 'products', productAggregate),
             ...populateAggregate('recipient', 'recipients'),
             {
               $sort: {
@@ -231,36 +267,49 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
 
       });
     },
-    listTransactionsByAccountId: ({ accountId, pageSize, pageNumber }) => {
-      return mongodbService.transactions(async (model, session) => {
-        return model.aggregate([
-          matchAnyProperty(new Types.ObjectId(accountId), [
-            'account',
-            'transferAccount',
-            'payingAccount',
-            'ownerAccount',
-            'deferredSplits.ownerAccount',
-          ]),
-          {
-            $sort: {
-              issuedAt: -1,
-            },
-          },
-          {
-            $skip: (pageNumber - 1) * pageSize,
-          },
-          {
-            $limit: pageSize,
-          },
-          ...transactionAggregate,
-        ], {
+    listTransactionsByAccountId: async ({ accountId, pageSize, pageNumber }) => {
+      const account = await mongodbService.accounts((model, session) => {
+        return model.findById(accountId, {}, {
           session,
+        });
+      });
+
+      return mongodbService.transactions((model, session) => {
+        return model.find({
+          $or: [
+            {
+              account: accountId,
+            },
+            {
+              transferAccount: accountId,
+            },
+            {
+              payingAccount: accountId,
+            },
+            ...(account.accountType === AccountType.Loan ? [
+              {
+                ownerAccount: accountId,
+              },
+              {
+                'loans.ownerAccount': accountId,
+              },
+            ] : []),
+          ],
+        }, {}, {
+          session,
+          lean: true,
+          sort: {
+            issuedAt: -1,
+          },
+          skip: (pageNumber - 1) * pageSize,
+          limit: pageSize,
+          populate: populateTransaction,
         });
       });
     },
     listDraftTransactionsByFileId: (fileId) => {
       return mongodbService.transactions(async (model, session) => {
-        return model.aggregate()
+        const transactions = await model.aggregate<Documents.DraftTransaction>()
           .match({
             file: new Types.ObjectId(fileId),
           })
@@ -308,15 +357,28 @@ export const transactionServiceFactory = (mongodbService: IMongodbService): ITra
                   },
                 },
               },
-              ...transactionAggregate,
             ],
             as: 'potentialDuplicates',
+          })
+          .addFields({
+            potentialDuplicates: {
+              $map: {
+                input: '$potentialDuplicates',
+                as: 'duplicate',
+                in: '$$duplicate._id',
+              },
+            },
           })
           .sort({
             issuedAt: -1,
           })
           .session(session);
-          
+
+        return model.populate<Documents.DraftTransaction>(transactions, {
+          path: 'potentialDuplicates',
+          model: model,
+          populate: populateTransaction,
+        });
       });
     },
   };

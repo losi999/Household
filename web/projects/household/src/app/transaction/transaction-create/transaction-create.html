@@ -1,0 +1,292 @@
+<household-toolbar title="Új tranzakció"> </household-toolbar>
+<mat-stepper orientation="horizontal" linear>
+  <ng-template matStepperIcon="number" let-index="index">
+    <mat-icon>{{ stepIcon[index] }}</mat-icon>
+  </ng-template>
+
+  <ng-template matStepperIcon="edit" let-index="index">
+    <mat-icon>{{ stepIcon[index] }}</mat-icon>
+  </ng-template>
+
+  <ng-template matStepperIcon="done" let-index="index">
+    <mat-icon>{{ stepIcon[index] }}</mat-icon>
+  </ng-template>
+
+  <ng-template matStepperIcon="error" let-index="index">
+    <mat-icon>{{ stepIcon[index] }}</mat-icon>
+  </ng-template>
+
+  <mat-step [completed]="issuedAtForm().valid()">
+    <mat-form-field>
+      <mat-label>Dátum</mat-label>
+      <input matInput [matDatepicker]="date" [formField]="issuedAtForm.date" />
+      <mat-datepicker-toggle matPrefix [for]="date" tabindex="-1" />
+      <mat-datepicker #date />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Idő</mat-label>
+      <input matInput [matTimepicker]="time" [formField]="issuedAtForm.time" />
+      <mat-timepicker-toggle matIconSuffix [for]="time" />
+      <mat-timepicker #time />
+    </mat-form-field>
+    <div>
+      <button matButton matStepperNext>Tovább</button>
+    </div>
+  </mat-step>
+  <mat-step [completed]="accountsForm().valid()">
+    <div class="accounts">
+      @if (accountsForm().value().account) {
+        <div class="selected">
+          <div class="label">Fizető számla</div>
+          <shared-icon-text
+            [text]="accountsForm().value().account?.name"
+            [icon]="accountsForm().value().account | accountTypeIcon"
+          />
+          <button
+            matIconButton
+            data-testId="select-account-button"
+            (click)="onSelectAccount('account')"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+      }
+      @if (!accountsForm().value().transferAccount && !accountsForm().value().loanAccount) {
+        <button
+          matButton="tonal"
+          data-testId="add-transfer-account-button"
+          (click)="onSelectAccount('transferAccount')"
+        >
+          <mat-icon>account_balance</mat-icon>Átvitel számla kiválasztása
+        </button>
+        <button
+          matButton="tonal"
+          data-testId="add-loan-account-button"
+          (click)="onSelectAccount('loanAccount')"
+        >
+          <mat-icon>request_quote</mat-icon>Kölcsön számla kiválasztása
+        </button>
+      } @else {
+        <button matIconButton class="switch-accounts" (click)="onSwitchAccounts()">
+          <mat-icon>sync</mat-icon>
+        </button>
+        @if (accountsForm().value().transferAccount) {
+          <div class="selected">
+            <div class="label">Átvitel számla</div>
+            <shared-icon-text
+              [text]="accountsForm().value().transferAccount?.name"
+              [icon]="accountsForm().value().transferAccount | accountTypeIcon"
+            />
+            <button matIconButton [matMenuTriggerFor]="subMenu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #subMenu="matMenu" yPosition="above" xPosition="before">
+              <button
+                mat-menu-item
+                data-testId="edit-parent-button"
+                (click)="onSelectAccount('transferAccount')"
+              >
+                <mat-icon>edit</mat-icon>Módosítás
+              </button>
+              <button
+                mat-menu-item
+                data-testId="remove-parent-button"
+                (click)="onRemoveAccount('transferAccount')"
+              >
+                <mat-icon>close</mat-icon>Eltávolítás
+              </button>
+            </mat-menu>
+          </div>
+        } @else {
+          <div class="selected">
+            <div class="label">Kölcsön számla</div>
+            <shared-icon-text
+              [text]="accountsForm().value().loanAccount?.name"
+              [icon]="accountsForm().value().loanAccount | accountTypeIcon"
+            />
+            <button matIconButton [matMenuTriggerFor]="loanMenu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #loanMenu="matMenu" yPosition="above" xPosition="before">
+              <button
+                mat-menu-item
+                data-testId="edit-parent-button"
+                (click)="onSelectAccount('loanAccount')"
+              >
+                <mat-icon>edit</mat-icon>Módosítás
+              </button>
+              <button
+                mat-menu-item
+                data-testId="remove-parent-button"
+                (click)="onRemoveAccount('loanAccount')"
+              >
+                <mat-icon>close</mat-icon>Eltávolítás
+              </button>
+            </mat-menu>
+          </div>
+        }
+      }
+    </div>
+    <button matButton matStepperPrevious>Vissza</button>
+    <button matButton matStepperNext>Tovább</button>
+  </mat-step>
+  <mat-step [completed]="amountForm().valid()">
+    @if (isTransferTransaction()) {
+      <div class="transfer">
+        <div class="amount">
+          <shared-icon-text
+            [text]="accountsForm().value().account?.name"
+            [icon]="accountsForm().value().account | accountTypeIcon"
+          />
+          <shared-amount-input
+            [currency]="accountsForm().value().account.currency"
+            [formField]="amountForm.amount"
+            [isPositive]="!isDownwardTransaction()"
+            [signDisabled]="true"
+          />
+        </div>
+        <button matIconButton class="direction" (click)="onSwitchTransferDirection()">
+          <mat-icon>{{ isDownwardTransaction() ? 'stat_minus_3' : 'stat_3' }}</mat-icon>
+        </button>
+
+        <div class="amount">
+          <shared-icon-text
+            [text]="accountsForm().value().transferAccount?.name"
+            [icon]="accountsForm().value().transferAccount | accountTypeIcon"
+          />
+          @if (isDifferentCurrencyTransfer()) {
+            <shared-amount-input
+              [currency]="accountsForm().value().transferAccount.currency"
+              [formField]="amountForm.transferAmount"
+              [isPositive]="isDownwardTransaction()"
+              [signDisabled]="true"
+            />
+          } @else {
+            <shared-icon-text
+              [icon]="isDownwardTransaction() ? 'add' : 'remove'"
+              [text]="
+                `${(amountForm().value().amount | number: '1.0-2' : 'hu')} ${accountsForm().value().account.currency}`
+              "
+            />
+          }
+        </div>
+      </div>
+    } @else {
+      <shared-amount-input
+        [currency]="accountsForm().value().account?.currency"
+        [formField]="amountForm.amount"
+        [isPositive]="false"
+      />
+    }
+
+    <button matButton matStepperPrevious>Vissza</button>
+    <button matButton matStepperNext (click)="onAmountNext()">Tovább</button>
+  </mat-step>
+  <mat-step>
+    <div class="details">
+      <shared-clearable-input label="Megjegyzés" [formField]="detailsForm.description" />
+      @if (detailsForm().value().recipient) {
+        <div class="selected">
+          <div class="label">Partner</div>
+          <shared-icon-text [text]="detailsForm().value().recipient?.name" icon="store" />
+          <button matIconButton [matMenuTriggerFor]="subMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #subMenu="matMenu" yPosition="above" xPosition="before">
+            <button mat-menu-item data-testId="edit-recipient-button" (click)="onSelectRecipient()">
+              <mat-icon>edit</mat-icon>Módosítás
+            </button>
+            <button
+              mat-menu-item
+              data-testId="remove-recipient-button"
+              (click)="onRemoveRecipient()"
+            >
+              <mat-icon>close</mat-icon>Eltávolítás
+            </button>
+          </mat-menu>
+        </div>
+      } @else {
+        <button matButton="tonal" data-testId="add-recipient-button" (click)="onSelectRecipient()">
+          <mat-icon>store</mat-icon>Partner kiválasztása
+        </button>
+      }
+      @if (detailsForm().value().project) {
+        <div class="selected">
+          <div class="label">Projekt</div>
+          <shared-icon-text [text]="detailsForm().value().project?.name" icon="stacks" />
+          <button matIconButton [matMenuTriggerFor]="subMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #subMenu="matMenu" yPosition="above" xPosition="before">
+            <button mat-menu-item data-testId="edit-project-button" (click)="onSelectProject()">
+              <mat-icon>edit</mat-icon>Módosítás
+            </button>
+            <button mat-menu-item data-testId="remove-project-button" (click)="onRemoveProject()">
+              <mat-icon>close</mat-icon>Eltávolítás
+            </button>
+          </mat-menu>
+        </div>
+      } @else {
+        <button matButton="tonal" data-testId="add-project-button" (click)="onSelectProject()">
+          <mat-icon>stacks</mat-icon>Projekt kiválasztása
+        </button>
+      }
+
+      @if (detailsForm().value().category) {
+        <div class="selected">
+          <div class="label">Kategória</div>
+          <shared-icon-text [text]="detailsForm().value().category?.fullName" icon="category" />
+          <button matIconButton [matMenuTriggerFor]="subMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #subMenu="matMenu" yPosition="above" xPosition="before">
+            <button mat-menu-item data-testId="edit-category-button" (click)="onSelectCategory()">
+              <mat-icon>edit</mat-icon>Módosítás
+            </button>
+            <button mat-menu-item data-testId="remove-category-button" (click)="onRemoveCategory()">
+              <mat-icon>close</mat-icon>Eltávolítás
+            </button>
+          </mat-menu>
+        </div>
+      } @else {
+        <button matButton="tonal" data-testId="add-category-button" (click)="onSelectCategory()">
+          <mat-icon>category</mat-icon>Kategória kiválasztása
+        </button>
+      }
+
+      @if (detailsForm().value().product) {
+        <div class="selected">
+          <div class="label">Termék</div>
+          <shared-icon-text [text]="detailsForm().value().product?.fullName" icon="barcode" />
+          <button matIconButton [matMenuTriggerFor]="subMenu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #subMenu="matMenu" yPosition="above" xPosition="before">
+            <button mat-menu-item data-testId="edit-product-button" (click)="onSelectProduct()">
+              <mat-icon>edit</mat-icon>Módosítás
+            </button>
+            <button mat-menu-item data-testId="remove-product-button" (click)="onRemoveProduct()">
+              <mat-icon>close</mat-icon>Eltávolítás
+            </button>
+          </mat-menu>
+        </div>
+      } @else {
+        <button matButton="tonal" data-testId="add-product-button" (click)="onSelectProduct()">
+          <mat-icon>barcode</mat-icon>Termék kiválasztása
+        </button>
+      }
+    </div>
+    <button matButton matStepperPrevious>Vissza</button>
+    <button matButton matStepperNext>Tovább</button>
+  </mat-step>
+  <mat-step>
+    <pre>{{ issuedAtForm().value() | json }}</pre>
+    <pre>{{ accountsForm().value() | json }}</pre>
+    <pre>{{ amountForm().value() | json }}</pre>
+    <pre>{{ detailsForm().value() | json }}</pre>
+  </mat-step>
+</mat-stepper>
+<pre>
+  {{ detailsForm().value() | json }}
+  {{ detailsForm().valid() }}
+</pre>

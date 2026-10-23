@@ -2,10 +2,10 @@
   <mat-icon>menu</mat-icon>
 </button>
 <mat-menu #main="matMenu">
-  <button mat-menu-item [routerLink]="['/']">Naptár</button>
-  <button mat-menu-item [routerLink]="['/', 'customers']">Vendégek</button>
-  <button mat-menu-item [routerLink]="['/', 'prices']">Árlista</button>
-  <button mat-menu-item [routerLink]="['/', 'income']">Bevétel</button>
+  <a mat-menu-item [routerLink]="['/']">Naptár</a>
+  <a mat-menu-item [routerLink]="['/', 'customers']">Vendégek</a>
+  <a mat-menu-item [routerLink]="['/', 'prices']">Árlista</a>
+  <a mat-menu-item [routerLink]="['/', 'income']">Bevétel</a>
   <mat-divider />
   <button mat-menu-item (click)="logOut()">Kijelentkezés</button>
 </mat-menu>

@@ -1,0 +1,4 @@
+<button mat-list-item (click)="onShowMenu()" [disabled]="isDisabled()">
+  <mat-icon matListItemIcon>{{category() | categoryTypeIcon}}</mat-icon>
+  <div matListItemTitle>{{category().fullName}}</div>
+</button>
