@@ -4,7 +4,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
-import { form, required, FormField, validate } from '@angular/forms/signals';
+import { form, required, FormField, validate, min } from '@angular/forms/signals';
 import { DecimalPipe, JsonPipe } from '@angular/common';
 import { MatTimepickerModule } from '@angular/material/timepicker';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,7 +18,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { injectDispatch } from '@ngrx/signals/events';
 import { accountEvents } from '@household/state/account/account-events';
 import { MatMenuModule } from '@angular/material/menu';
-import { AccountType } from '@household/shared/enums';
+import { AccountType, CategoryType } from '@household/shared/enums';
 import { recipientEvents } from '@household/state/recipient/recipient-events';
 import { categoryEvents } from '@household/state/category/category-events';
 import { productEvents } from '@household/state/product/product-events';
@@ -28,6 +28,7 @@ import { ProjectStore } from '@household/state/project/project-store';
 import { CategoryStore } from '@household/state/category/category-store';
 import { ProductStore } from '@household/state/product/product-store';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
+import { CategoryTypeIconPipe } from '@household/app/category/category-type-icon-pipe';
 
 type AccountsModel = {
   account: Responses.Account;
@@ -53,6 +54,7 @@ type AccountsModel = {
     AmountInput,
     DecimalPipe,
     ClearableInput,
+    CategoryTypeIconPipe,
   ],
   providers: [
     {
@@ -122,8 +124,8 @@ export class TransactionCreate {
   amountModel = signal<{
     amount: number;
     transferAmount: number;}>({
-    amount: 0,
-    transferAmount: 0,
+    amount: null,
+    transferAmount: null,
   });
 
   amountForm = form(this.amountModel, (schemaPath) => {
@@ -131,6 +133,7 @@ export class TransactionCreate {
       message: 'Kötelező',
     });
     required(schemaPath.transferAmount, {
+      when: () => this.isDifferentCurrencyTransfer(),
       message: 'Kötelező',
     });
     validate(schemaPath.amount, ({ value }) => {
@@ -155,15 +158,42 @@ export class TransactionCreate {
     recipient: Responses.Recipient;
     product: Responses.Product;
     project: Responses.Project;
+    quantity: number;
+    invoiceNumber: string;
+    billingStartDate: Date;
+    billingEndDate: Date;
   }>({
     category: null,
     description: null,
     product: null,
     project: null,
     recipient: null,
+    quantity: null,
+    invoiceNumber: null,
+    billingStartDate: null,
+    billingEndDate: null,
   });
 
-  detailsForm = form(this.detailsModel);
+  detailsForm = form(this.detailsModel, (schemaPath) => {
+    validate(schemaPath.quantity, ({ value }) => {
+      const quantity = value();
+
+      return quantity !== null && quantity <= 0 ? {
+        kind: 'positive',
+        message: 'Nullánál nagyobbnak kell lennie', 
+      } : null;
+    });
+
+    required(schemaPath.billingStartDate, {
+      // when: ({ valueOf }) => !!valueOf(schemaPath.invoiceNumber) || !!valueOf(schemaPath.billingEndDate),
+      message: 'Kötelező',
+    });
+
+    required(schemaPath.billingEndDate, {
+      // when: ({ valueOf }) => !!valueOf(schemaPath.invoiceNumber) || !!valueOf(schemaPath.billingStartDate),
+      message: 'Kötelező',
+    });
+  });
 
   isDownwardTransaction = signal(true);
   isTransferTransaction = computed(() => !!this.accountsForm().value().transferAccount);
@@ -237,10 +267,12 @@ export class TransactionCreate {
       const selected = this.productStore.selectedProduct();
 
       if (selected) {
+        const inventoryCategory = this.categoryStore.categoryList().find(c => c.categoryType === CategoryType.Inventory);
         this.detailsModel.update((prev) => {
           return {
             ...prev,
             product: selected,
+            category: inventoryCategory,
           };
         });
       }
@@ -339,6 +371,11 @@ export class TransactionCreate {
       return {
         ...prev,
         category: null,
+        product: null,
+        quantity: null,
+        invoiceNumber: null,
+        billingEndDate: null,
+        billingStartDate: null,
       };
     });
   }
@@ -366,8 +403,8 @@ export class TransactionCreate {
   }
 
   onAmountNext() {
-    Object.values(this.amountForm).forEach(field => {
-      field().markAsTouched();
-    });
+    // Object.values(this.amountForm).forEach(field => {
+    //   field().markAsTouched();
+    // });
   }
 }

@@ -15,7 +15,9 @@ describe('authenticatedGuard', () => {
   let mockDispatcher: Dispatcher;
   const requiredUserType: UserType = UserType.Hairdresser;
 
-  beforeEach(() => {
+  const setup = () => {
+    TestBed.resetTestingModule();
+
     TestBed.configureTestingModule({
       providers: [
         provideMockSignalStore(AuthStore, 'isLoggedIn', 'userTypes'),
@@ -25,6 +27,10 @@ describe('authenticatedGuard', () => {
 
     mockDispatcher = TestBed.inject(Dispatcher);
     mockAuthStore = TestBed.inject<MockSignalStore<typeof AuthStore>>(AuthStore);
+  };
+
+  beforeEach(() => {
+    setup();
   });
 
   it('should allow', () => {
@@ -36,6 +42,28 @@ describe('authenticatedGuard', () => {
         requiredUserType,
       },
     }, undefined, undefined);
+
+    expect(result).toBe(true);
+    validateFunctionCall(mockDispatcher.dispatch);
+  });
+
+  it('should allow if the route does not require a user type', () => {
+    mockAuthStore.isLoggedIn.set(true);
+    mockAuthStore.userTypes.set([]);
+
+    const result = executeGuard({
+      data: {},
+    }, undefined, undefined);
+
+    expect(result).toBe(true);
+    validateFunctionCall(mockDispatcher.dispatch);
+  });
+
+  it('should allow if the route has no data', () => {
+    mockAuthStore.isLoggedIn.set(true);
+    mockAuthStore.userTypes.set([]);
+
+    const result = executeGuard({}, undefined, undefined);
 
     expect(result).toBe(true);
     validateFunctionCall(mockDispatcher.dispatch);

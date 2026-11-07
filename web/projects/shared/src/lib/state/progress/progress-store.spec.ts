@@ -2,46 +2,32 @@ import { TestBed } from '@angular/core/testing';
 import { ProgressStore, progressEvents } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
 
+// The behavior of the reducer is covered in with-progress-reducer.spec.ts. This spec only verifies that the store
+// provides its initial state and has the reducer wired in.
 describe('Progress store', () => {
   let store: InstanceType<typeof ProgressStore>;
   let dispatcher: Dispatcher;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
+  const setup = () => {
+    TestBed.resetTestingModule();
 
     store = TestBed.inject(ProgressStore);
     dispatcher = TestBed.inject(Dispatcher);
+  };
+
+  beforeEach(() => {
+    setup();
   });
 
-  it('should initialize', () => {
+  it('should initialize with the default state', () => {
     expect(store.count()).toBe(0);
     expect(store.isInProgress()).toBe(false);
   });
 
-  describe('dispatching processStarted', () => {
-    it('should increase the count', () => {
-      dispatcher.dispatch(progressEvents.processStarted());
+  it('should have the reducer wired in', () => {
+    dispatcher.dispatch(progressEvents.processStarted());
 
-      expect(store.count()).toBe(1);
-      expect(store.isInProgress()).toBe(true);
-    });
-  });
-
-  describe('dispatching processFinished', () => {
-    it('should decrease the count', () => {
-      dispatcher.dispatch(progressEvents.processStarted());
-      dispatcher.dispatch(progressEvents.processStarted());
-      dispatcher.dispatch(progressEvents.processFinished());
-
-      expect(store.count()).toBe(1);
-      expect(store.isInProgress()).toBe(true);
-    });
-
-    it('should never deerease count below 0', () => {
-      dispatcher.dispatch(progressEvents.processFinished());
-
-      expect(store.count()).toBe(0);
-      expect(store.isInProgress()).toBe(false);
-    });
+    expect(store.count()).toBe(1);
+    expect(store.isInProgress()).toBe(true);
   });
 });

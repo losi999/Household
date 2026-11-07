@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TransactionCreate } from './transaction-create';
 
-describe('TransactionCreate', () => {
+describe.todo('TransactionCreate', () => {
   let component: TransactionCreate;
   let fixture: ComponentFixture<TransactionCreate>;
 

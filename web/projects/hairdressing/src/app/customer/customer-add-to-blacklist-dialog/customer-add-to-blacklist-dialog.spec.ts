@@ -1,84 +1,151 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { CustomerAddToBlacklistDialog, CustomerAddToBlacklistDialogData } from './customer-add-to-blacklist-dialog';
+import { MAT_DIALOG_DATA, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
+import { CustomerAutocompleteInput } from '@hairdressing/app/customer/customer-autocomplete-input/customer-autocomplete-input';
+import { createStubComponent, elementSelectorFactory, IElementSelector } from '@household/shared-ui';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 
-import { CustomerAddToBlacklistDialog } from './customer-add-to-blacklist-dialog';
+describe('CustomerAddToBlacklistDialog', () => {
+  const CustomerAutocompleteInputStub = createStubComponent(CustomerAutocompleteInput);
 
-describe.skip('CustomerAddToBlacklistDialog', () => {
-  let component: CustomerAddToBlacklistDialog;
   let fixture: ComponentFixture<CustomerAddToBlacklistDialog>;
+  let selector: IElementSelector;
+  let mockDialogRef: MockService<MatDialogRef<CustomerAddToBlacklistDialog>>;
 
-  beforeEach(async () => {
+  const blacklisted1 = testDataFactory.customer.response();
+  const blacklisted2 = testDataFactory.customer.response();
+  const customer = testDataFactory.customer.response({
+    blacklistedCustomers: [
+      blacklisted1,
+      blacklisted2,
+    ],
+  });
+
+  const getAutocomplete = () => {
+    return selector.getComponent<CustomerAutocompleteInput>(CustomerAutocompleteInputStub, MatDialogContent);
+  };
+
+  const getSaveButton = () => {
+    return selector.getElementByTestId<HTMLButtonElement>('submit-button', MatDialogActions);
+  };
+
+  const render = async (dialogData: CustomerAddToBlacklistDialogData = customer) => {
+    TestBed.resetTestingModule();
+
+    mockDialogRef = createMockService('close');
+
     await TestBed.configureTestingModule({
       imports: [CustomerAddToBlacklistDialog],
+      providers: [
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: dialogData,
+        },
+        {
+          provide: MatDialogRef,
+          useValue: mockDialogRef.service,
+        },
+      ],
     })
+      .overrideComponent(CustomerAddToBlacklistDialog, {
+        remove: {
+          imports: [CustomerAutocompleteInput],
+        },
+        add: {
+          imports: [CustomerAutocompleteInputStub],
+        },
+      })
       .compileComponents();
 
     fixture = TestBed.createComponent(CustomerAddToBlacklistDialog);
-    component = fixture.componentInstance;
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
     await fixture.whenStable();
+  };
+
+  describe('dialog title', () => {
+    it('should be rendered', async () => {
+      await render();
+
+      expect(selector.getComponent(MatDialogTitle).nativeElement.textContent).toBe('Hozzáadás tiltólistához');
+    });
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  describe('customer autocomplete input', () => {
+    it('should be rendered with the label', async () => {
+      await render();
+
+      expect(getAutocomplete().componentInstance.label()).toBe('Vendég');
+    });
+
+    it('should exclude the customer and the already blacklisted customers', async () => {
+      await render();
+
+      expect(getAutocomplete().componentInstance.exclude()).toEqual([
+        customer.customerId,
+        blacklisted1.customerId,
+        blacklisted2.customerId,
+      ]);
+    });
+
+    it('should exclude only the customer if the blacklist is empty', async () => {
+      const customerWithoutBlacklist = testDataFactory.customer.response();
+
+      await render(customerWithoutBlacklist);
+
+      expect(getAutocomplete().componentInstance.exclude()).toEqual([customerWithoutBlacklist.customerId]);
+    });
+
+    it('should be empty and required', async () => {
+      await render();
+
+      expect(getAutocomplete().componentInstance.value()).toBeNull();
+      expect(getAutocomplete().componentInstance.errors().map(error => error.message)).toEqual(['Kötelező']);
+    });
   });
 
-  // describe('dialog title', () => {
-  //   it('should be rendered', () => {
-  //     expect(selector.getComponent(MatDialogTitle)).toBeTruthy();
-  //   });
-  // });
+  describe('save button', () => {
+    it('should be rendered', async () => {
+      await render();
 
-  // describe('customer autocomplete input', () => {
-  //   it('should be rendered', () => {
-  //     const autocomplete = selector.getComponent(CustomerAutocompleteInputComponent);
+      expect(getSaveButton().nativeElement.textContent).toBe('Mentés');
+    });
 
-  //     expect(autocomplete.componentInstance.exclude).toEqual(dialogData.excludedCustomerIds);
-  //   });
+    it('should not close the dialog if no customer is selected', async () => {
+      await render();
 
-  //   it('should be empty', () => {
-  //     const autocomplete = selector.getComponent(CustomerAutocompleteInputComponent);
-      
-  //     expect(autocomplete.componentInstance.selected.value).toEqual(null);
-  //   });
+      getSaveButton().nativeElement.click();
 
-  //   it('should display error if submitted with nothing selected', () => {
-  //     const button = selector.getElementByTestId<HTMLButtonElement>('submit-button');
-      
-  //     button.nativeElement.click();
-      
-  //     fixture.detectChanges();
-      
-  //     const error = selector.getComponent(MatError, CustomerAutocompleteInputComponent);
-  //     expect(error.nativeElement.textContent).toEqual('Kötelező');
-  //   });
-  // });
+      await fixture.whenStable();
 
-  // describe('save button', () => {
-  //   it('should be rendered', () => {
-  //     const button = selector.getElementByTestId('submit-button');
-  //     expect(button).toBeTruthy();
-  //   });
+      validateFunctionCall(mockDialogRef.functions.close);
+    });
 
-  //   it('should close dialog with form values', () => {
-  //     const selectedCustomer = testDataFactory.customer.response();
+    it('should close the dialog with the customer and the selected one', async () => {
+      const selectedCustomer = testDataFactory.customer.response();
 
-  //     selector.getComponent(CustomerAutocompleteInputComponent).componentInstance.changed(selectedCustomer);
+      await render();
 
-  //     fixture.detectChanges();
-      
-  //     const button = selector.getElementByTestId<HTMLButtonElement>('submit-button');
-  //     button.nativeElement.click();
+      getAutocomplete().componentInstance.value.set(selectedCustomer);
 
-  //     expect(mockMatDialogRef.close).toHaveBeenCalledWith([
-  //       dialogData.customer,
-  //       selectedCustomer,
-  //     ]);
-  //   });
-  // });
+      await fixture.whenStable();
 
-  // describe('cancel button', () => {
-  //   it('should be rendered', () => {
-  //     const button = selector.getComponent(MatDialogClose);
-  //     expect(button).toBeTruthy();
-  //   });
-  // });
+      getSaveButton().nativeElement.click();
+
+      validateFunctionCall(mockDialogRef.functions.close, [
+        customer,
+        selectedCustomer,
+      ]);
+    });
+  });
+
+  describe('cancel button', () => {
+    it('should be rendered', async () => {
+      await render();
+
+      expect(selector.getComponent(MatDialogClose, MatDialogActions).nativeElement.textContent).toBe('Mégse');
+    });
+  });
 });

@@ -12,7 +12,9 @@ describe('progressInterceptor', () => {
   let httpMock: HttpTestingController;
   let mockDispatcher: Dispatcher;
 
-  beforeEach(() => {
+  const setup = () => {
+    TestBed.resetTestingModule();
+
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(
@@ -26,6 +28,10 @@ describe('progressInterceptor', () => {
     http = TestBed.inject(HttpClient);
     httpMock = TestBed.inject(HttpTestingController);
     mockDispatcher = TestBed.inject(Dispatcher);
+  };
+
+  beforeEach(() => {
+    setup();
   });
 
   it('should start progress on request', () => {
@@ -41,7 +47,7 @@ describe('progressInterceptor', () => {
     });
   });
 
-  it('should end progress on repsonse', () => {
+  it('should end progress on response', () => {
     http.get('http://testing').subscribe({
       next: () => { },
     });
@@ -55,6 +61,19 @@ describe('progressInterceptor', () => {
     validateNthFunctionCall(mockDispatcher.dispatch, 1, progressEvents.processStarted(), {
       scope: 'self',
     });
+    validateNthFunctionCall(mockDispatcher.dispatch, 2, progressEvents.processFinished(), {
+      scope: 'self',
+    });
+  });
+
+  it('should end progress if the request is cancelled', () => {
+    const subscription = http.get('http://testing').subscribe();
+
+    const req = httpMock.expectOne('http://testing');
+    subscription.unsubscribe();
+
+    expect(req.cancelled).toBe(true);
+    expect(mockDispatcher.dispatch).toHaveBeenCalledTimes(2);
     validateNthFunctionCall(mockDispatcher.dispatch, 2, progressEvents.processFinished(), {
       scope: 'self',
     });

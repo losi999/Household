@@ -82,7 +82,7 @@ describe('CategoryDialog', () => {
     await TestBed.configureTestingModule({
       imports: [CategoryDialog],
       providers: [
-        provideMockSignalStore(CategoryStore, 'pendingParentCategory', 'categoryList'),
+        provideMockSignalStore(CategoryStore, 'selectedCategory', 'categoryList'),
         provideMockDispatcher(),
         {
           provide: MAT_DIALOG_DATA,

@@ -182,7 +182,7 @@
     <button matButton matStepperPrevious>Vissza</button>
     <button matButton matStepperNext (click)="onAmountNext()">Tovább</button>
   </mat-step>
-  <mat-step>
+  <mat-step [completed]="detailsForm().valid()">
     <div class="details">
       <shared-clearable-input label="Megjegyzés" [formField]="detailsForm.description" />
       @if (detailsForm().value().recipient) {
@@ -235,7 +235,10 @@
       @if (detailsForm().value().category) {
         <div class="selected">
           <div class="label">Kategória</div>
-          <shared-icon-text [text]="detailsForm().value().category?.fullName" icon="category" />
+          <shared-icon-text
+            [text]="detailsForm().value().category?.fullName"
+            [icon]="detailsForm().value().category | categoryTypeIcon"
+          />
           <button matIconButton [matMenuTriggerFor]="subMenu">
             <mat-icon>more_vert</mat-icon>
           </button>
@@ -248,32 +251,68 @@
             </button>
           </mat-menu>
         </div>
+        @if (detailsForm().value().category.categoryType === 'invoice') {
+          <mat-form-field>
+            <mat-label>Számlázási időszak</mat-label>
+            <mat-date-range-input [rangePicker]="picker">
+              <input
+                matStartDate
+                [formField]="detailsForm.billingStartDate"
+                placeholder="Kezdete"
+                [readonly]="true"
+              />
+              <input
+                matEndDate
+                [formField]="detailsForm.billingEndDate"
+                placeholder="Vége"
+                [readonly]="true"
+              />
+            </mat-date-range-input>
+            <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
+            <mat-date-range-picker #picker />
+            <!-- @if (
+              detailsForm.billingEndDate().touched() || detailsForm.billingStartDate().touched()
+            ) {
+              @for (error of detailsForm) {}
+            } -->
+          </mat-form-field>
+          <shared-clearable-input label="Számlaszám" [formField]="detailsForm.invoiceNumber" />
+        }
       } @else {
         <button matButton="tonal" data-testId="add-category-button" (click)="onSelectCategory()">
           <mat-icon>category</mat-icon>Kategória kiválasztása
         </button>
       }
-
-      @if (detailsForm().value().product) {
-        <div class="selected">
-          <div class="label">Termék</div>
-          <shared-icon-text [text]="detailsForm().value().product?.fullName" icon="barcode" />
-          <button matIconButton [matMenuTriggerFor]="subMenu">
-            <mat-icon>more_vert</mat-icon>
+      @if (
+        !detailsForm().value().category ||
+        detailsForm().value().category.categoryType === 'inventory'
+      ) {
+        @if (detailsForm().value().product) {
+          <div class="selected">
+            <div class="label">Termék</div>
+            <shared-icon-text [text]="detailsForm().value().product?.fullName" icon="barcode" />
+            <button matIconButton [matMenuTriggerFor]="subMenu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #subMenu="matMenu" yPosition="above" xPosition="before">
+              <button mat-menu-item data-testId="edit-product-button" (click)="onSelectProduct()">
+                <mat-icon>edit</mat-icon>Módosítás
+              </button>
+              <button mat-menu-item data-testId="remove-product-button" (click)="onRemoveProduct()">
+                <mat-icon>close</mat-icon>Eltávolítás
+              </button>
+            </mat-menu>
+          </div>
+          <shared-clearable-input
+            label="Mennyiség"
+            type="number"
+            [formField]="detailsForm.quantity"
+          />
+        } @else {
+          <button matButton="tonal" data-testId="add-product-button" (click)="onSelectProduct()">
+            <mat-icon>barcode</mat-icon>Termék kiválasztása
           </button>
-          <mat-menu #subMenu="matMenu" yPosition="above" xPosition="before">
-            <button mat-menu-item data-testId="edit-product-button" (click)="onSelectProduct()">
-              <mat-icon>edit</mat-icon>Módosítás
-            </button>
-            <button mat-menu-item data-testId="remove-product-button" (click)="onRemoveProduct()">
-              <mat-icon>close</mat-icon>Eltávolítás
-            </button>
-          </mat-menu>
-        </div>
-      } @else {
-        <button matButton="tonal" data-testId="add-product-button" (click)="onSelectProduct()">
-          <mat-icon>barcode</mat-icon>Termék kiválasztása
-        </button>
+        }
       }
     </div>
     <button matButton matStepperPrevious>Vissza</button>

@@ -108,7 +108,7 @@ describe('ProductDialog', () => {
     await TestBed.configureTestingModule({
       imports: [ProductDialog],
       providers: [
-        provideMockSignalStore(ProductStore, 'productList', 'pendingParentProduct'),
+        provideMockSignalStore(ProductStore, 'productList', 'selectedProduct'),
         provideMockDispatcher(),
         {
           provide: MAT_DIALOG_DATA,
