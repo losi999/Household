@@ -2,7 +2,7 @@
 // Loading the store first resolves that cycle in the same order as the application does.
 import '@household/state/account/account-store';
 import { TestBed } from '@angular/core/testing';
-import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher } from '@household/shared-ui';
+import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher, selectionEvents } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore } from '@ngrx/signals';
 import { Mock } from 'vitest';
@@ -403,6 +403,7 @@ describe('withAccountEvents', () => {
   });
 
   describe('dispatching selectAccount', () => {
+    const selectionId = 'account';
     const accountResponse = testDataFactory.account.response();
     const selectableAccounts = [toSearchable(testDataFactory.account.response(), ['name'])];
 
@@ -411,7 +412,10 @@ describe('withAccountEvents', () => {
         afterClosed: () => of(accountResponse),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(accountEvents.selectAccount(selectableAccounts));
+      dispatcher.dispatch(accountEvents.selectAccount({
+        selectionId,
+        accounts: selectableAccounts,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, AccountSelectDialog, {
         disableClose: true,
@@ -419,7 +423,10 @@ describe('withAccountEvents', () => {
         height: '80vh',
         width: '90vw',
       });
-      validateDispatcher(dispatchSpy, accountEvents.accountSelected(accountResponse));
+      validateDispatcher(dispatchSpy, selectionEvents.itemSelected({
+        selectionId,
+        item: accountResponse,
+      }));
     });
 
     it('should open dialog and not dispatch anything if cancelled', () => {
@@ -427,7 +434,10 @@ describe('withAccountEvents', () => {
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(accountEvents.selectAccount(selectableAccounts));
+      dispatcher.dispatch(accountEvents.selectAccount({
+        selectionId,
+        accounts: selectableAccounts,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, AccountSelectDialog, {
         disableClose: true,
@@ -443,7 +453,10 @@ describe('withAccountEvents', () => {
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(accountEvents.selectAccount(undefined));
+      dispatcher.dispatch(accountEvents.selectAccount({
+        selectionId,
+        accounts: undefined,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, AccountSelectDialog, {
         disableClose: true,

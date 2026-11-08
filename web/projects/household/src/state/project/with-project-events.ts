@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ProjectDialog, ProjectDialogData, ProjectDialogResult } from '@household/app/project/project-dialog/project-dialog';
 import { projectApiEvents, projectEvents } from '@household/state/project/project-events';
-import { DialogService, BottomSheetService, dispatchIfConfirmed } from '@household/shared-ui';
+import { DialogService, BottomSheetService, dispatchIfConfirmed, selectionEvents } from '@household/shared-ui';
 import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
 import { exhaustMap, filter, map } from 'rxjs';
@@ -96,17 +96,22 @@ export const withProjectEvents = () => {
           ),
         openProjectSelectDialog: events.on(projectEvents.selectProject)
           .pipe(
-            exhaustMap(({ payload }) => {
+            exhaustMap(({ payload: { selectionId, projects } }) => {
               return dialog.open<ProjectSelectDialog, ProjectSelectDialogData, ProjectSelectDialogResult>(ProjectSelectDialog, {
                 disableClose: true,
-                data: payload,
+                data: projects,
                 width: '90vw',
                 height: '80vh',
-              }).afterClosed();
-            }),
-            filter(res => !!res),
-            map((response) => {
-              return projectEvents.projectSelected(response);
+              }).afterClosed()
+                .pipe(
+                  filter(res => !!res),
+                  map((project) => {
+                    return selectionEvents.itemSelected({
+                      selectionId,
+                      item: project,
+                    });
+                  }),
+                );
             }),
           ),
       };

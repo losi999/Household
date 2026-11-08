@@ -1,12 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore, withState } from '@ngrx/signals';
-import { categoryApiEvents, categoryEvents } from '@household/state/category/category-events';
+import { categoryApiEvents } from '@household/state/category/category-events';
 import { CategoryState } from '@household/state/category/category-store';
 import { withCategoryReducer } from '@household/state/category/with-category-reducer';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { CATEGORY_FULL_NAME_SEPARATOR } from '@household/shared/constants';
-import { toSearchable } from '@household/shared/common/utils';
 
 const createTestStore = (state: CategoryState) => {
   return signalStore({
@@ -22,7 +21,6 @@ describe('withCategoryReducer', () => {
   const validateState = (currentValue?: Partial<CategoryState>) => {
     expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
     expect(store.categoryList(), 'categoryList').toEqual(Object.hasOwn(currentValue ?? {}, 'categoryList') ? currentValue.categoryList : initialState.categoryList);
-    expect(store.selectedCategory(), 'selectedCategory').toEqual(Object.hasOwn(currentValue ?? {}, 'selectedCategory') ? currentValue.selectedCategory : initialState.selectedCategory);
   };
 
   const setup = (initial?: Partial<CategoryState>) => {
@@ -31,7 +29,6 @@ describe('withCategoryReducer', () => {
     initialState = {
       isInProgress: [],
       categoryList: [],
-      selectedCategory: undefined,
       ...initial,
     };
 
@@ -41,64 +38,6 @@ describe('withCategoryReducer', () => {
 
   beforeEach(() => {
     setup();
-  });
-
-  describe('createCategory', () => {
-    it('should clear the selected category', () => {
-      setup({
-        selectedCategory: testDataFactory.category.response(),
-      });
-
-      dispatcher.dispatch(categoryEvents.createCategory());
-
-      validateState({
-        selectedCategory: undefined,
-      });
-    });
-  });
-
-  describe('updateCategory', () => {
-    it('should clear the selected category', () => {
-      setup({
-        selectedCategory: testDataFactory.category.response(),
-      });
-
-      dispatcher.dispatch(categoryEvents.updateCategory(testDataFactory.category.response()));
-
-      validateState({
-        selectedCategory: undefined,
-      });
-    });
-  });
-
-  describe('selectCategory', () => {
-    it('should clear the selected category', () => {
-      setup({
-        selectedCategory: testDataFactory.category.response(),
-      });
-
-      dispatcher.dispatch(categoryEvents.selectCategory([
-        toSearchable(testDataFactory.category.response(), ['fullName'],
-          CATEGORY_FULL_NAME_SEPARATOR,
-        ),
-      ]));
-
-      validateState({
-        selectedCategory: undefined,
-      });
-    });
-  });
-
-  describe('categorySelected', () => {
-    it('should store the selected category', () => {
-      const categoryResponse = testDataFactory.category.response();
-
-      dispatcher.dispatch(categoryEvents.categorySelected(categoryResponse));
-
-      validateState({
-        selectedCategory: categoryResponse,
-      });
-    });
   });
 
   describe('listCategoriesCompleted', () => {

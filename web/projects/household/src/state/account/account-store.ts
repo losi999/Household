@@ -12,13 +12,11 @@ const ACCOUNT_STORE_INITIAL_STATE = new InjectionToken<AccountState>('ACCOUNT_ST
 export type AccountState = {
   accountList: Searchable<Responses.Account>[];
   isInProgress: Api.Account.Id[];
-  selectedAccount: Responses.Account;
 };
 
 export const provideAccountStoreInitialState = (state: AccountState = {
   accountList: [],
   isInProgress: [],
-  selectedAccount: undefined,
 }): ValueProvider => {
   return {
     provide: ACCOUNT_STORE_INITIAL_STATE,

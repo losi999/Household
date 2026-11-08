@@ -14,8 +14,10 @@ export const recipientEvents = eventGroup({
     deleteRecipient: type<Responses.Recipient>(),
     mergeRecipients: type<Responses.Recipient>(),
     openRecipientListItemSubmenu: type<Responses.Recipient>(),
-    selectRecipient: type<Searchable<Responses.Recipient>[] | undefined>(),
-    recipientSelected: type<Responses.Recipient>(),
+    selectRecipient: type<{
+      selectionId: string;
+      recipients: Searchable<Responses.Recipient>[] | undefined;
+    }>(),
   },
 });
 

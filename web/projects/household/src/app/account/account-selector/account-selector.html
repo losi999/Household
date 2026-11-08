@@ -1,0 +1,30 @@
+@if (progressStore.isInProgress()) {
+  Loading
+  <!-- TODO Loading placeholder-->
+} @else if (value()) {
+  <div class="selected">
+    <div class="label">{{ label() }}</div>
+    <shared-icon-text [text]="value()?.name" [icon]="value() | accountTypeIcon" />
+    @if (required()) {
+      <button matIconButton data-testId="select-button" (click)="onSelectAccount()">
+        <mat-icon>edit</mat-icon>
+      </button>
+    } @else {
+      <button matIconButton [matMenuTriggerFor]="subMenu">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #subMenu="matMenu" yPosition="above" xPosition="before">
+        <button mat-menu-item data-testId="edit-button" (click)="onSelectAccount()">
+          <mat-icon>edit</mat-icon>Módosítás
+        </button>
+        <button mat-menu-item data-testId="remove-button" (click)="onRemoveAccount()">
+          <mat-icon>close</mat-icon>Eltávolítás
+        </button>
+      </mat-menu>
+    }
+  </div>
+} @else {
+  <button matButton="tonal" data-testId="add-button" (click)="onSelectAccount()">
+    <mat-icon>account_balance</mat-icon>{{ label() }} kiválasztása
+  </button>
+}

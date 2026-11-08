@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ProjectService } from '@household/services/project-service';
 import { ProjectState, ProjectStore, provideProjectStoreInitialState } from '@household/state/project/project-store';
-import { BottomSheetService, DialogService } from '@household/shared-ui';
+import { BottomSheetService, DialogService, SelectionStore } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
 import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { MatDialog } from '@angular/material/dialog';
@@ -17,6 +17,7 @@ describe('Project store', () => {
   let initialState: ProjectState;
   let store: InstanceType<typeof ProjectStore>;
   let dispatcher: Dispatcher;
+  let selectionStore: InstanceType<typeof SelectionStore>;
   let mockProjectService: MockService<ProjectService>;
   let mockDialogService: MockService<DialogService>;
   let mockMatDialog: MockService<MatDialog>;
@@ -28,7 +29,6 @@ describe('Project store', () => {
     initialState = {
       isInProgress: [],
       projectList: [],
-      selectedProject: undefined,
       ...initial,
     };
 
@@ -61,6 +61,8 @@ describe('Project store', () => {
 
     store = TestBed.inject(ProjectStore);
     dispatcher = TestBed.inject(Dispatcher);
+    // The reducer of the selection store only sees the events once the store exists
+    selectionStore = TestBed.inject(SelectionStore);
   };
 
   it('should initialize with the provided state', () => {
@@ -71,17 +73,14 @@ describe('Project store', () => {
       },
     ];
     const isInProgress = [testDataFactory.project.id()];
-    const selectedProject = testDataFactory.project.response();
 
     setup({
       projectList,
       isInProgress,
-      selectedProject,
     });
 
     expect(store.projectList()).toEqual(projectList);
     expect(store.isInProgress()).toEqual(isInProgress);
-    expect(store.selectedProject()).toEqual(selectedProject);
   });
 
   it('should initialize with the default state', () => {
@@ -89,7 +88,6 @@ describe('Project store', () => {
 
     expect(store.projectList()).toEqual([]);
     expect(store.isInProgress()).toEqual([]);
-    expect(store.selectedProject()).toBeUndefined();
   });
 
   it('should have the project selection working with the dialog and the reducer', () => {
@@ -99,9 +97,14 @@ describe('Project store', () => {
       afterClosed: () => of(project),
     } as any);
 
-    dispatcher.dispatch(projectEvents.selectProject(undefined));
+    dispatcher.dispatch(projectEvents.selectProject({
+      selectionId: 'project',
+      projects: undefined,
+    }));
 
-    expect(store.selectedProject()).toEqual(project);
+    expect(selectionStore.selectedItems()).toEqual({
+      project,
+    });
   });
 
   it('should have the reducer wired in', () => {

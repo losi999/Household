@@ -2,7 +2,7 @@
 // first resolves that cycle in the same order as the application does.
 import '@household/state/category/category-store';
 import { TestBed } from '@angular/core/testing';
-import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher } from '@household/shared-ui';
+import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher, selectionEvents } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore } from '@ngrx/signals';
 import { Mock } from 'vitest';
@@ -266,6 +266,7 @@ describe('withCategoryEvents', () => {
   });
 
   describe('dispatching selectCategory', () => {
+    const selectionId = 'category';
     const categoryResponse = testDataFactory.category.response();
     const selectableCategories = [toSearchable(testDataFactory.category.response(), ['fullName'], CATEGORY_FULL_NAME_SEPARATOR)];
 
@@ -274,7 +275,10 @@ describe('withCategoryEvents', () => {
         afterClosed: () => of(categoryResponse),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(categoryEvents.selectCategory(selectableCategories));
+      dispatcher.dispatch(categoryEvents.selectCategory({
+        selectionId,
+        categories: selectableCategories,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, CategorySelectDialog, {
         disableClose: true,
@@ -282,7 +286,10 @@ describe('withCategoryEvents', () => {
         height: '80vh',
         width: '90vw',
       });
-      validateDispatcher(dispatchSpy, categoryEvents.categorySelected(categoryResponse));
+      validateDispatcher(dispatchSpy, selectionEvents.itemSelected({
+        selectionId,
+        item: categoryResponse,
+      }));
     });
 
     it('should open dialog and not dispatch anything if cancelled', () => {
@@ -290,7 +297,10 @@ describe('withCategoryEvents', () => {
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(categoryEvents.selectCategory(selectableCategories));
+      dispatcher.dispatch(categoryEvents.selectCategory({
+        selectionId,
+        categories: selectableCategories,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, CategorySelectDialog, {
         disableClose: true,
@@ -306,7 +316,10 @@ describe('withCategoryEvents', () => {
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(categoryEvents.selectCategory(undefined));
+      dispatcher.dispatch(categoryEvents.selectCategory({
+        selectionId,
+        categories: undefined,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, CategorySelectDialog, {
         disableClose: true,

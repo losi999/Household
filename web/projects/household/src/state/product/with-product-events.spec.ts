@@ -2,7 +2,7 @@
 // store first resolves that cycle in the same order as the application does.
 import '@household/state/product/product-store';
 import { TestBed } from '@angular/core/testing';
-import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher } from '@household/shared-ui';
+import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher, selectionEvents } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore } from '@ngrx/signals';
 import { Mock } from 'vitest';
@@ -131,6 +131,7 @@ describe('withProductEvents', () => {
   });
 
   describe('dispatching selectProduct', () => {
+    const selectionId = 'product';
     const selectedProduct = testDataFactory.product.response.generic();
 
     it('should open dialog and dispatch if submitted', () => {
@@ -140,7 +141,10 @@ describe('withProductEvents', () => {
 
       const items = [testDataFactory.product.response.generic()];
 
-      dispatcher.dispatch(productEvents.selectProduct(items));
+      dispatcher.dispatch(productEvents.selectProduct({
+        selectionId,
+        products: items,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, ProductSelectDialog, {
         disableClose: true,
@@ -148,7 +152,10 @@ describe('withProductEvents', () => {
         height: '80vh',
         width: '90vw',
       });
-      validateDispatcher(dispatchSpy, productEvents.productSelected(selectedProduct));
+      validateDispatcher(dispatchSpy, selectionEvents.itemSelected({
+        selectionId,
+        item: selectedProduct,
+      }));
     });
 
     it('should open dialog and not dispatch anything if cancelled', () => {
@@ -158,7 +165,10 @@ describe('withProductEvents', () => {
 
       const items = [testDataFactory.product.response.generic()];
 
-      dispatcher.dispatch(productEvents.selectProduct(items));
+      dispatcher.dispatch(productEvents.selectProduct({
+        selectionId,
+        products: items,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, ProductSelectDialog, {
         disableClose: true,

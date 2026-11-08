@@ -12,13 +12,11 @@ const PRODUCT_STORE_INITIAL_STATE = new InjectionToken<ProductState>('PRODUCT_ST
 export type ProductState = {
   productList: Searchable<Responses.Product>[];
   isInProgress: Api.Product.Id[];
-  selectedProduct: Responses.Product;
 };
 
 export const provideProductStoreInitialState = (state: ProductState = {
   productList: [],
   isInProgress: [],
-  selectedProduct: undefined,
 }): ValueProvider => {
   return {
     provide: PRODUCT_STORE_INITIAL_STATE,

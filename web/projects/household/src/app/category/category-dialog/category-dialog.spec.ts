@@ -1,26 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CategoryDialog, CategoryDialogData } from './category-dialog';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
-import { ClearableInput, createStubComponent, elementSelectorFactory, IconText, IElementSelector, MockSignalStore, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
+import { ClearableInput, createStubComponent, elementSelectorFactory, IElementSelector, MockSignalStore, provideMockSignalStore } from '@household/shared-ui';
+import { CategorySelector } from '@household/app/category/category-selector/category-selector';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { CategoryStore } from '@household/state/category/category-store';
 import { MatButtonToggle } from '@angular/material/button-toggle';
 import { CategoryType } from '@household/shared/enums';
-import { MatButton, MatIconButton } from '@angular/material/button';
-import { Dispatcher } from '@ngrx/signals/events';
-import { categoryEvents } from '@household/state/category/category-events';
 import { Responses } from '@household/shared/types/responses';
 import { Searchable } from '@household/shared/types/common';
 
 describe('CategoryDialog', () => {
   const ClearableInputStub = createStubComponent(ClearableInput);
-  const IconTextStub = createStubComponent(IconText);
+  const CategorySelectorStub = createStubComponent(CategorySelector);
 
   let fixture: ComponentFixture<CategoryDialog>;
   let selector: IElementSelector;
   let mockDialogRef: MockService<MatDialogRef<CategoryDialog>>;
-  let mockDispatcher: Dispatcher;
   let mockCategoryStore: MockSignalStore<typeof CategoryStore>;
 
   const category = testDataFactory.category.response();
@@ -41,24 +38,8 @@ describe('CategoryDialog', () => {
     return selector.getComponentByTestId<MatButtonToggle>('category-type-invoice', MatDialogContent);
   };
 
-  const getParentCategoryIconText = () => {
-    return selector.getComponent(IconTextStub, MatDialogContent);
-  };
-
-  const getParentCategoryMenuButton = () => {
-    return selector.getComponent(MatIconButton, MatDialogContent);
-  };
-
-  const getParentCategoryEditButton = () => {
-    return selector.getComponentByTestId<MatButton>('edit-parent-button');
-  };
-
-  const getParentCategoryRemoveButton = () => {
-    return selector.getComponentByTestId<MatButton>('remove-parent-button');
-  };
-
-  const getParentCategoryAddButton = () => {
-    return selector.getComponentByTestId<MatButton>('add-parent-button', MatDialogContent);
+  const getParentSelector = () => {
+    return selector.getComponent(CategorySelectorStub, MatDialogContent);
   };
 
   const setValue = async (input: ClearableInput, value: string) => {
@@ -82,8 +63,7 @@ describe('CategoryDialog', () => {
     await TestBed.configureTestingModule({
       imports: [CategoryDialog],
       providers: [
-        provideMockSignalStore(CategoryStore, 'selectedCategory', 'categoryList'),
-        provideMockDispatcher(),
+        provideMockSignalStore(CategoryStore, 'categoryList'),
         {
           provide: MAT_DIALOG_DATA,
           useValue: params?.dialogData,
@@ -98,19 +78,18 @@ describe('CategoryDialog', () => {
         remove: {
           imports: [
             ClearableInput,
-            IconText,
+            CategorySelector,
           ],
         },
         add: {
           imports: [
             ClearableInputStub,
-            IconTextStub,
+            CategorySelectorStub,
           ],
         },
       })
       .compileComponents();
 
-    mockDispatcher = TestBed.inject(Dispatcher);
     mockCategoryStore = TestBed.inject<MockSignalStore<typeof CategoryStore>>(CategoryStore);
 
     mockCategoryStore.categoryList.set(params?.categoryList ?? []);
@@ -204,8 +183,8 @@ describe('CategoryDialog', () => {
     });
   });
 
-  describe('parent category', () => {
-    it('should be rendered if a parent category is given', async () => {
+  describe('parent category selector', () => {
+    it('should be rendered with the parent category of the category as its value', async () => {
       const parentCategory = testDataFactory.category.response();
       const category = testDataFactory.category.response({
         parentCategory,
@@ -215,46 +194,40 @@ describe('CategoryDialog', () => {
         dialogData: category,
       });
 
-      expect(getParentCategoryIconText().componentInstance.text()).toBe(parentCategory.fullName);
-      expect(getParentCategoryIconText().componentInstance.icon()).toBe('account_tree');
-      expect(getParentCategoryMenuButton()).toBeTruthy();  
-      expect(getParentCategoryAddButton()).toBeFalsy();        
+      expect(getParentSelector().componentInstance.label()).toBe('Szülő');
+      expect(getParentSelector().componentInstance.value()).toEqual(parentCategory);
     });
 
-    it('should not be rendered if no parent category is given', async () => {
+    it('should be rendered empty if no parent category is given', async () => {
       await render();
 
-      expect(getParentCategoryIconText()).toBeFalsy();
-      expect(getParentCategoryMenuButton()).toBeFalsy();  
-      expect(getParentCategoryAddButton()).toBeTruthy();    
+      expect(getParentSelector().componentInstance.value()).toBeNull();
     });
-  });
 
-  describe('remove parent category button', () => {
-    it('should remove the parent category from the form', async () => {
-      const parentCategory = testDataFactory.category.response();
-      const category = testDataFactory.category.response({
-        parentCategory,
-      });
+    it('should not be required', async () => {
+      await render();
+
+      expect(getParentSelector().componentInstance.required()).toBe(false);
+    });
+
+    it('should offer every category when creating', async () => {
+      const category1 = testDataFactory.category.response();
+      const category2 = testDataFactory.category.response();
 
       await render({
-        dialogData: category,
+        categoryList: [
+          category1,
+          category2,
+        ],
       });
 
-      getParentCategoryMenuButton().nativeElement.click();
-
-      await fixture.whenStable();
-
-      getParentCategoryRemoveButton().nativeElement.click();
-
-      await fixture.whenStable();
-
-      expect(fixture.componentInstance.parentCategory()).toBeUndefined();
+      expect(getParentSelector().componentInstance.items()).toEqual([
+        category1,
+        category2,
+      ]);
     });
-  });
 
-  describe('edit parent category button', () => {
-    it('should dispatch selectCategory with every category but the edited one and its children', async () => {
+    it('should offer every category but the edited one and its children', async () => {
       const parentCategory = testDataFactory.category.response();
       const category = testDataFactory.category.response({
         parentCategory,
@@ -274,45 +247,20 @@ describe('CategoryDialog', () => {
         ],
       });
 
-      getParentCategoryMenuButton().nativeElement.click();
-
-      await fixture.whenStable();
-
-      getParentCategoryEditButton().nativeElement.click();
-
-      await fixture.whenStable();
-
-      validateFunctionCall(mockDispatcher.dispatch, categoryEvents.selectCategory([
+      expect(getParentSelector().componentInstance.items()).toEqual([
         parentCategory,
         otherCategory,
-      ]), {
-        scope: 'self',
-      });
+      ]);
     });
-  });
 
-  describe('add parent category button', () => {
-    it('should dispatch selectCategory with every category when creating', async () => {
-      const category1 = testDataFactory.category.response();
-      const category2 = testDataFactory.category.response();
+    it('should set the parent category of the form when one is selected', async () => {
+      await render();
+      const parentCategory = testDataFactory.category.response();
 
-      await render({
-        categoryList: [
-          category1,
-          category2,
-        ],
-      });
-
-      getParentCategoryAddButton().nativeElement.click();
-
+      getParentSelector().componentInstance.value.set(parentCategory);
       await fixture.whenStable();
 
-      validateFunctionCall(mockDispatcher.dispatch, categoryEvents.selectCategory([
-        category1,
-        category2,
-      ]), {
-        scope: 'self',
-      });
+      expect(fixture.componentInstance.categoryForm.parentCategory().value()).toEqual(parentCategory);
     });
   });
 
@@ -340,7 +288,8 @@ describe('CategoryDialog', () => {
 
       await setValue(getNameInput().componentInstance, 'category name');
       getInventoryCategoryButton().nativeElement.querySelector('button').click();
-      fixture.componentInstance.parentCategory.set(parentCategory);
+      getParentSelector().componentInstance.value.set(parentCategory);
+      await fixture.whenStable();
 
       getSaveButton().nativeElement.click();
  

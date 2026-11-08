@@ -4,7 +4,7 @@ import { ProductDialog, ProductDialogData, ProductDialogResult } from '@househol
 import { ProductMergeDialog, ProductMergeDialogData, ProductMergeDialogResult } from '@household/app/product/product-merge-dialog/product-merge-dialog';
 import { ProductSelectDialog, ProductSelectDialogData, ProductSelectDialogResult } from '@household/app/product/product-select-dialog/product-select-dialog';
 import { productApiEvents, productEvents } from '@household/state/product/product-events';
-import { BottomSheetService, DialogService, dispatchIfConfirmed } from '@household/shared-ui';
+import { BottomSheetService, DialogService, dispatchIfConfirmed, selectionEvents } from '@household/shared-ui';
 import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
 import { exhaustMap, filter, map, Observable } from 'rxjs';
@@ -47,17 +47,22 @@ export const withProductEvents = () => {
           }),
         ),
         openProductSelectDialog: events.on(productEvents.selectProduct).pipe(
-          exhaustMap(({ payload }) => {
+          exhaustMap(({ payload: { selectionId, products } }) => {
             return dialog.open<ProductSelectDialog, ProductSelectDialogData, ProductSelectDialogResult>(ProductSelectDialog, {
               disableClose: true,
-              data: payload,
+              data: products,
               width: '90vw',
               height: '80vh',
-            }).afterClosed();
-          }),
-          filter(res => !!res),
-          map((response) => {
-            return productEvents.productSelected(response);
+            }).afterClosed()
+              .pipe(
+                filter(res => !!res),
+                map((product) => {
+                  return selectionEvents.itemSelected({
+                    selectionId,
+                    item: product,
+                  });
+                }),
+              );
           }),
         ),
         openMergeProductsDialog: events.on(productEvents.mergeProducts).pipe(

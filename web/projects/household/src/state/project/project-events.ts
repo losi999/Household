@@ -14,8 +14,10 @@ export const projectEvents = eventGroup({
     deleteProject: type<Responses.Project>(),
     mergeProjects: type<Responses.Project>(),
     openProjectListItemSubmenu: type<Responses.Project>(),
-    selectProject: type<Searchable<Responses.Project>[] | undefined>(),
-    projectSelected: type<Responses.Project>(),
+    selectProject: type<{
+      selectionId: string;
+      projects: Searchable<Responses.Project>[] | undefined;
+    }>(),
   },
 });
 

@@ -1,27 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductDialog, ProductDialogData } from './product-dialog';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
-import { ClearableInput, createStubComponent, elementSelectorFactory, IconText, IElementSelector, MockSignalStore, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
+import { ClearableInput, createStubComponent, elementSelectorFactory, IElementSelector, MockSignalStore, provideMockSignalStore } from '@household/shared-ui';
+import { ProductSelector } from '@household/app/product/product-selector/product-selector';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { ProductStore } from '@household/state/product/product-store';
-import { productEvents } from '@household/state/product/product-events';
-import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatSelect } from '@angular/material/select';
-import { Dispatcher } from '@ngrx/signals/events';
 import { unitsOfMeasurement } from '@household/shared/constants';
 import { ProductType } from '@household/shared/enums';
 import { Responses } from '@household/shared/types/responses';
 
 describe('ProductDialog', () => {
   const ClearableInputStub = createStubComponent(ClearableInput);
-  const IconTextStub = createStubComponent(IconText);
+  const ProductSelectorStub = createStubComponent(ProductSelector);
 
   let fixture: ComponentFixture<ProductDialog>;
   let selector: IElementSelector;
   let mockProductStore: MockSignalStore<typeof ProductStore>;
   let mockDialogRef: MockService<MatDialogRef<ProductDialog>>;
-  let mockDispatcher: Dispatcher;
 
   const genericWithChildren = testDataFactory.product.response.generic();
   const specificWithChildren = testDataFactory.product.response.specific({
@@ -55,24 +52,8 @@ describe('ProductDialog', () => {
     return selector.getComponentByTestId<MatSelect>('unit-of-measurement', MatDialogContent);
   };
 
-  const getParentIconText = () => {
-    return selector.getComponent(IconTextStub, MatDialogContent);
-  };
-
-  const getParentMenuButton = () => {
-    return selector.getComponent(MatIconButton, MatDialogContent);
-  };
-
-  const getParentEditButton = () => {
-    return selector.getComponentByTestId<MatButton>('edit-parent-button');
-  };
-
-  const getParentRemoveButton = () => {
-    return selector.getComponentByTestId<MatButton>('remove-parent-button');
-  };
-
-  const getParentAddButton = () => {
-    return selector.getComponentByTestId<MatButton>('add-parent-button', MatDialogContent);
+  const getParentSelector = () => {
+    return selector.getComponent(ProductSelectorStub, MatDialogContent);
   };
 
   const getSaveButton = () => {
@@ -86,13 +67,7 @@ describe('ProductDialog', () => {
   };
 
   const selectParent = async (parent: Responses.Product) => {
-    mockProductStore.selectedProduct.set(parent);
-
-    await fixture.whenStable();
-  };
-
-  const openParentMenu = async () => {
-    getParentMenuButton().nativeElement.click();
+    getParentSelector().componentInstance.value.set(parent);
 
     await fixture.whenStable();
   };
@@ -108,8 +83,7 @@ describe('ProductDialog', () => {
     await TestBed.configureTestingModule({
       imports: [ProductDialog],
       providers: [
-        provideMockSignalStore(ProductStore, 'productList', 'selectedProduct'),
-        provideMockDispatcher(),
+        provideMockSignalStore(ProductStore, 'productList'),
         {
           provide: MAT_DIALOG_DATA,
           useValue: params?.dialogData,
@@ -124,20 +98,19 @@ describe('ProductDialog', () => {
         remove: {
           imports: [
             ClearableInput,
-            IconText,
+            ProductSelector,
           ],
         },
         add: {
           imports: [
             ClearableInputStub,
-            IconTextStub,
+            ProductSelectorStub,
           ],
         },
       })
       .compileComponents();
 
     mockProductStore = TestBed.inject<MockSignalStore<typeof ProductStore>>(ProductStore);
-    mockDispatcher = TestBed.inject(Dispatcher);
 
     mockProductStore.productList.set(params?.productList ?? productList);
 
@@ -187,154 +160,144 @@ describe('ProductDialog', () => {
     });
   });
 
-  describe('parent product', () => {
-    it('should not be rendered for a new product', async () => {
+  describe('parent product selector', () => {
+    it('should be rendered empty for a new product', async () => {
       await render();
 
-      expect(getParentIconText()).toBeFalsy();
-      expect(getParentMenuButton()).toBeFalsy();
-      expect(getParentAddButton()).toBeTruthy();
+      expect(getParentSelector().componentInstance.label()).toBe('Szülő');
+      expect(getParentSelector().componentInstance.value()).toBeNull();
     });
 
-    it('should not be rendered for a generic product', async () => {
+    it('should be rendered empty for a generic product', async () => {
       await render({
         dialogData: genericWithoutChildren,
       });
 
-      expect(getParentIconText()).toBeFalsy();
-      expect(getParentAddButton()).toBeTruthy();
+      expect(getParentSelector().componentInstance.value()).toBeNull();
     });
 
-    it('should be the generic product of a specific product', async () => {
+    it('should have the generic product of a specific product as its value', async () => {
       await render({
         dialogData: specificWithoutChildren,
       });
 
-      expect(getParentIconText().componentInstance.text()).toBe(genericWithChildren.fullName);
-      expect(getParentIconText().componentInstance.icon()).toBe('account_tree');
-      expect(getParentMenuButton()).toBeTruthy();
-      expect(getParentAddButton()).toBeFalsy();
+      expect(getParentSelector().componentInstance.value()).toEqual(genericWithChildren);
     });
 
-    it('should be the specific product of a variant product, with its full name', async () => {
+    it('should have the specific product of a variant product as its value', async () => {
       await render({
         dialogData: variant,
       });
 
-      expect(getParentIconText().componentInstance.text()).toBe(specificWithChildren.fullName);
-      expect(getParentMenuButton()).toBeTruthy();
+      expect(getParentSelector().componentInstance.value()).toEqual(specificWithChildren);
     });
 
-    it('should not be offered for a generic product with children', async () => {
+    it('should not be rendered for a generic product with children', async () => {
       await render({
         dialogData: genericWithChildren,
       });
 
-      expect(getParentIconText()).toBeFalsy();
-      expect(getParentMenuButton()).toBeFalsy();
-      expect(getParentAddButton()).toBeFalsy();
+      expect(getParentSelector()).toBeFalsy();
     });
 
-    it('should be the product selected in the select dialog', async () => {
-      await render();
-
-      await selectParent(genericWithoutChildren);
-
-      expect(getParentIconText().componentInstance.text()).toBe(genericWithoutChildren.fullName);
-      expect(fixture.componentInstance.parentProduct()).toEqual(genericWithoutChildren);
-    });
-  });
-
-  describe('remove parent product button', () => {
-    it('should remove the parent product from the form', async () => {
-      await render({
-        dialogData: variant,
-      });
-
-      await openParentMenu();
-
-      getParentRemoveButton().nativeElement.click();
-      await fixture.whenStable();
-
-      expect(fixture.componentInstance.parentProduct()).toBeUndefined();
-      expect(getParentAddButton()).toBeTruthy();
-    });
-
-    it('should be available for a specific product without children', async () => {
-      await render({
-        dialogData: specificWithoutChildren,
-      });
-
-      await openParentMenu();
-
-      expect(getParentRemoveButton()).toBeTruthy();
-    });
-
-    it('should not be available for a specific product with children', async () => {
+    it('should be required for a specific product with children', async () => {
       await render({
         dialogData: specificWithChildren,
       });
 
-      await openParentMenu();
-
-      expect(getParentEditButton()).toBeTruthy();
-      expect(getParentRemoveButton()).toBeFalsy();
+      expect(getParentSelector().componentInstance.required()).toBe(true);
     });
-  });
 
-  describe('edit parent product button', () => {
-    it('should dispatch selectProduct with the updated product', async () => {
+    it('should not be required for a specific product without children', async () => {
       await render({
         dialogData: specificWithoutChildren,
       });
 
-      await openParentMenu();
-
-      getParentEditButton().nativeElement.click();
-      await fixture.whenStable();
-
-      validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct([
-        genericWithoutChildren,
-        genericWithChildren,
-        specificWithChildren,
-      ]), {
-        scope: 'self',
-      });
+      expect(getParentSelector().componentInstance.required()).toBe(false);
     });
-  });
 
-  describe('add parent product button', () => {
-    it('should dispatch selectProduct without a product to update when creating', async () => {
+    it('should not be required for a new product', async () => {
       await render();
 
-      getParentAddButton().nativeElement.click();
-      await fixture.whenStable();
+      expect(getParentSelector().componentInstance.required()).toBe(false);
+    });
 
-      validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct([
+    it('should be invalid and block saving if a specific product with children loses its parent', async () => {
+      await render({
+        dialogData: specificWithChildren,
+      });
+
+      await selectParent(null);
+
+      expect(fixture.componentInstance.productForm.parentProduct().errors()
+        .map(error => error.message)).toEqual(['Kötelező']);
+      expect(getSaveButton().nativeElement.disabled).toBe(true);
+    });
+
+    it('should offer every product but the variant ones for a new product', async () => {
+      await render();
+
+      expect(getParentSelector().componentInstance.items()).toEqual([
         genericWithoutChildren,
         genericWithChildren,
         specificWithChildren,
         specificWithoutChildren,
-      ]), {
-        scope: 'self',
-      });
+      ]);
     });
 
-    it('should dispatch selectProduct with the valid product for a generic without children', async () => {
+    it('should not offer the product itself', async () => {
+      await render({
+        dialogData: specificWithoutChildren,
+      });
+
+      expect(getParentSelector().componentInstance.items()).toEqual([
+        genericWithoutChildren,
+        genericWithChildren,
+        specificWithChildren,
+      ]);
+    });
+
+    it('should offer the valid products for a generic product without children', async () => {
       await render({
         dialogData: genericWithoutChildren,
       });
 
-      getParentAddButton().nativeElement.click();
-      await fixture.whenStable();
-
-      validateFunctionCall(mockDispatcher.dispatch, productEvents.selectProduct([
+      expect(getParentSelector().componentInstance.items()).toEqual([
         genericWithChildren,
         specificWithChildren,
         specificWithoutChildren,
-      ]), {
-        scope: 'self',
+      ]);
+    });
+
+    it('should offer only generic products for a specific product with variants', async () => {
+      await render({
+        dialogData: specificWithChildren,
       });
+
+      expect(getParentSelector().componentInstance.items()).toEqual([
+        genericWithoutChildren,
+        genericWithChildren,
+      ]);
+    });
+
+    it('should make the product a specific one when a generic product is selected as the parent', async () => {
+      await render();
+
+      await selectParent(genericWithoutChildren);
+
+      expect(getMeasurementInput()).toBeTruthy();
+      expect(getUnitSelect()).toBeTruthy();
+    });
+
+    it('should make the product a generic one when the parent is cleared', async () => {
+      await render({
+        dialogData: specificWithoutChildren,
+      });
+
+      await selectParent(null);
+
+      expect(getMeasurementInput()).toBeFalsy();
+      expect(getUnitSelect()).toBeFalsy();
     });
   });
 
@@ -540,9 +503,7 @@ describe('ProductDialog', () => {
           dialogData: variant,
         });
 
-        await openParentMenu();
-        getParentRemoveButton().nativeElement.click();
-        await fixture.whenStable();
+        await selectParent(null);
 
         getSaveButton().nativeElement.click();
 

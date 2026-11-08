@@ -12,6 +12,8 @@ export * from './lib/state/navigation/navigation-events';
 export * from './lib/state/navigation/navigation-store';
 export * from './lib/state/progress/progress-store';
 export * from './lib/state/progress/progress-events';
+export * from './lib/state/selection/selection-events';
+export * from './lib/state/selection/selection-store';
 export * from './lib/guards/unauthenticated-guard';
 export * from './lib/guards/authenticated-guard';
 export * from './lib/interceptors/auth-interceptor';

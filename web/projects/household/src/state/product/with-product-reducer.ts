@@ -5,7 +5,7 @@ import { Api } from '@household/shared/types/api';
 import { Searchable } from '@household/shared/types/common';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
-import { productApiEvents, productEvents } from '@household/state/product/product-events';
+import { productApiEvents } from '@household/state/product/product-events';
 import { ProductState } from '@household/state/product/product-store';
 import { signalStoreFeature } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
@@ -63,16 +63,6 @@ const toProduct = (request: Api.Product.ProductId & Requests.Product, productLis
 export const withProductReducer = () => {
   return signalStoreFeature(
     withReducer<ProductState>(
-      on(productEvents.selectProduct, productEvents.createProduct, productEvents.updateProduct, () => {
-        return {
-          selectedProduct: undefined,
-        };
-      }),
-      on(productEvents.productSelected, ({ payload }) => {
-        return {
-          selectedProduct: payload,
-        };
-      }),
       on(productApiEvents.listProductsCompleted, ({ payload }) => {
         return {
           productList: payload.map(p => {

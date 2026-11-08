@@ -12,29 +12,21 @@ import { Responses } from '@household/shared/types/responses';
 import { AccountStore } from '@household/state/account/account-store';
 import { ActivatedRoute } from '@angular/router';
 import { Api } from '@household/shared/types/api';
-import { IconText, AmountInput, ClearableInput } from '@household/shared-ui';
+import { IconText, AmountInput, ClearableInput, ProgressStore, SelectionStore } from '@household/shared-ui';
 import { AccountTypeIconPipe } from '@household/app/account/account-type-icon-pipe';
 import { MatIconModule } from '@angular/material/icon';
-import { injectDispatch } from '@ngrx/signals/events';
-import { accountEvents } from '@household/state/account/account-events';
 import { MatMenuModule } from '@angular/material/menu';
 import { AccountType, CategoryType } from '@household/shared/enums';
-import { recipientEvents } from '@household/state/recipient/recipient-events';
-import { categoryEvents } from '@household/state/category/category-events';
-import { productEvents } from '@household/state/product/product-events';
-import { projectEvents } from '@household/state/project/project-events';
 import { RecipientStore } from '@household/state/recipient/recipient-store';
 import { ProjectStore } from '@household/state/project/project-store';
 import { CategoryStore } from '@household/state/category/category-store';
 import { ProductStore } from '@household/state/product/product-store';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
-import { CategoryTypeIconPipe } from '@household/app/category/category-type-icon-pipe';
-
-type AccountsModel = {
-  account: Responses.Account;
-  transferAccount: Responses.Account;
-  loanAccount: Responses.Account;
-};
+import { AccountSelector } from '@household/app/account/account-selector/account-selector';
+import { ProjectSelector } from '@household/app/project/project-selector/project-selector';
+import { RecipientSelector } from '@household/app/recipient/recipient-selector/recipient-selector';
+import { CategorySelector } from '@household/app/category/category-selector/category-selector';
+import { ProductSelector } from '@household/app/product/product-selector/product-selector';
 
 @Component({
   imports: [
@@ -54,7 +46,11 @@ type AccountsModel = {
     AmountInput,
     DecimalPipe,
     ClearableInput,
-    CategoryTypeIconPipe,
+    AccountSelector,
+    ProjectSelector,
+    RecipientSelector,
+    CategorySelector,
+    ProductSelector,
   ],
   providers: [
     {
@@ -70,65 +66,62 @@ type AccountsModel = {
 })
 export class TransactionCreate {
   private readonly accountStore = inject(AccountStore);
-  private readonly recipientStore = inject(RecipientStore);
-  private readonly projectStore = inject(ProjectStore);
-  private readonly categoryStore = inject(CategoryStore);
-  private readonly productStore = inject(ProductStore);
+  readonly recipientStore = inject(RecipientStore);
+  readonly projectStore = inject(ProjectStore);
+  readonly selectionStore = inject(SelectionStore);
+  readonly categoryStore = inject(CategoryStore);
+  readonly productStore = inject(ProductStore);
+  readonly progressStore = inject(ProgressStore);
   private readonly activatedRoute = inject(ActivatedRoute);
-  private readonly accountEvents = injectDispatch(accountEvents);
-  private readonly recipientEvents = injectDispatch(recipientEvents);
-  private readonly categoryEvents = injectDispatch(categoryEvents);
-  private readonly projectEvents = injectDispatch(projectEvents);
-  private readonly productEvents = injectDispatch(productEvents);
   
   private readonly accountId = this.activatedRoute.snapshot.paramMap.get('accountId') as Api.Account.Id;
-  private accountSelectionType: keyof AccountsModel;
 
-  readonly stepIcon = [
-    'today',
-    'account_balance',
-    'attach_money',
-    'menu_book',
-    'fact_check',
-  ];
-
-  issuedAtModel = signal<{
+  transactionModel = signal<{
     date: Date;
     time: Date;
+    account: Responses.Account;
+    transferAccount: Responses.Account;
+    loanAccount: Responses.Account;
+    amount: number;
+    transferAmount: number;
+    description: string;
+    category: Responses.Category;
+    recipient: Responses.Recipient;
+    product: Responses.Product;
+    project: Responses.Project;
+    quantity: number;
+    invoiceNumber: string;
+    billingStartDate: Date;
+    billingEndDate: Date;
   }>({
     date: new Date(),
     time: new Date(),
+    account: null,
+    loanAccount: null,
+    transferAccount: null,
+    amount: null,
+    transferAmount: null,
+    category: null,
+    description: null,
+    product: null,
+    project: null,
+    recipient: null,
+    quantity: null,
+    invoiceNumber: null,
+    billingStartDate: null,
+    billingEndDate: null,
   });
 
-  issuedAtForm = form(this.issuedAtModel, (schemaPath) => {
+  transactionForm = form(this.transactionModel, (schemaPath) => {
     required(schemaPath.date, {
       message: 'Kötelező',
     });
     required(schemaPath.time, {
       message: 'Kötelező',
     });
-  });
-
-  accountsModel = signal<AccountsModel>({
-    account: null,
-    loanAccount: null,
-    transferAccount: null,
-  });
-
-  accountsForm = form(this.accountsModel, (schemaPath) => {
     required(schemaPath.account, {
       message: 'Kötelező',
     });
-  });
-
-  amountModel = signal<{
-    amount: number;
-    transferAmount: number;}>({
-    amount: null,
-    transferAmount: null,
-  });
-
-  amountForm = form(this.amountModel, (schemaPath) => {
     required(schemaPath.amount, {
       message: 'Kötelező',
     });
@@ -152,58 +145,72 @@ export class TransactionCreate {
     });
   });
 
-  detailsModel = signal<{
-    description: string;
-    category: Responses.Category;
-    recipient: Responses.Recipient;
-    product: Responses.Product;
-    project: Responses.Project;
-    quantity: number;
-    invoiceNumber: string;
-    billingStartDate: Date;
-    billingEndDate: Date;
-  }>({
-    category: null,
-    description: null,
-    product: null,
-    project: null,
-    recipient: null,
-    quantity: null,
-    invoiceNumber: null,
-    billingStartDate: null,
-    billingEndDate: null,
-  });
+  // detailsForm = form(this.detailsModel, (schemaPath) => {
+  //   validate(schemaPath.quantity, ({ value }) => {
+  //     const quantity = value();
 
-  detailsForm = form(this.detailsModel, (schemaPath) => {
-    validate(schemaPath.quantity, ({ value }) => {
-      const quantity = value();
+  //     return quantity !== null && quantity <= 0 ? {
+  //       kind: 'positive',
+  //       message: 'Nullánál nagyobbnak kell lennie', 
+  //     } : null;
+  //   });
 
-      return quantity !== null && quantity <= 0 ? {
-        kind: 'positive',
-        message: 'Nullánál nagyobbnak kell lennie', 
-      } : null;
-    });
+  //   required(schemaPath.billingStartDate, {
+  //     // when: ({ valueOf }) => !!valueOf(schemaPath.invoiceNumber) || !!valueOf(schemaPath.billingEndDate),
+  //     message: 'Kötelező',
+  //   });
 
-    required(schemaPath.billingStartDate, {
-      // when: ({ valueOf }) => !!valueOf(schemaPath.invoiceNumber) || !!valueOf(schemaPath.billingEndDate),
-      message: 'Kötelező',
-    });
-
-    required(schemaPath.billingEndDate, {
-      // when: ({ valueOf }) => !!valueOf(schemaPath.invoiceNumber) || !!valueOf(schemaPath.billingStartDate),
-      message: 'Kötelező',
-    });
-  });
+  //   required(schemaPath.billingEndDate, {
+  //     // when: ({ valueOf }) => !!valueOf(schemaPath.invoiceNumber) || !!valueOf(schemaPath.billingStartDate),
+  //     message: 'Kötelező',
+  //   });
+  // });
 
   isDownwardTransaction = signal(true);
-  isTransferTransaction = computed(() => !!this.accountsForm().value().transferAccount);
-  isDifferentCurrencyTransfer = computed(() => this.isTransferTransaction() && this.accountsForm().value().transferAccount.currency !== this.accountsForm().value().account.currency);
+  isTransferTransaction = computed(() => !!this.transactionForm().value().transferAccount);
+  isDifferentCurrencyTransfer = computed(() => this.isTransferTransaction() && this.transactionForm().value().transferAccount.currency !== this.transactionForm().value().account.currency);
+
+  selectableAccounts = computed(() => {
+    const loanAccount = this.transactionForm().value().loanAccount;
+    const isLoanAccountLoanType = loanAccount?.accountType === AccountType.Loan;
+
+    const accounts = this.accountStore.accountList().filter(a => {
+      if (!loanAccount) {
+        return a.accountId !== this.transactionForm().value().transferAccount?.accountId;
+      }
+
+      return ((a.accountType === AccountType.Loan) !== isLoanAccountLoanType && a.currency === loanAccount.currency);          
+    });
+    return accounts;
+  });
+
+  selectableTransferAccounts = computed(() => {
+    const accounts = this.accountStore.accountList().filter(a => {
+      return a.accountId !== this.transactionForm().value().account.accountId;
+    });
+    return accounts;
+  });
+
+  selectableLoanAccounts = computed(() => {
+    if (!this.transactionForm().value().account) {
+      return [];
+    }
+    
+    const isPayingAccountLoan = this.transactionForm().value().account.accountType === AccountType.Loan;
+
+    const accounts = this.accountStore.accountList().filter(a => {
+          
+      return ((a.accountType === AccountType.Loan) !== isPayingAccountLoan) && a.currency === this.transactionForm().value().account.currency;
+    });
+    return accounts;
+  });
 
   constructor() {
     effect(() => {
-      const account = this.accountStore.accountList().find(a => a.accountId === this.accountId);
+      // A form field whose value is undefined does not exist in the form, so a missing account must be null
+      const account = this.accountStore.accountList().find(a => a.accountId === this.accountId) ?? null;
 
-      this.accountsModel.update((prev) => {
+      this.transactionModel.update((prev) => {
         return {
           ...prev,
           account,
@@ -212,66 +219,41 @@ export class TransactionCreate {
     });
 
     effect(() => {
-      const selected = this.accountStore.selectedAccount();
+      const selected = this.transactionForm.category().value();
 
       if (selected) {
-        this.accountsModel.update((prev) => {
+        this.transactionModel.update((prev) => {
           return {
             ...prev,
-            [this.accountSelectionType]: selected,
+            product: selected.categoryType !== CategoryType.Inventory ? null : prev.product,
+            quantity: selected.categoryType !== CategoryType.Inventory ? null : prev.quantity,
+            invoiceNumber: selected.categoryType !== CategoryType.Invoice ? null : prev.invoiceNumber,
+            billingEndDate: selected.categoryType !== CategoryType.Invoice ? null : prev.billingEndDate,
+            billingStartDate: selected.categoryType !== CategoryType.Invoice ? null : prev.billingStartDate,
+          };
+        });
+      } else {
+        this.transactionModel.update((prev) => {
+          return {
+            ...prev,
+            product: null,
+            quantity: null,
+            invoiceNumber: null,
+            billingEndDate: null,
+            billingStartDate: null,
           };
         });
       }
     });
 
     effect(() => {
-      const selected = this.recipientStore.selectedRecipient();
-
-      if (selected) {
-        this.detailsModel.update((prev) => {
-          return {
-            ...prev,
-            recipient: selected,
-          };
-        });
-      }
-    });
-
-    effect(() => {
-      const selected = this.projectStore.selectedProject();
-
-      if (selected) {
-        this.detailsModel.update((prev) => {
-          return {
-            ...prev,
-            project: selected,
-          };
-        });
-      }
-    });
-
-    effect(() => {
-      const selected = this.categoryStore.selectedCategory();
-
-      if (selected) {
-        this.detailsModel.update((prev) => {
-          return {
-            ...prev,
-            category: selected,
-          };
-        });
-      }
-    });
-
-    effect(() => {
-      const selected = this.productStore.selectedProduct();
+      const selected = this.transactionForm.product().value();
 
       if (selected) {
         const inventoryCategory = this.categoryStore.categoryList().find(c => c.categoryType === CategoryType.Inventory);
-        this.detailsModel.update((prev) => {
+        this.transactionModel.update((prev) => {
           return {
             ...prev,
-            product: selected,
             category: inventoryCategory,
           };
         });
@@ -279,52 +261,22 @@ export class TransactionCreate {
     });
   }
 
-  onSelectAccount(type: keyof AccountsModel) {
-    this.accountSelectionType = type;
-    
-    switch(type) {
-      case 'loanAccount': {
-        const isPayingAccountLoan = this.accountsForm().value().account.accountType === AccountType.Loan;
-
-        this.accountEvents.selectAccount(this.accountStore.accountList().filter(a => {
-          
-          return ((a.accountType === AccountType.Loan) !== isPayingAccountLoan) && a.currency === this.accountsForm().value().account.currency;
-        }));
-      } break;
-      case 'transferAccount': {
-        this.accountEvents.selectAccount(this.accountStore.accountList().filter(a => {
-          return a.accountId !== this.accountsForm().value().account.accountId;
-        }));
-      } break;
-      case 'account': {
-        const loanAccount = this.accountsForm().value().loanAccount;
-        const isLoanAccountLoanType = loanAccount?.accountType === AccountType.Loan;
-
-        this.accountEvents.selectAccount(this.accountStore.accountList().filter(a => {
-          if (!loanAccount) {
-            return a.accountId !== this.accountsForm().value().transferAccount?.accountId;
-          }
-
-          return ((a.accountType === AccountType.Loan) !== isLoanAccountLoanType && a.currency === loanAccount.currency);          
-        }));
-      } break;
-    }
-  }
-
   onSwitchAccounts() {
-    this.accountsModel.update((prev) => {
+    this.transactionModel.update((prev) => {
       if (prev.loanAccount) {
         return {
+          ...prev,
           account: prev.loanAccount,
           loanAccount: prev.account,
-          transferAccount: undefined,
+          transferAccount: null,
         };
       }
       if (prev.transferAccount) {
         return {
+          ...prev,
           account: prev.transferAccount,
           transferAccount: prev.account,
-          loanAccount: undefined,
+          loanAccount: null,
         };
       }
 
@@ -334,77 +286,5 @@ export class TransactionCreate {
 
   onSwitchTransferDirection() {
     this.isDownwardTransaction.update((previous) => !previous);
-  }
-
-  onSelectRecipient() {
-    this.recipientEvents.selectRecipient(undefined);
-  }
-
-  onRemoveRecipient() {
-    this.detailsModel.update((prev) => {
-      return {
-        ...prev,
-        recipient: null,
-      };
-    });
-  }
-
-  onSelectProject() {
-    this.projectEvents.selectProject(undefined);
-  }
-
-  onRemoveProject() {
-    this.detailsModel.update((prev) => {
-      return {
-        ...prev,
-        project: null,
-      };
-    });
-  }
-
-  onSelectCategory() {
-    this.categoryEvents.selectCategory(undefined);
-  }
-
-  onRemoveCategory() {
-    this.detailsModel.update((prev) => {
-      return {
-        ...prev,
-        category: null,
-        product: null,
-        quantity: null,
-        invoiceNumber: null,
-        billingEndDate: null,
-        billingStartDate: null,
-      };
-    });
-  }
-
-  onSelectProduct() {
-    this.productEvents.selectProduct(undefined);
-  }
-
-  onRemoveProduct() {
-    this.detailsModel.update((prev) => {
-      return {
-        ...prev,
-        product: null,
-      };
-    });
-  }
-
-  onRemoveAccount(type: keyof AccountsModel) {
-    this.accountsModel.update((prev) => {
-      return {
-        ...prev,
-        [type]: null,
-      };
-    });
-  }
-
-  onAmountNext() {
-    // Object.values(this.amountForm).forEach(field => {
-    //   field().markAsTouched();
-    // });
   }
 }

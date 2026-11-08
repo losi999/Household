@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { AccountDialog, AccountDialogData, AccountDialogResult } from '@household/app/account/account-dialog/account-dialog';
 import { accountApiEvents, accountEvents } from '@household/state/account/account-events';
-import { BottomSheetService, BottomSubmenuItem, DialogService, dispatchIfConfirmed } from '@household/shared-ui';
+import { BottomSheetService, BottomSubmenuItem, DialogService, dispatchIfConfirmed, selectionEvents } from '@household/shared-ui';
 import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
 import { EMPTY, exhaustMap, filter, map } from 'rxjs';
@@ -99,17 +99,22 @@ export const withAccountEvents = () => {
         ),
         openAccountSelectDialog: events.on(accountEvents.selectAccount)
           .pipe(
-            exhaustMap(({ payload }) => {
+            exhaustMap(({ payload: { selectionId, accounts } }) => {
               return dialog.open<AccountSelectDialog, AccountSelectDialogData, AccountSelectDialogResult>(AccountSelectDialog, {
                 disableClose: true,
-                data: payload,
+                data: accounts,
                 width: '90vw',
                 height: '80vh',
-              }).afterClosed();
-            }),
-            filter(res => !!res),
-            map((response) => {
-              return accountEvents.accountSelected(response);
+              }).afterClosed()
+                .pipe(
+                  filter(res => !!res),
+                  map((account) => {
+                    return selectionEvents.itemSelected({
+                      selectionId,
+                      item: account,
+                    });
+                  }),
+                );
             }),
           ),
         openAccountListItemSubmenu: events.on(accountEvents.openAccountListItemSubmenu)

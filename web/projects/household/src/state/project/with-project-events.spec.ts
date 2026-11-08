@@ -2,7 +2,7 @@
 // first resolves that cycle in the same order as the application does.
 import '@household/state/project/project-store';
 import { TestBed } from '@angular/core/testing';
-import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher } from '@household/shared-ui';
+import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher, selectionEvents } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore } from '@ngrx/signals';
 import { Mock } from 'vitest';
@@ -265,6 +265,7 @@ describe('withProjectEvents', () => {
   });
 
   describe('dispatching selectProject', () => {
+    const selectionId = 'project';
     const projectResponse = testDataFactory.project.response();
     const selectableProjects = [toSearchable(testDataFactory.project.response(), ['name'])];
 
@@ -273,7 +274,10 @@ describe('withProjectEvents', () => {
         afterClosed: () => of(projectResponse),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(projectEvents.selectProject(selectableProjects));
+      dispatcher.dispatch(projectEvents.selectProject({
+        selectionId,
+        projects: selectableProjects,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, ProjectSelectDialog, {
         disableClose: true,
@@ -281,7 +285,10 @@ describe('withProjectEvents', () => {
         height: '80vh',
         width: '90vw',
       });
-      validateDispatcher(dispatchSpy, projectEvents.projectSelected(projectResponse));
+      validateDispatcher(dispatchSpy, selectionEvents.itemSelected({
+        selectionId,
+        item: projectResponse,
+      }));
     });
 
     it('should open dialog and not dispatch anything if cancelled', () => {
@@ -289,7 +296,10 @@ describe('withProjectEvents', () => {
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(projectEvents.selectProject(selectableProjects));
+      dispatcher.dispatch(projectEvents.selectProject({
+        selectionId,
+        projects: selectableProjects,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, ProjectSelectDialog, {
         disableClose: true,
@@ -305,7 +315,10 @@ describe('withProjectEvents', () => {
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(projectEvents.selectProject(undefined));
+      dispatcher.dispatch(projectEvents.selectProject({
+        selectionId,
+        projects: undefined,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, ProjectSelectDialog, {
         disableClose: true,

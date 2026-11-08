@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { RecipientService } from '@household/services/recipient-service';
 import { RecipientState, RecipientStore, provideRecipientStoreInitialState } from '@household/state/recipient/recipient-store';
-import { BottomSheetService, DialogService } from '@household/shared-ui';
+import { BottomSheetService, DialogService, SelectionStore } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
 import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { MatDialog } from '@angular/material/dialog';
@@ -17,6 +17,7 @@ describe('Recipient store', () => {
   let initialState: RecipientState;
   let store: InstanceType<typeof RecipientStore>;
   let dispatcher: Dispatcher;
+  let selectionStore: InstanceType<typeof SelectionStore>;
   let mockRecipientService: MockService<RecipientService>;
   let mockDialogService: MockService<DialogService>;
   let mockMatDialog: MockService<MatDialog>;
@@ -28,7 +29,6 @@ describe('Recipient store', () => {
     initialState = {
       isInProgress: [],
       recipientList: [],
-      selectedRecipient: undefined,
       ...initial,
     };
 
@@ -61,6 +61,8 @@ describe('Recipient store', () => {
 
     store = TestBed.inject(RecipientStore);
     dispatcher = TestBed.inject(Dispatcher);
+    // The reducer of the selection store only sees the events once the store exists
+    selectionStore = TestBed.inject(SelectionStore);
   };
 
   it('should initialize with the provided state', () => {
@@ -71,17 +73,14 @@ describe('Recipient store', () => {
       },
     ];
     const isInProgress = [testDataFactory.recipient.id()];
-    const selectedRecipient = testDataFactory.recipient.response();
 
     setup({
       recipientList,
       isInProgress,
-      selectedRecipient,
     });
 
     expect(store.recipientList()).toEqual(recipientList);
     expect(store.isInProgress()).toEqual(isInProgress);
-    expect(store.selectedRecipient()).toEqual(selectedRecipient);
   });
 
   it('should initialize with the default state', () => {
@@ -89,7 +88,6 @@ describe('Recipient store', () => {
 
     expect(store.recipientList()).toEqual([]);
     expect(store.isInProgress()).toEqual([]);
-    expect(store.selectedRecipient()).toBeUndefined();
   });
 
   it('should have the recipient selection working with the dialog and the reducer', () => {
@@ -99,9 +97,14 @@ describe('Recipient store', () => {
       afterClosed: () => of(recipient),
     } as any);
 
-    dispatcher.dispatch(recipientEvents.selectRecipient(undefined));
+    dispatcher.dispatch(recipientEvents.selectRecipient({
+      selectionId: 'recipient',
+      recipients: undefined,
+    }));
 
-    expect(store.selectedRecipient()).toEqual(recipient);
+    expect(selectionStore.selectedItems()).toEqual({
+      recipient,
+    });
   });
 
   it('should have the reducer wired in', () => {

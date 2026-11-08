@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { RecipientDialog, RecipientDialogData, RecipientDialogResult } from '@household/app/recipient/recipient-dialog/recipient-dialog';
 import { recipientApiEvents, recipientEvents } from '@household/state/recipient/recipient-events';
-import { DialogService, BottomSheetService, dispatchIfConfirmed } from '@household/shared-ui';
+import { DialogService, BottomSheetService, dispatchIfConfirmed, selectionEvents } from '@household/shared-ui';
 import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
 import { exhaustMap, filter, map } from 'rxjs';
@@ -96,17 +96,22 @@ export const withRecipientEvents = () => {
           ),
         openRecipientSelectDialog: events.on(recipientEvents.selectRecipient)
           .pipe(
-            exhaustMap(({ payload }) => {
+            exhaustMap(({ payload: { selectionId, recipients } }) => {
               return dialog.open<RecipientSelectDialog, RecipientSelectDialogData, RecipientSelectDialogResult>(RecipientSelectDialog, {
                 disableClose: true,
-                data: payload,
+                data: recipients,
                 width: '90vw',
                 height: '80vh',
-              }).afterClosed();
-            }),
-            filter(res => !!res),
-            map((response) => {
-              return recipientEvents.recipientSelected(response);
+              }).afterClosed()
+                .pipe(
+                  filter(res => !!res),
+                  map((recipient) => {
+                    return selectionEvents.itemSelected({
+                      selectionId,
+                      item: recipient,
+                    });
+                  }),
+                );
             }),
           ),
       };

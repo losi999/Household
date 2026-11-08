@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore, withState } from '@ngrx/signals';
-import { accountApiEvents, accountEvents } from '@household/state/account/account-events';
+import { accountApiEvents } from '@household/state/account/account-events';
 import { AccountState } from '@household/state/account/account-store';
 import { withAccountReducer } from '@household/state/account/with-account-reducer';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
@@ -21,7 +21,6 @@ describe('withAccountReducer', () => {
 
   const validateState = (currentValue?: Partial<AccountState>) => {
     expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
-    expect(store.selectedAccount(), 'selectedAccount').toEqual(Object.hasOwn(currentValue ?? {}, 'selectedAccount') ? currentValue.selectedAccount : initialState.selectedAccount);
     expect(store.accountList(), 'accountList').toEqual(Object.hasOwn(currentValue ?? {}, 'accountList') ? currentValue.accountList : initialState.accountList);
   };
 
@@ -31,7 +30,6 @@ describe('withAccountReducer', () => {
     initialState = {
       accountList: [],
       isInProgress: [],
-      selectedAccount: undefined,
       ...initial,
     };
 
@@ -41,32 +39,6 @@ describe('withAccountReducer', () => {
 
   beforeEach(() => {
     setup();
-  });
-
-  describe('selectAccount', () => {
-    it('should clear the selected account', () => {
-      setup({
-        selectedAccount: testDataFactory.account.response(),
-      });
-
-      dispatcher.dispatch(accountEvents.selectAccount([toSearchable(testDataFactory.account.response(), ['name'])]));
-
-      validateState({
-        selectedAccount: undefined,
-      });
-    });
-  });
-
-  describe('accountSelected', () => {
-    it('should store the selected account', () => {
-      const accountResponse = testDataFactory.account.response();
-
-      dispatcher.dispatch(accountEvents.accountSelected(accountResponse));
-
-      validateState({
-        selectedAccount: accountResponse,
-      });
-    });
   });
 
   describe('listAccountsCompleted', () => {

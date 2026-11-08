@@ -12,13 +12,11 @@ const RECIPIENT_STORE_INITIAL_STATE = new InjectionToken<RecipientState>('RECIPI
 export type RecipientState = {
   recipientList: Searchable<Responses.Recipient>[];
   isInProgress: Api.Recipient.Id[];
-  selectedRecipient: Responses.Recipient;
 };
 
 export const provideRecipientStoreInitialState = (state: RecipientState = {
   isInProgress: [],
   recipientList: [],
-  selectedRecipient: undefined,
 }): ValueProvider => {
   return {
     provide: RECIPIENT_STORE_INITIAL_STATE,

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { CategoryService } from '@household/services/category-service';
 import { CategoryState, CategoryStore, provideCategoryStoreInitialState } from '@household/state/category/category-store';
-import { BottomSheetService, DialogService } from '@household/shared-ui';
+import { BottomSheetService, DialogService, SelectionStore } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
 import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { MatDialog } from '@angular/material/dialog';
@@ -19,6 +19,7 @@ describe('Category store', () => {
   let initialState: CategoryState;
   let store: InstanceType<typeof CategoryStore>;
   let dispatcher: Dispatcher;
+  let selectionStore: InstanceType<typeof SelectionStore>;
   let mockCategoryService: MockService<CategoryService>;
   let mockDialogService: MockService<DialogService>;
   let mockMatDialog: MockService<MatDialog>;
@@ -30,7 +31,6 @@ describe('Category store', () => {
     initialState = {
       isInProgress: [],
       categoryList: [],
-      selectedCategory: undefined,
       ...initial,
     };
 
@@ -63,21 +63,20 @@ describe('Category store', () => {
 
     store = TestBed.inject(CategoryStore);
     dispatcher = TestBed.inject(Dispatcher);
+    // The reducer of the selection store only sees the events once the store exists
+    selectionStore = TestBed.inject(SelectionStore);
   };
 
   it('should initialize with the provided state', () => {
     const categoryList = [toSearchable(testDataFactory.category.response(), ['fullName'], CATEGORY_FULL_NAME_SEPARATOR)];
-    const selectedCategory = testDataFactory.category.response();
     const isInProgress = [testDataFactory.category.id()];
 
     setup({
       categoryList,
-      selectedCategory,
       isInProgress,
     });
 
     expect(store.categoryList()).toEqual(categoryList);
-    expect(store.selectedCategory()).toEqual(selectedCategory);
     expect(store.isInProgress()).toEqual(isInProgress);
   });
 
@@ -85,17 +84,33 @@ describe('Category store', () => {
     setup();
 
     expect(store.categoryList()).toEqual([]);
-    expect(store.selectedCategory()).toBeUndefined();
     expect(store.isInProgress()).toEqual([]);
+  });
+
+  it('should have the category selection working with the dialog and the selection store', () => {
+    setup();
+    const category = testDataFactory.category.response();
+    mockMatDialog.functions.open.mockReturnValue({
+      afterClosed: () => of(category),
+    } as any);
+
+    dispatcher.dispatch(categoryEvents.selectCategory({
+      selectionId: 'category',
+      categories: undefined,
+    }));
+
+    expect(selectionStore.selectedItems()).toEqual({
+      category,
+    });
   });
 
   it('should have the reducer wired in', () => {
     setup();
     const categoryResponse = testDataFactory.category.response();
 
-    dispatcher.dispatch(categoryEvents.categorySelected(categoryResponse));
+    dispatcher.dispatch(categoryApiEvents.listCategoriesCompleted([categoryResponse]));
 
-    expect(store.selectedCategory()).toEqual(categoryResponse);
+    expect(store.categoryList().map(c => c.categoryId)).toEqual([categoryResponse.categoryId]);
   });
 
   it('should have the UI event handlers wired in', () => {

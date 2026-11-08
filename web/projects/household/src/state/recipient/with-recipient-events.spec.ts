@@ -2,7 +2,7 @@
 // first resolves that cycle in the same order as the application does.
 import '@household/state/recipient/recipient-store';
 import { TestBed } from '@angular/core/testing';
-import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher } from '@household/shared-ui';
+import { BottomSheetService, createDispatcherSpy, DialogService, validateDispatcher, selectionEvents } from '@household/shared-ui';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore } from '@ngrx/signals';
 import { Mock } from 'vitest';
@@ -265,6 +265,7 @@ describe('withRecipientEvents', () => {
   });
 
   describe('dispatching selectRecipient', () => {
+    const selectionId = 'recipient';
     const recipientResponse = testDataFactory.recipient.response();
     const selectableRecipients = [toSearchable(testDataFactory.recipient.response(), ['name'])];
 
@@ -273,7 +274,10 @@ describe('withRecipientEvents', () => {
         afterClosed: () => of(recipientResponse),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(recipientEvents.selectRecipient(selectableRecipients));
+      dispatcher.dispatch(recipientEvents.selectRecipient({
+        selectionId,
+        recipients: selectableRecipients,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, RecipientSelectDialog, {
         disableClose: true,
@@ -281,7 +285,10 @@ describe('withRecipientEvents', () => {
         height: '80vh',
         width: '90vw',
       });
-      validateDispatcher(dispatchSpy, recipientEvents.recipientSelected(recipientResponse));
+      validateDispatcher(dispatchSpy, selectionEvents.itemSelected({
+        selectionId,
+        item: recipientResponse,
+      }));
     });
 
     it('should open dialog and not dispatch anything if cancelled', () => {
@@ -289,7 +296,10 @@ describe('withRecipientEvents', () => {
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(recipientEvents.selectRecipient(selectableRecipients));
+      dispatcher.dispatch(recipientEvents.selectRecipient({
+        selectionId,
+        recipients: selectableRecipients,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, RecipientSelectDialog, {
         disableClose: true,
@@ -305,7 +315,10 @@ describe('withRecipientEvents', () => {
         afterClosed: () => of(undefined),
       } as MatDialogRef<any>);
 
-      dispatcher.dispatch(recipientEvents.selectRecipient(undefined));
+      dispatcher.dispatch(recipientEvents.selectRecipient({
+        selectionId,
+        recipients: undefined,
+      }));
 
       validateFunctionCall(mockMatDialog.functions.open, RecipientSelectDialog, {
         disableClose: true,

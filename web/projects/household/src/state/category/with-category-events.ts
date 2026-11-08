@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { CategoryDialog, CategoryDialogData, CategoryDialogResult } from '@household/app/category/category-dialog/category-dialog';
 import { categoryApiEvents, categoryEvents } from '@household/state/category/category-events';
-import { DialogService, BottomSheetService, dispatchIfConfirmed } from '@household/shared-ui';
+import { DialogService, BottomSheetService, dispatchIfConfirmed, selectionEvents } from '@household/shared-ui';
 import { signalStoreFeature } from '@ngrx/signals';
 import { Events, withEventHandlers } from '@ngrx/signals/events';
 import { exhaustMap, filter, map } from 'rxjs';
@@ -96,17 +96,22 @@ export const withCategoryEvents = () => {
           ),
         openCategorySelectDialog: events.on(categoryEvents.selectCategory)
           .pipe(
-            exhaustMap(({ payload }) => {
+            exhaustMap(({ payload: { selectionId, categories } }) => {
               return dialog.open<CategorySelectDialog, CategorySelectDialogData, CategorySelectDialogResult>(CategorySelectDialog, {
                 disableClose: true,
-                data: payload,
+                data: categories,
                 width: '90vw',
                 height: '80vh',
-              }).afterClosed();
-            }),
-            filter(res => !!res),
-            map((response) => {
-              return categoryEvents.categorySelected(response);
+              }).afterClosed()
+                .pipe(
+                  filter(res => !!res),
+                  map((category) => {
+                    return selectionEvents.itemSelected({
+                      selectionId,
+                      item: category,
+                    });
+                  }),
+                );
             }),
           ),
       };

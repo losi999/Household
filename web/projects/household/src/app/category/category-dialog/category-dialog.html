@@ -8,18 +8,7 @@
     <mat-button-toggle data-testId="category-type-inventory" value="inventory"><mat-icon>inventory_2</mat-icon>Leltározható</mat-button-toggle>
     <mat-button-toggle data-testId="category-type-invoice" value="invoice"><mat-icon>receipt_long</mat-icon>Számla</mat-button-toggle>
   </mat-button-toggle-group>
-  <div class="parent">
-    @if (parentCategory()) {
-    <shared-icon-text [text]="parentCategory().fullName" icon="account_tree" size="small" />
-    <button matIconButton [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
-    <mat-menu #menu="matMenu" yPosition="above" xPosition="before">
-      <button mat-menu-item data-testId="edit-parent-button" (click)="onEditParent()"><mat-icon>edit</mat-icon>Módosítás</button>
-      <button mat-menu-item data-testId="remove-parent-button" (click)="onRemoveParent()"><mat-icon>close</mat-icon>Eltávolítás</button>
-    </mat-menu>
-    } @else {
-    <button matButton="tonal" data-testId="add-parent-button" (click)="onEditParent()"><mat-icon>account_tree</mat-icon>Szülő hozzáadása</button>
-    }
-  </div>
+  <household-category-selector label="Szülő" [items]="parentCategoryItems()" [formField]="categoryForm.parentCategory" />
 </div>
 <div mat-dialog-actions>
   <button matButton="filled" data-testId="save-button" [disabled]="categoryForm().invalid()" (click)="onSave()">Mentés</button>

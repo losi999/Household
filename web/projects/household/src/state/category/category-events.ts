@@ -14,8 +14,10 @@ export const categoryEvents = eventGroup({
     deleteCategory: type<Responses.Category>(),
     mergeCategories: type<Responses.Category>(),
     openCategoryListItemSubmenu: type<Responses.Category>(),
-    selectCategory: type<Searchable<Responses.Category>[] | undefined>(),
-    categorySelected: type<Responses.Category>(),
+    selectCategory: type<{
+      selectionId: string;
+      categories: Searchable<Responses.Category>[] | undefined;
+    }>(),
   },
 });
 

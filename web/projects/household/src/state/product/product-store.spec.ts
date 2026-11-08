@@ -3,7 +3,7 @@ import { ProductService } from '@household/services/product-service';
 import { ProductState, ProductStore, provideProductStoreInitialState } from '@household/state/product/product-store';
 import { Dispatcher } from '@ngrx/signals/events';
 import { MatDialog } from '@angular/material/dialog';
-import { BottomSheetService, DialogService } from '@household/shared-ui';
+import { BottomSheetService, DialogService, SelectionStore } from '@household/shared-ui';
 import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { productApiEvents, productEvents } from '@household/state/product/product-events';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
@@ -16,6 +16,7 @@ describe('Product store', () => {
   let initialState: ProductState;
   let store: InstanceType<typeof ProductStore>;
   let dispatcher: Dispatcher;
+  let selectionStore: InstanceType<typeof SelectionStore>;
   let mockProductService: MockService<ProductService>;
   let mockBottomSheetService: MockService<BottomSheetService>;
   let mockDialogService: MockService<DialogService>;
@@ -26,7 +27,6 @@ describe('Product store', () => {
 
     initialState = {
       isInProgress: [],
-      selectedProduct: undefined,
       productList: [],
       ...initial,
     };
@@ -60,22 +60,21 @@ describe('Product store', () => {
 
     store = TestBed.inject(ProductStore);
     dispatcher = TestBed.inject(Dispatcher);
+    // The reducer of the selection store only sees the events once the store exists
+    selectionStore = TestBed.inject(SelectionStore);
   };
 
   it('should initialize with the provided state', () => {
     const productList = [testDataFactory.product.response.generic()];
     const isInProgress = [testDataFactory.product.id()];
-    const selectedProduct = testDataFactory.product.response.generic();
 
     setup({
       productList,
       isInProgress,
-      selectedProduct,
     });
 
     expect(store.productList()).toEqual(productList);
     expect(store.isInProgress()).toEqual(isInProgress);
-    expect(store.selectedProduct()).toEqual(selectedProduct);
   });
 
   it('should initialize with the default state', () => {
@@ -83,7 +82,23 @@ describe('Product store', () => {
 
     expect(store.productList()).toEqual([]);
     expect(store.isInProgress()).toEqual([]);
-    expect(store.selectedProduct()).toBeUndefined();
+  });
+
+  it('should have the product selection working with the dialog and the selection store', () => {
+    setup();
+    const product = testDataFactory.product.response.generic();
+    mockMatDialog.functions.open.mockReturnValue({
+      afterClosed: () => of(product),
+    } as any);
+
+    dispatcher.dispatch(productEvents.selectProduct({
+      selectionId: 'product',
+      products: undefined,
+    }));
+
+    expect(selectionStore.selectedItems()).toEqual({
+      product,
+    });
   });
 
   it('should have the reducer wired in', () => {

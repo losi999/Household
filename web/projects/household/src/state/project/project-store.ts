@@ -12,13 +12,11 @@ const PROJECT_STORE_INITIAL_STATE = new InjectionToken<ProjectState>('PROJECT_ST
 export type ProjectState = {
   projectList: Searchable<Responses.Project>[];
   isInProgress: Api.Project.Id[];
-  selectedProject: Responses.Project;
 };
 
 export const provideProjectStoreInitialState = (state: ProjectState = {
   isInProgress: [],
   projectList: [],
-  selectedProject: undefined,
 }): ValueProvider => {
   return {
     provide: PROJECT_STORE_INITIAL_STATE,

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Dispatcher } from '@ngrx/signals/events';
 import { signalStore, withState } from '@ngrx/signals';
-import { productApiEvents, productEvents } from '@household/state/product/product-events';
+import { productApiEvents } from '@household/state/product/product-events';
 import { ProductState } from '@household/state/product/product-store';
 import { withProductReducer } from '@household/state/product/with-product-reducer';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
@@ -21,7 +21,6 @@ describe('withProductReducer', () => {
   let dispatcher: Dispatcher;
 
   const validateState = (currentValue?: Partial<ProductState>) => {
-    expect(store.selectedProduct(), 'selectedProduct').toEqual(Object.hasOwn(currentValue ?? {}, 'selectedProduct') ? currentValue.selectedProduct : initialState.selectedProduct);
     expect(store.isInProgress(), 'isInProgress').toEqual(Object.hasOwn(currentValue ?? {}, 'isInProgress') ? currentValue.isInProgress : initialState.isInProgress);
     expect(store.productList(), 'productList').toEqual(Object.hasOwn(currentValue ?? {}, 'productList') ? currentValue.productList : initialState.productList);
   };
@@ -31,7 +30,6 @@ describe('withProductReducer', () => {
 
     initialState = {
       isInProgress: [],
-      selectedProduct: undefined,
       productList: [],
       ...initial,
     };
@@ -42,70 +40,6 @@ describe('withProductReducer', () => {
 
   beforeEach(() => {
     setup();
-  });
-
-  describe('createProduct', () => {
-    it('should clear the selected product', () => {
-      setup({
-        selectedProduct: testDataFactory.product.response.generic({
-          name: 'parent',
-        }),
-      });
-
-      dispatcher.dispatch(productEvents.createProduct());
-
-      validateState({
-        selectedProduct: undefined,
-      });
-    });
-  });
-
-  describe('updateProduct', () => {
-    it('should clear the selected product', () => {
-      setup({
-        selectedProduct: testDataFactory.product.response.generic({
-          name: 'parent',
-        }),
-      });
-
-      dispatcher.dispatch(productEvents.updateProduct(testDataFactory.product.response.generic({
-        name: 'product',
-      })));
-
-      validateState({
-        selectedProduct: undefined,
-      });
-    });
-  });
-
-  describe('selectProduct', () => {
-    it('should clear the selected product', () => {
-      setup({
-        selectedProduct: testDataFactory.product.response.generic({
-          name: 'parent',
-        }),
-      });
-
-      dispatcher.dispatch(productEvents.selectProduct(undefined));
-
-      validateState({
-        selectedProduct: undefined,
-      });
-    });
-  });
-
-  describe('productSelected', () => {
-    it('should store the selected product', () => {
-      const product = testDataFactory.product.response.generic({
-        name: 'parent',
-      });
-
-      dispatcher.dispatch(productEvents.productSelected(product));
-
-      validateState({
-        selectedProduct: product,
-      });
-    });
   });
 
   describe('listProductsCompleted', () => {

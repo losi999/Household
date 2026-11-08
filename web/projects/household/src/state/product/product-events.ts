@@ -16,8 +16,10 @@ export const productEvents = eventGroup({
       product: Responses.Product;
       hasChildren: boolean;
     }>(),
-    selectProduct: type<Searchable<Responses.Product>[] | undefined>(),
-    productSelected: type<Responses.Product>(),
+    selectProduct: type<{
+      selectionId: string;
+      products: Searchable<Responses.Product>[] | undefined;
+    }>(),
   },
 });
 

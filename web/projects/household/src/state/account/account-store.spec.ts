@@ -3,7 +3,7 @@ import { AccountService } from '@household/services/account-service';
 import { AccountState, AccountStore, provideAccountStoreInitialState } from '@household/state/account/account-store';
 import { Dispatcher } from '@ngrx/signals/events';
 import { MatDialog } from '@angular/material/dialog';
-import { BottomSheetService, DialogService } from '@household/shared-ui';
+import { BottomSheetService, DialogService, SelectionStore } from '@household/shared-ui';
 import { AccountDialog } from '@household/app/account/account-dialog/account-dialog';
 import { createMockService, MockService } from '@household/shared/common/unit-testing';
 import { accountApiEvents, accountEvents } from '@household/state/account/account-events';
@@ -18,6 +18,7 @@ describe('Account store', () => {
   let initialState: AccountState;
   let store: InstanceType<typeof AccountStore>;
   let dispatcher: Dispatcher;
+  let selectionStore: InstanceType<typeof SelectionStore>;
   let mockAccountService: MockService<AccountService>;
   let mockMatDialog: MockService<MatDialog>;
   let mockBottomSheetService: MockService<BottomSheetService>;
@@ -29,7 +30,6 @@ describe('Account store', () => {
     initialState = {
       accountList: [],
       isInProgress: [],
-      selectedAccount: undefined,
       ...initial,
     };
 
@@ -62,22 +62,21 @@ describe('Account store', () => {
 
     store = TestBed.inject(AccountStore);
     dispatcher = TestBed.inject(Dispatcher);
+    // The reducer of the selection store only sees the events once the store exists
+    selectionStore = TestBed.inject(SelectionStore);
   };
 
   it('should initialize with the provided state', () => {
     const accountList = [testDataFactory.account.response()];
     const isInProgress = [testDataFactory.account.id()];
-    const selectedAccount = testDataFactory.account.response();
 
     setup({
       accountList,
       isInProgress,
-      selectedAccount,
     });
 
     expect(store.accountList()).toEqual(accountList);
     expect(store.isInProgress()).toEqual(isInProgress);
-    expect(store.selectedAccount()).toEqual(selectedAccount);
   });
 
   it('should initialize with the default state', () => {
@@ -85,7 +84,6 @@ describe('Account store', () => {
 
     expect(store.accountList()).toEqual([]);
     expect(store.isInProgress()).toEqual([]);
-    expect(store.selectedAccount()).toBeUndefined();
   });
 
   it('should have the reducer wired in', () => {
@@ -115,9 +113,14 @@ describe('Account store', () => {
       afterClosed: () => of(account),
     } as any);
 
-    dispatcher.dispatch(accountEvents.selectAccount(undefined));
+    dispatcher.dispatch(accountEvents.selectAccount({
+      selectionId: 'account',
+      accounts: undefined,
+    }));
 
-    expect(store.selectedAccount()).toEqual(account);
+    expect(selectionStore.selectedItems()).toEqual({
+      account,
+    });
   });
 
   it('should have the submenu handler wired in', () => {

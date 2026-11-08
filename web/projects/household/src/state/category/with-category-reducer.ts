@@ -1,4 +1,4 @@
-import { categoryApiEvents, categoryEvents } from '@household/state/category/category-events';
+import { categoryApiEvents } from '@household/state/category/category-events';
 import { CategoryState } from '@household/state/category/category-store';
 import { toSearchable } from '@household/shared/common/utils';
 import { signalStoreFeature } from '@ngrx/signals';
@@ -10,16 +10,6 @@ import { CATEGORY_FULL_NAME_SEPARATOR } from '@household/shared/constants';
 export const withCategoryReducer = () => {
   return signalStoreFeature(
     withReducer<CategoryState>(
-      on(categoryEvents.selectCategory, categoryEvents.createCategory, categoryEvents.updateCategory, () => {
-        return {
-          selectedCategory: undefined,
-        };
-      }),
-      on(categoryEvents.categorySelected, ({ payload }) => {
-        return {
-          selectedCategory: payload,
-        };
-      }),
       on(categoryApiEvents.listCategoriesCompleted, ({ payload }) => {
         return {
           categoryList: payload.map(p => {

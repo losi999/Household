@@ -14,8 +14,10 @@ export const accountEvents = eventGroup({
     openAccount: type<Responses.Account>(),
     closeAccount: type<Responses.Account>(),
     openAccountListItemSubmenu: type<Responses.Account>(),
-    selectAccount: type<Searchable<Responses.Account>[] | undefined>(),
-    accountSelected: type<Responses.Account>(),
+    selectAccount: type<{
+      selectionId: string;
+      accounts: Searchable<Responses.Account>[] | undefined;
+    }>(),
   },
 });
 

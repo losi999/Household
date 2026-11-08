@@ -1,5 +1,5 @@
 import { toSearchable } from '@household/shared/common/utils';
-import { accountApiEvents, accountEvents } from '@household/state/account/account-events';
+import { accountApiEvents } from '@household/state/account/account-events';
 import { AccountState } from '@household/state/account/account-store';
 import { signalStoreFeature } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
@@ -7,16 +7,6 @@ import { on, withReducer } from '@ngrx/signals/events';
 export const withAccountReducer = () => {
   return signalStoreFeature(
     withReducer<AccountState>(
-      on(accountEvents.selectAccount, () => {
-        return {
-          selectedAccount: undefined,
-        };
-      }),
-      on(accountEvents.accountSelected, ({ payload }) => {
-        return {
-          selectedAccount: payload,
-        };
-      }),
       on(accountApiEvents.listAccountsCompleted, ({ payload }) => {
         return {
           accountList: payload.map(a => toSearchable(a, ['name'])),
