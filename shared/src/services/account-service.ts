@@ -4,6 +4,7 @@ import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { DocumentUpdate } from '@household/shared/types/common';
 import { Types } from 'mongoose';
+import { AccountType } from '@household/shared/enums';
 
 export interface IAccountService {
   saveAccount(doc: Documents.Account): Promise<Documents.Account>;
@@ -65,12 +66,10 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
     },
     deleteAccount: async (accountId) => {
       return mongodbService.inTransaction(async (models, session) => {
-        await models.accounts.deleteOne({
-          _id: accountId,
-        }, {
-          session,
+        const acc = await models.accounts.findByIdAndDelete(accountId, {
+          session,          
         });
-          
+
         await models.transactions.deleteMany({
           $or: [
             {
@@ -82,38 +81,40 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
             {
               payingAccount: accountId,
             },
-            {
-              transactionType: 'reimbursement',
-              ownerAccount: accountId,
-            },
+            ...(acc.accountType !== AccountType.Loan ? [
+              {
+                ownerAccount: accountId,
+              },
+            ] : []),
           ],
         }, {
           session,
         });
 
-        await models.transactions.updateMany({
-          transactionType: 'deferred',
-          ownerAccount: accountId,
-        }, [
-          {
-            $set: {
-              transactionType: 'payment',
-              account: '$payingAccount',
+        if (acc.accountType === AccountType.Loan) {          
+          await models.transactions.updateMany({
+            ownerAccount: accountId,
+          }, [
+            {
+              $set: {
+                transactionType: 'payment',
+                account: '$payingAccount',
+              },
             },
-          },
-          {
-            $unset: [
-              'ownerAccount',
-              'payingAccount',
-            ],
-          },
-        ], {
-          session,
-          updatePipeline: true,
-        });
+            {
+              $unset: [
+                'ownerAccount',
+                'payingAccount',
+              ],
+            },
+          ], {
+            session,
+            updatePipeline: true,
+          });
+        }
 
         return models.transactions.updateMany({
-          'deferredSplits.ownerAccount': accountId,
+          'loans.ownerAccount': accountId,
         }, [
           {
             $set: {
@@ -122,7 +123,7 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
                   '$splits',
                   {
                     $filter: {
-                      input: '$deferredSplits',
+                      input: '$loans',
                       cond: {
                         $eq: [
                           '$$this.ownerAccount',
@@ -135,9 +136,9 @@ export const accountServiceFactory = (mongodbService: IMongodbService): IAccount
                   },
                 ],
               },
-              deferredSplits: {
+              loans: {
                 $filter: {
-                  input: '$deferredSplits',
+                  input: '$loans',
                   cond: {
                     $ne: [
                       '$$this.ownerAccount',

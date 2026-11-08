@@ -2,15 +2,12 @@ import { entries, getCustomerId } from '@household/shared/common/utils';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/utils';
 
-import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { customerApiTest, customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
-import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(customerApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser') ;
 
@@ -26,7 +23,7 @@ test.describe('DELETE /customer/v1/customers/{customerId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestDeleteCustomer }) => {
       const res = await requestDeleteCustomer(customerDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      customerApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -41,15 +38,15 @@ test.describe('DELETE /customer/v1/customers/{customerId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestDeleteCustomer }) => {
           const res = await requestDeleteCustomer(customerDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          customerApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should delete customer', async ({ requestDeleteCustomer, saveCustomer, findCustomerById }) => {
           await saveCustomer(customerDocument);
           const res = await requestDeleteCustomer(getCustomerId(customerDocument));
-          expect(res).toBeNoContentResponse();
+          customerApiExpect(res).toBeNoContentResponse();
 
-          expect(await findCustomerById(getCustomerId(customerDocument))).toHaveBeenDeletedFromDatabase();
+          customerApiExpect(await findCustomerById(getCustomerId(customerDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test('should delete customer from blacklist', async ({ requestDeleteCustomer, saveCustomers, findCustomerById }) => {
@@ -58,10 +55,10 @@ test.describe('DELETE /customer/v1/customers/{customerId}', () => {
           });
           await saveCustomers(customerDocument, customerWithBlacklist);
           const res = await requestDeleteCustomer(getCustomerId(customerDocument));
-          expect(res).toBeNoContentResponse();
+          customerApiExpect(res).toBeNoContentResponse();
 
-          expect(await findCustomerById(getCustomerId(customerDocument))).toHaveBeenDeletedFromDatabase();
-          expect(customerDocument).toHaveBeenRemovedFromBlacklist(customerWithBlacklist, await findCustomerById(getCustomerId(customerWithBlacklist)));
+          customerApiExpect(await findCustomerById(getCustomerId(customerDocument))).toHaveBeenDeletedFromDatabase();
+          customerApiExpect(customerDocument).toHaveBeenRemovedFromBlacklist(customerWithBlacklist, await findCustomerById(getCustomerId(customerWithBlacklist)));
         });
 
         test.describe('should archive customer', () => {
@@ -76,9 +73,9 @@ test.describe('DELETE /customer/v1/customers/{customerId}', () => {
             await saveCalendarEntry(calendarEntryDocument);
 
             const res = await requestDeleteCustomer(getCustomerId(customerDocument));
-            expect(res).toBeNoContentResponse();
+            customerApiExpect(res).toBeNoContentResponse();
 
-            expect(customerDocument).toHaveBeenArchived(await findCustomerById(getCustomerId(customerDocument)));
+            customerApiExpect(customerDocument).toHaveBeenArchived(await findCustomerById(getCustomerId(customerDocument)));
           });
         });
 
@@ -86,8 +83,8 @@ test.describe('DELETE /customer/v1/customers/{customerId}', () => {
           test.describe('if customerId', () => {
             test('is not mongo id', async ({ requestDeleteCustomer }) => {
               const res = await requestDeleteCustomer(customerDataFactory.id('not-valid'));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'customerId');
+              customerApiExpect(res).toBeBadRequestResponse();
+              customerApiExpect(res).toHavePatternValidationError('pathParameters', 'customerId');
             });
           });
         });

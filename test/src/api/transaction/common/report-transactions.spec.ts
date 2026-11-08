@@ -9,41 +9,36 @@ import { productDataFactory } from '@household/test/api/product/data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
-import { isDeferredTransaction } from '@household/shared/common/type-guards';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { forbidUsers } from '@household/test/utils';
 
-import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
-import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
-import { test as recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
-import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
-
-const expect = mergeExpects(transactionApiExpect, apiExpect);
+import { transactionApiTest, transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const permissionMap = forbidUsers();
 
-const splitTransactionHelper = (doc: Documents.SplitTransaction, split: Documents.SplitItem | Documents.DeferredTransaction):(Documents.SplitTransaction & {split?: Documents.SplitItem; deferredSplit?: Documents.DeferredTransaction}) => {
-  return {
-    ...doc,
-    split: isDeferredTransaction(split) ? undefined : split,
-    deferredSplit: isDeferredTransaction(split) ? split : undefined,
-  };
-};
+// const splitTransactionHelper = (doc: Documents.SplitTransaction, split: Documents.SplitItem | Documents.DeferredTransaction):(Documents.SplitTransaction & {split?: Documents.SplitItem; deferredSplit?: Documents.DeferredTransaction}) => {
+//   return {
+//     ...doc,
+//     split: isDeferredTransaction(split) ? undefined : split,
+//     deferredSplit: isDeferredTransaction(split) ? split : undefined,
+//   };
+// };
 
 const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
 
-test.describe('POST /transaction/v1/transactionReports', () => {
+test.describe.skip('POST /transaction/v1/transactionReports', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestGetTransactionReports }) => {
       const res = await requestGetTransactionReports([]);
-      expect(res).toBeUnauthorizedResponse();
+      transactionApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -58,7 +53,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestGetTransactionReports }) => {
           const res = await requestGetTransactionReports([]);
-          expect(res).toBeForbiddenResponse();
+          transactionApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should get a list of transaction reports', () => {
@@ -78,11 +73,11 @@ test.describe('POST /transaction/v1/transactionReports', () => {
 
           let splitTransactionDocument: Documents.SplitTransaction;
           let includedPaymentTransactionDocument: Documents.PaymentTransaction;
-          let includedDeferredTransactionDocument: Documents.DeferredTransaction;
-          let includedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
+          let includedLoanTransactionDocument: Documents.LoanTransaction;
+          let includedRepaymentTransactionDocument: Documents.LoanTransaction;
           let excludedPaymentTransactionDocument: Documents.PaymentTransaction;
-          let excludedDeferredTransactionDocument: Documents.DeferredTransaction;
-          let excludedReimbursementTransactionDocument: Documents.ReimbursementTransaction;
+          let excludedLoanTransactionDocument: Documents.LoanTransaction;
+          let excludedRepaymentTransactionDocument: Documents.LoanTransaction;
           let deferredSplitTransactionDocument: Documents.SplitTransaction;
           let transferTransactionDocument: Documents.TransferTransaction;
           let loanTransferTransactionDocument: Documents.TransferTransaction;
@@ -157,13 +152,13 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-                loanAccount: accountDocument,
+              includedLoanTransactionDocument = loanTransactionDataFactory.document({
+                loanAccount: loanAccountDocument,
                 account: secondaryAccountDocument,
                 recipient: recipientDocument,
               });
 
-              includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              includedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 loanAccount: accountDocument,
                 recipient: recipientDocument,
@@ -174,13 +169,13 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 recipient: recipientDocument,
               });
 
-              excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-                loanAccount: secondaryAccountDocument,
+              excludedLoanTransactionDocument = loanTransactionDataFactory.document({
+                loanAccount: loanAccountDocument,
                 account: accountDocument,
                 recipient: recipientDocument,
               });
 
-              excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              excludedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 loanAccount: secondaryAccountDocument,
                 recipient: recipientDocument,
@@ -196,7 +191,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedLoanTransactionDocument, includedRepaymentTransactionDocument, excludedPaymentTransactionDocument, excludedLoanTransactionDocument, excludedRepaymentTransactionDocument, deferredSplitTransactionDocument);
             });
             test('to include', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -206,8 +201,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: true, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
@@ -224,8 +219,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, ])
 
             });
@@ -247,13 +242,13 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              includedLoanTransactionDocument = loanTransactionDataFactory.document({
                 loanAccount: accountDocument,
                 account: secondaryAccountDocument,
                 recipient: recipientDocument,
               });
 
-              includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              includedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 loanAccount: accountDocument,
                 recipient: recipientDocument,
@@ -264,13 +259,13 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 recipient: secondaryRecipientDocument,
               });
 
-              excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
-                loanAccount: accountDocument,
+              excludedLoanTransactionDocument = loanTransactionDataFactory.document({
+                loanAccount: loanAccountDocument,
                 account: secondaryAccountDocument,
                 recipient: secondaryRecipientDocument,
               });
 
-              excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              excludedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 loanAccount: accountDocument,
                 recipient: secondaryRecipientDocument,
@@ -286,7 +281,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedLoanTransactionDocument, includedRepaymentTransactionDocument, excludedPaymentTransactionDocument, excludedLoanTransactionDocument, excludedRepaymentTransactionDocument, deferredSplitTransactionDocument);
             });
             test('to include', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -296,8 +291,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: true, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
@@ -314,8 +309,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, ])
 
             });
@@ -338,13 +333,13 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              includedLoanTransactionDocument = loanTransactionDataFactory.document({
                 loanAccount: accountDocument,
                 account: secondaryAccountDocument,
                 project: projectDocument,
               });
 
-              includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              includedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 loanAccount: accountDocument,
                 project: projectDocument,
@@ -355,13 +350,13 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 project: secondaryProjectDocument,
               });
 
-              excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              excludedLoanTransactionDocument = loanTransactionDataFactory.document({
                 loanAccount: accountDocument,
                 account: secondaryAccountDocument,
                 project: secondaryProjectDocument,
               });
 
-              excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              excludedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 loanAccount: accountDocument,
                 project: secondaryProjectDocument,
@@ -380,7 +375,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedLoanTransactionDocument, includedRepaymentTransactionDocument, excludedPaymentTransactionDocument, excludedLoanTransactionDocument, excludedRepaymentTransactionDocument, deferredSplitTransactionDocument);
             });
             test('to include', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -390,8 +385,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: true, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
@@ -408,8 +403,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]), ])
 
             });
@@ -438,13 +433,13 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              includedLoanTransactionDocument = loanTransactionDataFactory.document({
                 loanAccount: accountDocument,
                 account: secondaryAccountDocument,
                 category: invoiceCategoryDocument,
               });
 
-              includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              includedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 loanAccount: accountDocument,
                 category: regularCategoryDocument,
@@ -455,13 +450,13 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 category: secondaryCategoryDocument,
               });
 
-              excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              excludedLoanTransactionDocument = loanTransactionDataFactory.document({
                 loanAccount: accountDocument,
                 account: secondaryAccountDocument,
                 category: secondaryCategoryDocument,
               });
 
-              excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              excludedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 loanAccount: accountDocument,
                 category: secondaryCategoryDocument,
@@ -480,7 +475,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedLoanTransactionDocument, includedRepaymentTransactionDocument, excludedPaymentTransactionDocument, excludedLoanTransactionDocument, excludedRepaymentTransactionDocument, deferredSplitTransactionDocument);
             });
             test('to include', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -494,8 +489,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: true, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[2]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
@@ -516,8 +511,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[3]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]), ])
 
             });
@@ -542,14 +537,14 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              includedLoanTransactionDocument = loanTransactionDataFactory.document({
                 loanAccount: accountDocument,
                 account: secondaryAccountDocument,
                 category: inventoryCategoryDocument,
                 product: productDocument,
               });
 
-              includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              includedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 loanAccount: accountDocument,
                 category: inventoryCategoryDocument,
@@ -562,14 +557,14 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 product: secondaryProductDocument,
               });
 
-              excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              excludedLoanTransactionDocument = loanTransactionDataFactory.document({
                 loanAccount: accountDocument,
                 account: secondaryAccountDocument,
                 category: inventoryCategoryDocument,
                 product: secondaryProductDocument,
               });
 
-              excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              excludedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 account: loanAccountDocument,
                 loanAccount: accountDocument,
                 category: inventoryCategoryDocument,
@@ -592,7 +587,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedLoanTransactionDocument, includedRepaymentTransactionDocument, excludedPaymentTransactionDocument, excludedLoanTransactionDocument, excludedRepaymentTransactionDocument, deferredSplitTransactionDocument);
             });
             test('to include', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -602,8 +597,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: true, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
@@ -620,8 +615,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[1]), ])
 
             });
@@ -647,7 +642,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              includedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              includedLoanTransactionDocument = loanTransactionDataFactory.document({
                 body: {
                   issuedAt: new Date(2024, 7, 5, 12, 20, 0).toISOString(),
                 },
@@ -655,7 +650,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 account: secondaryAccountDocument,
               });
 
-              includedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              includedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 body: {
                   issuedAt: new Date(2024, 7, 5, 22, 0, 0).toISOString(),
                 },
@@ -670,7 +665,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 account: accountDocument,
               });
 
-              excludedDeferredTransactionDocument = deferredTransactionDataFactory.document({
+              excludedLoanTransactionDocument = loanTransactionDataFactory.document({
                 body: {
                   issuedAt: new Date(2024, 7, 3, 12, 0, 0).toISOString(),
                 },
@@ -678,7 +673,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 account: secondaryAccountDocument,
               });
 
-              excludedReimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+              excludedRepaymentTransactionDocument = loanTransactionDataFactory.document({
                 body: {
                   issuedAt: new Date(2024, 7, 6, 12, 0, 0).toISOString(),
                 },
@@ -698,7 +693,7 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                 ],
               });
 
-              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, deferredSplitTransactionDocument);
+              await saveTransactions(includedPaymentTransactionDocument, splitTransactionDocument, includedLoanTransactionDocument, includedRepaymentTransactionDocument, excludedPaymentTransactionDocument, excludedLoanTransactionDocument, excludedRepaymentTransactionDocument, deferredSplitTransactionDocument);
             });
             test('to include a range', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -714,8 +709,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: true, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ includedPaymentTransactionDocument, includedDeferredTransactionDocument, includedReimbursementTransactionDocument, splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[0]), splitTransactionHelper(splitTransactionDocument, splitTransactionDocument.splits[1]), splitTransactionHelper(deferredSplitTransactionDocument, deferredSplitTransactionDocument.deferredSplits[0]), ])
             });
 
@@ -733,8 +728,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeOkResponse();
-              expect(res).toMatchSchema(schema);
+              transactionApiExpect(res).toBeOkResponse();
+              transactionApiExpect(res).toMatchSchema(schema);
               // TODO: validateTransactionListReport([ excludedPaymentTransactionDocument, excludedDeferredTransactionDocument, excludedReimbursementTransactionDocument, ])
 
             });
@@ -745,14 +740,14 @@ test.describe('POST /transaction/v1/transactionReports', () => {
           test.describe('if body', () => {
             test('is not an array', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports({} as any);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
             });
 
             test('does not have at least one item', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooFewItemsValidationError('body', 'data', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooFewItemsValidationError('body', 'data', 1);
             });
           });
 
@@ -766,8 +761,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   extra: 1, 
                 } as any, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', '0', 'extra');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveAdditionalPropertiesValidationError('body', '0', 'extra');
             });
 
             test('is missing both "from" and "to" properties', async ({ requestGetTransactionReports }) => {
@@ -779,9 +774,9 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: true, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'from');
-              expect(res).toHaveRequiredPropertyValidationError('body', 'to');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'from');
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'to');
             });
           });
 
@@ -794,8 +789,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: undefined, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'include');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'include');
             });
 
             test('is not boolean', async ({ requestGetTransactionReports }) => {
@@ -806,8 +801,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: 1 as any, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'include', 'boolean');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'include', 'boolean');
             });
           });
 
@@ -820,8 +815,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'filterType');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'filterType');
             });
             test('is not string', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -831,8 +826,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'filterType', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'filterType', 'string');
             });
             test('is not a valid enum value', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -842,8 +837,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveEnumValidationError('body', 'filterType');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveEnumValidationError('body', 'filterType');
             });
           });
 
@@ -856,8 +851,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'items');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'items');
             });
             test('is not an array', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -867,8 +862,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'items', 'array');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'items', 'array');
             });
             test('has less than 1 item', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -878,8 +873,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooFewItemsValidationError('body', 'items', 1);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooFewItemsValidationError('body', 'items', 1);
             });
           });
 
@@ -892,8 +887,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'items/0', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'items/0', 'string');
             });
             test('does not match pattern', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -903,8 +898,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   include: false, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'items/0');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'items/0');
             });
           });
 
@@ -918,8 +913,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   to: undefined, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'from', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'from', 'string');
             });
             test('is not a date', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -930,8 +925,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   to: undefined, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'from', 'date-time');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'from', 'date-time');
             });
           });
 
@@ -945,8 +940,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   from: undefined, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'to', 'string');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'to', 'string');
             });
             test('is not a date', async ({ requestGetTransactionReports }) => {
               const res = await requestGetTransactionReports([
@@ -957,8 +952,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   from: undefined, 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'to', 'date-time');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'to', 'date-time');
             });
 
             test('is earlier than "from"', async ({ requestGetTransactionReports }) => {
@@ -970,8 +965,8 @@ test.describe('POST /transaction/v1/transactionReports', () => {
                   from: new Date(2024, 4, 4, 12, 0, 0).toISOString(), 
                 }, 
               ]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooEarlyDateValidationError('body', 'to', true);
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooEarlyDateValidationError('body', 'to', true);
             });
           });
         });

@@ -5,13 +5,10 @@ import { draftTransactionDataFactory } from '@household/test/api/transaction/dra
 import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test as fileApiTest, expect as fileApiExpect } from '@household/test/fixtures/file-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as fileDbTest } from '@household/test/fixtures/file-db.fixture';
-
-const expect = mergeExpects(fileApiExpect, apiExpect);
+import { fileApiTest, fileApiExpect } from '@household/test/fixtures/file-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { fileDbTest } from '@household/test/fixtures/file-db.fixture';
 
 const permissionMap = allowUsers('editor') ;
 
@@ -31,7 +28,7 @@ test.describe('GET /file/v1/files', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestListFiles }) => {
       const res = await requestListFiles();
-      expect(res).toBeUnauthorizedResponse();
+      fileApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -46,16 +43,16 @@ test.describe('GET /file/v1/files', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestListFiles }) => {
           const res = await requestListFiles();
-          expect(res).toBeForbiddenResponse();
+          fileApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should get a list of files', async ({ requestListFiles, saveTransaction, saveFile }) => {
           await saveFile(fileDocument);
           await saveTransaction(draftDocument);
           const res = await requestListFiles();
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
-          expect(res).toContainMatchingFileDocument(fileDocument, 1);
+          fileApiExpect(res).toBeOkResponse();
+          fileApiExpect(res).toMatchSchema(schema);
+          fileApiExpect(res).toContainMatchingFileDocument(fileDocument, 1);
         });
       }
     });

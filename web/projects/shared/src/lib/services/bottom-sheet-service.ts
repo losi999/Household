@@ -2,40 +2,43 @@ import { inject, Injectable } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { BottomSubmenu, BottomSubmenuData } from './../bottom-submenu/bottom-submenu';
 
+export type BottomSubmenuItem = {
+  action?: string;
+  link?: string;
+  icon: string;
+  label: string;
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class BottomSheetService {
+  static Edit = {
+    action: 'edit',
+    icon: 'edit',
+    label: 'Szerkesztés',
+  } as const satisfies BottomSubmenuItem;
+
+  static Delete = {
+    action: 'delete',
+    icon: 'delete',
+    label: 'Törlés',
+  } as const satisfies BottomSubmenuItem;
+
+  static Merge = {
+    action: 'merge',
+    icon: 'merge',
+    label: 'Egyesítés',
+  } as const satisfies BottomSubmenuItem;
+
   private bottomSheet = inject(MatBottomSheet);
 
-  private itemMapping = {
-    edit: {
-      icon: 'edit',
-      label: 'Szerkesztés',
-    },
-    delete: {
-      icon: 'delete',
-      label: 'Törlés',
-    },
-    merge: {
-      icon: 'merge',
-      label: 'Egyesítés',
-    },
-  };
-
-  openBottomSubmenu<I extends keyof typeof this.itemMapping>(title: string, ...items: I[]) {
-    return this.bottomSheet.open<BottomSubmenu, BottomSubmenuData, I>(BottomSubmenu, {
+  openBottomSubmenu<const I extends BottomSubmenuItem[]>(title: string, items: I) {
+    return this.bottomSheet.open<BottomSubmenu, BottomSubmenuData, I[number]['action']>(BottomSubmenu, {
       data: {
         title,
-        items: items.map((i) => {
-          return {
-            action: i,
-            icon: this.itemMapping[i].icon,
-            label: this.itemMapping[i].label,
-          };
-        }),
+        items,
       },
     });
   }
-  
 }

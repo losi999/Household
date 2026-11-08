@@ -3,7 +3,7 @@ import { splitTransactionDocumentConverter } from '@household/shared/dependencie
 import { Dictionary } from '@household/shared/types/common';
 import { Documents } from '@household/shared/types/documents';
 import { AccountType } from '@household/shared/enums';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { Requests } from '@household/shared/types/requests';
 
@@ -53,6 +53,10 @@ export const splitTransactionDataFactory = (() => {
     });
 
     const loans = ctx.loans?.map<Partial<Requests.LoanItem>>(({ category, product, project, loanAccount, ...split }) => {
+      if (loanAccount.accountType !== AccountType.Loan) {
+        throw 'Loan split account must be loan type';
+      }
+
       categories[getCategoryId(category)] = category;
       products[getProductId(product)] = product;
       projects[getProjectId(project)] = project;
@@ -63,7 +67,7 @@ export const splitTransactionDataFactory = (() => {
         productId: getProductId(product),
         projectId: getProjectId(project),
         loanAccountId: getAccountId(loanAccount),
-        transactionId: deferredTransactionDataFactory.id(), // TODO
+        transactionId: loanTransactionDataFactory.id(), // TODO
         ...split,
       };
     });

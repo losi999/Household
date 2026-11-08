@@ -1,0 +1,7 @@
+<household-toolbar [title]="title.getTitle()">
+  <a matIconButton data-testId="add" [routerLink]="['/', 'accounts', accountId, 'transactions', 'new']">
+    <mat-icon>add</mat-icon>
+  </a>
+</household-toolbar>
+<household-transaction-list [transactions]="transactionStore.transactionList()" />
+<button mat-raised-button data-testId="load-more" (click)="onLoadMore()">Betöltés</button>

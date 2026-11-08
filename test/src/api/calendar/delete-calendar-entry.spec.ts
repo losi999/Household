@@ -4,14 +4,11 @@ import { calendarEntryDataFactory } from '@household/test/api/calendar/data-fact
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
-import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { calendarApiTest, calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -39,7 +36,7 @@ test.describe('DELETE /calendar/v1/entries/{calendarEntryId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestDeleteCalendarEntry }) => {
       const res = await requestDeleteCalendarEntry(calendarEntryDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      calendarApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -54,33 +51,33 @@ test.describe('DELETE /calendar/v1/entries/{calendarEntryId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestDeleteCalendarEntry }) => {
           const res = await requestDeleteCalendarEntry(calendarEntryDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          calendarApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should delete calendar', () => {
           test('personal entry', async ({ requestDeleteCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
             await saveCalendarEntry(calendarPersonalEntryDocument);
             const res = await requestDeleteCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument));
-            expect(res).toBeNoContentResponse();
+            calendarApiExpect(res).toBeNoContentResponse();
 
-            expect(await getCalendarEntryById(getCalendarEntryId(calendarPersonalEntryDocument))).toHaveBeenDeletedFromDatabase();
+            calendarApiExpect(await getCalendarEntryById(getCalendarEntryId(calendarPersonalEntryDocument))).toHaveBeenDeletedFromDatabase();
           });
 
           test('issue entry', async ({ requestDeleteCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {                        
             await saveCalendarEntry(calendarIssueEntryDocument);
             const res = await requestDeleteCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument));
-            expect(res).toBeNoContentResponse();
+            calendarApiExpect(res).toBeNoContentResponse();
 
-            expect(await getCalendarEntryById(getCalendarEntryId(calendarIssueEntryDocument))).toHaveBeenDeletedFromDatabase();
+            calendarApiExpect(await getCalendarEntryById(getCalendarEntryId(calendarIssueEntryDocument))).toHaveBeenDeletedFromDatabase();
           });
 
           test('work entry', async ({ requestDeleteCalendarEntry, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {          
             await saveCalendarEntry(calendarWorkEntryDocument);
             await saveCustomer(customerDocument);
             const res = await requestDeleteCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument));
-            expect(res).toBeNoContentResponse();
+            calendarApiExpect(res).toBeNoContentResponse();
 
-            expect(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument))).toHaveBeenDeletedFromDatabase();
+            calendarApiExpect(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument))).toHaveBeenDeletedFromDatabase();
           });
         });
 
@@ -94,15 +91,15 @@ test.describe('DELETE /calendar/v1/entries/{calendarEntryId}', () => {
             });       
             await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestDeleteCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument));
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Calendar entry is already resolved');
+            calendarApiExpect(res).toBeBadRequestResponse();
+            calendarApiExpect(res).toHaveMessage('Calendar entry is already resolved');
           });
 
           test.describe('if calendarEntryId', () => {
             test('is not mongo id', async ({ requestDeleteCalendarEntry }) => {
               const res = await requestDeleteCalendarEntry(calendarEntryDataFactory.id('not-mongo-id'));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'calendarEntryId');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHavePatternValidationError('pathParameters', 'calendarEntryId');
             });
           }); 
         });

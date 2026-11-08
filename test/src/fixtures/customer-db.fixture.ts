@@ -1,8 +1,8 @@
 import { customerService } from '@household/shared/dependencies/services/customer-service';
 import { ICustomerService } from '@household/shared/services/customer-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 
-export const test = baseTest.extend<Pick<ICustomerService, 'saveCustomer' | 'saveCustomers' | 'findCustomerById' | 'getCustomerById'>>({
+export const customerDbTest = test.extend<Pick<ICustomerService, 'saveCustomer' | 'saveCustomers' | 'findCustomerById' | 'getCustomerById'>>({
   saveCustomer: async ({ logServiceCall }, use) => {
     const saveCustomer: ICustomerService['saveCustomer'] = async (customer) => {
       const result = await customerService.saveCustomer(customer);

@@ -9,7 +9,6 @@ import { UserType } from '@household/shared/enums';
 import { updateCalendarDayServiceFactory } from '@household/api/functions/update-calendar-day/update-calendar-day.service';
 import { calendarDayDocumentConverter } from '@household/shared/dependencies/converters/calendar-day-document-converter';
 import { calendarDayService } from '@household/shared/dependencies/services/calendar-day-service';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const updateCalendarDayService = updateCalendarDayServiceFactory(calendarDayService, calendarDayDocumentConverter);
 
@@ -22,8 +21,5 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

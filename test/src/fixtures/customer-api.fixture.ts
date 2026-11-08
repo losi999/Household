@@ -6,7 +6,7 @@ import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
-import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
 import { APIResponse } from '@playwright/test';
 
 type CustomerApiFixture = {
@@ -23,7 +23,7 @@ type CustomerApiFixture = {
   requestRemoveCustomerFromBlacklist(body: Api.Customer.Id[]): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<CustomerApiFixture>({
+export const customerApiTest = apiTest.extend<CustomerApiFixture>({
   requestCreateCustomer: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -272,7 +272,7 @@ const compareCustomerJobs = (actual: Documents.Customer, expectedCustomerJobs: D
   });
 };
 
-export const expect = baseExpect.extend({
+export const customerApiExpect = apiExpect.extend({
   toHaveBeenSavedAsCustomerDocument(req: Requests.Customer, currentDocument: Documents.Customer, originalDocument?: Documents.Customer) {
     if (!currentDocument) {
       return {

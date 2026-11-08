@@ -2,17 +2,14 @@ import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
 import { calendarDayDataFactory } from '@household/test/api/calendar/data-factory';
 
-import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
+import { calendarApiTest, calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { calendarDayDbTest } from '@household/test/fixtures/calendar-day-db.fixture';
 import { DAY_END, DAY_START } from '@household/shared/constants';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
 
 const test = mergeTests(calendarApiTest, calendarDayDbTest);
-
-const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -29,7 +26,7 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestUpdateCalendarDay }) => {
       const res = await requestUpdateCalendarDay(day, request);
-      expect(res).toBeUnauthorizedResponse();
+      calendarApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -44,7 +41,7 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestUpdateCalendarDay }) => {
           const res = await requestUpdateCalendarDay(day, request);
-          expect(res).toBeForbiddenResponse();
+          calendarApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should save previously unset day to', () => {
@@ -52,9 +49,9 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
             await clearCalendarDay(day);
 
             const res = await requestUpdateCalendarDay(day, request);
-            expect(res).toBeNoContentResponse();
+            calendarApiExpect(res).toBeNoContentResponse();
 
-            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
+            calendarApiExpect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
           
           test('vacation', async ({ requestUpdateCalendarDay, clearCalendarDay, findCalendarDayByDay }) => {
@@ -62,9 +59,9 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
             await clearCalendarDay(day);
             
             const res = await requestUpdateCalendarDay(day, request);
-            expect(res).toBeNoContentResponse();
+            calendarApiExpect(res).toBeNoContentResponse();
 
-            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
+            calendarApiExpect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
         });
 
@@ -78,9 +75,9 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
 
             await saveCalendarDay(calendarDayDocument);
             const res = await requestUpdateCalendarDay(day, request);
-            expect(res).toBeNoContentResponse();
+            calendarApiExpect(res).toBeNoContentResponse();
 
-            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
+            calendarApiExpect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
           
           test('vacation to workday', async ({ requestUpdateCalendarDay, findCalendarDayByDay, saveCalendarDay }) => {
@@ -92,9 +89,9 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
 
             await saveCalendarDay(calendarDayDocument);
             const res = await requestUpdateCalendarDay(day, request);
-            expect(res).toBeNoContentResponse();
+            calendarApiExpect(res).toBeNoContentResponse();
 
-            expect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
+            calendarApiExpect(request).toHaveBeenSavedAsCalendarDayDocument(await findCalendarDayByDay(day));
           });
         });
 
@@ -108,8 +105,8 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
 
             await saveCalendarDay(calendarDayDocument);
             const res = await requestUpdateCalendarDay(day, request);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Selected calendar day is a national holiday');
+            calendarApiExpect(res).toBeBadRequestResponse();
+            calendarApiExpect(res).toHaveMessage('Selected calendar day is a national holiday');
           });
 
           test.describe('if body', () => {
@@ -119,8 +116,8 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
                 extraProperty: 'extra',
               } as any);
             
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
           
@@ -129,24 +126,24 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
               const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
                 dayType: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'dayType');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'dayType');
             });
 
             test('is not string', async ({ requestUpdateCalendarDay }) => {
               const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
                 dayType: <any>1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'dayType', 'string');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'dayType', 'string');
             });
 
             test('is not a valid constant value', async ({ requestUpdateCalendarDay }) => {
               const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
                 dayType: 'not-valid-const' as any, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveEnumValidationError('body', 'dayType');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveEnumValidationError('body', 'dayType');
             });
           });
 
@@ -155,32 +152,32 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
               const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
                 start: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'start');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'start');
             });
 
             test('is not integer', async ({ requestUpdateCalendarDay }) => {
               const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
                 start: 1.1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'start', 'integer');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'start', 'integer');
             });
 
             test('is too small', async ({ requestUpdateCalendarDay }) => {
               const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
                 start: -1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooSmallValidationError('body', 'start', DAY_START);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveTooSmallValidationError('body', 'start', DAY_START);
             });
 
             test('is too large', async ({ requestUpdateCalendarDay }) => {
               const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
                 start: 97, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooLargeValidationError('body', 'start', DAY_END);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveTooLargeValidationError('body', 'start', DAY_END);
             });
           });
 
@@ -189,16 +186,16 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
               const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
                 end: undefined, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'end');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'end');
             });
 
             test('is not integer', async ({ requestUpdateCalendarDay }) => {
               const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
                 end: 1.1, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'end', 'integer');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'end', 'integer');
             });
 
             test('is too small', async ({ requestUpdateCalendarDay }) => {
@@ -206,24 +203,24 @@ test.describe.serial('PUT /calendar/v1/days/{day}', () => {
                 start: 20,
                 end: 10, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveExclusiveTooSmallValidationError('body', 'end', 20);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveExclusiveTooSmallValidationError('body', 'end', 20);
             });
 
             test('is too large', async ({ requestUpdateCalendarDay }) => {
               const res = await requestUpdateCalendarDay(day, calendarDayDataFactory.request.workday({
                 end: 97, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooLargeValidationError('body', 'end', DAY_END);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveTooLargeValidationError('body', 'end', DAY_END);
             });
           });
 
           test.describe('if day', () => {
             test('is not date', async ({ requestUpdateCalendarDay }) => {
               const res = await requestUpdateCalendarDay('not-date', request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('pathParameters', 'day', 'date');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongFormatValidationError('pathParameters', 'day', 'date');
             });
           });
         });

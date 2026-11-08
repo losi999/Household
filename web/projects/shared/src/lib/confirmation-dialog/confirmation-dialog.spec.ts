@@ -7,19 +7,21 @@ import { elementSelectorFactory, IElementSelector } from '@household/shared-ui';
 describe('ConfirmationDialog', () => {
   let fixture: ComponentFixture<ConfirmationDialog>;
   let selector: IElementSelector;
-  const title = 'dialog title';
-  const content = 'dialog content';
 
-  beforeEach(async () => {
+  const dialogData = {
+    title: 'dialog title',
+    content: 'dialog content',
+  };
+
+  const render = async (data = dialogData) => {
+    TestBed.resetTestingModule();
+
     await TestBed.configureTestingModule({
       imports: [ConfirmationDialog],
       providers: [
         {
           provide: MAT_DIALOG_DATA,
-          useValue: {
-            title, 
-            content,
-          },
+          useValue: data,
         },
       ],
     })
@@ -30,11 +32,13 @@ describe('ConfirmationDialog', () => {
     selector = elementSelectorFactory(fixture.debugElement);
 
     await fixture.whenStable();
-  });
+  };
 
-  it('should create', () => {
-    expect(selector.getComponent(MatDialogTitle).nativeElement.textContent.trim()).toBe(title);
-    expect(selector.getComponent(MatDialogContent).nativeElement.textContent.trim()).toBe(content);
+  it('should create', async () => {
+    await render();
+
+    expect(selector.getComponent(MatDialogTitle).nativeElement.textContent.trim()).toBe(dialogData.title);
+    expect(selector.getComponent(MatDialogContent).nativeElement.textContent.trim()).toBe(dialogData.content);
     const dialogActionsElement = selector.getComponent(MatDialogActions);
     const yesButton = dialogActionsElement.children[0];
     const noButton = dialogActionsElement.children[1];

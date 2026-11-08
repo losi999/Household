@@ -5,7 +5,7 @@ import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { Comparer } from '@household/test/comparer';
-import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
 import { APIResponse } from '@playwright/test';
 
 type UserApiFixture = {
@@ -17,7 +17,7 @@ type UserApiFixture = {
   requestRemoveUserFromGroup(email: string, group: UserType): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<UserApiFixture>({
+export const userApiTest = apiTest.extend<UserApiFixture>({
   requestCreateUser: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -96,7 +96,7 @@ export const test = baseTest.extend<UserApiFixture>({
   },
 });
 
-export const expect = baseExpect.extend({
+export const userApiExpect = apiExpect.extend({
   toHaveBeenAddedToGroup(groups: AdminListGroupsForUserResponse, expectedGroup: UserType) {
     const isInGroup = groups.Groups?.some(group => group.GroupName === expectedGroup);
     return {

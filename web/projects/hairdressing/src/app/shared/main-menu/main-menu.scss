@@ -1,6 +1,7 @@
 @use '@angular/material' as mat;
 
-button {
+button,
+a {
   @include mat.menu-overrides(
     (
       item-label-text-size: 16px,

@@ -1,16 +1,13 @@
 import { entries } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { projectApiTest, projectApiExpect } from '@household/test/fixtures/project-api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { mergeTests } from '@playwright/test';
+import { projectDbTest } from '@household/test/fixtures/project-db.fixture';
 
 const permissionMap = allowUsers('editor');
-
-const expect = mergeExpects(projectApiExpect, apiExpect);
 
 const test = mergeTests(projectApiTest, projectDbTest);
 
@@ -24,7 +21,7 @@ test.describe('POST /project/v1/projects', () => {
   test.describe('called as anyonymous', () => {
     test('should return unauthorized', async ({ requestCreateProject }) => {
       const res = await requestCreateProject(req);
-      expect(res).toBeUnauthorizedResponse();
+      projectApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -40,16 +37,16 @@ test.describe('POST /project/v1/projects', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestCreateProject }) => {
           const res = await requestCreateProject(req);
-          expect(res).toBeForbiddenResponse();
+          projectApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should create project', () => {
           test('with complete body', async ({ requestCreateProject, findProjectById }) => {
             const res = await requestCreateProject(req);
-            expect(res).toBeCreatedResponse();
+            projectApiExpect(res).toBeCreatedResponse();
 
             const { projectId } = (await res.json()) as Api.Project.ProjectId;
-            expect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
+            projectApiExpect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
           });
 
           test.describe('without optional property in body', () => {
@@ -59,10 +56,10 @@ test.describe('POST /project/v1/projects', () => {
               });
 
               const res = await requestCreateProject(req);
-              expect(res).toBeCreatedResponse();
+              projectApiExpect(res).toBeCreatedResponse();
               
               const { projectId } = (await res.json()) as Api.Project.ProjectId;
-              expect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
+              projectApiExpect(req).toHaveBeenSavedAsProjectDocument(await findProjectById(projectId));
             });
           });
         });
@@ -75,8 +72,8 @@ test.describe('POST /project/v1/projects', () => {
                 extraProperty: 'extra',
               } as any);
   
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+              projectApiExpect(res).toBeBadRequestResponse();
+              projectApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 
@@ -86,8 +83,8 @@ test.describe('POST /project/v1/projects', () => {
                 name: undefined,
               }));
 
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
+              projectApiExpect(res).toBeBadRequestResponse();
+              projectApiExpect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
             
             test('is not string', async({ requestCreateProject }) => {
@@ -95,16 +92,16 @@ test.describe('POST /project/v1/projects', () => {
               const res = await requestCreateProject(projectDataFactory.request({
                 name: <any>1,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
+              projectApiExpect(res).toBeBadRequestResponse();
+              projectApiExpect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
             test('is too short', async ({ requestCreateProject }) => {
               const res = await requestCreateProject(projectDataFactory.request({
                 name: '',
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'name', 1);
+              projectApiExpect(res).toBeBadRequestResponse();
+              projectApiExpect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
             test('is already in use by a different project', async ({ requestCreateProject, saveProject }) => {
@@ -113,8 +110,8 @@ test.describe('POST /project/v1/projects', () => {
               await saveProject(projectDocument);
 
               const res = await requestCreateProject(req);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Duplicate project name');
+              projectApiExpect(res).toBeBadRequestResponse();
+              projectApiExpect(res).toHaveMessage('Duplicate project name');
             });
           });
 
@@ -123,16 +120,16 @@ test.describe('POST /project/v1/projects', () => {
               const res = await requestCreateProject(projectDataFactory.request({
                 description: <any>1,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string'); 
+              projectApiExpect(res).toBeBadRequestResponse();
+              projectApiExpect(res).toHaveWrongTypeValidationError('body', 'description', 'string'); 
             });
 
             test('is too short', async ({ requestCreateProject }) => {
               const res = await requestCreateProject(projectDataFactory.request({
                 description: '',
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'description', 1);
+              projectApiExpect(res).toBeBadRequestResponse();
+              projectApiExpect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
         });

@@ -9,7 +9,6 @@ import { authorizer } from '@household/api/dependencies/handlers/authorizer.hand
 import { UserType } from '@household/shared/enums';
 import { updateCustomerJobServiceFactory } from '@household/api/functions/update-customer-job/update-customer-job.service';
 import { priceService } from '@household/shared/dependencies/services/price-service';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const updateCustomerJobService = updateCustomerJobServiceFactory(customerService, customerDocumentConverter, priceService);
 
@@ -22,8 +21,5 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

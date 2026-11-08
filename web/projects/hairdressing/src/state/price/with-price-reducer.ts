@@ -1,6 +1,6 @@
 import { priceApiEvents } from '@hairdressing/state/price/price-events';
 import { PriceState } from '@hairdressing/state/price/price-store';
-import { toSearchTerms } from '@household/shared/common/utils';
+import { toSearchable } from '@household/shared/common/utils';
 import { signalStoreFeature } from '@ngrx/signals';
 import { on, withReducer } from '@ngrx/signals/events';
 
@@ -10,10 +10,7 @@ export const withPriceReducer = () => {
       on(priceApiEvents.listPricesCompleted, ({ payload }) => {
         return {
           priceList: payload.map(p => {
-            return {
-              ...p,
-              searchTerms: toSearchTerms(p.name),
-            };
+            return toSearchable(p, ['name']);
           }),
         };
       }),
@@ -38,13 +35,12 @@ export const withPriceReducer = () => {
         return (state) => {
           return {
             priceList: state.priceList.filter(p => p.priceId !== priceId)
-              .concat({
+              .concat(toSearchable({
                 priceId,
                 name,
                 amount,
                 unitOfMeasurement,
-                searchTerms: toSearchTerms(name),
-              })
+              }, ['name']))
               .toSorted((a, b) => a.name.localeCompare(b.name, 'hu', {
                 sensitivity: 'base',
               })),

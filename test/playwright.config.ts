@@ -19,7 +19,7 @@ export default defineConfig({
     ],
   ],
   use: {
-    trace: 'on-first-retry',
+    trace: 'on',
   },
   projects: [
     {

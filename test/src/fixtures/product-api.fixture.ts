@@ -1,13 +1,13 @@
 
-import { getProductId } from '@household/shared/common/utils';
+import { getProductId, getSpecificProductFullName, getVariantProductFullName } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
 import { Api } from '@household/shared/types/api';
 import { Requests } from '@household/shared/types/requests';
 import { Responses } from '@household/shared/types/responses';
 import { Documents } from '@household/shared/types/documents';
 import { Comparer } from '@household/test/comparer';
-import { test as baseTest } from '@household/test/fixtures/api.fixture';
-import { expect as baseExpect, APIResponse } from '@playwright/test';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
+import { APIResponse } from '@playwright/test';
 import { ProductType } from '@household/shared/enums';
 
 type ProductApiFixture = {
@@ -18,7 +18,7 @@ type ProductApiFixture = {
   requestListProducts(): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<ProductApiFixture>({
+export const productApiTest = apiTest.extend<ProductApiFixture>({
   requestCreateProduct: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -91,6 +91,24 @@ export const test = baseTest.extend<ProductApiFixture>({
   },
 });
 
+// The full name is built from the names of the parents, so the document is expected to have them loaded
+const getProductFullName = (document: Documents.Product): string => {
+  switch (document?.productType) {
+    case ProductType.Generic: {
+      return document.name;
+    }
+    case ProductType.Specific: {
+      return getSpecificProductFullName(document.genericProduct.name, document);
+    }
+    case ProductType.Variant: {
+      return getVariantProductFullName(getSpecificProductFullName(document.genericProduct.name, document.specificProduct), document.name);
+    }
+    default: {
+      return undefined;
+    }
+  }
+};
+
 export const validateProductResponse = (response: Responses.Product, document: Documents.Product) => {
   return new Comparer(response, {
     productId: getProductId(document),
@@ -98,11 +116,13 @@ export const validateProductResponse = (response: Responses.Product, document: D
     productType: document?.productType,
     measurement: document?.productType === ProductType.Specific ? document?.measurement : undefined,
     unitOfMeasurement: document?.productType === ProductType.Specific ? document?.unitOfMeasurement : undefined,
-    fullName: document?.productType === ProductType.Specific ? document?.fullName : undefined,
+    fullName: getProductFullName(document),
+    genericProductId: document?.productType === ProductType.Specific || document?.productType === ProductType.Variant ? getProductId(document.genericProduct) : undefined,
+    specificProductId: document?.productType === ProductType.Variant ? getProductId(document.specificProduct) : undefined,
   });
 };
 
-export const expect = baseExpect.extend({
+export const productApiExpect = apiExpect.extend({
   toHaveBeenSavedAsProductDocument(req: Requests.Product, document: Documents.Product, parentProductDocument?: Documents.Product) {
     if (!document) {
       return {
@@ -119,7 +139,6 @@ export const expect = baseExpect.extend({
       productType: req.productType,
       measurement: req.productType === ProductType.Specific ? req.measurement : undefined,
       unitOfMeasurement: req.productType === ProductType.Specific ? req.unitOfMeasurement : undefined,
-      fullName: req.productType === ProductType.Specific ? `${req.name} ${req.measurement} ${req.unitOfMeasurement}` : undefined, 
       genericProduct: getProductId(genericProduct),
       specificProduct: getProductId(specificProduct),
        
@@ -145,7 +164,6 @@ export const expect = baseExpect.extend({
       name: originalDocument.name,
       unitOfMeasurement: originalDocument.productType === ProductType.Specific ? originalDocument.unitOfMeasurement : undefined,
       measurement: originalDocument.productType === ProductType.Specific ? originalDocument.measurement : undefined,
-      fullName: originalDocument.productType === ProductType.Specific ? originalDocument.fullName : undefined,
       genericProduct: getProductId(expectedParentProductDocument),
       specificProduct: originalDocument.productType === ProductType.Variant ? getProductId(originalDocument.specificProduct) : undefined,
     }, '_id', 'createdAt', 'expiresAt', 'updatedAt');
@@ -173,54 +191,22 @@ export const expect = baseExpect.extend({
       message: () => `Expected product to have its parent reassigned, but it did not:\n${errors.join('\n')}`,
     };
   },
-  async toContainProductTree(received: APIResponse, tree: {
-    product: Documents.GenericProduct;
-    children: {
-      product: Documents.SpecificProduct;
-      children: Documents.VariantProduct[];
-    }[]
-  }) {
-    const response = await received.json() as Responses.ProductTree[];
-    const genericResponse = response.find(r => r.productId === getProductId(tree.product));
+  async toContainMatchingProductDocument(received: APIResponse, document: Documents.Product) {
+    const response = await received.json() as Responses.Product[];
   
-    if (!genericResponse) {
+    const matchingResponse = response.find(r => r.productId === getProductId(document));
+  
+    if (!matchingResponse) {
       return {
         pass: false,
-        message: () => `Expected response to contain a product tree with id ${getProductId(tree.product)}, but it was not found`,
+        message: () => `Expected response to contain a product with id ${getProductId(document)}, but it was not found`,
       };
     }
-
-    const comparer = new Comparer(genericResponse, {
-      productId: getProductId(tree.product),
-      name: tree.product.name,
-      productType: tree.product.productType,
-      children: genericResponse.children.map((specificResponse, i1) => {
-        const specificDocument = tree.children[i1];
-
-        return new Comparer(specificResponse, {
-          name: specificDocument.product.name,
-          measurement: specificDocument.product.measurement,
-          unitOfMeasurement: specificDocument.product.unitOfMeasurement,
-          fullName: specificDocument.product.fullName,
-          productType: specificDocument.product.productType,
-          productId: getProductId(specificDocument.product),
-          children: specificResponse.children.map((variantResponse, i2) => {
-            const variantDocument = specificDocument.children[i2];
-
-            return new Comparer(variantResponse, {
-              name: variantDocument.name,
-              productType: variantDocument.productType,
-              productId: getProductId(variantDocument),
-            });
-          }),
-        });
-      }),
-    });
-
-    const errors = comparer.validate();
   
+    const errors = validateProductResponse(matchingResponse, document).validate();
+        
     return {
-      pass: !errors.length,
+      pass: errors.length === 0,
       message: () => `Expected response to match product document, but it did not:\n${errors.join('\n')}`,
     };
   }, 

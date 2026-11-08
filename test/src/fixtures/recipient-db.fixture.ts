@@ -1,8 +1,8 @@
 import { recipientService } from '@household/shared/dependencies/services/recipient-service';
 import { IRecipientService } from '@household/shared/services/recipient-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 
-export const test = baseTest.extend<Pick<IRecipientService, 'saveRecipient' | 'saveRecipients' | 'findRecipientById'>>({
+export const recipientDbTest = test.extend<Pick<IRecipientService, 'saveRecipient' | 'saveRecipients' | 'findRecipientById'>>({
   saveRecipient: async ({ logServiceCall }, use) => {
     const saveRecipient: IRecipientService['saveRecipient'] = async (recipient) => {
       const result = await recipientService.saveRecipient(recipient);

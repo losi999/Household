@@ -4,8 +4,8 @@ import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { Responses } from '@household/shared/types/responses';
 import { Requests } from '@household/shared/types/requests';
-import { test as baseTest } from '@household/test/fixtures/api.fixture';
-import { expect as baseExpect, APIResponse } from '@playwright/test';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
+import { APIResponse } from '@playwright/test';
 import { Comparer } from '@household/test/comparer';
 
 type ProjectApiFixture ={
@@ -17,7 +17,7 @@ type ProjectApiFixture ={
   requestMergeProjects(projectId: Api.Project.Id, sourceProjectIds: Api.Project.Id[]): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<ProjectApiFixture>({
+export const projectApiTest = apiTest.extend<ProjectApiFixture>({
   requestGetProject: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -111,7 +111,7 @@ export const validateProjectResponse = (response: Responses.Project, document: D
   });
 };
 
-export const expect = baseExpect.extend({
+export const projectApiExpect = apiExpect.extend({
   async toHaveBeenSavedAsProjectDocument(req: Requests.Project, document: Documents.Project) {
     if (!document) {
       return {

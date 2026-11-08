@@ -3,15 +3,12 @@ import { fileDataFactory } from '@household/test/api/file/data-factory';
 import { draftTransactionDataFactory } from '@household/test/api/transaction/draft/draft-data-factory';
 import { entries, getFileId, getTransactionId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test as fileApiTest, expect as fileApiExpect } from '@household/test/fixtures/file-api.fixture';
-import { test as storageTest } from '@household/test/fixtures/storage.fixture';
-import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as fileDbTest } from '@household/test/fixtures/file-db.fixture';
-
-const expect = mergeExpects(fileApiExpect, transactionApiExpect, apiExpect);
+import { fileApiTest, fileApiExpect } from '@household/test/fixtures/file-api.fixture';
+import { transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { storageTest } from '@household/test/fixtures/storage.fixture';
+import { mergeTests } from '@playwright/test';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { fileDbTest } from '@household/test/fixtures/file-db.fixture';
 
 const permissionMap = allowUsers('editor') ;
 
@@ -31,7 +28,7 @@ test.describe('DELETE /file/v1/files/{fileId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestDeleteFile }) => {
       const res = await requestDeleteFile(fileDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      fileApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -46,7 +43,7 @@ test.describe('DELETE /file/v1/files/{fileId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestDeleteFile }) => {
           const res = await requestDeleteFile(fileDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          fileApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should delete file', async ({ requestDeleteFile, saveTransaction, findTransactionById, saveFile, findFileById, writeFile, checkFile }) => {
@@ -54,11 +51,11 @@ test.describe('DELETE /file/v1/files/{fileId}', () => {
           await saveTransaction(draftDocument);
           await writeFile(getFileId(fileDocument), 'file', '');
           const res = await requestDeleteFile(getFileId(fileDocument));
-          expect(res).toBeNoContentResponse();
+          fileApiExpect(res).toBeNoContentResponse();
 
-          expect(await findFileById(getFileId(fileDocument))).toHaveBeenDeletedFromDatabase();
-          expect(await findTransactionById(getTransactionId(draftDocument))).toHaveBeenDeletedFromDatabase();
-          expect(await checkFile(getFileId(fileDocument))).toHaveBeenDeletedFromS3();
+          fileApiExpect(await findFileById(getFileId(fileDocument))).toHaveBeenDeletedFromDatabase();
+          transactionApiExpect(await findTransactionById(getTransactionId(draftDocument))).toHaveBeenDeletedFromDatabase();
+          fileApiExpect(await checkFile(getFileId(fileDocument))).toHaveBeenDeletedFromS3();
 
         });
 
@@ -66,8 +63,8 @@ test.describe('DELETE /file/v1/files/{fileId}', () => {
           test.describe('if fileId', () => {
             test('is not mongo id', async ({ requestDeleteFile }) => {
               const res = await requestDeleteFile(fileDataFactory.id('not-valid'));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'fileId');
+              fileApiExpect(res).toBeBadRequestResponse();
+              fileApiExpect(res).toHavePatternValidationError('pathParameters', 'fileId');
             });
           });
         });

@@ -1,15 +1,12 @@
-import { groupedResponseList as schema } from '@household/shared/schemas/product';
+import { responseList as schema } from '@household/shared/schemas/product';
 import { productDataFactory } from '@household/test/api/product/data-factory';
 import { forbidUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 
-import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
-import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
-
-const expect = mergeExpects(productApiExpect, apiExpect);
+import { productApiTest, productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const permissionMap = forbidUsers();
 
@@ -19,7 +16,7 @@ test.describe('GET /product/v1/products', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestListProducts }) => {
       const res = await requestListProducts();
-      expect(res).toBeUnauthorizedResponse();
+      productApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -34,7 +31,7 @@ test.describe('GET /product/v1/products', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestListProducts }) => {
           const res = await requestListProducts();
-          expect(res).toBeForbiddenResponse();
+          productApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should get a list of products', async ({ requestListProducts, saveProducts }) => {
@@ -46,20 +43,15 @@ test.describe('GET /product/v1/products', () => {
             genericProduct,
             specificProduct,
           });
-          await saveProducts(genericProduct);
+          await saveProducts(genericProduct, specificProduct, variantProduct);
           const res = await requestListProducts();
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
+          productApiExpect(res).toBeOkResponse();
+          productApiExpect(res).toMatchSchema(schema);
 
-          expect(res).toContainProductTree({
-            product: genericProduct,
-            children: [
-              {
-                product: specificProduct,
-                children: [variantProduct],
-              },
-            ],
-          });
+          // every product is followed by its children
+          productApiExpect(res).toContainMatchingProductDocument(genericProduct);
+          productApiExpect(res).toContainMatchingProductDocument(specificProduct);
+          productApiExpect(res).toContainMatchingProductDocument(variantProduct);
         });
       }
     });

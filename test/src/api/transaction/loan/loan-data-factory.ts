@@ -1,0 +1,50 @@
+import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
+import { Documents } from '@household/shared/types/documents';
+import { loanTransactionDocumentConverter } from '@household/shared/dependencies/converters/loan-transaction-document-converter';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { Requests } from '@household/shared/types/requests';
+import { AccountType } from '@household/shared/enums';
+
+export const loanTransactionDataFactory = (() => {
+  const createLoanTransactionDocument = (ctx: {
+    body?: Partial<Requests.PaymentTransaction>;
+    account: Documents.Account;
+    loanAccount: Documents.Account;
+    category?: Documents.Category;
+    product?: Documents.Product;
+    project?: Documents.Project;
+    recipient?: Documents.Recipient;
+  }): Documents.LoanTransaction => {
+    if (ctx.account.accountType !== AccountType.Loan && ctx.loanAccount.accountType !== AccountType.Loan) {
+      throw 'One of the accounts must be loan in loan transaction';
+    }
+
+    if (ctx.body?.amount >= 0) {
+      throw 'Amount must be negative in loan transaction';
+    }
+
+    return loanTransactionDocumentConverter.create({
+      body: testDataFactory.transaction.request.payment({
+        ...ctx.body,
+        accountId: getAccountId(ctx.account),
+        loanAccountId: getAccountId(ctx.loanAccount),
+        categoryId: getCategoryId(ctx.category),
+        productId: getProductId(ctx.product),
+        projectId: getProjectId(ctx.project),
+        recipientId: getRecipientId(ctx.recipient),
+      }),
+      payingAccount: ctx.account,
+      ownerAccount: ctx.loanAccount,
+      category: ctx.category,
+      product: ctx.product,
+      project: ctx.project,
+      recipient: ctx.recipient,
+    }, Number(process.env.EXPIRES_IN), true);
+  };
+
+  return {
+    id: testDataFactory.transaction.id,
+    request: testDataFactory.transaction.request.payment,
+    document: createLoanTransactionDocument,
+  };
+})();

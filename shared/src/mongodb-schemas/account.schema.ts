@@ -22,10 +22,6 @@ export const accountSchema = new Schema<Documents.Account>({
     type: String,
     enum: AccountType,
   },
-  owner: {
-    type: String,
-    required: true,
-  },
   expiresAt: {
     type: Schema.Types.Date,
     index: {
@@ -42,7 +38,6 @@ export const accountSchema = new Schema<Documents.Account>({
 
 accountSchema.index({
   name: 1,
-  owner: 1,
 }, {
   unique: true,
 });

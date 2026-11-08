@@ -7,7 +7,7 @@ import { IRecipientDocumentConverter } from '@household/shared/converters/recipi
 import { ICategoryDocumentConverter } from '@household/shared/converters/category-document-converter';
 import { IProductDocumentConverter } from '@household/shared/converters/product-document-converter';
 import { ISplitTransactionDocumentConverter, splitTransactionDocumentConverterFactory } from '@household/shared/converters/split-transaction-document-converter';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { ILoanTransactionDocumentConverter } from '@household/shared/converters/loan-transaction-document-converter';
 import { CategoryType } from '@household/shared/enums';
 
 describe('Split transaction document converter', () => {
@@ -17,7 +17,7 @@ describe('Split transaction document converter', () => {
   let mockRecipientDocumentConverter: MockService<IRecipientDocumentConverter>;
   let mockCategoryDocumentConverter: MockService<ICategoryDocumentConverter>;
   let mockProductDocumentConverter: MockService<IProductDocumentConverter>;
-  let mockDeferredDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
+  let mockLoanDocumentConverter: MockService<ILoanTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockAccountDocumentConverter = createMockService('toResponseLean');
@@ -25,10 +25,10 @@ describe('Split transaction document converter', () => {
     mockRecipientDocumentConverter = createMockService('toResponse');
     mockCategoryDocumentConverter = createMockService('toResponse');
     mockProductDocumentConverter = createMockService('toResponse');
-    mockDeferredDocumentConverter = createMockService('create', 'toResponse');
+    mockLoanDocumentConverter = createMockService('create', 'toResponse');
 
     vi.useFakeTimers().setSystemTime(new Date());
-    converter = splitTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockDeferredDocumentConverter.service);
+    converter = splitTransactionDocumentConverterFactory(mockAccountDocumentConverter.service, mockProjectDocumentConverter.service, mockCategoryDocumentConverter.service, mockRecipientDocumentConverter.service, mockProductDocumentConverter.service, mockLoanDocumentConverter.service);
   });
 
   afterEach(() => {
@@ -93,7 +93,7 @@ describe('Split transaction document converter', () => {
         invoiceSplit,
       ] } = body;
 
-      const deferredTransaction = testDataFactory.transaction.document.deferred({
+      const loanTransaction = testDataFactory.transaction.document.loan({
         category: regularCategory,
         project,
         payingAccount: account,
@@ -107,7 +107,7 @@ describe('Split transaction document converter', () => {
         product: undefined,
       });
 
-      mockDeferredDocumentConverter.functions.create.mockReturnValue(deferredTransaction);
+      mockLoanDocumentConverter.functions.create.mockReturnValue(loanTransaction);
 
       const result = converter.create({
         body,
@@ -128,7 +128,7 @@ describe('Split transaction document converter', () => {
         issuedAt: createDate(issuedAt),
         expiresAt: undefined,
         _id: undefined,
-        deferredSplits: [deferredTransaction],
+        loans: [loanTransaction],
         splits: [
           {
             amount: regularSplit.amount,
@@ -213,7 +213,7 @@ describe('Split transaction document converter', () => {
             product: undefined,
           },
         ],
-        deferredSplits: undefined,
+        loans: undefined,
       }));
     });
   });
@@ -229,7 +229,7 @@ describe('Split transaction document converter', () => {
       const doc = testDataFactory.transaction.document.split({
         account,
         recipient,
-        deferredSplits: [
+        loans: [
           {
             category: regularCategory,
             project,
@@ -246,12 +246,12 @@ describe('Split transaction document converter', () => {
         ],
       });
 
-      const { description, issuedAt, deferredSplits: [deferred], splits: [split] } = doc;
+      const { description, issuedAt, loans: [loan], splits: [split] } = doc;
 
-      const deferredTransactionResponse = testDataFactory.transaction.response.deferred({
-        amount: deferred.amount,
+      const loanTransactionResponse = testDataFactory.transaction.response.loan({
+        amount: loan.amount,
       });
-      mockDeferredDocumentConverter.functions.toResponse.mockReturnValue(deferredTransactionResponse);
+      mockLoanDocumentConverter.functions.toResponse.mockReturnValue(loanTransactionResponse);
 
       const result = converter.toResponse(doc);
       expect(result).toEqual(testDataFactory.transaction.response.split({
@@ -273,13 +273,13 @@ describe('Split transaction document converter', () => {
             product: productResponse,
           },
         ],
-        deferredSplits: [deferredTransactionResponse],
+        loans: [loanTransactionResponse],
       }));
       validateFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, account);
       validateFunctionCall(mockProjectDocumentConverter.functions.toResponse, project);
       validateFunctionCall(mockCategoryDocumentConverter.functions.toResponse, regularCategory);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, recipient);
-      validateFunctionCall(mockDeferredDocumentConverter.functions.toResponse, deferred);
+      validateFunctionCall(mockLoanDocumentConverter.functions.toResponse, loan);
       expect.assertions(6);
     });
   });
@@ -295,7 +295,7 @@ describe('Split transaction document converter', () => {
       const doc = testDataFactory.transaction.document.split({
         account,
         recipient,
-        deferredSplits: [
+        loans: [
           {
             category: regularCategory,
             project,
@@ -312,12 +312,12 @@ describe('Split transaction document converter', () => {
         ],
       });
 
-      const { description, issuedAt, deferredSplits: [deferred], splits: [split] } = doc;
+      const { description, issuedAt, loans: [loan], splits: [split] } = doc;
 
-      const deferredTransactionResponse = testDataFactory.transaction.response.deferred({
-        amount: deferred.amount,
+      const loanTransactionResponse = testDataFactory.transaction.response.loan({
+        amount: loan.amount,
       });
-      mockDeferredDocumentConverter.functions.toResponse.mockReturnValue(deferredTransactionResponse);
+      mockLoanDocumentConverter.functions.toResponse.mockReturnValue(loanTransactionResponse);
 
       const result = converter.toResponseList([doc]);
       expect(result).toEqual([
@@ -340,14 +340,14 @@ describe('Split transaction document converter', () => {
               product: productResponse,
             },
           ],
-          deferredSplits: [deferredTransactionResponse],
+          loans: [loanTransactionResponse],
         }),
       ]);
       validateFunctionCall(mockAccountDocumentConverter.functions.toResponseLean, account);
       validateFunctionCall(mockProjectDocumentConverter.functions.toResponse, project);
       validateFunctionCall(mockCategoryDocumentConverter.functions.toResponse, regularCategory);
       validateFunctionCall(mockRecipientDocumentConverter.functions.toResponse, recipient);
-      validateFunctionCall(mockDeferredDocumentConverter.functions.toResponse, deferred);
+      validateFunctionCall(mockLoanDocumentConverter.functions.toResponse, loan);
       expect.assertions(6);
     });
   });

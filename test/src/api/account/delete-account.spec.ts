@@ -2,20 +2,16 @@ import { entries, getAccountId, getTransactionId } from '@household/shared/commo
 import { AccountType } from '@household/shared/enums';
 import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { allowUsers } from '@household/test/utils';
-import { test as accountApiTest, expect as accountApiExpect } from '@household/test/fixtures/account-api.fixture';
-import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-
-const expect = mergeExpects(accountApiExpect, transactionApiExpect, apiExpect);
+import { accountApiTest, accountApiExpect } from '@household/test/fixtures/account-api.fixture';
+import { transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
 
 const permissionMap = allowUsers('editor') ;
 
@@ -31,7 +27,7 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestDeleteAccount }) => {
       const res = await requestDeleteAccount(accountDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      transactionApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -46,15 +42,15 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestDeleteAccount }) => {
           const res = await requestDeleteAccount(accountDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          accountApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should delete account', async ({ requestDeleteAccount, saveAccount, findAccountById }) => {
           await saveAccount(accountDocument);
           const res = await requestDeleteAccount(getAccountId(accountDocument));
-          expect(res).toBeNoContentResponse();
+          accountApiExpect(res).toBeNoContentResponse();
 
-          expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+          accountApiExpect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('should delete related', () => {
@@ -76,10 +72,10 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             await saveAccounts(accountDocument);
             await saveTransactions(transactionDocument);
             const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
+            accountApiExpect(res).toBeNoContentResponse();
             
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
+            accountApiExpect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
           test('split transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
@@ -90,10 +86,10 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             await saveAccounts(accountDocument);
             await saveTransactions(transactionDocument);
             const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
+            accountApiExpect(res).toBeNoContentResponse();
             
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
+            accountApiExpect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
           test('giving transfer transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
@@ -105,10 +101,10 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             await saveAccounts(accountDocument, secondaryAccountDocument);
             await saveTransactions(transactionDocument);
             const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
+            accountApiExpect(res).toBeNoContentResponse();
             
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
+            accountApiExpect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
           test('receiving transfer transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
@@ -120,10 +116,10 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             await saveAccounts(accountDocument, secondaryAccountDocument);
             await saveTransactions(transactionDocument);
             const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
+            accountApiExpect(res).toBeNoContentResponse();
             
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
+            accountApiExpect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
           test('giving loan transfer transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
@@ -135,10 +131,10 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             await saveAccounts(loanAccountDocument, accountDocument);
             await saveTransactions(transactionDocument);
             const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
+            accountApiExpect(res).toBeNoContentResponse();
             
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
+            accountApiExpect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
           test('receiving loan transfer transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
@@ -150,45 +146,14 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             await saveAccounts(loanAccountDocument, accountDocument);
             await saveTransactions(transactionDocument);
             const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
+            accountApiExpect(res).toBeNoContentResponse();
             
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
+            accountApiExpect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          test('paying deferred transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
-            const transactionDocument = deferredTransactionDataFactory.document({
-              account: accountDocument,
-              loanAccount: secondaryAccountDocument,
-            });
-            
-            await saveAccounts(accountDocument, secondaryAccountDocument);
-            await saveTransactions(transactionDocument);
-            const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
-            
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
-          });
-
-          test('owning deferred transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
-            const transactionDocument = deferredTransactionDataFactory.document({
-              account: secondaryAccountDocument,
-              loanAccount: accountDocument,
-            });
-            
-            await saveAccounts(accountDocument, secondaryAccountDocument);
-            await saveTransactions(transactionDocument);
-            const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
-            
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(transactionDocument).toBeConvertedToPaymentTransaction(await findTransactionById(getTransactionId(transactionDocument)));
-
-          });
-
-          test('paying deferred transaction to loan account', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
-            const transactionDocument = deferredTransactionDataFactory.document({
+          test('loan transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
+            const transactionDocument = loanTransactionDataFactory.document({
               account: accountDocument,
               loanAccount: loanAccountDocument,
             });
@@ -196,14 +161,14 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             await saveAccounts(loanAccountDocument, accountDocument);
             await saveTransactions(transactionDocument);
             const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
+            accountApiExpect(res).toBeNoContentResponse();
             
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
+            accountApiExpect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          test('owning reimbursement transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
-            const transactionDocument = reimbursementTransactionDataFactory.document({
+          test('owning repayment transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
+            const transactionDocument = loanTransactionDataFactory.document({
               account: loanAccountDocument,
               loanAccount: accountDocument,
             });
@@ -211,14 +176,14 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             await saveAccounts(loanAccountDocument, accountDocument);
             await saveTransactions(transactionDocument);
             const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
+            accountApiExpect(res).toBeNoContentResponse();
             
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
+            accountApiExpect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          test('paying reimbursement transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
-            const transactionDocument = reimbursementTransactionDataFactory.document({
+          test('paying repayment transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
+            const transactionDocument = loanTransactionDataFactory.document({
               account: loanAccountDocument,
               loanAccount: accountDocument,
             });
@@ -226,32 +191,54 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
             await saveAccounts(loanAccountDocument, accountDocument);
             await saveTransactions(transactionDocument);
             const res = await requestDeleteAccount(getAccountId(loanAccountDocument));
-            expect(res).toBeNoContentResponse();
+            accountApiExpect(res).toBeNoContentResponse();
             
-            expect(await findAccountById(getAccountId(loanAccountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
+            accountApiExpect(await findAccountById(getAccountId(loanAccountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(transactionDocument))).toHaveBeenDeletedFromDatabase();
           });
+        });
 
-          test('deferred split transaction', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
+        test.describe('should convert', () => {
+          let loanAccountDocument: Documents.Account;
+
+          test.beforeEach(async () => {
+            loanAccountDocument = accountDataFactory.document({
+              accountType: AccountType.Loan,
+            });
+          });
+          
+          test('loan split item to regular split', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
             const transactionDocument = splitTransactionDataFactory.document({
-              account: secondaryAccountDocument,
+              account: accountDocument,
               loans: [
-                {
-                  loanAccount: accountDocument,
-                },
                 {
                   loanAccount: loanAccountDocument,
                 },
               ],
             });
             
-            await saveAccounts(loanAccountDocument, accountDocument, secondaryAccountDocument);
+            await saveAccounts(loanAccountDocument, accountDocument);
             await saveTransactions(transactionDocument);
-            const res = await requestDeleteAccount(getAccountId(accountDocument));
-            expect(res).toBeNoContentResponse();
+            const res = await requestDeleteAccount(getAccountId(loanAccountDocument));
+            accountApiExpect(res).toBeNoContentResponse();
             
-            expect(await findAccountById(getAccountId(accountDocument))).toHaveBeenDeletedFromDatabase();
-            expect(transactionDocument).toHaveBeenConvertedToRegularSplitItems(await findTransactionById(getTransactionId(transactionDocument)), getAccountId(accountDocument));
+            accountApiExpect(await findAccountById(getAccountId(loanAccountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(transactionDocument).toHaveBeenConvertedToRegularSplitItems(await findTransactionById(getTransactionId(transactionDocument)), getAccountId(loanAccountDocument));
+          });
+          
+          test('loan transaction to regular payment', async ({ requestDeleteAccount, saveAccounts, findAccountById, saveTransactions, findTransactionById }) => {
+            const transactionDocument = loanTransactionDataFactory.document({
+              account: accountDocument,
+              loanAccount: loanAccountDocument,
+            });
+            
+            await saveAccounts(loanAccountDocument, accountDocument);
+            await saveTransactions(transactionDocument);
+            const res = await requestDeleteAccount(getAccountId(loanAccountDocument));
+            accountApiExpect(res).toBeNoContentResponse();
+            
+            accountApiExpect(await findAccountById(getAccountId(loanAccountDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(transactionDocument).toBeConvertedToPaymentTransaction(await findTransactionById(getTransactionId(transactionDocument)));
           });
         });
 
@@ -259,8 +246,8 @@ test.describe('DELETE /account/v1/accounts/{accountId}', () => {
           test.describe('if accountId', () => {
             test('is not mongo id', async ({ requestDeleteAccount }) => {
               const res = await requestDeleteAccount(accountDataFactory.id('not-valid'));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'accountId');
+              accountApiExpect(res).toBeBadRequestResponse();
+              accountApiExpect(res).toHavePatternValidationError('pathParameters', 'accountId');
             });
           });
         });

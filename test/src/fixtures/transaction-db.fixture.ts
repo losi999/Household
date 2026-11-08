@@ -1,10 +1,10 @@
 import { ITransactionService } from '@household/shared/services/transaction-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 import { transactionService } from '@household/shared/dependencies/services/transaction-service';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 
-export const test = baseTest.extend<Pick<ITransactionService, 'saveTransaction' | 'saveTransactions' | 'findTransactionById' | 'getTransactionById' | 'listDraftTransactionsByFileId'>>({
+export const transactionDbTest = test.extend<Pick<ITransactionService, 'saveTransaction' | 'saveTransactions' | 'findTransactionById' | 'getTransactionById' | 'listDraftTransactionsByFileId'>>({
   saveTransaction: async ({ logServiceCall }, use) => {
     const saveTransaction: ITransactionService['saveTransaction'] = async (transaction) => {
       const result = await transactionService.saveTransaction(transaction);

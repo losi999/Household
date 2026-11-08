@@ -3,15 +3,12 @@ import { entries, getCustomerId } from '@household/shared/common/utils';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { allowUsers } from '@household/test/utils';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
-import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
-import { expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { customerApiTest, customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(customerApiExpect, calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -32,7 +29,7 @@ test.describe('GET /customer/v1/customers/{customerId}/works', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestListCustomerWorks }) => {
       const res = await requestListCustomerWorks(customerDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      customerApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -47,28 +44,28 @@ test.describe('GET /customer/v1/customers/{customerId}/works', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestListCustomerWorks }) => {
           const res = await requestListCustomerWorks(customerDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          customerApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should get customer works', async ({ requestListCustomerWorks, saveCalendarEntry, saveCustomer }) => {
           await saveCustomer(customerDocument);
           await saveCalendarEntry(workEntryDocument);
           const res = await requestListCustomerWorks(getCustomerId(customerDocument));
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
-          expect(res).toContainMatchingCalendarEntryBaseDocument(workEntryDocument);
+          customerApiExpect(res).toBeOkResponse();
+          customerApiExpect(res).toMatchSchema(schema);
+          calendarApiExpect(res).toContainMatchingCalendarEntryBaseDocument(workEntryDocument);
         });
 
         test.describe('should return error if customerId', () => {
           test('is not mongo id', async ({ requestListCustomerWorks }) => {
             const res = await requestListCustomerWorks(customerDataFactory.id('not-valid'));
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHavePatternValidationError('pathParameters', 'customerId');
+            customerApiExpect(res).toBeBadRequestResponse();
+            customerApiExpect(res).toHavePatternValidationError('pathParameters', 'customerId');
           });
 
           test('does not belong to any customer', async ({ requestListCustomerWorks }) => {
             const res = await requestListCustomerWorks(customerDataFactory.id());
-            expect(res).toBeNotFoundResponse();
+            customerApiExpect(res).toBeNotFoundResponse();
           });
         });
       }

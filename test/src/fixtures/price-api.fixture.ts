@@ -1,6 +1,6 @@
 import { getPriceId } from '@household/shared/common/utils';
 import { headerExpiresIn } from '@household/shared/constants';
-import { test as baseTest, expect as baseExpect } from '@household/test/fixtures/api.fixture';
+import { apiTest, apiExpect } from '@household/test/fixtures/api.fixture';
 import { Comparer } from '@household/test/comparer';
 import { APIResponse } from '@playwright/test';
 import { Api } from '@household/shared/types/api';
@@ -15,7 +15,7 @@ type PriceApiFixture = {
   requestListPrices(): Promise<APIResponse>;
 };
 
-export const test = baseTest.extend<PriceApiFixture>({
+export const priceApiTest = apiTest.extend<PriceApiFixture>({
   requestCreatePrice: async ({ authenticate, loggedRequest, userType }, use) => {
     const authToken = userType ? await authenticate(userType) : undefined;
 
@@ -74,7 +74,7 @@ export const test = baseTest.extend<PriceApiFixture>({
   },
 });
 
-export const expect = baseExpect.extend({
+export const priceApiExpect = apiExpect.extend({
   async toHaveBeenSavedAsPriceDocument(req: Requests.Price, document: Documents.Price) {
     if (!document) {
       return {

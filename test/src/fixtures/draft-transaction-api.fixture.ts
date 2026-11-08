@@ -1,18 +1,17 @@
 import { Api } from '@household/shared/types/api';
-import { APIResponse, expect as baseExpect } from '@playwright/test';
+import { APIResponse, expect } from '@playwright/test';
 import { TransactionType } from '@household/shared/enums';
 import { Comparer } from '@household/test/comparer';
 import { getTransactionId } from '@household/shared/common/utils';
 import { validatePaymentTransactionResponse } from '@household/test/fixtures/payment-transaction-api.fixture';
-import { validateDeferredTransactionResponse } from '@household/test/fixtures/deferred-transaction-api.fixture';
-import { validateReimbursementTransactionResponse } from '@household/test/fixtures/reimbursement-transaction-api.fixture';
+import { validateLoanTransactionResponse } from '@household/test/fixtures/loan-transaction-api.fixture';
 import { validateSplitTransactionResponse } from '@household/test/fixtures/split-transaction-api.fixture';
 import { validateTransferTransactionResponse } from '@household/test/fixtures/transfer-transaction-api.fixture';
 import { Import } from '@household/shared/types/common';
 import { Documents } from '@household/shared/types/documents';
 import { Responses } from '@household/shared/types/responses';
 
-export const expect = baseExpect.extend({
+export const draftTransactionApiExpect = expect.extend({
   toHaveBeenImportedFromRevolutFile(draftTransactions: Documents.DraftTransaction[], fileId: Api.File.Id, ...revolutRows: Import.Revolut[]) {
 
     const errors = draftTransactions.flatMap((document, index) => {
@@ -107,10 +106,8 @@ export const expect = baseExpect.extend({
         switch(duplicateResponse.transactionType) {
           case TransactionType.Payment:
             return validatePaymentTransactionResponse(duplicateResponse, duplicateDocument as Documents.PaymentTransaction);
-          case TransactionType.Deferred:
-            return validateDeferredTransactionResponse(duplicateResponse, duplicateDocument as Documents.DeferredTransaction);
-          case TransactionType.Reimbursement:
-            return validateReimbursementTransactionResponse(duplicateResponse, duplicateDocument as Documents.ReimbursementTransaction);
+          case TransactionType.Loan:
+            return validateLoanTransactionResponse(duplicateResponse, duplicateDocument as Documents.LoanTransaction);
           case TransactionType.Split:
             return validateSplitTransactionResponse(duplicateResponse, duplicateDocument as Documents.SplitTransaction);
           case TransactionType.Transfer:

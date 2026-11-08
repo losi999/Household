@@ -32,7 +32,6 @@ describe('Post deploy service', () => {
 
   it('should throw error if a post deploy function fails', async () => {
     const errorMessage = 'This is an error';
-    mockMongodbService.functions.syncIndexes.mockResolvedValue(undefined);
     mockInfrastructureService.functions.executePostDeployFunctions.mockRejectedValue({
       message: errorMessage,
     });
@@ -40,7 +39,7 @@ describe('Post deploy service', () => {
     await service({
       stackName,
     }).catch(validateError(errorMessage));
-    expect(mockMongodbService.functions.syncIndexes).toHaveBeenCalledTimes(1);
+    validateFunctionCall(mockMongodbService.functions.syncIndexes);
     validateFunctionCall(mockInfrastructureService.functions.executePostDeployFunctions, stackName);
     expect.assertions(3);
   });

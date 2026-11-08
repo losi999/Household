@@ -1,241 +1,463 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { CustomerDetails } from './customer-details';
+import { Toolbar } from '@hairdressing/app/shared/toolbar/toolbar';
+import { CustomerDetailsWorks } from '@hairdressing/app/customer/customer-details-works/customer-details-works';
+import { CustomerDetailsJobItem } from '@hairdressing/app/customer/customer-details-job-item/customer-details-job-item';
+import { CustomerStore } from '@hairdressing/state/customer/customer-store';
+import { customerApiEvents, customerEvents } from '@hairdressing/state/customer/customer-events';
+import { priceApiEvents } from '@hairdressing/state/price/price-events';
+import { createStubComponent, elementSelectorFactory, IconText, IElementSelector, MockSignalStore, provideMockDispatcher, provideMockSignalStore } from '@household/shared-ui';
+import { testDataFactory } from '@household/shared/common/test-data-factory';
+import { validateFunctionCall } from '@household/shared/common/unit-testing';
+import { Api } from '@household/shared/types/api';
+import { Responses } from '@household/shared/types/responses';
+import { Dispatcher } from '@ngrx/signals/events';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatDivider } from '@angular/material/divider';
 
-describe.skip('CustomerDetails', () => {
-  let component: CustomerDetails;
+describe('CustomerDetails', () => {
+  const ToolbarStub = createStubComponent(Toolbar);
+  const IconTextStub = createStubComponent(IconText);
+  const CustomerDetailsWorksStub = createStubComponent(CustomerDetailsWorks);
+  const CustomerDetailsJobItemStub = createStubComponent(CustomerDetailsJobItem);
+
   let fixture: ComponentFixture<CustomerDetails>;
+  let selector: IElementSelector;
+  let mockCustomerStore: MockSignalStore<typeof CustomerStore>;
+  let mockDispatcher: Dispatcher;
 
-  beforeEach(async () => {
+  const blacklisted1 = testDataFactory.customer.response();
+  const blacklisted2 = testDataFactory.customer.response();
+  const customer = testDataFactory.customer.response({
+    name: 'Kovács Anna',
+    description: 'Törzsvendég',
+    rating: 4,
+    jobs: [
+      testDataFactory.customer.job.response(),
+      testDataFactory.customer.job.response(),
+    ],
+    blacklistedCustomers: [
+      blacklisted1,
+      blacklisted2,
+    ],
+  });
+  const otherCustomer = testDataFactory.customer.response();
+
+  const past1 = testDataFactory.calendar.entry.response.workBase({
+    day: '2000-01-01',
+  });
+  const past2 = testDataFactory.calendar.entry.response.workBase({
+    day: '2000-02-01',
+  });
+  const upcoming1 = testDataFactory.calendar.entry.response.workBase({
+    day: '2999-01-01',
+  });
+  const upcoming2 = testDataFactory.calendar.entry.response.workBase({
+    day: '2999-02-01',
+  });
+
+  const works = [
+    past1,
+    upcoming1,
+    past2,
+    upcoming2,
+  ];
+
+  const getToolbarEditButton = () => {
+    return selector.getComponent<MatIconButton, HTMLButtonElement>(MatIconButton, ToolbarStub);
+  };
+
+  const getName = () => {
+    return selector.getElementByTestId('name');
+  };
+
+  const getRating = () => {
+    return selector.getComponentByTestId('rating');
+  };
+
+  const getDescription = () => {
+    return selector.getElementByTestId('description');
+  };
+
+  const getUpcomingWorks = () => {
+    return selector.getComponentByTestId<CustomerDetailsWorks>('upcoming-works');
+  };
+
+  const getPastWorks = () => {
+    return selector.getComponentByTestId<CustomerDetailsWorks>('past-works');
+  };
+
+  const getJobItems = () => {
+    return selector.listComponents<CustomerDetailsJobItem>(CustomerDetailsJobItemStub);
+  };
+
+  const getNewJobButton = () => {
+    return selector.getElementByTestId<HTMLButtonElement>('new-job');
+  };
+
+  const getAddToBlacklistButton = () => {
+    return selector.getElementByTestId<HTMLButtonElement>('add-to-blacklist');
+  };
+
+  const getEmptyBlacklist = () => {
+    return selector.getElementByTestId('empty-blacklist');
+  };
+
+  const getBlacklistRows = () => {
+    return selector.listComponents(MatIconButton).filter(b => b.nativeElement.classList.contains('danger'));
+  };
+
+  const render = async (params?: {
+    customerId?: Api.Customer.Id;
+    customerList?: Responses.Customer[];
+    customerWorks?: Record<Api.Customer.Id, Responses.CalendarEntryWorkLean[]>;
+  }) => {
+    TestBed.resetTestingModule();
+
+    const customerId = params?.customerId ?? customer.customerId;
+
     await TestBed.configureTestingModule({
       imports: [CustomerDetails],
+      providers: [
+        provideMockSignalStore(CustomerStore, 'customerList', 'customerWorks'),
+        provideMockDispatcher(),
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: convertToParamMap({
+                customerId,
+              }),
+            },
+          },
+        },
+      ],
     })
+      .overrideComponent(CustomerDetails, {
+        remove: {
+          imports: [
+            Toolbar,
+            IconText,
+            CustomerDetailsWorks,
+            CustomerDetailsJobItem,
+          ],
+        },
+        add: {
+          imports: [
+            ToolbarStub,
+            IconTextStub,
+            CustomerDetailsWorksStub,
+            CustomerDetailsJobItemStub,
+          ],
+        },
+      })
       .compileComponents();
 
+    mockCustomerStore = TestBed.inject<MockSignalStore<typeof CustomerStore>>(CustomerStore);
+    mockDispatcher = TestBed.inject(Dispatcher);
+
+    mockCustomerStore.customerList.set(params?.customerList ?? [
+      otherCustomer,
+      customer,
+    ]);
+    mockCustomerStore.customerWorks.set(params?.customerWorks ?? {
+      [customer.customerId]: works,
+    });
+
     fixture = TestBed.createComponent(CustomerDetails);
-    component = fixture.componentInstance;
+
+    selector = elementSelectorFactory(fixture.debugElement);
+
     await fixture.whenStable();
+  };
+
+  describe('on init', () => {
+    it('should dispatch listCustomersInitiated', async () => {
+      await render();
+
+      validateFunctionCall(mockDispatcher.dispatch, customerApiEvents.listCustomersInitiated(), {
+        scope: 'self',
+      });
+    });
+
+    it('should dispatch listPricesInitiated', async () => {
+      await render();
+
+      validateFunctionCall(mockDispatcher.dispatch, priceApiEvents.listPricesInitiated(), {
+        scope: 'self',
+      });
+    });
+
+    it('should dispatch listCustomerWorksInitiated with the customer of the route', async () => {
+      await render();
+
+      validateFunctionCall(mockDispatcher.dispatch, customerApiEvents.listCustomerWorksInitiated({
+        customerId: customer.customerId,
+      }), {
+        scope: 'self',
+      });
+    });
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  describe('toolbar', () => {
+    it('should be rendered with the title', async () => {
+      await render();
+
+      expect(selector.getComponent<Toolbar>(ToolbarStub).componentInstance.title()).toBe('Vendégek');
+    });
   });
 
-  // describe('on init', () => {
-  //   it('should dispatch [Customer API] List customers initiated', () => {
-  //     expect(mockStore.dispatch).toHaveBeenCalledWith(customerApiActions.listCustomersInitiated());
-  //   });
-  
-  //   it('should dispatch [Customer API] List customer works initiated', () => {
-  //     expect(mockStore.dispatch).toHaveBeenCalledWith(customerApiActions.listCustomerWorksInitiated({
-  //       customerId,
-  //     }));
-  //   });
-  
-  //   it('should dispatch [Price API] List prices initiated', () => {
-  //     expect(mockStore.dispatch).toHaveBeenCalledWith(priceApiActions.listPricesInitiated());
-  //   });
-  // });
+  describe('edit button in toolbar', () => {
+    it('should be rendered', async () => {
+      await render();
 
-  // describe('edit customer button in toolbar', () => {
-  //   it('should be rendered', () => {
-  //     const button = selector.getComponent(MatIconButton, ToolbarComponent);
-      
-  //     expect(button).toBeTruthy();
-  //   });
-    
-  //   it('(click) should dispatch [Customer] Create customer', () => {
-  //     const button = selector.getComponent<MatIconButton, HTMLButtonElement>(MatIconButton, ToolbarComponent);
-  //     button.nativeElement.click();
-      
-  //     expect(mockStore.dispatch).toHaveBeenCalledWith(customerActions.updateCustomer({
-  //       customerId,
-  //     }));
-  //   });
-  // });
+      expect(selector.getComponent(MatIcon, ToolbarStub).nativeElement.textContent).toBe('edit');
+    });
 
-  // describe('customer name', () => {
-  //   it('should be rendered', () => {
-  //     const element = selector.getComponentByTestId('name').nativeElement;
-      
-  //     expect(element.textContent.trim()).toEqual(customer.name);
-  //   });
-  // });
+    it('should dispatch updateCustomer if clicked', async () => {
+      await render();
 
-  // describe('customer rating', () => {
-  //   it('should be rendered', () => {
-  //     const element = selector.getComponentByTestId('rating').nativeElement;
+      getToolbarEditButton().nativeElement.click();
 
-  //     expect(element).toBeTruthy();
-  //   });
+      validateFunctionCall(mockDispatcher.dispatch, customerEvents.updateCustomer(customer), {
+        scope: 'self',
+      });
+    });
+  });
 
-  //   for (let r = 1; r <= 5; r += 1) {
-  //     it(`icon #${r} should be green if selected`, () => {
-  //       customer = testDataFactory.customer.response({
-  //         customerId,
-  //         rating: r,
-  //       });
-  //       render();
+  describe('if the customer is not found', () => {
+    it('should render nothing but the toolbar', async () => {
+      await render({
+        customerList: [otherCustomer],
+      });
 
-  //       const element = selector.getComponentByTestId('rating');
-  //       element.children.forEach((child, index) => {
-  //         if (index + 1 === r) {
-  //           expect(child.classes.green).toBeTrue();
-  //         } else {
-  //           expect(child.classes.green).toBeUndefined();
-  //         }
-  //       });
-  //     });
-  //   }
-  // });
+      expect(getName()).toBeFalsy();
+      expect(getRating()).toBeFalsy();
+      expect(getUpcomingWorks()).toBeFalsy();
+      expect(getPastWorks()).toBeFalsy();
+      expect(getAddToBlacklistButton()).toBeFalsy();
+    });
+  });
 
-  // describe('customer description', () => {
-  //   it('should be rendered', () => {
-  //     const element = selector.getComponentByTestId('description').nativeElement;
+  describe('name', () => {
+    it('should be rendered', async () => {
+      await render();
 
-  //     expect(element.textContent.trim()).toEqual(customer.description);
-  //   });
+      expect(getName().nativeElement.textContent.trim()).toBe(customer.name);
+    });
+  });
 
-  //   it('should NOT be rendered if not set', () => {
-  //     customer = testDataFactory.customer.response({
-  //       customerId,
-  //       description: undefined,
-  //     });
+  describe('rating', () => {
+    [
+      1,
+      2,
+      3,
+      4,
+      5,
+    ].forEach((rating) => {
+      it(`should mark the icon #${rating} as active if the rating is ${rating}`, async () => {
+        await render({
+          customerList: [
+            testDataFactory.customer.response({
+              ...customer,
+              rating,
+            }),
+          ],
+          customerId: customer.customerId,
+        });
 
-  //     render();
+        const icons = selector.listComponents(MatIcon, getRating());
 
-  //     const element = selector.getComponentByTestId('description');
-  //     expect(element).toBeFalsy();
-  //   });
-  // });
+        expect(icons.map(i => i.nativeElement.classList.contains('active'))).toEqual([
+          1,
+          2,
+          3,
+          4,
+          5,
+        ].map(r => r === rating));
+      });
+    });
 
-  // describe('upcoming works', () => {
-  //   it('should be rendered', () => {
-  //     customerWorks = [
-  //       testDataFactory.calendar.entry.response.workBase({
-  //         day: testDataFactory.calendar.day.futureDay(),
-  //       }),
-  //     ];
+    it('should render the icons', async () => {
+      await render();
 
-  //     render();
+      expect(selector.listComponents(MatIcon, getRating()).map(i => i.nativeElement.textContent)).toEqual([
+        'sentiment_stressed',
+        'sentiment_dissatisfied',
+        'sentiment_neutral',
+        'sentiment_satisfied',
+        'sentiment_excited',
+      ]);
+    });
+  });
 
-  //     const element = selector.getComponentByTestId<CustomerDetailsWorksComponent>('upcoming-works');
-  //     expect(element.componentInstance.works).toEqual(customerWorks);
-  //     expect(element.componentInstance.pageSize).toEqual(3);
-  //   });
-  // });
+  describe('description', () => {
+    it('should be rendered', async () => {
+      await render();
 
-  // describe('create new job button', () => {
-  //   it('should be rendered', () => {
-  //     const button = selector.getComponentByTestId<HTMLButtonElement>('new-job');
-  //     expect(button).toBeTruthy();
-  //   });
+      expect(getDescription().nativeElement.textContent).toBe(customer.description);
+    });
 
-  //   it('(click) should dispatch [Customer] Create customer job', () => {
-  //     const button = selector.getComponentByTestId<HTMLButtonElement>('new-job');
-  //     button.nativeElement.click();
-      
-  //     expect(mockStore.dispatch).toHaveBeenCalledWith(customerActions.createCustomerJob({
-  //       customerId,
-  //     }));
-  //   });
-  // });
+    it('should not be rendered if the customer has none', async () => {
+      await render({
+        customerList: [
+          {
+            ...customer,
+            description: undefined,
+          },
+        ],
+      });
 
-  // describe('jobs list', () => {
-  //   it('should be rendered for each job', () => {
-  //     customer = testDataFactory.customer.response({
-  //       customerId,
-  //       jobs: [
-  //         testDataFactory.customer.job.response(),
-  //         testDataFactory.customer.job.response(),
-  //       ],
-  //     });
+      expect(getDescription()).toBeFalsy();
+    });
+  });
 
-  //     render();
-      
-  //     const elements = selector.listComponents(CustomerDetailsJobItemComponent);
-  //     expect(elements.length).toEqual(customer.jobs.length);
-  //     elements.forEach((element, index) => {
-  //       expect(element.componentInstance.job).toEqual(customer.jobs[index]);
-  //     });
-  //   });
-  // });
+  describe('dividers', () => {
+    it('should be rendered', async () => {
+      await render();
 
-  // describe('past works', () => {
-  //   it('should be rendered', () => {
-  //     customerWorks = [
-  //       testDataFactory.calendar.entry.response.workBase({
-  //         day: testDataFactory.calendar.day.pastDay(),
-  //       }),
-  //     ];
+      expect(selector.listComponents(MatDivider).length).toBe(3);
+    });
+  });
 
-  //     render();
+  describe('upcoming works', () => {
+    it('should be rendered with the upcoming works in reverse order', async () => {
+      await render();
 
-  //     const element = selector.getComponentByTestId<CustomerDetailsWorksComponent>('past-works');
-  //     expect(element.componentInstance.works).toEqual(customerWorks);
-  //   });
-  // });
+      expect(getUpcomingWorks().componentInstance.works()).toEqual([
+        upcoming2,
+        upcoming1,
+      ]);
+      expect(getUpcomingWorks().componentInstance.title()).toBe('Következő időpontok');
+      expect(getUpcomingWorks().componentInstance.pageSize()).toBe(3);
+    });
 
-  // describe('add to blacklist button', () => {
-  //   it('should be rendered', () => {
-  //     const button = selector.getComponentByTestId<HTMLButtonElement>('add-to-blacklist');
-  //     expect(button).toBeTruthy();
-  //   });
+    it('should be rendered with an empty list if the customer has no works', async () => {
+      await render({
+        customerWorks: {},
+      });
 
-  //   it('(click) should dispatch [Customer] Create customer job', () => {
-  //     const button = selector.getComponentByTestId<HTMLButtonElement>('add-to-blacklist');
-  //     button.nativeElement.click();
-      
-  //     expect(mockStore.dispatch).toHaveBeenCalledWith(customerActions.addCustomerToBlacklist({
-  //       customerId,
-  //     }));
-  //   });
-  // });
+      expect(getUpcomingWorks().componentInstance.works()).toEqual([]);
+    });
+  });
 
-  // describe('blacklisted customers list', () => {
-  //   it('should render message if nobody is blacklisted', () => {
-  //     const messageElement = selector.getComponentByTestId('empty-blacklist');
-  //     const blacklistElement = selector.getComponentByTestId('blacklist');
-      
-  //     expect(messageElement).toBeTruthy();
-  //     expect(blacklistElement).toBeFalsy();
-  //   });
+  describe('past works', () => {
+    it('should be rendered with the past works', async () => {
+      await render();
 
-  //   it('should render list of blacklisted customers', () => {
-  //     const blacklistedCustomer = testDataFactory.customer.response();
-  //     customer = testDataFactory.customer.response({
-  //       customerId,
-  //       blacklistedCustomers: [blacklistedCustomer],
-  //     });
+      expect(getPastWorks().componentInstance.works()).toEqual([
+        past1,
+        past2,
+      ]);
+      expect(getPastWorks().componentInstance.title()).toBe('Korábbi időpontok');
+    });
 
-  //     render();
+    it('should be rendered with an empty list if the customer has no works', async () => {
+      await render({
+        customerWorks: {},
+      });
 
-  //     const messageElement = selector.getComponentByTestId('empty-blacklist');
-  //     const blacklistElement = selector.getComponentByTestId('blacklist');
+      expect(getPastWorks().componentInstance.works()).toEqual([]);
+    });
+  });
 
-  //     expect(messageElement).toBeFalsy();
-  //     expect(selector.getComponentByCss('div', blacklistElement).nativeElement.textContent.trim()).toEqual(blacklistedCustomer.name);
-  //   });
+  describe('jobs', () => {
+    it('should render a section title', async () => {
+      await render();
 
-  //   it('click on delete button should dispatch [Customer] Delete customer from blacklist', () => {
-  //     const blacklistedCustomer = testDataFactory.customer.response();
-  //     customer = testDataFactory.customer.response({
-  //       customerId,
-  //       blacklistedCustomers: [blacklistedCustomer],
-  //     });
+      expect(selector.listComponents<IconText>(IconTextStub).map(i => i.componentInstance.text())).toEqual([
+        'Munkák',
+        'Tiltólista',
+      ]);
+    });
 
-  //     render();
+    it('should render a job item for every job', async () => {
+      await render();
 
-  //     const blacklistElement = selector.getComponentByTestId('blacklist');
+      expect(getJobItems().map(i => i.componentInstance.job())).toEqual(customer.jobs);
+    });
 
-  //     const deleteButton = selector.getComponent<MatIconButton, HTMLButtonElement>(MatIconButton, blacklistElement);
+    it('should not render job items if the customer has no jobs', async () => {
+      await render({
+        customerList: [
+          {
+            ...customer,
+            jobs: [],
+          },
+        ],
+      });
 
-  //     deleteButton.nativeElement.click();
+      expect(getJobItems()).toEqual([]);
+    });
+  });
 
-  //     expect(mockStore.dispatch).toHaveBeenCalledWith(customerActions.deleteCustomerFromBlacklist({
-  //       customerId,
-  //       selectedCustomer: blacklistedCustomer,
-  //     }));
-  //   });
-  // });
+  describe('new job button', () => {
+    it('should dispatch createCustomerJob if clicked', async () => {
+      await render();
+
+      getNewJobButton().nativeElement.click();
+
+      validateFunctionCall(mockDispatcher.dispatch, customerEvents.createCustomerJob({
+        customerId: customer.customerId,
+      }), {
+        scope: 'self',
+      });
+    });
+  });
+
+  describe('blacklist', () => {
+    it('should render every blacklisted customer', async () => {
+      await render();
+
+      expect(getBlacklistRows().length).toBe(2);
+      expect(Array.from<HTMLElement>(fixture.nativeElement.querySelectorAll('[data-testId="blacklist"] > div')).map(e => e.textContent.trim())).toEqual([
+        blacklisted1.name,
+        blacklisted2.name,
+      ]);
+      expect(getEmptyBlacklist()).toBeFalsy();
+    });
+
+    it('should render a message if the blacklist is empty', async () => {
+      await render({
+        customerList: [
+          {
+            ...customer,
+            blacklistedCustomers: [],
+          },
+        ],
+      });
+
+      expect(getEmptyBlacklist().nativeElement.textContent.trim()).toBe('Nincs vendég a tiltólistához adva');
+      expect(getBlacklistRows()).toEqual([]);
+    });
+  });
+
+  describe('add to blacklist button', () => {
+    it('should dispatch addCustomerToBlacklist if clicked', async () => {
+      await render();
+
+      getAddToBlacklistButton().nativeElement.click();
+
+      validateFunctionCall(mockDispatcher.dispatch, customerEvents.addCustomerToBlacklist(customer), {
+        scope: 'self',
+      });
+    });
+  });
+
+  describe('remove from blacklist button', () => {
+    it('should dispatch deleteCustomerFromBlacklist with the clicked customer', async () => {
+      await render();
+
+      getBlacklistRows()[1].nativeElement.click();
+
+      validateFunctionCall(mockDispatcher.dispatch, customerEvents.deleteCustomerFromBlacklist({
+        currentCustomer: customer,
+        selectedCustomer: blacklisted2,
+      }), {
+        scope: 'self',
+      });
+    });
+  });
 });

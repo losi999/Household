@@ -2,11 +2,10 @@ import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/comm
 import { inject } from '@angular/core';
 import { API_URL, authEvents, AuthService, AuthStore } from '@household/shared-ui';
 import { injectDispatch } from '@ngrx/signals/events';
-import { catchError, Observable, Subject, switchMap, tap, throwError } from 'rxjs';
+import { catchError, finalize, Observable, share, switchMap, throwError } from 'rxjs';
 
-let refreshTokenInProgress = false;
-const tokenRefreshedSource = new Subject();
-const tokenRefreshed$ = tokenRefreshedSource.asObservable();
+// The refresh in progress, shared by every call that gets 401 in the meantime, so they all see its result
+let refreshTokenInProgress: Observable<unknown> | undefined;
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const authService = inject(AuthService);
@@ -14,28 +13,17 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const authEventDispatcher = injectDispatch(authEvents);
   const authStore = inject(AuthStore);
 
-  const refreshToken = (): Observable<any> => {
-    if (refreshTokenInProgress) {
-      return new Observable(observer => {
-        tokenRefreshed$.subscribe(() => {
-          observer.next(undefined);
-          observer.complete();
-        });
-      });
-    }
-    refreshTokenInProgress = true;
-
-    return authService.refreshToken({
+  const refreshToken = (): Observable<unknown> => {
+    refreshTokenInProgress ??= authService.refreshToken({
       refreshToken: authStore.refreshToken(),
     }).pipe(
-      tap(() => {
-        refreshTokenInProgress = false;
-        tokenRefreshedSource.next(undefined);
+      finalize(() => {
+        refreshTokenInProgress = undefined;
       }),
-      catchError((error) => {
-        refreshTokenInProgress = false;
-        return throwError(() => error);
-      }));
+      share(),
+    );
+
+    return refreshTokenInProgress;
   };
 
   const addAuthHeaders = (request: HttpRequest<unknown>): HttpRequest<unknown> => {

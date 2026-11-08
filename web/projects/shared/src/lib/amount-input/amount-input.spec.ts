@@ -10,18 +10,39 @@ describe('AmountInput', () => {
   let fixture: ComponentFixture<AmountInput>;
   let selector: IElementSelector;
 
-  beforeEach(async () => {
+  const render = async (params?: {
+    value?: number;
+    isPositive?: boolean;
+    signHidden?: boolean;
+    signDisabled?: boolean;
+    label?: string;
+    currency?: string;
+    newBalance?: number;
+    errors?: ReturnType<AmountInput['errors']>;
+    touched?: boolean;
+  }) => {
+    TestBed.resetTestingModule();
+
     await TestBed.configureTestingModule({
       imports: [AmountInput],
     })
       .compileComponents();
 
     fixture = TestBed.createComponent(AmountInput);
-    
+    fixture.componentRef.setInput('value', params?.value ?? 0);
+    fixture.componentRef.setInput('isPositive', params?.isPositive ?? true);
+    fixture.componentRef.setInput('signHidden', params?.signHidden ?? false);
+    fixture.componentRef.setInput('signDisabled', params?.signDisabled ?? false);
+    fixture.componentRef.setInput('label', params?.label ?? 'Összeg');
+    fixture.componentRef.setInput('currency', params?.currency ?? '');
+    fixture.componentRef.setInput('newBalance', params?.newBalance ?? 0);
+    fixture.componentRef.setInput('errors', params?.errors ?? []);
+    fixture.componentRef.setInput('touched', params?.touched ?? false);
+
     selector = elementSelectorFactory(fixture.debugElement);
-    
+
     await fixture.whenStable();
-  });
+  };
 
   describe('inverse value button', () => {  
     const getElement = () => {
@@ -32,6 +53,8 @@ describe('AmountInput', () => {
     };
 
     it('should be rendered by default', async () => {
+      await render();
+
       const numericSignElement = getElement();
       expect(numericSignElement.attributes['matIconButton']).toBeDefined();
       expect(numericSignElement.nativeElement.disabled).toBe(false);
@@ -39,18 +62,18 @@ describe('AmountInput', () => {
     });
 
     it('should be hidden', async () => {
-      fixture.componentRef.setInput('signHidden', true);
-
-      await fixture.whenStable();
+      await render({
+        signHidden: true, 
+      });
 
       expect(getElement()).toBeFalsy(); 
       expect(getIcon()).toBeFalsy();
     });
 
     it('should be disabled', async () => {
-      fixture.componentRef.setInput('signDisabled', true);
-
-      await fixture.whenStable();
+      await render({
+        signDisabled: true, 
+      });
 
       const numericSignElement = getElement();
       expect(numericSignElement.attributes['matIconButton']).toBeDefined();
@@ -59,9 +82,9 @@ describe('AmountInput', () => {
     });
 
     it('should be negative', async () => {
-      fixture.componentRef.setInput('isPositive', false);
-
-      await fixture.whenStable();
+      await render({
+        isPositive: false, 
+      });
 
       const numericSignElement = getElement();
       expect(numericSignElement.attributes['matIconButton']).toBeDefined();
@@ -71,6 +94,8 @@ describe('AmountInput', () => {
 
     describe('on click', () => {
       it('should inverse sign', async () => {
+        await render();
+
         const numericSignElement = getElement();
         numericSignElement.nativeElement.click();
 
@@ -83,7 +108,9 @@ describe('AmountInput', () => {
       
       it('should inverse value', async () => {
         const value = 10;
-        fixture.componentRef.setInput('value', value);
+        await render({
+          value, 
+        });
 
         const numericSignElement = getElement();
         numericSignElement.nativeElement.click();
@@ -101,14 +128,16 @@ describe('AmountInput', () => {
     };
 
     it('should be set by default', async () => {
+      await render();
+
       expect(getElement().nativeElement.textContent).toBe('Összeg');
     });
 
     it('should be set from parameter', async () => {
       const label = 'custom label';
-      fixture.componentRef.setInput('label', label);
-
-      await fixture.whenStable();
+      await render({
+        label, 
+      });
       
       expect(getElement().nativeElement.textContent).toBe(label);
     });
@@ -120,6 +149,8 @@ describe('AmountInput', () => {
     };
 
     it('should be set by default', async () => {
+      await render();
+
       const inputElement = getElement();
       expect(inputElement.nativeElement.required).toBe(false);
       expect(inputElement.nativeElement.min).toBe('0');
@@ -129,9 +160,9 @@ describe('AmountInput', () => {
 
     it('should be set from parameter', async () => {
       const value = 10;
-      fixture.componentRef.setInput('value', value);
-
-      await fixture.whenStable();
+      await render({
+        value, 
+      });
       
       const inputElement = getElement();
       expect(inputElement.nativeElement.required).toBe(false);
@@ -147,14 +178,16 @@ describe('AmountInput', () => {
     };
 
     it('should be empty by default', async () => {
+      await render();
+
       expect(getElement().nativeElement.textContent).toBe('');
     });
 
     it('should be set from parameter', async () => {
       const currency = 'Ft';
-      fixture.componentRef.setInput('currency', currency);
-
-      await fixture.whenStable();
+      await render({
+        currency, 
+      });
       
       expect(getElement().nativeElement.textContent).toBe(currency);
     });
@@ -166,14 +199,16 @@ describe('AmountInput', () => {
     };
 
     it('should be empty by default', async () => {
+      await render();
+
       expect(getElement()).toBeFalsy();
     });
 
     it('should be set from parameter', async () => {
       const newBalance = 10;
-      fixture.componentRef.setInput('newBalance', newBalance);
-
-      await fixture.whenStable();
+      await render({
+        newBalance, 
+      });
       
       expect(getElement().nativeElement.textContent).toContain(`Új egyenleg: ${newBalance}`);
     });
@@ -185,22 +220,123 @@ describe('AmountInput', () => {
     };
 
     it('should be empty by default', async () => {
+      await render();
+
       expect(getElement()).toBeFalsy();
     });
 
     it('should be set from parameter', async () => {
       const errorMessage = 'error';
-      fixture.componentRef.setInput('errors', [
-        {
-          message: errorMessage,
-        },
-      ]);
-      fixture.componentRef.setInput('touched', true);
-
-      await fixture.whenStable();
+      await render({
+        errors: [
+          {
+            kind: 'custom',
+            message: errorMessage,
+          },
+        ],
+        touched: true,
+      });
       
       expect(getElement().nativeElement.textContent.trim()).toBe(errorMessage); 
     });
   });
 
+  describe('sign of the value', () => {
+    const getInput = () => {
+      return selector.getComponent<MatInput, HTMLInputElement>(MatInput, MatFormField).nativeElement;
+    };
+
+    const type = async (text: string) => {
+      getInput().value = text;
+      getInput().dispatchEvent(new Event('input'));
+
+      await fixture.whenStable();
+    };
+
+    it('should be shown as a non-negative number in the input if the value is negative', async () => {
+      await render({
+        isPositive: false,
+        value: -10,
+      });
+
+      expect(getInput().value).toBe('10');
+      expect(fixture.componentInstance.value()).toBe(-10);
+    });
+
+    it('should make the typed number the value as is if the sign is positive', async () => {
+      await render();
+      await type('10');
+
+      expect(getInput().value).toBe('10');
+      expect(fixture.componentInstance.value()).toBe(10);
+    });
+
+    it('should make the typed number negative in the value if the sign is negative', async () => {
+      await render({
+        isPositive: false, 
+      });
+      await type('10');
+
+      expect(getInput().value).toBe('10');
+      expect(fixture.componentInstance.value()).toBe(-10);
+    });
+
+    it('should not keep a typed negative number in the input and use the sign of the flag for the value', async () => {
+      await render();
+      await type('-10');
+
+      expect(getInput().value).toBe('10');
+      expect(fixture.componentInstance.value()).toBe(10);
+    });
+
+    it('should not keep a typed negative number in the input if the sign is negative', async () => {
+      await render({
+        isPositive: false, 
+      });
+      await type('-10');
+
+      expect(getInput().value).toBe('10');
+      expect(fixture.componentInstance.value()).toBe(-10);
+    });
+
+    it('should not make zero negative', async () => {
+      await render({
+        isPositive: false, 
+      });
+      await type('0');
+
+      expect(fixture.componentInstance.value()).toBe(0);
+    });
+
+    it('should change the sign of the value if the sign is changed from outside', async () => {
+      await render({
+        value: 10, 
+      });
+
+      fixture.componentRef.setInput('isPositive', false);
+
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe(-10);
+      expect(getInput().value).toBe('10');
+
+      fixture.componentRef.setInput('isPositive', true);
+
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe(10);
+      expect(getInput().value).toBe('10');
+    });
+
+    it('should keep the input non-negative when the sign is inversed with the button', async () => {
+      await render();
+      await type('10');
+
+      selector.getComponent<MatPrefix, HTMLButtonElement>(MatPrefix, MatFormField).nativeElement.click();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe(-10);
+      expect(getInput().value).toBe('10');
+    });
+  });
 });

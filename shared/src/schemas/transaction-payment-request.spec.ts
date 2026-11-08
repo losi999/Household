@@ -37,6 +37,10 @@ describe('Payment transaction schema', () => {
     }), 'without inventory');
 
     tester.validateSuccess(testDataFactory.transaction.request.payment({
+      quantity: undefined,
+    }), 'with productId but without quantity');
+
+    tester.validateSuccess(testDataFactory.transaction.request.payment({
       invoiceNumber: undefined,
       billingEndDate: undefined,
       billingStartDate: undefined,
@@ -95,10 +99,6 @@ describe('Payment transaction schema', () => {
     });
 
     describe('if data.productId', () => {
-      tester.dependentRequired(testDataFactory.transaction.request.payment({
-        quantity: undefined,
-      }), 'productId', 'quantity');
-
       tester.type(testDataFactory.transaction.request.payment({
         productId: 1 as any,
       }), 'productId', 'string');

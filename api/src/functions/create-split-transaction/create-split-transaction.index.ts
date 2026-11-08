@@ -13,7 +13,6 @@ import { productService } from '@household/shared/dependencies/services/product-
 import { splitTransactionDocumentConverter } from '@household/shared/dependencies/converters/split-transaction-document-converter';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const createSplitTransactionService = createSplitTransactionServiceFactory(accountService, projectService, categoryService, recipientService, productService, transactionService, splitTransactionDocumentConverter);
 
@@ -25,8 +24,5 @@ export default index({
       body,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

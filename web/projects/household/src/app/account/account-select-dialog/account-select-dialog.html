@@ -1,0 +1,16 @@
+<div mat-dialog-title>
+  Számla
+</div>
+<div mat-dialog-content>
+  <div class="search">
+    <shared-clearable-input label="Keresés" [(value)]="searchValue" />
+  </div>
+  <mat-action-list>
+    @for (account of selectableAccounts(); track account) {
+    <button mat-list-item (click)="onSelect(account)"> {{account.name}} </button>
+    }
+  </mat-action-list>
+</div>
+<div mat-dialog-actions>
+  <button matButton="text" type="button" mat-dialog-close>Mégse</button>
+</div>

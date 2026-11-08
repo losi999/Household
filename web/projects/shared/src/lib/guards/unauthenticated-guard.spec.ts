@@ -13,7 +13,9 @@ describe('unauthenticatedGuard', () => {
   let mockAuthStore: MockSignalStore<typeof AuthStore>;
   let mockDispatcher: Dispatcher;
 
-  beforeEach(() => {        
+  const setup = () => {
+    TestBed.resetTestingModule();
+
     TestBed.configureTestingModule({
       providers: [
         provideMockSignalStore(AuthStore, 'isLoggedIn'),
@@ -23,6 +25,10 @@ describe('unauthenticatedGuard', () => {
 
     mockDispatcher = TestBed.inject(Dispatcher);
     mockAuthStore = TestBed.inject<MockSignalStore<typeof AuthStore>>(AuthStore);
+  };
+
+  beforeEach(() => {
+    setup();
   });
 
   it('should allow', () => {

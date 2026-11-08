@@ -4,17 +4,14 @@ import { calendarEntryDataFactory } from '@household/test/api/calendar/data-fact
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
-import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
-import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { calendarApiTest, calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { DAY_END, DAY_START } from '@household/shared/constants';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
-
-const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -46,7 +43,7 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestUpdateCalendarEntry }) => {
       const res = await requestUpdateCalendarEntry(calendarEntryDataFactory.id(), request);
-      expect(res).toBeUnauthorizedResponse();
+      calendarApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -61,7 +58,7 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestUpdateCalendarEntry }) => {
           const res = await requestUpdateCalendarEntry(calendarEntryDataFactory.id(), request);
-          expect(res).toBeForbiddenResponse();
+          calendarApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should update calendar', () => {
@@ -71,9 +68,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
   
               await saveCalendarEntry(calendarPersonalEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
-              expect(res).toBeNoContentResponse();
+              calendarApiExpect(res).toBeNoContentResponse();
   
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarPersonalEntryDocument)));
+              calendarApiExpect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarPersonalEntryDocument)));
             });
 
             test('unsetting description', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
@@ -83,9 +80,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
   
               await saveCalendarEntry(calendarPersonalEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
-              expect(res).toBeNoContentResponse();
+              calendarApiExpect(res).toBeNoContentResponse();
   
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarPersonalEntryDocument)));
+              calendarApiExpect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarPersonalEntryDocument)));
             });
           });
 
@@ -95,9 +92,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
   
               await saveCalendarEntry(calendarIssueEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
-              expect(res).toBeNoContentResponse();
+              calendarApiExpect(res).toBeNoContentResponse();
   
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarIssueEntryDocument)));
+              calendarApiExpect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarIssueEntryDocument)));
             });
 
             test('unsetting description', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById }) => {
@@ -107,9 +104,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
   
               await saveCalendarEntry(calendarIssueEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
-              expect(res).toBeNoContentResponse();
+              calendarApiExpect(res).toBeNoContentResponse();
   
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarIssueEntryDocument)));
+              calendarApiExpect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarIssueEntryDocument)));
             });
           });
 
@@ -130,9 +127,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               await saveCustomer(customerDocument);
               await savePrice(priceDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-              expect(res).toBeNoContentResponse();
+              calendarApiExpect(res).toBeNoContentResponse();
   
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
+              calendarApiExpect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
             });
                
             test('unsetting description', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {     
@@ -152,9 +149,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               await saveCustomer(customerDocument);
               await savePrice(priceDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-              expect(res).toBeNoContentResponse();
+              calendarApiExpect(res).toBeNoContentResponse();
   
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
+              calendarApiExpect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
             });
                
             test('unsetting additionalPrice', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {     
@@ -174,9 +171,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               await saveCustomer(customerDocument);
               await savePrice(priceDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-              expect(res).toBeNoContentResponse();
+              calendarApiExpect(res).toBeNoContentResponse();
   
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
+              calendarApiExpect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
             });
 
             test('unsetting prices', async ({ requestUpdateCalendarEntry, saveCalendarEntry, getCalendarEntryById, saveCustomer }) => {          
@@ -189,9 +186,9 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               await saveCalendarEntry(calendarWorkEntryDocument);
               await saveCustomer(customerDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-              expect(res).toBeNoContentResponse();
+              calendarApiExpect(res).toBeNoContentResponse();
   
-              expect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
+              calendarApiExpect(request).toHaveBeenSavedAsCalendarEntryDocument(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
             });
           });
         });
@@ -203,8 +200,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               
               await saveCalendarEntry(calendarIssueEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Entry type cannot be changed');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveMessage('Entry type cannot be changed');
             });
 
             test('from issue to work', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
@@ -216,8 +213,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               
               await saveCalendarEntry(calendarIssueEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Entry type cannot be changed');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveMessage('Entry type cannot be changed');
             });
 
             test('from personal to issue', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
@@ -225,8 +222,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               
               await saveCalendarEntry(calendarPersonalEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Entry type cannot be changed');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveMessage('Entry type cannot be changed');
             });
 
             test('from personal to work', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
@@ -238,8 +235,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               
               await saveCalendarEntry(calendarPersonalEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Entry type cannot be changed');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveMessage('Entry type cannot be changed');
             });
 
             test('from work to issue', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
@@ -247,8 +244,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               
               await saveCalendarEntry(calendarWorkEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Entry type cannot be changed');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveMessage('Entry type cannot be changed');
             });
 
             test('from work to personal', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
@@ -256,8 +253,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               
               await saveCalendarEntry(calendarWorkEntryDocument);
               const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Entry type cannot be changed');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveMessage('Entry type cannot be changed');
             });
           });
 
@@ -276,8 +273,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
               
             await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestUpdateCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument), request);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Calendar entry is already resolved');
+            calendarApiExpect(res).toBeBadRequestResponse();
+            calendarApiExpect(res).toHaveMessage('Calendar entry is already resolved');
           });
 
           test.describe('if day', () => {
@@ -287,8 +284,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   day: undefined, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'day');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'day');
             });
 
             test('is not string', async ({ requestUpdateCalendarEntry }) => {
@@ -297,8 +294,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   day: <any>1, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'day', 'string');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'day', 'string');
             });
 
             test('is not date format', async ({ requestUpdateCalendarEntry }) => {
@@ -307,8 +304,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   day: 'not-date', 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongFormatValidationError('body', 'day', 'date');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongFormatValidationError('body', 'day', 'date');
             });
           }); 
 
@@ -319,8 +316,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   title: undefined, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'title');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'title');
             });
 
             test('is not string', async ({ requestUpdateCalendarEntry }) => {
@@ -329,8 +326,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   title: <any>1, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'title', 'string');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'title', 'string');
             });
 
             test('is too short', async ({ requestUpdateCalendarEntry }) => {
@@ -339,8 +336,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   title: '', 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'title', 1);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveTooShortValidationError('body', 'title', 1);
             });
           }); 
 
@@ -351,8 +348,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   description: <any>1, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
             });
 
             test('is too short', async ({ requestUpdateCalendarEntry }) => {
@@ -361,8 +358,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   description: '', 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'description', 1);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveTooShortValidationError('body', 'description', 1);
             });
           });
           
@@ -373,8 +370,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   entryType: undefined, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'entryType');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'entryType');
             });
 
             test('is not string', async ({ requestUpdateCalendarEntry }) => {
@@ -383,8 +380,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   entryType: <any>1, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'entryType', 'string');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'entryType', 'string');
             });
 
             test('is not a valid constant value', async ({ requestUpdateCalendarEntry }) => {
@@ -393,8 +390,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   entryType: 'not-valid-const' as any, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveEnumValidationError('body', 'entryType');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveEnumValidationError('body', 'entryType');
             });
           });
 
@@ -405,8 +402,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   start: undefined, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'start');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'start');
             });
 
             test('is not integer', async ({ requestUpdateCalendarEntry }) => {
@@ -415,8 +412,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   start: 1.1, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'start', 'integer');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'start', 'integer');
             });
 
             test('is too small', async ({ requestUpdateCalendarEntry }) => {
@@ -425,8 +422,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   start: -1, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooSmallValidationError('body', 'start', DAY_START);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveTooSmallValidationError('body', 'start', DAY_START);
             });
 
             test('is too large', async ({ requestUpdateCalendarEntry }) => {
@@ -435,8 +432,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   start: 97, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooLargeValidationError('body', 'start', DAY_END);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveTooLargeValidationError('body', 'start', DAY_END);
             });
           });
 
@@ -447,8 +444,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   end: undefined, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'end');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'end');
             });
 
             test('is not integer', async ({ requestUpdateCalendarEntry }) => {
@@ -457,8 +454,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   end: 1.1, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'end', 'integer');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'end', 'integer');
             });
 
             test('is too small', async ({ requestUpdateCalendarEntry }) => {
@@ -468,8 +465,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   end: 10, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveExclusiveTooSmallValidationError('body', 'end', 20);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveExclusiveTooSmallValidationError('body', 'end', 20);
             });
 
             test('is too large', async ({ requestUpdateCalendarEntry }) => {
@@ -478,8 +475,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   end: 97, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooLargeValidationError('body', 'end', DAY_END);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveTooLargeValidationError('body', 'end', DAY_END);
             });
           }); 
           
@@ -490,8 +487,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   customerId: undefined, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'customerId');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'customerId');
             });
 
             test('is not string', async ({ requestUpdateCalendarEntry }) => {
@@ -500,8 +497,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   customerId: <any>1, 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'customerId', 'string');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'customerId', 'string');
             });
 
             test('is not mongo id', async ({ requestUpdateCalendarEntry }) => {
@@ -510,8 +507,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   customerId: customerDataFactory.id('not-mongo-id'), 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'customerId');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHavePatternValidationError('body', 'customerId');
             });
 
             test('does not belong to any customer', async ({ requestUpdateCalendarEntry, saveCalendarEntry }) => {
@@ -521,8 +518,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   customerId: customerDataFactory.id(), 
                 }, 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('No customer found');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveMessage('No customer found');
             });
           }); 
 
@@ -532,8 +529,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                 ...calendarEntryDataFactory.request.work(),
                 prices: <any>{}, 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'prices', 'array');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'prices', 'array');
             });
 
             test('has too few items', async ({ requestUpdateCalendarEntry }) => {
@@ -541,8 +538,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                 ...calendarEntryDataFactory.request.work(),
                 prices: [], 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooFewItemsValidationError('body', 'prices', 1);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveTooFewItemsValidationError('body', 'prices', 1);
             });
           });
 
@@ -552,8 +549,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                 ...calendarEntryDataFactory.request.work(),
                 prices: [1] as any, 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'prices/0', 'object');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'prices/0', 'object');
             });
 
             test('has additional properties', async ({ requestUpdateCalendarEntry }) => {
@@ -565,8 +562,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   }, 
                 ] as any, 
               });
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'prices/0', 'extra');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'prices/0', 'extra');
             });
           });
 
@@ -579,8 +576,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   }, 
                 ], 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'priceId');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'priceId');
             });
 
             test('is not string', async ({ requestUpdateCalendarEntry }) => {
@@ -591,8 +588,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   }, 
                 ], 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'priceId', 'string');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'priceId', 'string');
             });
 
             test('is not mongo id', async ({ requestUpdateCalendarEntry }) => {
@@ -603,8 +600,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   }, 
                 ], 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'priceId');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHavePatternValidationError('body', 'priceId');
             });
 
             test('does not belong to any price', async ({ requestUpdateCalendarEntry, savePrice, saveCalendarEntry, saveCustomer }) => {
@@ -621,8 +618,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   }, 
                 ], 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Some of the prices are not found');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveMessage('Some of the prices are not found');
             });
           });
 
@@ -635,8 +632,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   }, 
                 ], 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'quantity');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveRequiredPropertyValidationError('body', 'quantity');
             });
 
             test('is not number', async ({ requestUpdateCalendarEntry }) => {
@@ -647,8 +644,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   }, 
                 ], 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
             });
 
             test('is too small', async ({ requestUpdateCalendarEntry }) => {
@@ -659,16 +656,16 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   }, 
                 ], 
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
             });
           });
 
           test.describe('if calendarEntryId', () => {
             test('is not mongo id', async ({ requestUpdateCalendarEntry }) => {
               const res = await requestUpdateCalendarEntry(calendarEntryDataFactory.id('not-mongo-id'), calendarEntryDataFactory.request.work());
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'calendarEntryId');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHavePatternValidationError('pathParameters', 'calendarEntryId');
             });
 
             test('does not belong to any calendar entry', async ({ requestUpdateCalendarEntry }) => {
@@ -677,8 +674,8 @@ test.describe('PUT /calendar/v1/entries/{calendarEntryId}', () => {
                   customerId: customerDataFactory.id(), 
                 }, 
               }));
-              expect(res).toBeNotFoundResponse();
-              expect(res).toHaveMessage('No calendar entry found');
+              calendarApiExpect(res).toBeNotFoundResponse();
+              calendarApiExpect(res).toHaveMessage('No calendar entry found');
             });
           }); 
         });

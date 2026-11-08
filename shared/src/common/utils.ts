@@ -1,9 +1,9 @@
-import { WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
+import { PRODUCT_FULL_NAME_SEPARATOR, WORKDAY_END, WORKDAY_LENGTH, WORKDAY_START } from '@household/shared/constants';
 import { CalendarDayType, CalendarEntryType } from '@household/shared/enums';
-import { Dictionary } from '@household/shared/types/common';
+import { Dictionary, Searchable } from '@household/shared/types/common';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
-import { PopulateOptions, Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import { Responses } from '@household/shared/types/responses';
 
 export const keys = <O extends object>(obj: O): (keyof O)[] => {
@@ -12,14 +12,6 @@ export const keys = <O extends object>(obj: O): (keyof O)[] => {
 
 export const entries = <O extends object>(obj: O): [keyof O, O[keyof O]][] => {
   return Object.entries(obj) as [keyof O, O[keyof O]][];
-};
-
-export const populate = (...populateOptions: (string | PopulateOptions)[]): PopulateOptions[] => {
-  return populateOptions.map(p => {
-    return typeof p === 'string' ? {
-      path: p,
-    } : p;
-  });
 };
 
 export const addSeconds = (seconds: number, dateFrom?: Date): Date => {
@@ -146,15 +138,53 @@ export const calculateWorkdayLimits = (day: Responses.CalendarDay): Api.Calendar
   };
 };
 
-export const toSearchTerms = (input: string): string[] => {
-  const lowercased = input.toLowerCase().split(' ');
+export const toSearchable = <T extends object>(input: T, propertiesToSearch: (keyof T)[], ...additionalSeparators: string[]): Searchable<T> => {
+  const separators = additionalSeparators?.filter(x => !!(x.trim())) ?? []; 
 
-  return [
-    ...new Set(lowercased.flatMap(term => {
+  return {
+    ...input,
+    searchTerms: propertiesToSearch.flatMap((prop) => {
+      const terms = separators.reduce((accumulator, currentValue) => {
+        return accumulator.replaceAll(currentValue, ' ');
+      }, String(input[prop]).toLowerCase()).split(' ');
+
       return [
-        term,
-        term.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+        ...new Set(terms.flatMap(term => {
+          return [
+            term,
+            term.normalize('NFD').replace(/[\u0300-\u036f]/g, ''),
+          ];
+        })),
       ];
-    })),
-  ];
+    }),
+  };
+};
+
+export const search = (item: Searchable, searchValue: string): boolean => {
+  if (!searchValue) {
+    return true;
+  }
+
+  const terms = searchValue.toLowerCase()
+    .split(' ');
+
+  return item.searchTerms?.some(s => terms.every(t => s.includes(t)));
+};
+
+// The full name of a generic product is its name
+export const getSpecificProductFullName = (genericProductFullName: string, product: Pick<Responses.SpecificProduct, 'name' | 'measurement' | 'unitOfMeasurement'>): string => {
+  return `${genericProductFullName}${PRODUCT_FULL_NAME_SEPARATOR}${product.name} ${product.measurement} ${product.unitOfMeasurement}`;
+};
+
+export const getVariantProductFullName = (specificProductFullName: string, name: string): string => {
+  return `${specificProductFullName}${PRODUCT_FULL_NAME_SEPARATOR}${name}`;
+};
+
+// The full name of a product starts with the full name of its parent, so in a list ordered by the full name every
+// product is followed by its children. The measurement is compared as a number, so 2 l comes before 10 l.
+export const sortProductsByFullName = <T extends Responses.Product>(products: T[]): T[] => {
+  return [...products].sort((a, b) => a.fullName.localeCompare(b.fullName, 'hu', {
+    sensitivity: 'base',
+    numeric: true,
+  }));
 };

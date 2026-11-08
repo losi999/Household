@@ -6,15 +6,11 @@ import { customerService } from '@household/shared/dependencies/services/custome
 import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const listCustomersService = listCustomersServiceFactory(customerService, customerDocumentConverter);
 
 export default index({
   handler: handler(listCustomersService),
   before: [authorizer(UserType.Hairdresser)],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

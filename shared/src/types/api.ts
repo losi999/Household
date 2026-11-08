@@ -36,15 +36,7 @@ export namespace Api {
       accountType: Enum.AccountType;
     };
 
-    export type Owner = {
-      owner: string;
-    };
-
-    export type FullName = {
-      fullName: string;
-    };
-
-    export type Base = Name & Currency & AccountType & Owner;
+    export type Base = Name & Currency & AccountType;
 
     export type Balance = {
       balance: number;
@@ -126,6 +118,14 @@ export namespace Api {
 
     export type ParentProductId = {
       parentProductId: Id;
+    };
+
+    export type GenericProductId = {
+      genericProductId: Id;
+    };
+
+    export type SpecificProductId = {
+      specificProductId: Id;
     };
 
     export type FullName = {

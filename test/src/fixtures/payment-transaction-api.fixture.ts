@@ -2,7 +2,7 @@ import { createDate, getAccountId, getCategoryId, getProductId, getProjectId, ge
 import { Documents } from '@household/shared/types/documents';
 import { Api } from '@household/shared/types/api';
 import { Reassignment } from '@household/test/types';
-import { APIResponse, expect as baseExpect } from '@playwright/test';
+import { APIResponse, expect } from '@playwright/test';
 import { CategoryType, TransactionType } from '@household/shared/enums';
 import { validateProjectResponse } from '@household/test/fixtures/project-api.fixture';
 import { Comparer } from '@household/test/comparer';
@@ -23,7 +23,7 @@ export const validatePaymentTransactionResponse = (response: Responses.PaymentTr
     project: validateProjectResponse(response.project, document.project),
     account: validateAccountLeanResponse(response.account, document.account),
     recipient: validateRecipientResponse(response.recipient, document.recipient),
-    category: validateCategoryResponse(response.category, document.category),
+    category: validateCategoryResponse(response.category, document.category, ...document.category?.ancestors ?? []),
     product: validateProductResponse(response.product, document.product),
     quantity: document.quantity,
     billingStartDate: document.billingStartDate?.toISOString().split('T')[0],
@@ -32,7 +32,7 @@ export const validatePaymentTransactionResponse = (response: Responses.PaymentTr
   });
 };
 
-export const expect = baseExpect.extend({
+export const paymentTransactionApiExpect = expect.extend({
   toHaveBeenSavedAsPaymentTransactionDocument(req: Requests.PaymentTransaction, document: Documents.PaymentTransaction) {
     if (!document) {
       return {
@@ -113,7 +113,7 @@ export const expect = baseExpect.extend({
       message: () => `Expected document to match payment transaction, but it did not:\n${errors.join('\n')}`,
     };
   },
-  toBeConvertedToPaymentTransaction(originalDocument: Documents.DeferredTransaction, currentDocument: Documents.PaymentTransaction) {
+  toBeConvertedToPaymentTransaction(originalDocument: Documents.LoanTransaction, currentDocument: Documents.PaymentTransaction) {
 
     const comparer = new Comparer(currentDocument, {
       amount: originalDocument.amount,

@@ -1,8 +1,8 @@
 import { projectService } from '@household/shared/dependencies/services/project-service';
 import { IProjectService } from '@household/shared/services/project-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 
-export const test = baseTest.extend<Pick<IProjectService, 'saveProject' | 'saveProjects' | 'findProjectById'>>({
+export const projectDbTest = test.extend<Pick<IProjectService, 'saveProject' | 'saveProjects' | 'findProjectById'>>({
   saveProject: async ({ logServiceCall }, use) => {
     const saveProject: IProjectService['saveProject'] = async (project) => {
       const result = await projectService.saveProject(project);

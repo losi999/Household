@@ -1,8 +1,8 @@
 import { priceService } from '@household/shared/dependencies/services/price-service';
 import { IPriceService } from '@household/shared/services/price-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 
-export const test = baseTest.extend<Pick<IPriceService, 'savePrice' | 'savePrices' | 'findPriceById'>>({
+export const priceDbTest = test.extend<Pick<IPriceService, 'savePrice' | 'savePrices' | 'findPriceById'>>({
   savePrice: async ({ logServiceCall }, use) => {
     const savePrice: IPriceService['savePrice'] = async (price) => {
       const result = await priceService.savePrice(price);

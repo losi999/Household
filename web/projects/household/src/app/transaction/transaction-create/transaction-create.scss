@@ -1,0 +1,33 @@
+@use '@angular/material' as mat;
+
+.form {
+  display: grid;
+  row-gap: 10px;
+
+  .switch-accounts {
+    justify-self: center;
+  }
+
+  .amount {
+    padding: 10px 5px;
+    border-radius: 10px;
+    color: var(--mat-sys-primary);
+    background-color: var(--mat-sys-primary-container);
+  }
+
+  .direction {
+    justify-self: center;
+  }
+
+  @include mat.button-overrides(
+    (
+      tonal-container-color: var(--mat-primary-container),
+      tonal-label-text-color: var(--mat-sys-primary),
+    )
+  );
+  @include mat.icon-button-overrides(
+    (
+      icon-color: var(--mat-sys-primary),
+    )
+  );
+}

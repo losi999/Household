@@ -3,13 +3,13 @@ import { MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef } from '@angular/material/bott
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-
-export type BottomSubmenuItem = 'edit' | 'delete' | 'merge';
+import { RouterLink } from '@angular/router';
 
 export type BottomSubmenuData = {
   title: string;
   items: {
-    action: string;
+    action?: string;
+    link?: string;
     icon: string;
     label: string
   }[]
@@ -20,6 +20,7 @@ export type BottomSubmenuData = {
     MatListModule,
     MatButtonModule,
     MatIconModule,
+    RouterLink,
   ],
   templateUrl: './bottom-submenu.html',
   styleUrls: ['./bottom-submenu.scss'],
@@ -28,7 +29,7 @@ export class BottomSubmenu {
   private bottomSheetRef = inject(MatBottomSheetRef<BottomSubmenu, string>);
   public data = inject<BottomSubmenuData>(MAT_BOTTOM_SHEET_DATA);
   
-  onSelect(action: string) {
+  onSelect(action?: string) {
     this.bottomSheetRef.dismiss(action);
   }
 }

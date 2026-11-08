@@ -4,14 +4,11 @@ import { allowUsers } from '@household/test/utils';
 import { entries } from '@household/shared/common/utils';
 import { priceDataFactory } from '@household/test/api/price/data-factory';
 
-import { test as customerApiTest, expect as customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { customerApiTest, customerApiExpect } from '@household/test/fixtures/customer-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(customerApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -56,7 +53,7 @@ test.describe('GET /customer/v1/customers', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestListCustomers }) => {
       const res = await requestListCustomers();
-      expect(res).toBeUnauthorizedResponse();
+      customerApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -71,17 +68,17 @@ test.describe('GET /customer/v1/customers', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestListCustomers }) => {
           const res = await requestListCustomers();
-          expect(res).toBeForbiddenResponse();
+          customerApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should get a list of customers', async ({ requestListCustomers, savePrice, saveCustomers }) => {
           await saveCustomers(customerDocument1, customerDocument2, blacklistedCustomer);
           await savePrice(priceDocument);
           const res = await requestListCustomers();
-          expect(res).toBeOkResponse();
-          expect(res).toMatchSchema(schema);
-          expect(res).toContainMatchingCustomerDocument(customerDocument1);
-          expect(res).toContainMatchingCustomerDocument(customerDocument2);
+          customerApiExpect(res).toBeOkResponse();
+          customerApiExpect(res).toMatchSchema(schema);
+          customerApiExpect(res).toContainMatchingCustomerDocument(customerDocument1);
+          customerApiExpect(res).toContainMatchingCustomerDocument(customerDocument2);
         });
       }
     });

@@ -4,21 +4,17 @@ import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { productDataFactory } from '@household/test/api/product/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { allowUsers } from '@household/test/utils';
-import { test as productApiTest, expect as productApiExpect } from '@household/test/fixtures/product-api.fixture';
-import { expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
-import { test as productDbTest } from '@household/test/fixtures/product-db.fixture';
-
-const expect = mergeExpects(productApiExpect, transactionApiExpect, apiExpect);
+import { productApiTest, productApiExpect } from '@household/test/fixtures/product-api.fixture';
+import { transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
 
 const permissionMap = allowUsers('editor') ;
 
@@ -51,7 +47,7 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestMergeProducts }) => {
       const res = await requestMergeProducts(productDataFactory.id(), [productDataFactory.id()]);
-      expect(res).toBeUnauthorizedResponse();
+      productApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -66,16 +62,16 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestMergeProducts }) => {
           const res = await requestMergeProducts(productDataFactory.id(), [productDataFactory.id()]);
-          expect(res).toBeForbiddenResponse();
+          productApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should merge products', async ({ requestMergeProducts, saveProducts, findProductById }) => {
           await saveProducts(sourceProductDocument, targetProductDocument);
 
           const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
-          expect(res).toBeNoContentResponse();
+          productApiExpect(res).toBeNoContentResponse();
 
-          expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+          productApiExpect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
         });
 
         test.describe('children should be reassigned', () => {
@@ -90,11 +86,11 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
 
             await saveProducts(sourceProductDocument, targetProductDocument, specificProduct, variantProduct);
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
-            expect(res).toBeNoContentResponse();
+            productApiExpect(res).toBeNoContentResponse();
 
-            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
-            expect(specificProduct).toHaveItsGenericProductReassigned(await findProductById(getProductId(specificProduct)), targetProductDocument);
-            expect(variantProduct).toHaveItsGenericProductReassigned(await findProductById(getProductId(variantProduct)), targetProductDocument);
+            productApiExpect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            productApiExpect(specificProduct).toHaveItsGenericProductReassigned(await findProductById(getProductId(specificProduct)), targetProductDocument);
+            productApiExpect(variantProduct).toHaveItsGenericProductReassigned(await findProductById(getProductId(variantProduct)), targetProductDocument);
 
           });
 
@@ -114,10 +110,10 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
 
             await saveProducts(sourceProductDocument, targetProductDocument, genericProduct, variantProduct);
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
-            expect(res).toBeNoContentResponse();
+            productApiExpect(res).toBeNoContentResponse();
 
-            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
-            expect(variantProduct).toHaveItsSpecificProductReassigned(await findProductById(getProductId(variantProduct)), targetProductDocument);
+            productApiExpect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            productApiExpect(variantProduct).toHaveItsSpecificProductReassigned(await findProductById(getProductId(variantProduct)), targetProductDocument);
 
           });
         });
@@ -136,10 +132,10 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
             await saveTransactions(paymentTransactionDocument);
 
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
-            expect(res).toBeNoContentResponse();
+            productApiExpect(res).toBeNoContentResponse();
 
-            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
-            expect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
+            productApiExpect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(paymentTransactionDocument).toHaveRelatedDocumentsChangedInPaymentTransaction(await findTransactionById(getTransactionId(paymentTransactionDocument)), {
               product: {
                 from: getProductId(sourceProductDocument),
                 to: getProductId(targetProductDocument),
@@ -147,8 +143,8 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
             });
           });
 
-          test('deferred transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
-            const deferredTransactionDocument = deferredTransactionDataFactory.document({
+          test('loan transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const loanTransactionDocument = loanTransactionDataFactory.document({
               account: accountDocument,
               category: categoryDocument,
               product: sourceProductDocument,
@@ -158,13 +154,13 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
             await saveAccounts(accountDocument, loanAccountDocument);
             await saveCategory(categoryDocument);
             await saveProducts(sourceProductDocument, targetProductDocument);
-            await saveTransactions(deferredTransactionDocument);
+            await saveTransactions(loanTransactionDocument);
 
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
-            expect(res).toBeNoContentResponse();
+            productApiExpect(res).toBeNoContentResponse();
 
-            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
-            expect(deferredTransactionDocument).toHaveRelatedDocumentsChangedInDeferredTransaction(await findTransactionById(getTransactionId(deferredTransactionDocument)), {
+            productApiExpect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(loanTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(loanTransactionDocument)), {
               product: {
                 from: getProductId(sourceProductDocument),
                 to: getProductId(targetProductDocument),
@@ -172,8 +168,8 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
             });
           });
 
-          test('reimbursement transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
-            const reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+          test('repayment transaction', async ({ requestMergeProducts, saveAccounts, saveTransactions, findTransactionById, saveCategory, saveProducts, findProductById }) => {
+            const repaymentTransactionDocument = loanTransactionDataFactory.document({
               account: loanAccountDocument,
               category: categoryDocument,
               product: sourceProductDocument,
@@ -183,13 +179,13 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
             await saveAccounts(accountDocument, loanAccountDocument);
             await saveCategory(categoryDocument);
             await saveProducts(sourceProductDocument, targetProductDocument);
-            await saveTransactions(reimbursementTransactionDocument);
+            await saveTransactions(repaymentTransactionDocument);
 
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
-            expect(res).toBeNoContentResponse();
+            productApiExpect(res).toBeNoContentResponse();
 
-            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
-            expect(reimbursementTransactionDocument).toHaveRelatedDocumentsChangedInReimbursementTransaction(await findTransactionById(getTransactionId(reimbursementTransactionDocument)), {
+            productApiExpect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(repaymentTransactionDocument).toHaveRelatedDocumentsChangedInLoanTransaction(await findTransactionById(getTransactionId(repaymentTransactionDocument)), {
               product: {
                 from: getProductId(sourceProductDocument),
                 to: getProductId(targetProductDocument),
@@ -221,10 +217,10 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
             await saveTransactions(splitTransactionDocument);
 
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
-            expect(res).toBeNoContentResponse();
+            productApiExpect(res).toBeNoContentResponse();
 
-            expect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
-            expect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
+            productApiExpect(await findProductById(getProductId(sourceProductDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(splitTransactionDocument).toHaveRelatedDocumentsChangedInSplitTransaction(await findTransactionById(getTransactionId(splitTransactionDocument)), {
               product: {
                 from: getProductId(sourceProductDocument),
                 to: getProductId(targetProductDocument),
@@ -242,8 +238,8 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
 
             await saveProducts(genericProductDocument, sourceProductDocument);
             const res = await requestMergeProducts(getProductId(genericProductDocument), [getProductId(sourceProductDocument)]);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Not all products are of the same type');
+            productApiExpect(res).toBeBadRequestResponse();
+            productApiExpect(res).toHaveMessage('Not all products are of the same type');
           });
 
           test('if specific products do not belong to the same parent', async ({ requestMergeProducts, saveProducts }) => {
@@ -258,8 +254,8 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
 
             await saveProducts(targetProductDocument, sourceProductDocument, parentOfSource, parentOfTarget);
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Not all products are siblings');
+            productApiExpect(res).toBeBadRequestResponse();
+            productApiExpect(res).toHaveMessage('Not all products are siblings');
           });
 
           test('if variant products do not belong to the same parent', async ({ requestMergeProducts, saveProducts }) => {
@@ -281,8 +277,8 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
 
             await saveProducts(targetProductDocument, sourceProductDocument, parentOfSource, parentOfTarget, genericProduct);
             const res = await requestMergeProducts(getProductId(targetProductDocument), [getProductId(sourceProductDocument)]);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Not all products are siblings');
+            productApiExpect(res).toBeBadRequestResponse();
+            productApiExpect(res).toHaveMessage('Not all products are siblings');
           });
 
           test('if a source product does not exist', async ({ requestMergeProducts, saveCategory, saveProduct }) => {
@@ -293,49 +289,49 @@ test.describe('POST product/v1/products/{productId}/merge', () => {
               getProductId(sourceProductDocument),
               productDataFactory.id(), 
             ]);
-            expect(res).toBeBadRequestResponse();
-            expect(res).toHaveMessage('Some of the products are not found');
+            productApiExpect(res).toBeBadRequestResponse();
+            productApiExpect(res).toHaveMessage('Some of the products are not found');
           });
 
           test.describe('if body', () => {
             test('is not array', async ({ requestMergeProducts }) => {
               const res = await requestMergeProducts(productDataFactory.id(), {} as any);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveWrongTypeValidationError('body', 'data', 'array');
             });
 
             test('has too few items', async ({ requestMergeProducts }) => {
               const res = await requestMergeProducts(productDataFactory.id(), []);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooFewItemsValidationError('body', 'data', 1);
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveTooFewItemsValidationError('body', 'data', 1);
             });
           });
 
           test.describe('if body[0]', () => {
             test('is not string', async ({ requestMergeProducts }) => {
               const res = await requestMergeProducts(productDataFactory.id(), [1] as any);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'data/0', 'string');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveWrongTypeValidationError('body', 'data/0', 'string');
             });
 
             test('is not a valid mongo id', async ({ requestMergeProducts }) => {
               const res = await requestMergeProducts(productDataFactory.id(), [productDataFactory.id('not-valid')]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'data/0');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHavePatternValidationError('body', 'data/0');
             });
           });
 
           test.describe('if productId', () => {
             test('is not a valid mongo id', async ({ requestMergeProducts }) => {
               const res = await requestMergeProducts(productDataFactory.id('not-valid'), [productDataFactory.id()]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'productId');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHavePatternValidationError('pathParameters', 'productId');
             });
 
             test('does not belong to any product', async ({ requestMergeProducts }) => {
               const res = await requestMergeProducts(productDataFactory.id(), [getProductId(sourceProductDocument)]);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Some of the products are not found');
+              productApiExpect(res).toBeBadRequestResponse();
+              productApiExpect(res).toHaveMessage('Some of the products are not found');
             });
           });
         });

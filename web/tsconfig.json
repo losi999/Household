@@ -21,6 +21,9 @@
       ],
       "@hairdressing/*": [
         "./projects/hairdressing/src/*"
+      ],
+      "@household/*": [
+        "./projects/household/src/*"
       ]
     },
     "importHelpers": true,

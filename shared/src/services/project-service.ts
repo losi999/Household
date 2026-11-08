@@ -81,11 +81,11 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
         });
             
         await models.transactions.updateMany({
-          'deferredSplits.project': projectId,
+          'loans.project': projectId,
         }, {
 
           $unset: {
-            'deferredSplits.$[element].project': 1,
+            'loans.$[element].project': 1,
           },
         }, {
           session,
@@ -176,12 +176,12 @@ export const projectServiceFactory = (mongodbService: IMongodbService): IProject
           ],
         });
         await models.transactions.updateMany({
-          'deferredSplits.project': {
+          'loans.project': {
             $in: sourceProjectIds,
           },
         }, {
           $set: {
-            'deferredSplits.$[element].project': targetProjectId,
+            'loans.$[element].project': targetProjectId,
           },
         }, {
           session,

@@ -1,16 +1,39 @@
 import { TestBed } from '@angular/core/testing';
+import { MatIconRegistry } from '@angular/material/icon';
+import { provideRouter } from '@angular/router';
+import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
+import { ComponentFixture } from '@angular/core/testing';
 import { App } from './app';
 
 describe('App', () => {
-  beforeEach(async () => {
+  let fixture: ComponentFixture<App>;
+  let mockIconRegistry: MockService<MatIconRegistry>;
+
+  const render = async () => {
+    TestBed.resetTestingModule();
+
+    mockIconRegistry = createMockService('setDefaultFontSetClass');
+
     await TestBed.configureTestingModule({
       imports: [App],
-    }).compileComponents();
-  });
+      providers: [
+        provideRouter([]),
+        {
+          provide: MatIconRegistry,
+          useValue: mockIconRegistry.service,
+        },
+      ],
+    })
+      .compileComponents();
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+    fixture = TestBed.createComponent(App);
+
+    await fixture.whenStable();
+  };
+
+  it('should use the material symbols font for icons', async () => {
+    await render();
+
+    validateFunctionCall(mockIconRegistry.functions.setDefaultFontSetClass, 'material-symbols-outlined');
   });
 });

@@ -4,23 +4,19 @@ import { Documents } from '@household/shared/types/documents';
 import { accountDataFactory } from '@household/test/api/account/data-factory';
 import { calendarEntryDataFactory } from '@household/test/api/calendar/data-factory';
 import { customerDataFactory } from '@household/test/api/customer/data-factory';
-import { deferredTransactionDataFactory } from '@household/test/api/transaction/deferred/deferred-data-factory';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
 import { paymentTransactionDataFactory } from '@household/test/api/transaction/payment/payment-data-factory';
-import { reimbursementTransactionDataFactory } from '@household/test/api/transaction/reimbursement/reimbursement-data-factory';
 import { splitTransactionDataFactory } from '@household/test/api/transaction/split/split-data-factory';
 import { transferTransactionDataFactory } from '@household/test/api/transaction/transfer/transfer-data-factory';
 import { forbidUsers } from '@household/test/utils';
 
-import { test as transactionApiTest, expect as transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as accountDbTest } from '@household/test/fixtures/account-db.fixture';
-import { test as transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
-import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
-
-const expect = mergeExpects(transactionApiExpect, apiExpect, calendarApiExpect);
+import { transactionApiTest, transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 
 const permissionMap = forbidUsers('viewer') ;
 
@@ -33,8 +29,8 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
   let paymentTransactionDocument: Documents.PaymentTransaction;
   let splitTransactionDocument: Documents.SplitTransaction;
   let transferTransactionDocument: Documents.TransferTransaction;
-  let deferredTransactionDocument: Documents.DeferredTransaction;
-  let reimbursementTransactionDocument: Documents.ReimbursementTransaction;
+  let loanTransactionDocument: Documents.LoanTransaction;
+  let repaymentTransactionDocument: Documents.LoanTransaction;
   let loanTransferTransactionDocument: Documents.TransferTransaction;
 
   test.beforeEach(async () => {
@@ -62,12 +58,12 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       transferAccount: transferAccountDocument,
     });
 
-    deferredTransactionDocument = deferredTransactionDataFactory.document({
+    loanTransactionDocument = loanTransactionDataFactory.document({
       account: accountDocument,
       loanAccount: loanAccountDocument,
     });
 
-    reimbursementTransactionDocument = reimbursementTransactionDataFactory.document({
+    repaymentTransactionDocument = loanTransactionDataFactory.document({
       account: loanAccountDocument,
       loanAccount: accountDocument,
     });
@@ -81,7 +77,7 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestDeleteTransaction }) => {
       const res = await requestDeleteTransaction(paymentTransactionDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      transactionApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -96,7 +92,7 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestDeleteTransaction }) => {
           const res = await requestDeleteTransaction(paymentTransactionDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          transactionApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should delete', () => {
@@ -114,19 +110,19 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
             await saveCustomer(customerDocument);
             await saveCalendarEntry(calendarWorkEntryDocument);
             const res = await requestDeleteTransaction(getTransactionId(paymentTransactionDocument));
-            expect(res).toBeNoContentResponse();
+            transactionApiExpect(res).toBeNoContentResponse();
 
-            expect(await findTransactionById(getTransactionId(paymentTransactionDocument))).toHaveBeenDeletedFromDatabase();
-            expect(calendarWorkEntryDocument).toHaveBeenUnresolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
+            transactionApiExpect(await findTransactionById(getTransactionId(paymentTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            calendarApiExpect(calendarWorkEntryDocument).toHaveBeenUnresolved(await getCalendarEntryById(getCalendarEntryId(calendarWorkEntryDocument)));
           });
 
           test('split transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransactions, findTransactionById }) => {
             await saveAccounts(accountDocument, transferAccountDocument, loanAccountDocument);
             await saveTransactions(splitTransactionDocument);
             const res = await requestDeleteTransaction(getTransactionId(splitTransactionDocument));
-            expect(res).toBeNoContentResponse();
+            transactionApiExpect(res).toBeNoContentResponse();
 
-            expect(await findTransactionById(getTransactionId(splitTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(splitTransactionDocument))).toHaveBeenDeletedFromDatabase();
             
           });
 
@@ -134,44 +130,44 @@ test.describe('DELETE /transaction/v1/transactions/{transactionId}', () => {
             await saveAccounts(accountDocument, transferAccountDocument);
             await saveTransaction(transferTransactionDocument);
             const res = await requestDeleteTransaction(getTransactionId(transferTransactionDocument));
-            expect(res).toBeNoContentResponse();
+            transactionApiExpect(res).toBeNoContentResponse();
 
-            expect(await findTransactionById(getTransactionId(transferTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(transferTransactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          test('deferred transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransactions, findTransactionById }) => {
+          test('loan transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransactions, findTransactionById }) => {
             await saveAccounts(accountDocument, transferAccountDocument, loanAccountDocument);
-            await saveTransactions(deferredTransactionDocument);
-            const res = await requestDeleteTransaction(getTransactionId(deferredTransactionDocument));
-            expect(res).toBeNoContentResponse();
+            await saveTransactions(loanTransactionDocument);
+            const res = await requestDeleteTransaction(getTransactionId(loanTransactionDocument));
+            transactionApiExpect(res).toBeNoContentResponse();
             
-            expect(await findTransactionById(getTransactionId(deferredTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(loanTransactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
-          test('reimbursement transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransaction, findTransactionById }) => {
+          test('repayment transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransaction, findTransactionById }) => {
             await saveAccounts(accountDocument, loanAccountDocument);
-            await saveTransaction(reimbursementTransactionDocument);
-            const res = await requestDeleteTransaction(getTransactionId(reimbursementTransactionDocument));
-            expect(res).toBeNoContentResponse();
+            await saveTransaction(repaymentTransactionDocument);
+            const res = await requestDeleteTransaction(getTransactionId(repaymentTransactionDocument));
+            transactionApiExpect(res).toBeNoContentResponse();
             
-            expect(await findTransactionById(getTransactionId(reimbursementTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(repaymentTransactionDocument))).toHaveBeenDeletedFromDatabase();
           });
 
           test('loan transfer transaction', async ({ requestDeleteTransaction, saveAccounts, saveTransaction, findTransactionById }) => {
             await saveAccounts(accountDocument, loanAccountDocument);
             await saveTransaction(loanTransferTransactionDocument);
             const res = await requestDeleteTransaction(getTransactionId(loanTransferTransactionDocument));
-            expect(res).toBeNoContentResponse();
+            transactionApiExpect(res).toBeNoContentResponse();
             
-            expect(await findTransactionById(getTransactionId(loanTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
+            transactionApiExpect(await findTransactionById(getTransactionId(loanTransferTransactionDocument))).toHaveBeenDeletedFromDatabase();
           });
         });
         test.describe('should return error', () => {
           test.describe('if transactionId', () => {
             test('is not mongo id', async ({ requestDeleteTransaction }) => {
               const res = await requestDeleteTransaction(paymentTransactionDataFactory.id('not-valid'));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'transactionId');
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('pathParameters', 'transactionId');
             });
           });
         });

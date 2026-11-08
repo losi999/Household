@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { navigationEvents, createDispatcherSpy, NavigationStore, authEvents } from '@household/shared-ui';
+import { navigationEvents, createDispatcherSpy, NavigationStore, authEvents, validateDispatcher } from '@household/shared-ui';
 import { createMockService, MockService, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { Dispatcher } from '@ngrx/signals/events';
 import { Mock } from 'vitest';
 
+// The event handlers are part of the store itself rather than a separate feature, so this spec covers them directly.
 describe('Navigation store', () => {
   let store: InstanceType<typeof NavigationStore>;
   let dispatcher: Dispatcher;
@@ -12,7 +13,9 @@ describe('Navigation store', () => {
   let mockActivatedRoute: MockService<ActivatedRoute>;
   let dispatchSpy: Mock;
 
-  beforeEach(() => {
+  const setup = () => {
+    TestBed.resetTestingModule();
+
     mockRouter = createMockService('navigate');
     mockActivatedRoute = createMockService();
 
@@ -32,10 +35,10 @@ describe('Navigation store', () => {
     store = TestBed.inject(NavigationStore);
     dispatcher = TestBed.inject(Dispatcher);
     dispatchSpy = createDispatcherSpy(dispatcher);
-  });
+  };
 
-  afterEach(() => {
-    vi.restoreAllMocks();
+  beforeEach(() => {
+    setup();
   });
 
   it('should initialize', () => {
@@ -60,7 +63,7 @@ describe('Navigation store', () => {
         queryParamsHandling: 'merge',
         replaceUrl: true,
       });
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
+      validateDispatcher(dispatchSpy);
     });
   });
 
@@ -71,7 +74,7 @@ describe('Navigation store', () => {
       validateFunctionCall(mockRouter.functions.navigate, ['/'], {
         replaceUrl: true,
       });
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
+      validateDispatcher(dispatchSpy);
     });
   });
 
@@ -82,7 +85,7 @@ describe('Navigation store', () => {
       validateFunctionCall(mockRouter.functions.navigate, ['/'], {
         replaceUrl: true,
       });
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
+      validateDispatcher(dispatchSpy);
     });
   });
 
@@ -96,7 +99,7 @@ describe('Navigation store', () => {
       ], {
         replaceUrl: true,
       });
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
+      validateDispatcher(dispatchSpy);
     });
   });
 
@@ -110,7 +113,7 @@ describe('Navigation store', () => {
       ], {
         replaceUrl: true,
       });
-      expect(dispatchSpy).toHaveBeenCalledTimes(1);
+      validateDispatcher(dispatchSpy);
     });
   });
 });

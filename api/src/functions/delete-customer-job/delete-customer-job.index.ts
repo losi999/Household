@@ -8,7 +8,6 @@ import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
 import { deleteCustomerJobServiceFactory } from '@household/api/functions/delete-customer-job/delete-customer-job.service';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const deleteCustomerJobService = deleteCustomerJobServiceFactory(customerService, customerDocumentConverter);
 
@@ -20,8 +19,5 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

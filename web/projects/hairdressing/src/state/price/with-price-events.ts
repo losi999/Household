@@ -59,7 +59,10 @@ export const withPriceEvents = () => {
         openPriceListItemSubmenu: events.on(priceEvents.openPriceListItemSubmenu)
           .pipe(
             exhaustMap(({ payload }) => {
-              return bottomSheetService.openBottomSubmenu(payload.name, 'edit', 'delete')
+              return bottomSheetService.openBottomSubmenu(payload.name, [
+                BottomSheetService.Edit,
+                BottomSheetService.Delete,
+              ])
                 .afterDismissed()
                 .pipe(
                   filter(value => !!value),

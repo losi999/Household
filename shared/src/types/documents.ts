@@ -34,7 +34,6 @@ export namespace Documents {
   & Api.Product.ProductType<Enum.ProductType.Specific> 
   & Api.Product.UnitOfMeasurement
   & Api.Product.Measurement
-  & Api.Product.FullName
   & Api.Product.Name
   & {
     genericProduct: GenericProduct;
@@ -68,6 +67,27 @@ export namespace Documents {
       recipient: Recipient;
     };
   
+  export type LoanTransaction = Id
+    & Timestamps
+    & Api.Transaction.Amount
+    & Api.Transaction.Description
+    & Api.Transaction.IssuedAt<Date>
+    & Api.Transaction.InvoiceNumber
+    & Api.Transaction.InvoiceDate<Date>
+    & Api.Transaction.Quantity
+    & Api.Transaction.TransactionType<Enum.TransactionType.Loan>
+    & {
+      product: Product;
+      payingAccount: Account;
+      ownerAccount: Account;
+      category: Category;
+      project: Project;
+      recipient: Recipient;
+    };
+  
+  /**
+     * @deprecated
+     */
   export type DeferredTransaction = Id
     & Timestamps
     & Api.Transaction.Amount
@@ -86,6 +106,9 @@ export namespace Documents {
       recipient: Recipient;
     };
   
+  /**
+     * @deprecated
+     */
   export type ReimbursementTransaction = Id
     & Timestamps
     & Api.Transaction.Amount
@@ -137,7 +160,11 @@ export namespace Documents {
       account: Account;
       recipient: Recipient;
       splits: SplitItem[];
-      deferredSplits: DeferredTransaction[];
+      loans: LoanTransaction[];
+      /**
+       * @deprecated
+       */
+      deferredSplits?: DeferredTransaction[];
     };
   
   export type DraftTransaction = Id
@@ -151,7 +178,7 @@ export namespace Documents {
       potentialDuplicates?: Exclude<Transaction, DraftTransaction>[];
     };
   
-  export type Transaction = PaymentTransaction | TransferTransaction | DeferredTransaction | ReimbursementTransaction | SplitTransaction | DraftTransaction;
+  export type Transaction = PaymentTransaction | TransferTransaction | DeferredTransaction | ReimbursementTransaction | SplitTransaction | DraftTransaction | LoanTransaction;
 
   export type RawTransaction = Id
   & Api.Transaction.IssuedAt<Date>

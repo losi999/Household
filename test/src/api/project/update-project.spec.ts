@@ -1,11 +1,11 @@
 import { entries, getProjectId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test as projectApiTest, expect as projectApiExpect } from '@household/test/fixtures/project-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { projectApiTest, projectApiExpect } from '@household/test/fixtures/project-api.fixture';
+import { apiExpect } from '@household/test/fixtures/api.fixture';
 import { projectDataFactory } from '@household/test/api/project/data-factory';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
-import { test as projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { projectDbTest } from '@household/test/fixtures/project-db.fixture';
 import { mergeTests } from '@playwright/test';
 
 const permissionMap = allowUsers('editor');

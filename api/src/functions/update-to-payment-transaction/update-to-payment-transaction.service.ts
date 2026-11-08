@@ -1,9 +1,8 @@
 import { httpErrors } from '@household/api/common/error-handlers';
 import { getAccountId } from '@household/shared/common/utils';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { ILoanTransactionDocumentConverter } from '@household/shared/converters/loan-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
-import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
-import { AccountType, CategoryType } from '@household/shared/enums';
+import { CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
 import { IProductService } from '@household/shared/services/product-service';
@@ -29,8 +28,7 @@ export const updateToPaymentTransactionServiceFactory = (
   productService: IProductService,
   transactionService: ITransactionService,
   paymentTransactionDocumentConverter: IPaymentTransactionDocumentConverter,
-  reimbursementTransactionDocumentConverter: IReimbursementTransactionDocumentConverter,
-  deferredTransactionDocumentConverter: IDeferredTransactionDocumentConverter,
+  loanTransactionDocumentConverter: ILoanTransactionDocumentConverter,
 ): IUpdateToPaymentTransactionService => {
   return async ({ body, transactionId, expiresIn }) => {
     const queriedDocument = await transactionService.findTransactionById(transactionId).catch(httpErrors.transaction.getById({
@@ -122,30 +120,20 @@ export const updateToPaymentTransactionServiceFactory = (
         product,
       }, expiresIn);
     } else {
-
-      if (account.accountType === AccountType.Loan) {
-        httpErrors.transaction.invalidLoanAccountType(loanAccount);
-
-        update = reimbursementTransactionDocumentConverter.update({
-          body,
-          payingAccount: account,
-          ownerAccount: loanAccount,
-          category,
-          project,
-          recipient,
-          product,
-        }, expiresIn);
-      } else {
-        update = deferredTransactionDocumentConverter.update({
-          body,
-          payingAccount: account,
-          ownerAccount: loanAccount,
-          category,
-          project,
-          recipient,
-          product,
-        }, expiresIn);
-      }
+      httpErrors.transaction.loanAccountRequired([
+        account,
+        loanAccount,
+      ]);
+      
+      update = loanTransactionDocumentConverter.update({
+        body,
+        payingAccount: account,
+        ownerAccount: loanAccount,
+        category,
+        project,
+        recipient,
+        product,
+      }, expiresIn);
     }
 
     return transactionService.updateTransaction(transactionId, update).catch(httpErrors.transaction.update(update));

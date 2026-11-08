@@ -1,0 +1,133 @@
+<household-toolbar title="Új tranzakció"> </household-toolbar>
+<div class="form">
+  <mat-form-field>
+    <mat-label>Dátum</mat-label>
+    <input matInput [matDatepicker]="date" [formField]="transactionForm.date" />
+    <mat-datepicker-toggle matPrefix [for]="date" tabindex="-1" />
+    <mat-datepicker #date />
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Idő</mat-label>
+    <input matInput [matTimepicker]="time" [formField]="transactionForm.time" />
+    <mat-timepicker-toggle matIconSuffix [for]="time" />
+    <mat-timepicker #time />
+  </mat-form-field>
+  <household-account-selector
+    label="Fizető számla"
+    [items]="selectableAccounts()"
+    [formField]="transactionForm.account"
+  />
+  @if (transactionForm().value().transferAccount || transactionForm().value().loanAccount) {
+    <button matIconButton class="switch-accounts" (click)="onSwitchAccounts()">
+      <mat-icon>sync</mat-icon>
+    </button>
+  }
+  @if (!transactionForm().value().loanAccount) {
+    <household-account-selector
+      label="Átvitel számla"
+      [items]="selectableTransferAccounts()"
+      [formField]="transactionForm.transferAccount"
+    />
+  }
+  @if (!transactionForm().value().transferAccount) {
+    <household-account-selector
+      label="Kölcsön számla"
+      [items]="selectableLoanAccounts()"
+      [formField]="transactionForm.loanAccount"
+    />
+  }
+  @if (isTransferTransaction()) {
+    <div class="amount">
+      <shared-icon-text
+        [text]="transactionForm().value().account?.name"
+        [icon]="transactionForm().value().account | accountTypeIcon"
+      />
+      <shared-amount-input
+        [currency]="transactionForm().value().account.currency"
+        [formField]="transactionForm.amount"
+        [isPositive]="!isDownwardTransaction()"
+        [signDisabled]="true"
+      />
+    </div>
+    <button matIconButton class="direction" (click)="onSwitchTransferDirection()">
+      <mat-icon>{{ isDownwardTransaction() ? 'stat_minus_3' : 'stat_3' }}</mat-icon>
+    </button>
+
+    <div class="amount">
+      <shared-icon-text
+        [text]="transactionForm().value().transferAccount?.name"
+        [icon]="transactionForm().value().transferAccount | accountTypeIcon"
+      />
+      @if (isDifferentCurrencyTransfer()) {
+        <shared-amount-input
+          [currency]="transactionForm().value().transferAccount.currency"
+          [formField]="transactionForm.transferAmount"
+          [isPositive]="isDownwardTransaction()"
+          [signDisabled]="true"
+        />
+      } @else {
+        <shared-icon-text
+          [icon]="isDownwardTransaction() ? 'add' : 'remove'"
+          [text]="
+            `${(transactionForm().value().amount ?? 0 | number: '1.0-2' : 'hu')} ${transactionForm().value().account.currency}`
+          "
+        />
+      }
+    </div>
+  } @else {
+    <shared-amount-input
+      [currency]="transactionForm().value().account?.currency"
+      [formField]="transactionForm.amount"
+      [isPositive]="false"
+    />
+  }
+  <shared-clearable-input label="Megjegyzés" [formField]="transactionForm.description" />
+  <household-project-selector
+    label="Projekt"
+    [formField]="transactionForm.project"
+    [items]="projectStore.projectList()"
+  />
+  <household-recipient-selector
+    label="Partner"
+    [formField]="transactionForm.recipient"
+    [items]="recipientStore.recipientList()"
+  />
+  <household-category-selector
+    label="Kategória"
+    [formField]="transactionForm.category"
+    [items]="categoryStore.categoryList()"
+  />
+  <mat-form-field>
+    <mat-label>Számlázási időszak</mat-label>
+    <mat-date-range-input [rangePicker]="picker">
+      <input
+        matStartDate
+        [formField]="transactionForm.billingStartDate"
+        placeholder="Kezdete"
+        [readonly]="true"
+      />
+      <input
+        matEndDate
+        [formField]="transactionForm.billingEndDate"
+        placeholder="Vége"
+        [readonly]="true"
+      />
+    </mat-date-range-input>
+    <mat-datepicker-toggle matPrefix [for]="picker" tabindex="-1" />
+    <mat-date-range-picker #picker />
+    @if (
+      transactionForm.billingEndDate().touched() || transactionForm.billingStartDate().touched()
+    ) {}
+  </mat-form-field>
+  <shared-clearable-input label="Számlaszám" [formField]="transactionForm.invoiceNumber" />
+  <household-product-selector
+    label="Termék"
+    [formField]="transactionForm.product"
+    [items]="productStore.productList()"
+  />
+  <shared-clearable-input label="Mennyiség" type="number" [formField]="transactionForm.quantity" />
+</div>
+<pre>
+  {{ transactionForm().value() | json }}
+  {{ transactionForm().valid() }}
+</pre>

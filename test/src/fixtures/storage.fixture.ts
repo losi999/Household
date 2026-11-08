@@ -1,8 +1,8 @@
 import { IStorageService } from '@household/shared/services/storage-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 import { importStorageService } from '@household/shared/dependencies/services/storage-service';
 
-export const test = baseTest.extend<Pick<IStorageService, 'writeFile' | 'uploadFile' | 'checkFile'>>({
+export const storageTest = test.extend<Pick<IStorageService, 'writeFile' | 'uploadFile' | 'checkFile'>>({
   writeFile: async ({ logServiceCall }, use) => {
     const writeFile: IStorageService['writeFile'] = async (fileName, data, folder) => {
       const result = await importStorageService.writeFile(fileName, data, folder);

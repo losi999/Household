@@ -1,8 +1,8 @@
 import { categoryService } from '@household/shared/dependencies/services/category-service';
 import { ICategoryService } from '@household/shared/services/category-service';
-import { test as baseTest } from '@household/test/fixtures/logging.fixture';
+import { test } from '@household/test/fixtures/logging.fixture';
 
-export const test = baseTest.extend<Pick<ICategoryService, 'saveCategory' | 'saveCategories' | 'findCategoryById'>>({
+export const categoryDbTest = test.extend<Pick<ICategoryService, 'saveCategory' | 'saveCategories' | 'findCategoryById'>>({
   saveCategory: async ({ logServiceCall }, use) => {
     const saveCategory: ICategoryService['saveCategory'] = async (category) => {
       const result = await categoryService.saveCategory(category);

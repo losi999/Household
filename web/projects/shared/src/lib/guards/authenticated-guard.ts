@@ -5,7 +5,8 @@ import { injectDispatch } from '@ngrx/signals/events';
 
 export const authenticatedGuard: CanMatchFn = (route) => {
   const authStore = inject(AuthStore);
-  if (authStore.isLoggedIn() && authStore.userTypes().includes(route.data?.['requiredUserType'])) {
+
+  if (authStore.isLoggedIn() && (!route.data?.['requiredUserType'] || authStore.userTypes().includes(route.data?.['requiredUserType']))) {
     return true;
   }
 

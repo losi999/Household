@@ -2,9 +2,8 @@ import { ICreatePaymentTransactionService, createPaymentTransactionServiceFactor
 import { testDataFactory } from '@household/shared/common/test-data-factory';
 import { createMockService, MockService, validateError, validateFunctionCall } from '@household/shared/common/unit-testing';
 import { getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId, getTransactionId } from '@household/shared/common/utils';
-import { IDeferredTransactionDocumentConverter } from '@household/shared/converters/deferred-transaction-document-converter';
+import { ILoanTransactionDocumentConverter } from '@household/shared/converters/loan-transaction-document-converter';
 import { IPaymentTransactionDocumentConverter } from '@household/shared/converters/payment-transaction-document-converter';
-import { IReimbursementTransactionDocumentConverter } from '@household/shared/converters/reimbursement-transaction-document-converter';
 import { AccountType, CategoryType } from '@household/shared/enums';
 import { IAccountService } from '@household/shared/services/account-service';
 import { ICategoryService } from '@household/shared/services/category-service';
@@ -24,8 +23,7 @@ describe('Create payment transaction service', () => {
   let mockProductService: MockService<IProductService>;
   let mockTransactionService: MockService<ITransactionService>;
   let mockPaymentTransactionDocumentConverter: MockService<IPaymentTransactionDocumentConverter>;
-  let mockDeferredTransactionDocumentConverter: MockService<IDeferredTransactionDocumentConverter>;
-  let mockReimbursementTransactionDocumentConverter: MockService<IReimbursementTransactionDocumentConverter>;
+  let mockLoanTransactionDocumentConverter: MockService<ILoanTransactionDocumentConverter>;
 
   beforeEach(() => {
     mockAccountService = createMockService('findAccountsByIds');
@@ -35,10 +33,9 @@ describe('Create payment transaction service', () => {
     mockProductService = createMockService('findProductById');
     mockTransactionService = createMockService('saveTransaction');
     mockPaymentTransactionDocumentConverter = createMockService('create');
-    mockDeferredTransactionDocumentConverter = createMockService('create');
-    mockReimbursementTransactionDocumentConverter = createMockService('create');
+    mockLoanTransactionDocumentConverter = createMockService('create');
 
-    service = createPaymentTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockPaymentTransactionDocumentConverter.service, mockReimbursementTransactionDocumentConverter.service, mockDeferredTransactionDocumentConverter.service);
+    service = createPaymentTransactionServiceFactory(mockAccountService.service, mockProjectService.service, mockCategoryService.service, mockRecipientService.service, mockProductService.service, mockTransactionService.service, mockPaymentTransactionDocumentConverter.service, mockLoanTransactionDocumentConverter.service);
   });
 
   let body: Requests.PaymentTransaction;
@@ -49,8 +46,7 @@ describe('Create payment transaction service', () => {
   let queriedRecipient: Documents.Recipient;
   let queriedProduct: Documents.Product;
   const createdPaymentDocument = testDataFactory.transaction.document.payment();
-  const createdDeferredDocument = testDataFactory.transaction.document.deferred();
-  const createdReimbursementDocument = testDataFactory.transaction.document.reimbursement();
+  const createdLoanDocument = testDataFactory.transaction.document.loan();
 
   beforeEach(() => {
     queriedAccount = testDataFactory.account.document();
@@ -105,12 +101,11 @@ describe('Create payment transaction service', () => {
         product: queriedProduct,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdPaymentDocument);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      expect.assertions(10);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
+      expect.assertions(9);
     });
 
-    it('of created deferred document', async () => {
+    it('of created loan document', async () => {
       body = testDataFactory.transaction.request.payment({
         ...body,
         amount: -1023,
@@ -124,14 +119,14 @@ describe('Create payment transaction service', () => {
       mockProjectService.functions.findProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.findProductById.mockResolvedValue(queriedProduct);
-      mockDeferredTransactionDocumentConverter.functions.create.mockReturnValue(createdDeferredDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdDeferredDocument);
+      mockLoanTransactionDocumentConverter.functions.create.mockReturnValue(createdLoanDocument);
+      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdLoanDocument);
 
       const result = await service({
         body,
         expiresIn: undefined,
       });
-      expect(result).toEqual(getTransactionId(createdDeferredDocument));
+      expect(result).toEqual(getTransactionId(createdLoanDocument));
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.loanAccountId,
@@ -140,7 +135,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.findProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create, {
         body,
         category: queriedCategory,
         payingAccount: queriedAccount,
@@ -149,13 +144,12 @@ describe('Create payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdDeferredDocument);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdLoanDocument);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      expect.assertions(10);
+      expect.assertions(9);
     });
 
-    it('of created reimbursement document', async () => {
+    it('of created inverted loan document', async () => {
       body = testDataFactory.transaction.request.payment({
         ...body,
         amount: -1023,
@@ -170,14 +164,14 @@ describe('Create payment transaction service', () => {
       mockProjectService.functions.findProjectById.mockResolvedValue(queriedProject);
       mockRecipientService.functions.findRecipientById.mockResolvedValue(queriedRecipient);
       mockProductService.functions.findProductById.mockResolvedValue(queriedProduct);
-      mockReimbursementTransactionDocumentConverter.functions.create.mockReturnValue(createdReimbursementDocument);
-      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdReimbursementDocument);
+      mockLoanTransactionDocumentConverter.functions.create.mockReturnValue(createdLoanDocument);
+      mockTransactionService.functions.saveTransaction.mockResolvedValue(createdLoanDocument);
 
       const result = await service({
         body,
         expiresIn: undefined,
       });
-      expect(result).toEqual(getTransactionId(createdReimbursementDocument));
+      expect(result).toEqual(getTransactionId(createdLoanDocument));
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.loanAccountId,
@@ -186,7 +180,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockProjectService.functions.findProjectById, body.projectId);
       validateFunctionCall(mockRecipientService.functions.findRecipientById, body.recipientId);
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create, {
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create, {
         body,
         category: queriedCategory,
         payingAccount: queriedLoanAccount,
@@ -195,10 +189,9 @@ describe('Create payment transaction service', () => {
         recipient: queriedRecipient,
         product: queriedProduct,
       }, undefined);
-      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdReimbursementDocument);
+      validateFunctionCall(mockTransactionService.functions.saveTransaction, createdLoanDocument);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      expect.assertions(10);
+      expect.assertions(9);
     });
   });
 
@@ -220,7 +213,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
     it('if no account found', async () => {
@@ -245,7 +238,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -275,7 +268,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -301,7 +294,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -327,7 +320,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -353,7 +346,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -379,7 +372,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -405,7 +398,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -431,7 +424,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -457,7 +450,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -483,7 +476,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -509,7 +502,7 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
       expect.assertions(11);
     });
 
@@ -538,22 +531,20 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      expect.assertions(11);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
+      expect.assertions(10);
     });
 
-    it('if loanAccount is loan type for reimbursement transaction', async () => {
-      const queriedSecondLoanAccount = testDataFactory.account.document({
-        accountType: AccountType.Loan,
-      });
+    it('if none of the accounts is loan type for loan transaction', async () => {
+      const queriedSecondLoanAccount = testDataFactory.account.document();
       body = testDataFactory.transaction.request.payment({
         ...body,
-        loanAccountId: getAccountId(queriedSecondLoanAccount),
-        accountId: getAccountId(queriedLoanAccount),
+        loanAccountId: getAccountId(queriedAccount),
+        accountId: getAccountId(queriedSecondLoanAccount),
       });
+
       mockAccountService.functions.findAccountsByIds.mockResolvedValue([
-        queriedLoanAccount,
+        queriedAccount,
         queriedSecondLoanAccount,
       ]);
       mockCategoryService.functions.findCategoryById.mockResolvedValue(queriedCategory);
@@ -564,7 +555,7 @@ describe('Create payment transaction service', () => {
       await service({
         body,
         expiresIn: undefined,
-      }).catch(validateError('Account type cannot be loan', 400));
+      }).catch(validateError('One of the accounts must be loan', 400));
       validateFunctionCall(mockAccountService.functions.findAccountsByIds, [
         body.accountId,
         body.loanAccountId,
@@ -575,9 +566,8 @@ describe('Create payment transaction service', () => {
       validateFunctionCall(mockProductService.functions.findProductById, body.productId);
       validateFunctionCall(mockPaymentTransactionDocumentConverter.functions.create);
       validateFunctionCall(mockTransactionService.functions.saveTransaction);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      expect.assertions(11);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
+      expect.assertions(10);
     });
 
     it('if unable to save transaction', async () => {
@@ -610,9 +600,8 @@ describe('Create payment transaction service', () => {
         product: queriedProduct,
       }, undefined);
       validateFunctionCall(mockTransactionService.functions.saveTransaction, createdPaymentDocument);
-      validateFunctionCall(mockReimbursementTransactionDocumentConverter.functions.create);
-      validateFunctionCall(mockDeferredTransactionDocumentConverter.functions.create);
-      expect.assertions(11);
+      validateFunctionCall(mockLoanTransactionDocumentConverter.functions.create);
+      expect.assertions(10);
     });
   });
 });

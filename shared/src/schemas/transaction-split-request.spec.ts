@@ -59,6 +59,14 @@ describe('Split transaction schema', () => {
     tester.validateSuccess(testDataFactory.transaction.request.split({
       splits: [
         {
+          quantity: undefined,
+        },
+      ],
+    }), 'with splits.productId but without splits.quantity');
+
+    tester.validateSuccess(testDataFactory.transaction.request.split({
+      splits: [
+        {
           invoiceNumber: undefined,
           billingEndDate: undefined,
           billingStartDate: undefined,
@@ -106,6 +114,14 @@ describe('Split transaction schema', () => {
         },
       ],
     }), 'without loans.inventory');
+
+    tester.validateSuccess(testDataFactory.transaction.request.split({
+      loans: [
+        {
+          quantity: undefined,
+        },
+      ],
+    }), 'with loans.productId but without loans.quantity');
 
     tester.validateSuccess(testDataFactory.transaction.request.split({
       loans: [
@@ -271,14 +287,6 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.splits.productId', () => {
-      tester.dependentRequired(testDataFactory.transaction.request.split({
-        splits: [
-          {
-            quantity: undefined,
-          },
-        ],
-      }), 'productId', 'quantity');
-
       tester.type(testDataFactory.transaction.request.split({
         splits: [
           {
@@ -506,14 +514,6 @@ describe('Split transaction schema', () => {
     });
 
     describe('if data.loans.productId', () => {
-      tester.dependentRequired(testDataFactory.transaction.request.split({
-        loans: [
-          {
-            quantity: undefined,
-          },
-        ],
-      }), 'productId', 'quantity');
-
       tester.type(testDataFactory.transaction.request.split({
         loans: [
           {

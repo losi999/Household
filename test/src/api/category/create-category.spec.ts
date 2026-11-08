@@ -1,17 +1,14 @@
 import { entries, getCategoryId } from '@household/shared/common/utils';
 import { allowUsers } from '@household/test/utils';
-import { test as categoryApiTest, expect as categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
+import { categoryApiTest, categoryApiExpect } from '@household/test/fixtures/category-api.fixture';
 import { categoryDataFactory } from '@household/test/api/category/data-factory';
 import { Api } from '@household/shared/types/api';
 import { Documents } from '@household/shared/types/documents';
 import { Requests } from '@household/shared/types/requests';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { mergeTests } from '@playwright/test';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
 
 const permissionMap = allowUsers('editor');
-
-const expect = mergeExpects(categoryApiExpect, apiExpect);
 
 const test = mergeTests(categoryApiTest, categoryDbTest);
 
@@ -34,7 +31,7 @@ test.describe('POST /category/v1/categories', () => {
   test.describe('called as anyonymous', () => {
     test('should return unauthorized', async ({ requestCreateCategory }) => {
       const res = await requestCreateCategory(req);
-      expect(res).toBeUnauthorizedResponse();
+      categoryApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -50,7 +47,7 @@ test.describe('POST /category/v1/categories', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestCreateCategory }) => {
           const res = await requestCreateCategory(req);
-          expect(res).toBeForbiddenResponse();
+          categoryApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test('should create category', async ({ requestCreateCategory, findCategoryById }) => {
@@ -58,10 +55,10 @@ test.describe('POST /category/v1/categories', () => {
             
           });
           const res = await requestCreateCategory(req);
-          expect(res).toBeCreatedResponse();
+          categoryApiExpect(res).toBeCreatedResponse();
 
           const { categoryId } = (await res.json()) as Api.Category.CategoryId;
-          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId));
+          categoryApiExpect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId));
         });
 
         test('should create category with parent category', async ({ requestCreateCategory, saveCategories, findCategoryById }) => {
@@ -72,10 +69,10 @@ test.describe('POST /category/v1/categories', () => {
           await saveCategories(grandparentCategoryDocument, parentCategoryDocument);
 
           const res = await requestCreateCategory(req);
-          expect(res).toBeCreatedResponse();
+          categoryApiExpect(res).toBeCreatedResponse();
 
           const { categoryId } = (await res.json()) as Api.Category.CategoryId;
-          expect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId), grandparentCategoryDocument, parentCategoryDocument);
+          categoryApiExpect(req).toHaveBeenSavedAsCategoryDocument(await findCategoryById(categoryId), grandparentCategoryDocument, parentCategoryDocument);
         });
 
         test.describe('should return error', () => {
@@ -86,8 +83,8 @@ test.describe('POST /category/v1/categories', () => {
                 extraProperty: 'extra',
               } as any);
   
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
             });
           });
 
@@ -97,24 +94,24 @@ test.describe('POST /category/v1/categories', () => {
                 name: undefined,
               }));
 
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'name');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveRequiredPropertyValidationError('body', 'name');
             });
 
             test('is not string', async ({ requestCreateCategory }) => {
               const res = await requestCreateCategory(categoryDataFactory.request({
                 name: <any>1,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveWrongTypeValidationError('body', 'name', 'string');
             });
 
             test('is too short', async ({ requestCreateCategory }) => {
               const res = await requestCreateCategory(categoryDataFactory.request({
                 name: '',
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveTooShortValidationError('body', 'name', 1);
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveTooShortValidationError('body', 'name', 1);
             });
 
             test('is already in use by a different category', async ({ requestCreateCategory, saveCategory }) => {
@@ -125,8 +122,8 @@ test.describe('POST /category/v1/categories', () => {
               await saveCategory(categoryDocument);
 
               const res = await requestCreateCategory(req);
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Duplicate category name');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveMessage('Duplicate category name');
             });
           });
 
@@ -136,24 +133,24 @@ test.describe('POST /category/v1/categories', () => {
                 categoryType: undefined,
               }));
 
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveRequiredPropertyValidationError('body', 'categoryType');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveRequiredPropertyValidationError('body', 'categoryType');
             });
 
             test('is not string', async ({ requestCreateCategory }) => {
               const res = await requestCreateCategory(categoryDataFactory.request({
                 categoryType: <any>1,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'categoryType', 'string');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveWrongTypeValidationError('body', 'categoryType', 'string');
             });
 
             test('is not a valid enum value', async ({ requestCreateCategory }) => {
               const res = await requestCreateCategory(categoryDataFactory.request({
                 categoryType: <any>'not-category-type',
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveEnumValidationError('body', 'categoryType');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveEnumValidationError('body', 'categoryType');
             });
           });
 
@@ -162,24 +159,24 @@ test.describe('POST /category/v1/categories', () => {
               const res = await requestCreateCategory(categoryDataFactory.request({
                 parentCategoryId: <any>1,
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveWrongTypeValidationError('body', 'parentCategoryId', 'string');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveWrongTypeValidationError('body', 'parentCategoryId', 'string');
             });
 
             test('does not match pattern', async ({ requestCreateCategory }) => {
               const res = await requestCreateCategory(categoryDataFactory.request({
                 parentCategoryId: <any>'not-mongo-id',
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('body', 'parentCategoryId');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHavePatternValidationError('body', 'parentCategoryId');
             });
 
             test('does not belong to any category', async ({ requestCreateCategory }) => {
               const res = await requestCreateCategory(categoryDataFactory.request({
                 parentCategoryId: categoryDataFactory.id(),
               }));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHaveMessage('Parent category not found');
+              categoryApiExpect(res).toBeBadRequestResponse();
+              categoryApiExpect(res).toHaveMessage('Parent category not found');
             });
           });
         });

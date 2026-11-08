@@ -3,12 +3,10 @@ import { Requests } from '@household/shared/types/requests';
 import { userDataFactory } from '@household/test/api/user/data-factory';
 import { UserType } from '@household/shared/enums';
 
-import { test as identityTest } from '@household/test/fixtures/identity.fixture';
-import { test as userApiTest, expect as userApiExpect } from '@household/test/fixtures/user-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
+import { identityTest } from '@household/test/fixtures/identity.fixture';
+import { userApiTest, userApiExpect } from '@household/test/fixtures/user-api.fixture';
+import { mergeTests } from '@playwright/test';
 
-const expect = mergeExpects(userApiExpect, apiExpect);
 const test = mergeTests(identityTest, userApiTest);
 
 test.describe('POST user/v1/users/{email}/confirm', () => {
@@ -31,9 +29,9 @@ test.describe('POST user/v1/users/{email}/confirm', () => {
       test('with complete body', async ({ requestConfirmUser, createUser, getUser }) => {
         await createUser(pendingUser, UserType.Editor, true);
         const res = await requestConfirmUser(pendingUser.email, request);
-        expect(res).toBeNoContentResponse();
+        userApiExpect(res).toBeNoContentResponse();
 
-        expect(await getUser(pendingUser)).toHaveBeenConfirmed();
+        userApiExpect(await getUser(pendingUser)).toHaveBeenConfirmed();
       });
     });
 
@@ -41,8 +39,8 @@ test.describe('POST user/v1/users/{email}/confirm', () => {
       test.describe('if email', () => {
         test('is not email', async ({ requestConfirmUser }) => {
           const res = await requestConfirmUser('not-email', request);
-          expect(res).toBeBadRequestResponse();
-          expect(res).toHaveWrongFormatValidationError('pathParameters', 'email', 'email');
+          userApiExpect(res).toBeBadRequestResponse();
+          userApiExpect(res).toHaveWrongFormatValidationError('pathParameters', 'email', 'email');
         });
       });
 
@@ -53,8 +51,8 @@ test.describe('POST user/v1/users/{email}/confirm', () => {
             extraProperty: 'extra',
           } as any);
         
-          expect(res).toBeBadRequestResponse();
-          expect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
+          userApiExpect(res).toBeBadRequestResponse();
+          userApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extraProperty');
         });
       });
 
@@ -63,24 +61,24 @@ test.describe('POST user/v1/users/{email}/confirm', () => {
           const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
             password: undefined, 
           }));
-          expect(res).toBeBadRequestResponse();
-          expect(res).toHaveRequiredPropertyValidationError('body', 'password');
+          userApiExpect(res).toBeBadRequestResponse();
+          userApiExpect(res).toHaveRequiredPropertyValidationError('body', 'password');
         });
 
         test('is not string', async ({ requestConfirmUser }) => {
           const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
             password: 1 as any, 
           }));
-          expect(res).toBeBadRequestResponse();
-          expect(res).toHaveWrongTypeValidationError('body', 'password', 'string');
+          userApiExpect(res).toBeBadRequestResponse();
+          userApiExpect(res).toHaveWrongTypeValidationError('body', 'password', 'string');
         });
 
         test('is too short', async ({ requestConfirmUser }) => {
           const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
             password: 'asdfg', 
           }));
-          expect(res).toBeBadRequestResponse();
-          expect(res).toHaveTooShortValidationError('body', 'password', 6);
+          userApiExpect(res).toBeBadRequestResponse();
+          userApiExpect(res).toHaveTooShortValidationError('body', 'password', 6);
         });
       });
 
@@ -89,24 +87,24 @@ test.describe('POST user/v1/users/{email}/confirm', () => {
           const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
             temporaryPassword: undefined, 
           }));
-          expect(res).toBeBadRequestResponse();
-          expect(res).toHaveRequiredPropertyValidationError('body', 'temporaryPassword');
+          userApiExpect(res).toBeBadRequestResponse();
+          userApiExpect(res).toHaveRequiredPropertyValidationError('body', 'temporaryPassword');
         });
 
         test('is not string', async ({ requestConfirmUser }) => {
           const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
             temporaryPassword: 1 as any, 
           }));
-          expect(res).toBeBadRequestResponse();
-          expect(res).toHaveWrongTypeValidationError('body', 'temporaryPassword', 'string');
+          userApiExpect(res).toBeBadRequestResponse();
+          userApiExpect(res).toHaveWrongTypeValidationError('body', 'temporaryPassword', 'string');
         });
 
         test('is too short', async ({ requestConfirmUser }) => {
           const res = await requestConfirmUser(pendingUser.email, userDataFactory.confirmRequest({
             temporaryPassword: 'asdfg', 
           }));
-          expect(res).toBeBadRequestResponse();
-          expect(res).toHaveTooShortValidationError('body', 'temporaryPassword', 6);
+          userApiExpect(res).toBeBadRequestResponse();
+          userApiExpect(res).toHaveTooShortValidationError('body', 'temporaryPassword', 6);
         });
       });
     });

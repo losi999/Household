@@ -15,10 +15,11 @@ describe('HoldableButton', () => {
   let fixture: ComponentFixture<TestHostComponent>;
   let selector: IElementSelector;
 
-  beforeEach(async() => {
+  const render = async () => {
+    TestBed.resetTestingModule();
+
     await TestBed.configureTestingModule({
       imports: [TestHostComponent],
-      
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestHostComponent);
@@ -28,13 +29,15 @@ describe('HoldableButton', () => {
     await fixture.whenStable();
 
     vi.useFakeTimers();
-  });
+  };
 
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  it('should prevent context menu from appearing', () => {
+  it('should prevent context menu from appearing', async () => {
+    await render();
+
     const button = selector.getComponent<HoldableButton, HTMLButtonElement>(HoldableButton);
 
     const prevented = !button.nativeElement.dispatchEvent(new MouseEvent('contextmenu', {
@@ -44,7 +47,9 @@ describe('HoldableButton', () => {
     expect(prevented).toBe(true);
   });
 
-  it('should emit after pressing down', () => {
+  it('should emit after pressing down', async () => {
+    await render();
+
     const button = selector.getComponent<HoldableButton, HTMLButtonElement>(HoldableButton);
 
     const directive = button.injector.get(HoldableButton);
@@ -59,7 +64,9 @@ describe('HoldableButton', () => {
     expect(emitSpy).toHaveBeenCalledTimes(1);    
   });
 
-  it('should emit twice after holding for 550ms', () => {
+  it('should emit twice after holding for 550ms', async () => {
+    await render();
+
     const button = selector.getComponent<HoldableButton, HTMLButtonElement>(HoldableButton);
 
     const directive = button.injector.get(HoldableButton);

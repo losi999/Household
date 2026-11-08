@@ -7,7 +7,6 @@ import { default as index } from '@household/api/handlers/index.handler';
 import { mergeProjectsServiceFactory } from '@household/api/functions/merge-projects/merge-projects.service';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const mergeProjectsService = mergeProjectsServiceFactory(projectService);
 
@@ -20,8 +19,5 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

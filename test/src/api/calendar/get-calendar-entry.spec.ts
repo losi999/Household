@@ -6,15 +6,12 @@ import { priceDataFactory } from '@household/test/api/price/data-factory';
 import { response as schema } from '@household/shared/schemas/calendar-entry';
 import { CalendarEntryResolutionStatus } from '@household/shared/enums';
 
-import { test as calendarApiTest, expect as calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
-import { expect as apiExpect } from '@household/test/fixtures/api.fixture';
-import { mergeExpects, mergeTests } from '@playwright/test';
-import { test as priceDbTest } from '@household/test/fixtures/price-db.fixture';
-import { test as calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
-import { test as customerDbTest } from '@household/test/fixtures/customer-db.fixture';
+import { calendarApiTest, calendarApiExpect } from '@household/test/fixtures/calendar-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { priceDbTest } from '@household/test/fixtures/price-db.fixture';
+import { calendarEntryDbTest } from '@household/test/fixtures/calendar-entry-db.fixture';
+import { customerDbTest } from '@household/test/fixtures/customer-db.fixture';
 import { Documents } from '@household/shared/types/documents';
-
-const expect = mergeExpects(calendarApiExpect, apiExpect);
 
 const permissionMap = allowUsers('hairdresser');
 
@@ -66,7 +63,7 @@ test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
   test.describe('called as anonymous', () => {
     test('should return unauthorized', async ({ requestGetCalendarEntry }) => {
       const res = await requestGetCalendarEntry(calendarEntryDataFactory.id());
-      expect(res).toBeUnauthorizedResponse();
+      calendarApiExpect(res).toBeUnauthorizedResponse();
     });
   });
 
@@ -81,26 +78,26 @@ test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
       if (!isAllowed) {
         test('should return forbidden', async ({ requestGetCalendarEntry }) => {
           const res = await requestGetCalendarEntry(calendarEntryDataFactory.id());
-          expect(res).toBeForbiddenResponse();
+          calendarApiExpect(res).toBeForbiddenResponse();
         });
       } else {
         test.describe('should return calendar', () => {
           test('personal entry', async ({ requestGetCalendarEntry, saveCalendarEntry }) => {
             await saveCalendarEntry(calendarPersonalEntryDocument);
             const res = await requestGetCalendarEntry(getCalendarEntryId(calendarPersonalEntryDocument));
-            expect(res).toBeOkResponse();
-            expect(res).toMatchSchema(schema);
+            calendarApiExpect(res).toBeOkResponse();
+            calendarApiExpect(res).toMatchSchema(schema);
 
-            expect(res).toMatchCalendarEntryDocument(calendarPersonalEntryDocument);
+            calendarApiExpect(res).toMatchCalendarEntryDocument(calendarPersonalEntryDocument);
           });
 
           test('issue entry', async ({ requestGetCalendarEntry, saveCalendarEntry }) => {                        
             await saveCalendarEntry(calendarIssueEntryDocument);
             const res = await requestGetCalendarEntry(getCalendarEntryId(calendarIssueEntryDocument));
-            expect(res).toBeOkResponse();
-            expect(res).toMatchSchema(schema);
+            calendarApiExpect(res).toBeOkResponse();
+            calendarApiExpect(res).toMatchSchema(schema);
 
-            expect(res).toMatchCalendarEntryDocument(calendarIssueEntryDocument);
+            calendarApiExpect(res).toMatchCalendarEntryDocument(calendarIssueEntryDocument);
           });
 
           test('work entry', async ({ requestGetCalendarEntry, savePrice, saveCalendarEntry, saveCustomers }) => {          
@@ -108,10 +105,10 @@ test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
             await saveCustomers(customerDocument, blacklistedCustomerDocument);
             await savePrice(priceDocument);
             const res = await requestGetCalendarEntry(getCalendarEntryId(calendarWorkEntryDocument));
-            expect(res).toBeOkResponse();
-            expect(res).toMatchSchema(schema);
+            calendarApiExpect(res).toBeOkResponse();
+            calendarApiExpect(res).toMatchSchema(schema);
 
-            expect(res).toMatchCalendarEntryDocument(calendarWorkEntryDocument);
+            calendarApiExpect(res).toMatchCalendarEntryDocument(calendarWorkEntryDocument);
           });
         });
 
@@ -119,14 +116,14 @@ test.describe('GET /calendar/v1/entries/{calendarEntryId}', () => {
           test.describe('if calendarEntryId', () => {
             test('is not mongo id', async ({ requestGetCalendarEntry }) => {
               const res = await requestGetCalendarEntry(calendarEntryDataFactory.id('not-mongo-id'));
-              expect(res).toBeBadRequestResponse();
-              expect(res).toHavePatternValidationError('pathParameters', 'calendarEntryId');
+              calendarApiExpect(res).toBeBadRequestResponse();
+              calendarApiExpect(res).toHavePatternValidationError('pathParameters', 'calendarEntryId');
             });
 
             test('does not belong to any calendar entry', async ({ requestGetCalendarEntry }) => {
               const res = await requestGetCalendarEntry(calendarEntryDataFactory.id());
-              expect(res).toBeNotFoundResponse();
-              expect(res).toHaveMessage('No calendar entry found');
+              calendarApiExpect(res).toBeNotFoundResponse();
+              calendarApiExpect(res).toHaveMessage('No calendar entry found');
             });
           }); 
         });

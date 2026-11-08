@@ -7,7 +7,6 @@ import { projectService } from '@household/shared/dependencies/services/project-
 import { default as index } from '@household/api/handlers/index.handler';
 import { authorizer } from '@household/api/dependencies/handlers/authorizer.handler';
 import { UserType } from '@household/shared/enums';
-import { mongoDisconnect } from '@household/api/dependencies/handlers/mongo-disconnect.handler';
 
 const deleteProjectService = deleteProjectServiceFactory(projectService);
 
@@ -19,8 +18,5 @@ export default index({
       pathParameters,
     }),
   ],
-  after: [
-    cors,
-    mongoDisconnect,
-  ],
+  after: [cors],
 });

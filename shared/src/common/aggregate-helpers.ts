@@ -61,174 +61,10 @@ export const populateAggregate = (localField: string, from: string, pipeline?: P
   },
 ];
 
-export const transactionAggregate: PipelineStage.Lookup['$lookup']['pipeline'] = [
-  ...populateAggregate('recipient', 'recipients'),
-  {
-    $set: {
-      allSplits: {
-        $concatArrays: [
-          {
-            $ifNull: [
-              '$splits',
-              [],
-            ],
-          },
-          {
-            $ifNull: [
-              '$deferredSplits',
-              [],
-            ],
-          },
-        ],
-      },
-    },
-  },
-  {
-    $set: {
-      allProjects: {
-        $concatArrays: [
-          ['$project'],
-          {
-            $map: {
-              input: '$allSplits',
-              in: '$$this.project',
-            },
-          },
-        ],
-      },
-      allProducts: {
-        $concatArrays: [
-          ['$product'],
-          {
-            $map: {
-              input: '$allSplits',
-              in: '$$this.product',
-            },
-          },
-        ],
-      },
-      allCategories: {
-        $concatArrays: [
-          ['$category'],
-          {
-            $map: {
-              input: '$allSplits',
-              in: '$$this.category',
-            },
-          },
-        ],
-      },
-      allAccounts: {
-        $concatArrays: [
-          [
-            '$account',
-            '$transferAccount',
-            '$payingAccount',
-            '$ownerAccount',
-          ],
-          {
-            $map: {
-              input: '$allSplits',
-              in: '$$this.ownerAccount',
-            },
-          },
-        ],
-      },
-    },
-  },
-  lookup('projects', 'allProjects'),
-  lookup('products', 'allProducts'),
-  lookup('categories', 'allCategories', [
-    {
-      $lookup: {
-        from: 'categories',
-        localField: 'ancestors',
-        foreignField: '_id',
-        as: 'ancestors',
-      },
-    },
-  ]),
-  lookup('accounts', 'allAccounts'),
-  {
-    $set: {
-      project: findById('$project', '$allProjects'),
-      product: findById('$product', '$allProducts'),
-      category: findById('$category', '$allCategories'),
-      account: findById('$account', '$allAccounts'),
-      transferAccount: findById('$transferAccount', '$allAccounts'),
-      payingAccount: findById('$payingAccount', '$allAccounts'),
-      ownerAccount: findById('$ownerAccount', '$allAccounts'),
-      splits: {
-        $cond: {
-          if: {
-            $ne: [
-              {
-                $type: '$splits',
-              },
-              'missing',
-            ],
-          },
-          then: {
-            $map: {
-              input: '$splits',
-              as: 's',
-              in: {
-                $mergeObjects: [
-                  '$$s',
-                  {
-                    project: findById('$$s.project', '$allProjects'),
-                    product: findById('$$s.product', '$allProducts'),
-                    category: findById('$$s.category', '$allCategories'),
-                  },
-                ],
-              },
-            },
-          },
-          else: '$$REMOVE',
-        },
-      },
-      deferredSplits: {
-        $cond: {
-          if: {
-            $ne: [
-              {
-                $type: '$deferredSplits',
-              },
-              'missing',
-            ],
-          },
-          then: {
-            $map: {
-              input: '$deferredSplits',
-              as: 's',
-              in: {
-                $mergeObjects: [
-                  '$$s',
-                  {                  
-                    project: findById('$$s.project', '$allProjects'),
-                    product: findById('$$s.product', '$allProducts'),
-                    category: findById('$$s.category', '$allCategories'),
-                    ownerAccount: findById('$$s.ownerAccount', '$allAccounts'),
-                    payingAccount: findById('$$s.payingAccount', '$allAccounts'),
-                  },
-                ],
-              },
-            },
-          },
-          else: '$$REMOVE',
-        },
-      },
-    },
-  },
-  {
-    $unset: [
-      'allAccounts',
-      'allProjects',
-      'allProducts',
-      'allCategories',
-      'allSplits',
-    ],
-  },
+// The full name of a product is built from its parents, so they are looked up together with the product
+export const productAggregate: PipelineStage.Lookup['$lookup']['pipeline'] = [
+  ...populateAggregate('genericProduct', 'products'),
+  ...populateAggregate('specificProduct', 'products'),
 ];
 
 export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage.Set, PipelineStage.Unset] => [
@@ -286,7 +122,7 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
                               $map: {
                                 input: {
                                   $ifNull: [
-                                    '$deferredSplits',
+                                    '$loans',
                                     [],
                                   ],
                                 },
@@ -383,7 +219,7 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
                       {
                         $ne: [
                           {
-                            $type: '$$this.deferredSplits',
+                            $type: '$$this.loans',
                           },
                           'missing',
                         ],
@@ -393,7 +229,7 @@ export const calculateAccountBalances = (): [PipelineStage.Lookup, PipelineStage
                   then: {
                     $sum: {
                       $map: {
-                        input: '$$this.deferredSplits',
+                        input: '$$this.loans',
                         as: 'split',
                         in: {
                           $cond: {

@@ -1,0 +1,666 @@
+import { entries, getAccountId, getCategoryId, getProductId, getProjectId, getRecipientId } from '@household/shared/common/utils';
+import { AccountType, CategoryType } from '@household/shared/enums';
+import { Documents } from '@household/shared/types/documents';
+import { accountDataFactory } from '@household/test/api/account/data-factory';
+import { categoryDataFactory } from '@household/test/api/category/data-factory';
+import { productDataFactory } from '@household/test/api/product/data-factory';
+import { projectDataFactory } from '@household/test/api/project/data-factory';
+import { recipientDataFactory } from '@household/test/api/recipient/data-factory';
+import { forbidUsers } from '@household/test/utils';
+
+import { transactionApiTest, transactionApiExpect } from '@household/test/fixtures/transaction-api.fixture';
+import { mergeTests } from '@playwright/test';
+import { accountDbTest } from '@household/test/fixtures/account-db.fixture';
+import { transactionDbTest } from '@household/test/fixtures/transaction-db.fixture';
+import { categoryDbTest } from '@household/test/fixtures/category-db.fixture';
+import { projectDbTest } from '@household/test/fixtures/project-db.fixture';
+import { recipientDbTest } from '@household/test/fixtures/recipient-db.fixture';
+import { productDbTest } from '@household/test/fixtures/product-db.fixture';
+import { Api } from '@household/shared/types/api';
+import { Requests } from '@household/shared/types/requests';
+import { loanTransactionDataFactory } from '@household/test/api/transaction/loan/loan-data-factory';
+
+const permissionMap = forbidUsers('viewer') ;
+
+const test = mergeTests(transactionApiTest, accountDbTest, transactionDbTest, categoryDbTest, projectDbTest, recipientDbTest, productDbTest);
+
+test.describe('POST transaction/v1/transactions/payment (repayment)', () => {
+  let request: Requests.PaymentTransaction;
+  let projectDocument: Documents.Project;
+  let recipientDocument: Documents.Recipient;
+  let loanAccountDocument: Documents.Account;
+  let accountDocument: Documents.Account;
+  let regularCategoryDocument: Documents.Category;
+  let invoiceCategoryDocument: Documents.Category;
+  let inventoryCategoryDocument: Documents.Category;
+  let productDocument: Documents.Product;
+  let relatedDocumentIds: Pick<Requests.PaymentTransaction, 'accountId' | 'productId' | 'categoryId' | 'projectId' | 'recipientId' | 'loanAccountId'> ;
+
+  test.beforeEach(async () => {
+    projectDocument = projectDataFactory.document();
+    recipientDocument = recipientDataFactory.document();
+    loanAccountDocument = accountDataFactory.document({
+      accountType: AccountType.Loan,
+    });
+    accountDocument = accountDataFactory.document();
+    regularCategoryDocument = categoryDataFactory.document({
+      body: {
+        categoryType: CategoryType.Regular,
+      },
+    });
+
+    invoiceCategoryDocument = categoryDataFactory.document({
+      body: {
+        categoryType: CategoryType.Invoice,
+      },
+    });
+
+    inventoryCategoryDocument = categoryDataFactory.document({
+      body: {
+        categoryType: CategoryType.Inventory,
+      },
+    });
+
+    productDocument = productDataFactory.document.generic();
+
+    relatedDocumentIds = {
+      accountId: getAccountId(loanAccountDocument),
+      categoryId: getCategoryId(regularCategoryDocument),
+      projectId: getProjectId(projectDocument),
+      productId: getProductId(productDocument),
+      recipientId: getRecipientId(recipientDocument),
+      loanAccountId: getAccountId(accountDocument),
+    };
+
+    request = loanTransactionDataFactory.request(relatedDocumentIds);
+  });
+
+  test.describe('called as anonymous', () => {
+    test('should return unauthorized', async ({ requestCreatePaymentTransaction }) => {
+      const res = await requestCreatePaymentTransaction(request);
+      transactionApiExpect(res).toBeUnauthorizedResponse();
+    });
+  });
+
+  entries(permissionMap).forEach(([
+    userType,
+    isAllowed,
+  ]) => {
+    test.describe(`called as ${userType}`, () => {
+      test.use({
+        userType: userType, 
+      });
+      if (!isAllowed) {
+        test('should return forbidden', async ({ requestCreatePaymentTransaction }) => {
+          const res = await requestCreatePaymentTransaction(request);
+          transactionApiExpect(res).toBeForbiddenResponse();
+        });
+      } else {
+        test.describe('should create transaction', () => {
+          test.describe('with complete body', () => {
+            test('using regular category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(request);
+              transactionApiExpect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              transactionApiExpect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
+            });
+
+            test('using invoice category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
+              request = loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                categoryId: getCategoryId(invoiceCategoryDocument),
+              });
+
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(request);
+              transactionApiExpect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              transactionApiExpect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
+            });
+            test('using inventory category', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient, saveProduct }) => {
+              request = loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                categoryId: getCategoryId(inventoryCategoryDocument),
+              });
+
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              await saveProduct(productDocument);
+              const res = await requestCreatePaymentTransaction(request);
+              transactionApiExpect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              transactionApiExpect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
+            });
+          });
+
+          test.describe('without optional properties', () => {
+            test('description', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
+              request = loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                description: undefined,
+              });
+
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(request);
+              transactionApiExpect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              transactionApiExpect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
+            });
+            test(CategoryType.Inventory, async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
+              request = loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                productId: undefined,
+                quantity: undefined,
+                categoryId: getCategoryId(inventoryCategoryDocument),
+              });
+
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(request);
+              transactionApiExpect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              transactionApiExpect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
+            });
+
+            test(CategoryType.Invoice, async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
+              request = loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                categoryId: getCategoryId(invoiceCategoryDocument),
+                invoiceNumber: undefined,
+                billingEndDate: undefined,
+                billingStartDate: undefined,
+              });
+
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(request);
+              transactionApiExpect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              transactionApiExpect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
+            });
+
+            test('invoice.invoiceNumber', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject, saveRecipient }) => {
+              request = loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                categoryId: getCategoryId(invoiceCategoryDocument),
+                invoiceNumber: undefined,
+              });
+
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(invoiceCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(request);
+              transactionApiExpect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              transactionApiExpect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
+            });
+
+            test('categoryId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveProject, saveRecipient }) => {
+              request = loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                categoryId: undefined,
+              });
+
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(request);
+              transactionApiExpect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              transactionApiExpect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
+            });
+
+            test('recipientId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveProject }) => {
+              request = loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                recipientId: undefined,
+              });
+
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              const res = await requestCreatePaymentTransaction(request);
+              transactionApiExpect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              transactionApiExpect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
+            });
+
+            test('projectId', async ({ requestCreatePaymentTransaction, saveAccounts, getTransactionById, saveCategory, saveRecipient }) => {
+              request = loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                projectId: undefined,
+              });
+
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(request);
+              transactionApiExpect(res).toBeCreatedResponse();
+              const { transactionId } = await res.json() as Api.Transaction.TransactionId;
+              transactionApiExpect(request).toHaveBeenSavedAsLoanTransactionDocument(await getTransactionById(transactionId));
+            });
+          });
+        });
+
+        test.describe('should return error', () => {
+          test.describe('if body', () => {
+            test('has additional properties', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                extra: 123, 
+              } as any));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveAdditionalPropertiesValidationError('body', 'data', 'extra');
+            });
+          });
+
+          test.describe('if amount', () => {
+            test('is missing', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                amount: undefined, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'amount');
+            });
+
+            test('is not number', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                amount: <any>'1', 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'amount', 'number');
+            });
+
+            test('is bigger than 0', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                amount: 1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveExclusiveTooLargeValidationError('body', 'amount', 0);
+            });
+          });
+
+          test.describe('if description', () => {
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                description: <any>1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'description', 'string');
+            });
+
+            test('is too short', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                description: '', 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooShortValidationError('body', 'description', 1);
+            });
+          });
+
+          test.describe('if quantity', () => {
+            test('is present and productId is missing', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                productId: undefined,
+                quantity: 1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'quantity', 'productId');
+            });
+
+            test('is not number', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                quantity: <any>'a', 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'quantity', 'number');
+            });
+
+            test('is too small', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                quantity: 0, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveExclusiveTooSmallValidationError('body', 'quantity', 0);
+            });
+          });
+
+          test.describe('if productId', () => {
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                productId: <any>1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'productId', 'string');
+            });
+
+            test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                productId: productDataFactory.id('not-valid'), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'productId');
+            });
+
+            test('does not belong to any product', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject, saveRecipient }) => {
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(inventoryCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                categoryId: getCategoryId(inventoryCategoryDocument), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No product found');
+            });
+          });
+
+          test.describe('if invoiceNumber', () => {
+            test('is present and billingEndDate, billingStartDate are missing', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                billingEndDate: undefined,
+                billingStartDate: undefined, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'invoiceNumber', 'billingEndDate', 'billingStartDate');
+            });
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                invoiceNumber: <any>1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'invoiceNumber', 'string');
+            });
+
+            test('is too short', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                invoiceNumber: '', 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooShortValidationError('body', 'invoiceNumber', 1);
+            });
+          });
+
+          test.describe('if billingEndDate', () => {
+            test('is present and billingStartDate is missing', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                billingStartDate: undefined, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingEndDate', 'billingStartDate');
+            });
+
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                billingEndDate: <any>1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'billingEndDate', 'string');
+            });
+
+            test('is not date format', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                billingEndDate: 'not-date', 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'billingEndDate', 'date');
+            });
+
+            test('is later than billingStartDate', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                billingEndDate: '2022-06-01',
+                billingStartDate: '2022-06-03', 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveTooEarlyDateValidationError('body', 'billingEndDate', true);
+            });
+          });
+
+          test.describe('if billingStartDate', () => {
+            test('is present and billingEndDate is missing', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                billingEndDate: undefined, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveDependentRequiredPropertyValidationError('body', 'billingStartDate', 'billingEndDate');
+            });
+
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                billingStartDate: <any>1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'billingStartDate', 'string');
+            });
+
+            test('is not date format', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                billingStartDate: 'not-date', 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'billingStartDate', 'date');
+            });
+          });
+
+          test.describe('if issuedAt', () => {
+            test('is missing', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                issuedAt: undefined, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'issuedAt');
+            });
+
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                issuedAt: <any>1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'issuedAt', 'string');
+            });
+
+            test('is not date-time format', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                issuedAt: 'not-date-time', 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongFormatValidationError('body', 'issuedAt', 'date-time');
+            });
+          });
+
+          test.describe('if accountId', () => {
+            test('does not belong to any account', async ({ requestCreatePaymentTransaction, saveCategory, saveProject, saveRecipient }) => {
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                accountId: accountDataFactory.id(), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No account found');
+            });
+
+            test('belongs to a non-loan account', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject, saveRecipient }) => {
+              const nonLoanAccountDocument = accountDataFactory.document();
+              await saveAccounts(nonLoanAccountDocument, accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                accountId: getAccountId(nonLoanAccountDocument), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('One of the accounts must be loan');
+            });
+
+            test('is missing', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                accountId: undefined, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveRequiredPropertyValidationError('body', 'accountId');
+            });
+
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                accountId: <any>1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'accountId', 'string');
+            });
+
+            test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                accountId: accountDataFactory.id('not-mongo-id'), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'accountId');
+            });
+          });
+
+          test.describe('if loanAccountId', () => {
+            test('does not belong to any account', async ({ requestCreatePaymentTransaction, saveAccount, saveCategory, saveProject, saveRecipient }) => {
+              await saveAccount(loanAccountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                loanAccountId: accountDataFactory.id(), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No account found');
+            });
+
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                loanAccountId: <any>1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'loanAccountId', 'string');
+            });
+
+            test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                loanAccountId: accountDataFactory.id('not-mongo-id'), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'loanAccountId');
+            });
+          });
+
+          test.describe('if categoryId', () => {
+            test('does not belong to any category', async ({ requestCreatePaymentTransaction, saveAccounts, saveProject, saveRecipient }) => {
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveProject(projectDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                categoryId: categoryDataFactory.id(), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No category found');
+            });
+
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                categoryId: <any> 1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'categoryId', 'string');
+            });
+
+            test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                categoryId: categoryDataFactory.id('not-mongo-id'), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'categoryId');
+            });
+          });
+
+          test.describe('if recipientId', () => {
+            test('does not belong to any recipient', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveProject }) => {
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveProject(projectDocument);
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                recipientId: recipientDataFactory.id(), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No recipient found');
+            });
+
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                recipientId: <any>1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'recipientId', 'string');
+            });
+
+            test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                recipientId: recipientDataFactory.id('not-mongo-id'), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'recipientId');
+            });
+          });
+
+          test.describe('if projectId', () => {
+            test('does not belong to any project', async ({ requestCreatePaymentTransaction, saveAccounts, saveCategory, saveRecipient }) => {
+              await saveAccounts(loanAccountDocument, accountDocument);
+              await saveCategory(regularCategoryDocument);
+              await saveRecipient(recipientDocument);
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                ...relatedDocumentIds,
+                projectId: projectDataFactory.id(), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveMessage('No project found');
+            });
+
+            test('is not string', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                projectId: <any> 1, 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHaveWrongTypeValidationError('body', 'projectId', 'string');
+            });
+
+            test('is not mongo id format', async ({ requestCreatePaymentTransaction }) => {
+              const res = await requestCreatePaymentTransaction(loanTransactionDataFactory.request({
+                projectId: projectDataFactory.id('not-mongo-id'), 
+              }));
+              transactionApiExpect(res).toBeBadRequestResponse();
+              transactionApiExpect(res).toHavePatternValidationError('body', 'projectId');
+            });
+          });
+        });
+      }
+    });
+  });
+});
